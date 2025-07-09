@@ -47,10 +47,7 @@ func (t LinodeScopesStringType) ValueFromString(
 	return value, nil
 }
 
-func (t LinodeScopesStringType) ValueFromTerraform(
-	ctx context.Context,
-	in tftypes.Value,
-) (attr.Value, error) {
+func (t LinodeScopesStringType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
 	attrValue, err := t.StringType.ValueFromTerraform(ctx, in)
 	if err != nil {
 		return nil, err
@@ -65,10 +62,7 @@ func (t LinodeScopesStringType) ValueFromTerraform(
 	stringValuable, diags := t.ValueFromString(ctx, stringValue)
 
 	if diags.HasError() {
-		return nil, fmt.Errorf(
-			"unexpected error converting StringValue to StringValuable: %v",
-			diags,
-		)
+		return nil, fmt.Errorf("unexpected error converting StringValue to StringValuable: %v", diags)
 	}
 
 	return stringValuable, nil

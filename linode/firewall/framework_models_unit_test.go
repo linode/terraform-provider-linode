@@ -84,12 +84,7 @@ func TestParseComputedAttributes(t *testing.T) {
 	}
 
 	data := &FirewallDataSourceModel{}
-	diags := data.flattenFirewallForDataSource(
-		context.Background(),
-		firewall,
-		devices,
-		firewallRules,
-	)
+	diags := data.flattenFirewallForDataSource(context.Background(), firewall, devices, firewallRules)
 	assert.Nil(t, diags)
 
 	assert.Equal(t, int64(123), data.ID.ValueInt64())

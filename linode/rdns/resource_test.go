@@ -102,28 +102,15 @@ func TestAccResourceRDNS_update(t *testing.T) {
 				Config: tmpl.Basic(t, label, testRegion, false),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
-					resource.TestCheckResourceAttrPair(
-						resName,
-						"address",
-						"linode_instance.foobar",
-						"ip_address",
-					),
-					resource.TestMatchResourceAttr(
-						resName,
-						"rdns",
-						regexp.MustCompile(`([0-9]{1,3}\.){4}nip.io$`),
-					),
+					resource.TestCheckResourceAttrPair(resName, "address", "linode_instance.foobar", "ip_address"),
+					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\.){4}nip.io$`)),
 				),
 			},
 			{
 				Config: tmpl.Changed(t, label, testRegion, false),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
-					resource.TestMatchResourceAttr(
-						resName,
-						"rdns",
-						regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`),
-					),
+					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`)),
 				),
 			},
 			{
@@ -132,11 +119,7 @@ func TestAccResourceRDNS_update(t *testing.T) {
 			{
 				Config: tmpl.Deleted(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestMatchResourceAttr(
-						"data.linode_networking_ip.foobar",
-						"rdns",
-						regexp.MustCompile(`.ip.linodeusercontent.com$`),
-					),
+					resource.TestMatchResourceAttr("data.linode_networking_ip.foobar", "rdns", regexp.MustCompile(`.ip.linodeusercontent.com$`)),
 				),
 			},
 		},
@@ -160,28 +143,15 @@ func TestAccResourceRDNS_waitForAvailable(t *testing.T) {
 				Config: tmpl.Basic(t, label, testRegion, true),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
-					resource.TestCheckResourceAttrPair(
-						resName,
-						"address",
-						"linode_instance.foobar",
-						"ip_address",
-					),
-					resource.TestMatchResourceAttr(
-						resName,
-						"rdns",
-						regexp.MustCompile(`([0-9]{1,3}\.){4}nip.io$`),
-					),
+					resource.TestCheckResourceAttrPair(resName, "address", "linode_instance.foobar", "ip_address"),
+					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\.){4}nip.io$`)),
 				),
 			},
 			{
 				Config: tmpl.Changed(t, label, testRegion, true),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
-					resource.TestMatchResourceAttr(
-						resName,
-						"rdns",
-						regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`),
-					),
+					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`)),
 				),
 			},
 			{
@@ -190,11 +160,7 @@ func TestAccResourceRDNS_waitForAvailable(t *testing.T) {
 			{
 				Config: tmpl.Deleted(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestMatchResourceAttr(
-						"data.linode_networking_ip.foobar",
-						"rdns",
-						regexp.MustCompile(`.ip.linodeusercontent.com$`),
-					),
+					resource.TestMatchResourceAttr("data.linode_networking_ip.foobar", "rdns", regexp.MustCompile(`.ip.linodeusercontent.com$`)),
 				),
 			},
 		},
@@ -224,20 +190,10 @@ func TestAccResourceRDNS_waitForAvailableWithTimeout(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.WithTimeoutUpdated(
-					t,
-					linodeLabel,
-					testRegion,
-					createTimeout,
-					updateTimeout,
-				),
+				Config: tmpl.WithTimeoutUpdated(t, linodeLabel, testRegion, createTimeout, updateTimeout),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
-					resource.TestMatchResourceAttr(
-						resName,
-						"rdns",
-						regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`),
-					),
+					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`)),
 				),
 			},
 			{
@@ -260,11 +216,7 @@ func checkRDNSExists(s *terraform.State) error {
 
 		_, err := client.GetIPAddress(context.Background(), rs.Primary.Attributes["address"])
 		if err != nil {
-			return fmt.Errorf(
-				"Error retrieving state of RDNS %s: %s",
-				rs.Primary.Attributes["rdns"],
-				err,
-			)
+			return fmt.Errorf("Error retrieving state of RDNS %s: %s", rs.Primary.Attributes["rdns"], err)
 		}
 	}
 

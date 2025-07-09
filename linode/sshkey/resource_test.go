@@ -64,11 +64,7 @@ func TestAccResourceSSHKey_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkSSHKeyExists,
 					resource.TestCheckResourceAttr(resName, "label", sshkeyName),
-					resource.TestCheckResourceAttr(
-						resName,
-						"ssh_key",
-						acceptance.PublicKeyMaterial,
-					),
+					resource.TestCheckResourceAttr(resName, "ssh_key", acceptance.PublicKeyMaterial),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 				),
 			},
@@ -124,11 +120,7 @@ func TestAccResourceSSHKey_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkSSHKeyExists,
 					resource.TestCheckResourceAttr(resName, "label", sshkeyName),
-					resource.TestCheckResourceAttr(
-						resName,
-						"ssh_key",
-						acceptance.PublicKeyMaterial,
-					),
+					resource.TestCheckResourceAttr(resName, "ssh_key", acceptance.PublicKeyMaterial),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 				),
 			},
@@ -136,16 +128,8 @@ func TestAccResourceSSHKey_update(t *testing.T) {
 				Config: tmpl.Updates(t, sshkeyName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					checkSSHKeyExists,
-					resource.TestCheckResourceAttr(
-						resName,
-						"label",
-						fmt.Sprintf("%s_renamed", sshkeyName),
-					),
-					resource.TestCheckResourceAttr(
-						resName,
-						"ssh_key",
-						acceptance.PublicKeyMaterial,
-					),
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", sshkeyName)),
+					resource.TestCheckResourceAttr(resName, "ssh_key", acceptance.PublicKeyMaterial),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 				),
 			},
@@ -173,11 +157,7 @@ func checkSSHKeyExists(s *terraform.State) error {
 
 		_, err = client.GetSSHKey(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf(
-				"Error retrieving state of SSHKey %s: %s",
-				rs.Primary.Attributes["label"],
-				err,
-			)
+			return fmt.Errorf("Error retrieving state of SSHKey %s: %s", rs.Primary.Attributes["label"], err)
 		}
 	}
 

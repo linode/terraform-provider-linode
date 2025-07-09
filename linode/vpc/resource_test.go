@@ -115,11 +115,7 @@ func TestAccResourceVPC_update(t *testing.T) {
 				Config: tmpl.Updates(t, vpcLabel, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCExists,
-					resource.TestCheckResourceAttr(
-						resName,
-						"label",
-						fmt.Sprintf("%s-renamed", vpcLabel),
-					),
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", vpcLabel)),
 					resource.TestCheckResourceAttr(resName, "description", "some description"),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
@@ -145,10 +141,8 @@ func TestAccResourceLinodeVPC_create_InvalidLabel(t *testing.T) {
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, vpcLabel, testRegion),
-				ExpectError: regexp.MustCompile(
-					"Label must include only ASCII letters, numbers, and dashes",
-				),
+				Config:      tmpl.Basic(t, vpcLabel, testRegion),
+				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
 			},
 		},
 	})
@@ -176,10 +170,8 @@ func TestAccResourceLinodeVPC_update_InvalidLabel(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Updates(t, invalidLabel, testRegion),
-				ExpectError: regexp.MustCompile(
-					"Label must include only ASCII letters, numbers, and dashes",
-				),
+				Config:      tmpl.Updates(t, invalidLabel, testRegion),
+				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
 			},
 			{
 				ResourceName:      resName,
@@ -205,11 +197,7 @@ func checkVPCExists(s *terraform.State) error {
 
 		_, err = client.GetVPC(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf(
-				"Error retrieving state of VPC %s: %s",
-				rs.Primary.Attributes["label"],
-				err,
-			)
+			return fmt.Errorf("Error retrieving state of VPC %s: %s", rs.Primary.Attributes["label"], err)
 		}
 	}
 

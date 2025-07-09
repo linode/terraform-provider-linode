@@ -31,11 +31,7 @@ func TestFlattenToken(t *testing.T) {
 	model.FlattenToken(&sampleToken, false, false)
 
 	assert.Equal(t, types.StringValue(sampleToken.Label), model.Label)
-	assert.Equal(
-		t,
-		customtypes.LinodeScopesStringValue{StringValue: types.StringValue(sampleToken.Scopes)},
-		model.Scopes,
-	)
+	assert.Equal(t, customtypes.LinodeScopesStringValue{StringValue: types.StringValue(sampleToken.Scopes)}, model.Scopes)
 	assert.Equal(t, types.StringValue(sampleToken.Token), model.Token)
 	assert.Equal(t, types.StringValue(strconv.Itoa(sampleToken.ID)), model.ID)
 }

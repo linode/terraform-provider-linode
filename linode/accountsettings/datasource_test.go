@@ -46,31 +46,11 @@ func TestAccDataSourceLinodeAccountSettings_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						resourceName,
-						"backups_enabled",
-						strconv.FormatBool(settings.BackupsEnabled),
-					),
-					resource.TestCheckResourceAttr(
-						resourceName,
-						"managed",
-						strconv.FormatBool(settings.Managed),
-					),
-					resource.TestCheckResourceAttr(
-						resourceName,
-						"network_helper",
-						strconv.FormatBool(settings.NetworkHelper),
-					),
-					resource.TestCheckResourceAttr(
-						resourceName,
-						"object_storage",
-						objectStorageVal,
-					),
-					resource.TestCheckResourceAttr(
-						resourceName,
-						"longview_subscription",
-						longviewVal,
-					),
+					resource.TestCheckResourceAttr(resourceName, "backups_enabled", strconv.FormatBool(settings.BackupsEnabled)),
+					resource.TestCheckResourceAttr(resourceName, "managed", strconv.FormatBool(settings.Managed)),
+					resource.TestCheckResourceAttr(resourceName, "network_helper", strconv.FormatBool(settings.NetworkHelper)),
+					resource.TestCheckResourceAttr(resourceName, "object_storage", objectStorageVal),
+					resource.TestCheckResourceAttr(resourceName, "longview_subscription", longviewVal),
 				),
 			},
 		},

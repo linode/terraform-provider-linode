@@ -9,10 +9,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasebackups/tmpl"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+
+	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 )
 
 var (
@@ -96,11 +97,7 @@ func TestAccDataSourcePostgresBackups_basic(t *testing.T) {
 					}
 
 					for {
-						list, err := client.ListPostgresDatabaseBackups(
-							context.Background(),
-							db.ID,
-							nil,
-						)
+						list, err := client.ListPostgresDatabaseBackups(context.Background(), db.ID, nil)
 						if err != nil {
 							t.Fatalf("failed to list database backups: %s", err)
 						}

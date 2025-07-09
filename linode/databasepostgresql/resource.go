@@ -51,10 +51,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	db, err := client.GetPostgresDatabase(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			log.Printf(
-				"[WARN] removing PostgreSQL database ID %q from state because it no longer exists",
-				d.Id(),
-			)
+			log.Printf("[WARN] removing PostgreSQL database ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
 		}
@@ -69,10 +66,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	creds, err := client.GetPostgresDatabaseCredentials(ctx, id)
 	if err != nil {
-		return diag.Errorf(
-			"failed to get credentials for the specified PostgreSQL database: %s",
-			err,
-		)
+		return diag.Errorf("failed to get credentials for the specified PostgreSQL database: %s", err)
 	}
 
 	d.Set("engine_id", helper.CreateLegacyDatabaseEngineSlug(db.Engine, db.Version))
@@ -101,34 +95,25 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func createResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	p, err := client.NewEventPollerWithoutEntity(
-		linodego.EntityDatabase,
-		linodego.ActionDatabaseCreate,
-	)
+	p, err := client.NewEventPollerWithoutEntity(linodego.EntityDatabase, linodego.ActionDatabaseCreate)
 	if err != nil {
 		return diag.Errorf("failed to initialize event poller: %s", err)
 	}
 
 	db, err := client.CreatePostgresDatabase(ctx, linodego.PostgresCreateOptions{
-		Label:           d.Get("label").(string),
-		Region:          d.Get("region").(string),
-		Type:            d.Get("type").(string),
-		Engine:          d.Get("engine_id").(string),
-		Encrypted:       d.Get("encrypted").(bool),
-		ClusterSize:     d.Get("cluster_size").(int),
-		ReplicationType: linodego.PostgresReplicationType(d.Get("replication_type").(string)),
-		ReplicationCommitType: linodego.PostgresCommitType(
-			d.Get("replication_commit_type").(string),
-		),
-		SSLConnection: d.Get("ssl_connection").(bool),
-		AllowList:     helper.ExpandStringSet(d.Get("allow_list").(*schema.Set)),
+		Label:                 d.Get("label").(string),
+		Region:                d.Get("region").(string),
+		Type:                  d.Get("type").(string),
+		Engine:                d.Get("engine_id").(string),
+		Encrypted:             d.Get("encrypted").(bool),
+		ClusterSize:           d.Get("cluster_size").(int),
+		ReplicationType:       linodego.PostgresReplicationType(d.Get("replication_type").(string)),
+		ReplicationCommitType: linodego.PostgresCommitType(d.Get("replication_commit_type").(string)),
+		SSLConnection:         d.Get("ssl_connection").(bool),
+		AllowList:             helper.ExpandStringSet(d.Get("allow_list").(*schema.Set)),
 	})
 	if err != nil {
 		return diag.Errorf("failed to create postgresql database: %s", err)
@@ -191,11 +176,7 @@ func createResource(
 	return readResource(ctx, d, meta)
 }
 
-func updateResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.Atoi(d.Id())
@@ -223,9 +204,7 @@ func updateResource(
 
 		updatesRaw := d.Get("updates")
 		if updatesRaw != nil && len(updatesRaw.([]interface{})) > 0 {
-			expanded, err := helper.ExpandMaintenanceWindow(
-				updatesRaw.([]interface{})[0].(map[string]interface{}),
-			)
+			expanded, err := helper.ExpandMaintenanceWindow(updatesRaw.([]interface{})[0].(map[string]interface{}))
 			if err != nil {
 				return diag.Errorf("failed to update maintenance window: %s", err)
 			}
@@ -259,11 +238,7 @@ func updateResource(
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -271,20 +246,16 @@ func deleteResource(
 	}
 
 	// We should retry on intermittent deletion errors
-	return diag.FromErr(
-		retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
-			err := client.DeletePostgresDatabase(ctx, id)
-			if err != nil {
-				if lerr, ok := err.(*linodego.Error); ok &&
-					lerr.Code == 500 && strings.Contains(lerr.Message, "Unable to delete instance") {
-					return retry.RetryableError(err)
-				}
-				return retry.NonRetryableError(
-					fmt.Errorf("failed to delete postgresql database %d: %s", id, err),
-				)
+	return diag.FromErr(retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+		err := client.DeletePostgresDatabase(ctx, id)
+		if err != nil {
+			if lerr, ok := err.(*linodego.Error); ok &&
+				lerr.Code == 500 && strings.Contains(lerr.Message, "Unable to delete instance") {
+				return retry.RetryableError(err)
 			}
+			return retry.NonRetryableError(fmt.Errorf("failed to delete postgresql database %d: %s", id, err))
+		}
 
-			return nil
-		}),
-	)
+		return nil
+	}))
 }

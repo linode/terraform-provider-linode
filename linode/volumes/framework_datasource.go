@@ -52,8 +52,7 @@ func (r *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(
-		data.parseVolumes(ctx, client, helper.AnySliceToTyped[linodego.Volume](result))...)
+	resp.Diagnostics.Append(data.parseVolumes(ctx, client, helper.AnySliceToTyped[linodego.Volume](result))...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

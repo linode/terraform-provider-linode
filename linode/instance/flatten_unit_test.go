@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/linode/linodego"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -369,12 +370,7 @@ func TestFlattenInstanceSpecs(t *testing.T) {
 	for i := 0; i < len(result); i++ {
 		for key, expectedValue := range expected[i] {
 			if resultValue, ok := result[i][key]; !ok || resultValue != expectedValue {
-				t.Errorf(
-					"Mismatch for key %s: Expected %d, but got %d",
-					key,
-					expectedValue,
-					resultValue,
-				)
+				t.Errorf("Mismatch for key %s: Expected %d, but got %d", key, expectedValue, resultValue)
 			}
 		}
 	}

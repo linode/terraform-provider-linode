@@ -50,11 +50,7 @@ func TestAccResourceNodeBalancerConfig_basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8080"),
-					resource.TestCheckResourceAttr(
-						resName,
-						"protocol",
-						string(linodego.ProtocolHTTP),
-					),
+					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTP)),
 					resource.TestCheckResourceAttr(resName, "check", string(linodego.CheckHTTP)),
 					resource.TestCheckResourceAttr(resName, "check_path", "/"),
 
@@ -98,21 +94,11 @@ func TestAccResourceNodeBalancerConfig_ssl(t *testing.T) {
 		ExternalProviders:         acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.SSL(
-					t,
-					nodebalancerName,
-					testRegion,
-					tmpl.TestCertifcate,
-					tmpl.TestPrivateKey,
-				),
+				Config:       tmpl.SSL(t, nodebalancerName, testRegion, tmpl.TestCertifcate, tmpl.TestPrivateKey),
 				ResourceName: resName,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkNodeBalancerConfigExists,
-					resource.TestCheckResourceAttr(
-						resName,
-						"protocol",
-						string(linodego.ProtocolHTTPS),
-					),
+					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTPS)),
 					resource.TestCheckResourceAttrSet(resName, "ssl_cert"),
 					resource.TestCheckResourceAttrSet(resName, "ssl_key"),
 				),
@@ -145,11 +131,7 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8080"),
-					resource.TestCheckResourceAttr(
-						resName,
-						"protocol",
-						string(linodego.ProtocolHTTP),
-					),
+					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTP)),
 					resource.TestCheckResourceAttr(resName, "check", string(linodego.CheckHTTP)),
 					resource.TestCheckResourceAttr(resName, "check_path", "/"),
 					resource.TestCheckResourceAttr(resName, "check_passive", "true"),
@@ -164,11 +146,7 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8088"),
-					resource.TestCheckResourceAttr(
-						resName,
-						"protocol",
-						string(linodego.ProtocolHTTP),
-					),
+					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTP)),
 					resource.TestCheckResourceAttr(resName, "check", string(linodego.CheckHTTP)),
 					resource.TestCheckResourceAttr(resName, "check_path", "/foo"),
 					resource.TestCheckResourceAttr(resName, "check_attempts", "3"),
@@ -177,11 +155,7 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "udp_check_port", "1234"),
 					resource.TestCheckResourceAttr(resName, "check_passive", "false"),
 
-					resource.TestCheckResourceAttr(
-						resName,
-						"stickiness",
-						string(linodego.StickinessHTTPCookie),
-					),
+					resource.TestCheckResourceAttr(resName, "stickiness", string(linodego.StickinessHTTPCookie)),
 				),
 			},
 		},
@@ -205,16 +179,8 @@ func TestAccResourceNodeBalancerConfig_proxyProtocol(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "80"),
-					resource.TestCheckResourceAttr(
-						resName,
-						"protocol",
-						string(linodego.ProtocolTCP),
-					),
-					resource.TestCheckResourceAttr(
-						resName,
-						"proxy_protocol",
-						string(linodego.ProxyProtocolV2),
-					),
+					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolTCP)),
+					resource.TestCheckResourceAttr(resName, "proxy_protocol", string(linodego.ProxyProtocolV2)),
 				),
 			},
 		},
@@ -324,11 +290,7 @@ func checkNodeBalancerConfigExists(s *terraform.State) error {
 
 		_, err = client.GetNodeBalancerConfig(context.Background(), nodebalancerID, id)
 		if err != nil {
-			return fmt.Errorf(
-				"Error retrieving state of NodeBalancer Config %s: %s",
-				rs.Primary.Attributes["label"],
-				err,
-			)
+			return fmt.Errorf("Error retrieving state of NodeBalancer Config %s: %s", rs.Primary.Attributes["label"], err)
 		}
 	}
 
@@ -381,10 +343,7 @@ func resourceImportStateID(s *terraform.State) (string, error) {
 		}
 		nodebalancerID, err := strconv.Atoi(rs.Primary.Attributes["nodebalancer_id"])
 		if err != nil {
-			return "", fmt.Errorf(
-				"Error parsing nodebalancer_id %v to int",
-				rs.Primary.Attributes["nodebalancer_id"],
-			)
+			return "", fmt.Errorf("Error parsing nodebalancer_id %v to int", rs.Primary.Attributes["nodebalancer_id"])
 		}
 		return fmt.Sprintf("%d,%d", nodebalancerID, id), nil
 	}

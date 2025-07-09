@@ -52,11 +52,7 @@ func TestAccResourcePG_basic(t *testing.T) {
 					checkPGExists,
 					resource.TestCheckResourceAttr(resName, "label", label),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(
-						resName,
-						"placement_group_type",
-						placementGroupType,
-					),
+					resource.TestCheckResourceAttr(resName, "placement_group_type", placementGroupType),
 					resource.TestCheckResourceAttr(resName, "placement_group_policy", "flexible"),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 				),
@@ -67,11 +63,7 @@ func TestAccResourcePG_basic(t *testing.T) {
 					checkPGExists,
 					resource.TestCheckResourceAttr(resName, "label", labelUpdated),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(
-						resName,
-						"placement_group_type",
-						placementGroupType,
-					),
+					resource.TestCheckResourceAttr(resName, "placement_group_type", placementGroupType),
 					resource.TestCheckResourceAttr(resName, "placement_group_policy", "flexible"),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 				),
@@ -100,11 +92,7 @@ func checkPGExists(s *terraform.State) error {
 
 		_, err = client.GetPlacementGroup(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf(
-				"Error retrieving state of Placement Group %s: %s",
-				rs.Primary.Attributes["label"],
-				err,
-			)
+			return fmt.Errorf("Error retrieving state of Placement Group %s: %s", rs.Primary.Attributes["label"], err)
 		}
 	}
 

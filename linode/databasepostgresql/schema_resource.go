@@ -74,10 +74,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Default:  "off",
 		ForceNew: true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.All(
-			validation.StringInSlice(
-				[]string{"on", "local", "remote_write", "remote_apply", "off"},
-				false,
-			),
+			validation.StringInSlice([]string{"on", "local", "remote_write", "remote_apply", "off"}, false),
 		)),
 	},
 	"encrypted": {

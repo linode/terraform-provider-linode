@@ -43,10 +43,7 @@ func (data *DataSourceModel) ParsePostgreSQLConfig(
 	}
 	data.PGLookout = *pgLookout
 
-	sharedBuffersPercentage := flattenSharedBuffersPercentage(
-		&config.SharedBuffersPercentage,
-		diags,
-	)
+	sharedBuffersPercentage := flattenSharedBuffersPercentage(&config.SharedBuffersPercentage, diags)
 	if diags.HasError() {
 		return
 	}
@@ -70,10 +67,7 @@ func (data *DataSourceModel) ParsePostgreSQLConfig(
 	data.ID = types.StringValue(id)
 }
 
-func flattenPGStatMonitorEnable(
-	pgStatMonitorEnable *linodego.PostgresDatabaseConfigInfoPGStatMonitorEnable,
-	diags *diag.Diagnostics,
-) *basetypes.ListValue {
+func flattenPGStatMonitorEnable(pgStatMonitorEnable *linodego.PostgresDatabaseConfigInfoPGStatMonitorEnable, diags *diag.Diagnostics) *basetypes.ListValue {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(pgStatMonitorEnable.Description),
 		"requires_restart": types.BoolValue(pgStatMonitorEnable.RequiresRestart),
@@ -96,14 +90,8 @@ func flattenPGStatMonitorEnable(
 	return &resultList
 }
 
-func flattenPGLookout(
-	pgLookout *linodego.PostgresDatabaseConfigInfoPGLookout,
-	diags *diag.Diagnostics,
-) *basetypes.ListValue {
-	maxFailoverReplicationTimeLag := flattenPGLookoutMaxFailoverReplicationTimeLag(
-		&pgLookout.PGLookoutMaxFailoverReplicationTimeLag,
-		diags,
-	)
+func flattenPGLookout(pgLookout *linodego.PostgresDatabaseConfigInfoPGLookout, diags *diag.Diagnostics) *basetypes.ListValue {
+	maxFailoverReplicationTimeLag := flattenPGLookoutMaxFailoverReplicationTimeLag(&pgLookout.PGLookoutMaxFailoverReplicationTimeLag, diags)
 	if maxFailoverReplicationTimeLag == nil {
 		return nil
 	}
@@ -128,10 +116,7 @@ func flattenPGLookout(
 	return &resultList
 }
 
-func flattenPGLookoutMaxFailoverReplicationTimeLag(
-	val *linodego.PGLookoutMaxFailoverReplicationTimeLag,
-	diags *diag.Diagnostics,
-) attr.Value {
+func flattenPGLookoutMaxFailoverReplicationTimeLag(val *linodego.PGLookoutMaxFailoverReplicationTimeLag, diags *diag.Diagnostics) attr.Value {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(val.Maximum),
@@ -147,10 +132,7 @@ func flattenPGLookoutMaxFailoverReplicationTimeLag(
 	return obj
 }
 
-func flattenSharedBuffersPercentage(
-	sharedBuffersPercentage *linodego.PostgresDatabaseConfigInfoSharedBuffersPercentage,
-	diags *diag.Diagnostics,
-) *basetypes.ListValue {
+func flattenSharedBuffersPercentage(sharedBuffersPercentage *linodego.PostgresDatabaseConfigInfoSharedBuffersPercentage, diags *diag.Diagnostics) *basetypes.ListValue {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(sharedBuffersPercentage.Description),
 		"example":          types.Float64Value(sharedBuffersPercentage.Example),
@@ -176,10 +158,7 @@ func flattenSharedBuffersPercentage(
 	return &resultList
 }
 
-func flattenWorkMem(
-	workMem *linodego.PostgresDatabaseConfigInfoWorkMem,
-	diags *diag.Diagnostics,
-) *basetypes.ListValue {
+func flattenWorkMem(workMem *linodego.PostgresDatabaseConfigInfoWorkMem, diags *diag.Diagnostics) *basetypes.ListValue {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(workMem.Description),
 		"example":          types.Int64Value(int64(workMem.Example)),
@@ -205,23 +184,16 @@ func flattenWorkMem(
 	return &resultList
 }
 
-func flattenPG(
-	postgres *linodego.PostgresDatabaseConfigInfoPG,
-	diags *diag.Diagnostics,
-) *basetypes.ListValue {
+func flattenPG(postgres *linodego.PostgresDatabaseConfigInfoPG, diags *diag.Diagnostics) *basetypes.ListValue {
 	result := make(map[string]attr.Value)
 
-	autovacuumAnalyzeScaleFactor, d := flattenAutovacuumAnalyzeScaleFactor(
-		&postgres.AutovacuumAnalyzeScaleFactor,
-	)
+	autovacuumAnalyzeScaleFactor, d := flattenAutovacuumAnalyzeScaleFactor(&postgres.AutovacuumAnalyzeScaleFactor)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
 	}
 
-	autovacuumAnalyzeThreshold, d := flattenAutovacuumAnalyzeThreshold(
-		&postgres.AutovacuumAnalyzeThreshold,
-	)
+	autovacuumAnalyzeThreshold, d := flattenAutovacuumAnalyzeThreshold(&postgres.AutovacuumAnalyzeThreshold)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
@@ -239,33 +211,25 @@ func flattenPG(
 		return nil
 	}
 
-	autovacuumVacuumCostDelay, d := flattenAutovacuumVacuumCostDelay(
-		&postgres.AutovacuumVacuumCostDelay,
-	)
+	autovacuumVacuumCostDelay, d := flattenAutovacuumVacuumCostDelay(&postgres.AutovacuumVacuumCostDelay)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
 	}
 
-	autovacuumVacuumCostLimit, d := flattenAutovacuumVacuumCostLimit(
-		&postgres.AutovacuumVacuumCostLimit,
-	)
+	autovacuumVacuumCostLimit, d := flattenAutovacuumVacuumCostLimit(&postgres.AutovacuumVacuumCostLimit)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
 	}
 
-	autovacuumVacuumScaleFactor, d := flattenAutovacuumVacuumScaleFactor(
-		&postgres.AutovacuumVacuumScaleFactor,
-	)
+	autovacuumVacuumScaleFactor, d := flattenAutovacuumVacuumScaleFactor(&postgres.AutovacuumVacuumScaleFactor)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
 	}
 
-	autovacuumVacuumThreshold, d := flattenAutovacuumVacuumThreshold(
-		&postgres.AutovacuumVacuumThreshold,
-	)
+	autovacuumVacuumThreshold, d := flattenAutovacuumVacuumThreshold(&postgres.AutovacuumVacuumThreshold)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
@@ -307,9 +271,7 @@ func flattenPG(
 		return nil
 	}
 
-	idleInTransactionSessionTimeout, d := flattenIdleInTransactionSessionTimeout(
-		&postgres.IdleInTransactionSessionTimeout,
-	)
+	idleInTransactionSessionTimeout, d := flattenIdleInTransactionSessionTimeout(&postgres.IdleInTransactionSessionTimeout)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
@@ -333,9 +295,7 @@ func flattenPG(
 		return nil
 	}
 
-	maxLogicalReplicationWorkers, d := flattenMaxLogicalReplicationWorkers(
-		&postgres.MaxLogicalReplicationWorkers,
-	)
+	maxLogicalReplicationWorkers, d := flattenMaxLogicalReplicationWorkers(&postgres.MaxLogicalReplicationWorkers)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
@@ -347,17 +307,13 @@ func flattenPG(
 		return nil
 	}
 
-	maxParallelWorkersPerGather, d := flattenMaxParallelWorkersPerGather(
-		&postgres.MaxParallelWorkersPerGather,
-	)
+	maxParallelWorkersPerGather, d := flattenMaxParallelWorkersPerGather(&postgres.MaxParallelWorkersPerGather)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
 	}
 
-	maxPredLocksPerTransaction, d := flattenMaxPredLocksPerTransaction(
-		&postgres.MaxPredLocksPerTransaction,
-	)
+	maxPredLocksPerTransaction, d := flattenMaxPredLocksPerTransaction(&postgres.MaxPredLocksPerTransaction)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
@@ -387,9 +343,7 @@ func flattenPG(
 		return nil
 	}
 
-	maxStandbyStreamingDelay, d := flattenMaxStandbyStreamingDelay(
-		&postgres.MaxStandbyStreamingDelay,
-	)
+	maxStandbyStreamingDelay, d := flattenMaxStandbyStreamingDelay(&postgres.MaxStandbyStreamingDelay)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
@@ -425,17 +379,13 @@ func flattenPG(
 		return nil
 	}
 
-	pgStatMonitorPGSMEnableQueryPlan, d := flattenPGStatMonitorPGSMEnableQueryPlan(
-		&postgres.PGStatMonitorPGSMEnableQueryPlan,
-	)
+	pgStatMonitorPGSMEnableQueryPlan, d := flattenPGStatMonitorPGSMEnableQueryPlan(&postgres.PGStatMonitorPGSMEnableQueryPlan)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
 	}
 
-	pgStatMonitorPGSMMaxBuckets, d := flattenPGStatMonitorPGSMMaxBuckets(
-		&postgres.PGStatMonitorPGSMMaxBuckets,
-	)
+	pgStatMonitorPGSMMaxBuckets, d := flattenPGStatMonitorPGSMMaxBuckets(&postgres.PGStatMonitorPGSMMaxBuckets)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
@@ -555,9 +505,7 @@ func flattenPG(
 	return &resultList
 }
 
-func flattenAutovacuumAnalyzeScaleFactor(
-	val *linodego.AutovacuumAnalyzeScaleFactor,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenAutovacuumAnalyzeScaleFactor(val *linodego.AutovacuumAnalyzeScaleFactor) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Float64Value(val.Maximum),
@@ -572,9 +520,7 @@ func flattenAutovacuumAnalyzeScaleFactor(
 	return &obj, nil
 }
 
-func flattenAutovacuumAnalyzeThreshold(
-	val *linodego.AutovacuumAnalyzeThreshold,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenAutovacuumAnalyzeThreshold(val *linodego.AutovacuumAnalyzeThreshold) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int32Value(val.Maximum),
@@ -589,9 +535,7 @@ func flattenAutovacuumAnalyzeThreshold(
 	return &obj, nil
 }
 
-func flattenAutovacuumMaxWorkers(
-	val *linodego.AutovacuumMaxWorkers,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenAutovacuumMaxWorkers(val *linodego.AutovacuumMaxWorkers) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -606,9 +550,7 @@ func flattenAutovacuumMaxWorkers(
 	return &obj, nil
 }
 
-func flattenAutovacuumNaptime(
-	val *linodego.AutovacuumNaptime,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenAutovacuumNaptime(val *linodego.AutovacuumNaptime) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -623,9 +565,7 @@ func flattenAutovacuumNaptime(
 	return &obj, nil
 }
 
-func flattenAutovacuumVacuumCostDelay(
-	val *linodego.AutovacuumVacuumCostDelay,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenAutovacuumVacuumCostDelay(val *linodego.AutovacuumVacuumCostDelay) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -640,9 +580,7 @@ func flattenAutovacuumVacuumCostDelay(
 	return &obj, nil
 }
 
-func flattenAutovacuumVacuumCostLimit(
-	val *linodego.AutovacuumVacuumCostLimit,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenAutovacuumVacuumCostLimit(val *linodego.AutovacuumVacuumCostLimit) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -657,9 +595,7 @@ func flattenAutovacuumVacuumCostLimit(
 	return &obj, nil
 }
 
-func flattenAutovacuumVacuumScaleFactor(
-	val *linodego.AutovacuumVacuumScaleFactor,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenAutovacuumVacuumScaleFactor(val *linodego.AutovacuumVacuumScaleFactor) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Float64Value(val.Maximum),
@@ -674,9 +610,7 @@ func flattenAutovacuumVacuumScaleFactor(
 	return &obj, nil
 }
 
-func flattenAutovacuumVacuumThreshold(
-	val *linodego.AutovacuumVacuumThreshold,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenAutovacuumVacuumThreshold(val *linodego.AutovacuumVacuumThreshold) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int32Value(val.Maximum),
@@ -707,9 +641,7 @@ func flattenBGWriterDelay(val *linodego.BGWriterDelay) (*basetypes.ObjectValue, 
 	return &obj, nil
 }
 
-func flattenBGWriterFlushAfter(
-	val *linodego.BGWriterFlushAfter,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenBGWriterFlushAfter(val *linodego.BGWriterFlushAfter) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -725,9 +657,7 @@ func flattenBGWriterFlushAfter(
 	return &obj, nil
 }
 
-func flattenBGWriterLRUMaxPages(
-	val *linodego.BGWriterLRUMaxPages,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenBGWriterLRUMaxPages(val *linodego.BGWriterLRUMaxPages) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -743,9 +673,7 @@ func flattenBGWriterLRUMaxPages(
 	return &obj, nil
 }
 
-func flattenBGWriterLRUMultiplier(
-	val *linodego.BGWriterLRUMultiplier,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenBGWriterLRUMultiplier(val *linodego.BGWriterLRUMultiplier) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Float64Value(val.Example),
@@ -761,9 +689,7 @@ func flattenBGWriterLRUMultiplier(
 	return &obj, nil
 }
 
-func flattenDeadlockTimeout(
-	val *linodego.DeadlockTimeout,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenDeadlockTimeout(val *linodego.DeadlockTimeout) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -779,9 +705,7 @@ func flattenDeadlockTimeout(
 	return &obj, nil
 }
 
-func flattenDefaultToastCompression(
-	val *linodego.DefaultToastCompression,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenDefaultToastCompression(val *linodego.DefaultToastCompression) (*basetypes.ObjectValue, diag.Diagnostics) {
 	enumVals := make([]attr.Value, len(val.Enum))
 	for i, s := range val.Enum {
 		enumVals[i] = types.StringValue(s)
@@ -800,9 +724,7 @@ func flattenDefaultToastCompression(
 	return &obj, nil
 }
 
-func flattenIdleInTransactionSessionTimeout(
-	val *linodego.IdleInTransactionSessionTimeout,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenIdleInTransactionSessionTimeout(val *linodego.IdleInTransactionSessionTimeout) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -831,9 +753,7 @@ func flattenJIT(val *linodego.JIT) (*basetypes.ObjectValue, diag.Diagnostics) {
 	return &obj, nil
 }
 
-func flattenMaxFilesPerProcess(
-	val *linodego.MaxFilesPerProcess,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenMaxFilesPerProcess(val *linodego.MaxFilesPerProcess) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -848,9 +768,7 @@ func flattenMaxFilesPerProcess(
 	return &obj, nil
 }
 
-func flattenMaxLocksPerTransaction(
-	val *linodego.MaxLocksPerTransaction,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenMaxLocksPerTransaction(val *linodego.MaxLocksPerTransaction) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -865,9 +783,7 @@ func flattenMaxLocksPerTransaction(
 	return &obj, nil
 }
 
-func flattenMaxLogicalReplicationWorkers(
-	val *linodego.MaxLogicalReplicationWorkers,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenMaxLogicalReplicationWorkers(val *linodego.MaxLogicalReplicationWorkers) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -882,9 +798,7 @@ func flattenMaxLogicalReplicationWorkers(
 	return &obj, nil
 }
 
-func flattenMaxParallelWorkers(
-	val *linodego.MaxParallelWorkers,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenMaxParallelWorkers(val *linodego.MaxParallelWorkers) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -899,9 +813,7 @@ func flattenMaxParallelWorkers(
 	return &obj, nil
 }
 
-func flattenMaxParallelWorkersPerGather(
-	val *linodego.MaxParallelWorkersPerGather,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenMaxParallelWorkersPerGather(val *linodego.MaxParallelWorkersPerGather) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -916,9 +828,7 @@ func flattenMaxParallelWorkersPerGather(
 	return &obj, nil
 }
 
-func flattenMaxPredLocksPerTransaction(
-	val *linodego.MaxPredLocksPerTransaction,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenMaxPredLocksPerTransaction(val *linodego.MaxPredLocksPerTransaction) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -933,9 +843,7 @@ func flattenMaxPredLocksPerTransaction(
 	return &obj, nil
 }
 
-func flattenMaxReplicationSlots(
-	val *linodego.MaxReplicationSlots,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenMaxReplicationSlots(val *linodego.MaxReplicationSlots) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -950,9 +858,7 @@ func flattenMaxReplicationSlots(
 	return &obj, nil
 }
 
-func flattenMaxSlotWALKeepSize(
-	val *linodego.MaxSlotWALKeepSize,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenMaxSlotWALKeepSize(val *linodego.MaxSlotWALKeepSize) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int32Value(int32(val.Maximum)),
@@ -982,9 +888,7 @@ func flattenMaxStackDepth(val *linodego.MaxStackDepth) (*basetypes.ObjectValue, 
 	return &obj, nil
 }
 
-func flattenMaxStandbyArchiveDelay(
-	val *linodego.MaxStandbyArchiveDelay,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenMaxStandbyArchiveDelay(val *linodego.MaxStandbyArchiveDelay) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -999,9 +903,7 @@ func flattenMaxStandbyArchiveDelay(
 	return &obj, nil
 }
 
-func flattenMaxStandbyStreamingDelay(
-	val *linodego.MaxStandbyStreamingDelay,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenMaxStandbyStreamingDelay(val *linodego.MaxStandbyStreamingDelay) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -1031,9 +933,7 @@ func flattenMaxWALSenders(val *linodego.MaxWALSenders) (*basetypes.ObjectValue, 
 	return &obj, nil
 }
 
-func flattenMaxWorkerProcesses(
-	val *linodego.MaxWorkerProcesses,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenMaxWorkerProcesses(val *linodego.MaxWorkerProcesses) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"maximum":          types.Int64Value(int64(val.Maximum)),
@@ -1048,9 +948,7 @@ func flattenMaxWorkerProcesses(
 	return &obj, nil
 }
 
-func flattenPasswordEncryption(
-	val *linodego.PasswordEncryption,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenPasswordEncryption(val *linodego.PasswordEncryption) (*basetypes.ObjectValue, diag.Diagnostics) {
 	enumVals := make([]attr.Value, len(val.Enum))
 	for i, s := range val.Enum {
 		enumVals[i] = types.StringValue(s)
@@ -1069,9 +967,7 @@ func flattenPasswordEncryption(
 	return &obj, nil
 }
 
-func flattenPGPartmanBGWInterval(
-	val *linodego.PGPartmanBGWInterval,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenPGPartmanBGWInterval(val *linodego.PGPartmanBGWInterval) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -1087,9 +983,7 @@ func flattenPGPartmanBGWInterval(
 	return &obj, nil
 }
 
-func flattenPGPartmanBGWRole(
-	val *linodego.PGPartmanBGWRole,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenPGPartmanBGWRole(val *linodego.PGPartmanBGWRole) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.StringValue(val.Example),
@@ -1105,9 +999,7 @@ func flattenPGPartmanBGWRole(
 	return &obj, nil
 }
 
-func flattenPGStatMonitorPGSMEnableQueryPlan(
-	val *linodego.PGStatMonitorPGSMEnableQueryPlan,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenPGStatMonitorPGSMEnableQueryPlan(val *linodego.PGStatMonitorPGSMEnableQueryPlan) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.BoolValue(val.Example),
@@ -1121,9 +1013,7 @@ func flattenPGStatMonitorPGSMEnableQueryPlan(
 	return &obj, nil
 }
 
-func flattenPGStatMonitorPGSMMaxBuckets(
-	val *linodego.PGStatMonitorPGSMMaxBuckets,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenPGStatMonitorPGSMMaxBuckets(val *linodego.PGStatMonitorPGSMMaxBuckets) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -1139,9 +1029,7 @@ func flattenPGStatMonitorPGSMMaxBuckets(
 	return &obj, nil
 }
 
-func flattenPGStatStatementsTrack(
-	val *linodego.PGStatStatementsTrack,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenPGStatStatementsTrack(val *linodego.PGStatStatementsTrack) (*basetypes.ObjectValue, diag.Diagnostics) {
 	enumVals := make([]attr.Value, len(val.Enum))
 	for i, s := range val.Enum {
 		enumVals[i] = types.StringValue(s)
@@ -1191,9 +1079,7 @@ func flattenTimezone(val *linodego.Timezone) (*basetypes.ObjectValue, diag.Diagn
 	return &obj, nil
 }
 
-func flattenTrackActivityQuerySize(
-	val *linodego.TrackActivityQuerySize,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenTrackActivityQuerySize(val *linodego.TrackActivityQuerySize) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -1209,9 +1095,7 @@ func flattenTrackActivityQuerySize(
 	return &obj, nil
 }
 
-func flattenTrackCommitTimestamp(
-	val *linodego.TrackCommitTimestamp,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenTrackCommitTimestamp(val *linodego.TrackCommitTimestamp) (*basetypes.ObjectValue, diag.Diagnostics) {
 	enumVals := make([]attr.Value, len(val.Enum))
 	for i, s := range val.Enum {
 		enumVals[i] = types.StringValue(s)
@@ -1230,9 +1114,7 @@ func flattenTrackCommitTimestamp(
 	return &obj, nil
 }
 
-func flattenTrackFunctions(
-	val *linodego.TrackFunctions,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenTrackFunctions(val *linodego.TrackFunctions) (*basetypes.ObjectValue, diag.Diagnostics) {
 	enumVals := make([]attr.Value, len(val.Enum))
 	for i, s := range val.Enum {
 		enumVals[i] = types.StringValue(s)
@@ -1269,9 +1151,7 @@ func flattenTrackIOTiming(val *linodego.TrackIOTiming) (*basetypes.ObjectValue, 
 	return &obj, nil
 }
 
-func flattenWALSenderTimeout(
-	val *linodego.WALSenderTimeout,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenWALSenderTimeout(val *linodego.WALSenderTimeout) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -1285,9 +1165,7 @@ func flattenWALSenderTimeout(
 	return &obj, nil
 }
 
-func flattenWALWriterDelay(
-	val *linodego.WALWriterDelay,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenWALWriterDelay(val *linodego.WALWriterDelay) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),

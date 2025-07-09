@@ -28,9 +28,7 @@ type ModelUpdates struct {
 
 func (m ModelUpdates) ToLinodego(d diag.Diagnostics) *linodego.DatabaseMaintenanceWindow {
 	return &linodego.DatabaseMaintenanceWindow{
-		DayOfWeek: linodego.DatabaseDayOfWeek(
-			helper.FrameworkSafeInt64ToInt(m.DayOfWeek.ValueInt64(), &d),
-		),
+		DayOfWeek: linodego.DatabaseDayOfWeek(helper.FrameworkSafeInt64ToInt(m.DayOfWeek.ValueInt64(), &d)),
 		Duration:  helper.FrameworkSafeInt64ToInt(m.Duration.ValueInt64(), &d),
 		Frequency: linodego.DatabaseMaintenanceFrequency(m.Frequency.ValueString()),
 		HourOfDay: helper.FrameworkSafeInt64ToInt(m.HourOfDay.ValueInt64(), &d),
@@ -184,11 +182,7 @@ func (m *Model) Flatten(
 	m.ID = helper.KeepOrUpdateString(m.ID, strconv.Itoa(db.ID), preserveKnown)
 
 	m.ClusterSize = helper.KeepOrUpdateInt64(m.ClusterSize, int64(db.ClusterSize), preserveKnown)
-	m.Created = helper.KeepOrUpdateValue(
-		m.Created,
-		timetypes.NewRFC3339TimePointerValue(db.Created),
-		preserveKnown,
-	)
+	m.Created = helper.KeepOrUpdateValue(m.Created, timetypes.NewRFC3339TimePointerValue(db.Created), preserveKnown)
 	m.Encrypted = helper.KeepOrUpdateBool(m.Encrypted, db.Encrypted, preserveKnown)
 	m.Engine = helper.KeepOrUpdateString(m.Engine, db.Engine, preserveKnown)
 	m.EngineID = helper.KeepOrUpdateString(
@@ -199,27 +193,15 @@ func (m *Model) Flatten(
 	m.HostPrimary = helper.KeepOrUpdateString(m.HostPrimary, db.Hosts.Primary, preserveKnown)
 	m.HostSecondary = helper.KeepOrUpdateString(m.HostSecondary, db.Hosts.Secondary, preserveKnown)
 	m.Label = helper.KeepOrUpdateString(m.Label, db.Label, preserveKnown)
-	m.OldestRestoreTime = helper.KeepOrUpdateValue(
-		m.OldestRestoreTime,
-		timetypes.NewRFC3339TimePointerValue(db.OldestRestoreTime),
-		preserveKnown,
-	)
+	m.OldestRestoreTime = helper.KeepOrUpdateValue(m.OldestRestoreTime, timetypes.NewRFC3339TimePointerValue(db.OldestRestoreTime), preserveKnown)
 	m.Platform = helper.KeepOrUpdateString(m.Platform, string(db.Platform), preserveKnown)
 	m.Port = helper.KeepOrUpdateInt64(m.Port, int64(db.Port), preserveKnown)
 	m.Region = helper.KeepOrUpdateString(m.Region, db.Region, preserveKnown)
 	m.SSLConnection = helper.KeepOrUpdateBool(m.SSLConnection, db.SSLConnection, preserveKnown)
 	m.Status = helper.KeepOrUpdateString(m.Status, string(db.Status), preserveKnown)
-	m.Suspended = helper.KeepOrUpdateBool(
-		m.Suspended,
-		helper.DatabaseStatusIsSuspended(db.Status),
-		preserveKnown,
-	)
+	m.Suspended = helper.KeepOrUpdateBool(m.Suspended, helper.DatabaseStatusIsSuspended(db.Status), preserveKnown)
 	m.Type = helper.KeepOrUpdateString(m.Type, db.Type, preserveKnown)
-	m.Updated = helper.KeepOrUpdateValue(
-		m.Updated,
-		timetypes.NewRFC3339TimePointerValue(db.Updated),
-		preserveKnown,
-	)
+	m.Updated = helper.KeepOrUpdateValue(m.Updated, timetypes.NewRFC3339TimePointerValue(db.Updated), preserveKnown)
 	m.Version = helper.KeepOrUpdateString(m.Version, db.Version, preserveKnown)
 
 	// SSL and credentials may be nil if the database is suspended
@@ -306,241 +288,53 @@ func (m *Model) Flatten(
 	d.Append(rd...)
 	m.Updates = helper.KeepOrUpdateValue(m.Updates, updatesObject, preserveKnown)
 
-	m.EngineConfigPGAutovacuumAnalyzeScaleFactor = helper.KeepOrUpdateFloat64Pointer(
-		m.EngineConfigPGAutovacuumAnalyzeScaleFactor,
-		db.EngineConfig.PG.AutovacuumAnalyzeScaleFactor,
-		preserveKnown,
-	)
-	m.EngineConfigPGAutovacuumAnalyzeThreshold = helper.KeepOrUpdateInt32Pointer(
-		m.EngineConfigPGAutovacuumAnalyzeThreshold,
-		db.EngineConfig.PG.AutovacuumAnalyzeThreshold,
-		preserveKnown,
-	)
-	m.EngineConfigPGAutovacuumMaxWorkers = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGAutovacuumMaxWorkers,
-		db.EngineConfig.PG.AutovacuumMaxWorkers,
-		preserveKnown,
-	)
-	m.EngineConfigPGAutovacuumNaptime = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGAutovacuumNaptime,
-		db.EngineConfig.PG.AutovacuumNaptime,
-		preserveKnown,
-	)
-	m.EngineConfigPGAutovacuumVacuumCostDelay = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGAutovacuumVacuumCostDelay,
-		db.EngineConfig.PG.AutovacuumVacuumCostDelay,
-		preserveKnown,
-	)
-	m.EngineConfigPGAutovacuumVacuumCostLimit = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGAutovacuumVacuumCostLimit,
-		db.EngineConfig.PG.AutovacuumVacuumCostLimit,
-		preserveKnown,
-	)
-	m.EngineConfigPGAutovacuumVacuumScaleFactor = helper.KeepOrUpdateFloat64Pointer(
-		m.EngineConfigPGAutovacuumVacuumScaleFactor,
-		db.EngineConfig.PG.AutovacuumVacuumScaleFactor,
-		preserveKnown,
-	)
-	m.EngineConfigPGAutovacuumVacuumThreshold = helper.KeepOrUpdateInt32Pointer(
-		m.EngineConfigPGAutovacuumVacuumThreshold,
-		db.EngineConfig.PG.AutovacuumVacuumThreshold,
-		preserveKnown,
-	)
-	m.EngineConfigPGBGWriterDelay = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGBGWriterDelay,
-		db.EngineConfig.PG.BGWriterDelay,
-		preserveKnown,
-	)
-	m.EngineConfigPGBGWriterFlushAfter = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGBGWriterFlushAfter,
-		db.EngineConfig.PG.BGWriterFlushAfter,
-		preserveKnown,
-	)
-	m.EngineConfigPGBGWriterLRUMaxpages = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGBGWriterLRUMaxpages,
-		db.EngineConfig.PG.BGWriterLRUMaxPages,
-		preserveKnown,
-	)
-	m.EngineConfigPGBGWriterLRUMultiplier = helper.KeepOrUpdateFloat64Pointer(
-		m.EngineConfigPGBGWriterLRUMultiplier,
-		db.EngineConfig.PG.BGWriterLRUMultiplier,
-		preserveKnown,
-	)
-	m.EngineConfigPGDeadlockTimeout = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGDeadlockTimeout,
-		db.EngineConfig.PG.DeadlockTimeout,
-		preserveKnown,
-	)
-	m.EngineConfigPGDefaultToastCompression = helper.KeepOrUpdateStringPointer(
-		m.EngineConfigPGDefaultToastCompression,
-		db.EngineConfig.PG.DefaultToastCompression,
-		preserveKnown,
-	)
-	m.EngineConfigPGIdleInTransactionSessionTimeout = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGIdleInTransactionSessionTimeout,
-		db.EngineConfig.PG.IdleInTransactionSessionTimeout,
-		preserveKnown,
-	)
-	m.EngineConfigPGJIT = helper.KeepOrUpdateBoolPointer(
-		m.EngineConfigPGJIT,
-		db.EngineConfig.PG.JIT,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxFilesPerProcess = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGMaxFilesPerProcess,
-		db.EngineConfig.PG.MaxFilesPerProcess,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxLocksPerTransaction = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGMaxLocksPerTransaction,
-		db.EngineConfig.PG.MaxLocksPerTransaction,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxLogicalReplicationWorkers = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGMaxLogicalReplicationWorkers,
-		db.EngineConfig.PG.MaxLogicalReplicationWorkers,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxParallelWorkers = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGMaxParallelWorkers,
-		db.EngineConfig.PG.MaxParallelWorkers,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxParallelWorkersPerGather = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGMaxParallelWorkersPerGather,
-		db.EngineConfig.PG.MaxParallelWorkersPerGather,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxPredLocksPerTransaction = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGMaxPredLocksPerTransaction,
-		db.EngineConfig.PG.MaxPredLocksPerTransaction,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxReplicationSlots = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGMaxReplicationSlots,
-		db.EngineConfig.PG.MaxReplicationSlots,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxSlotWALKeepSize = helper.KeepOrUpdateInt32Pointer(
-		m.EngineConfigPGMaxSlotWALKeepSize,
-		db.EngineConfig.PG.MaxSlotWALKeepSize,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxStackDepth = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGMaxStackDepth,
-		db.EngineConfig.PG.MaxStackDepth,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxStandbyArchiveDelay = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGMaxStandbyArchiveDelay,
-		db.EngineConfig.PG.MaxStandbyArchiveDelay,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxStandbyStreamingDelay = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGMaxStandbyStreamingDelay,
-		db.EngineConfig.PG.MaxStandbyStreamingDelay,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxWALSenders = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGMaxWALSenders,
-		db.EngineConfig.PG.MaxWALSenders,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxWorkerProcesses = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGMaxWorkerProcesses,
-		db.EngineConfig.PG.MaxWorkerProcesses,
-		preserveKnown,
-	)
-	m.EngineConfigPGPasswordEncryption = helper.KeepOrUpdateStringPointer(
-		m.EngineConfigPGPasswordEncryption,
-		db.EngineConfig.PG.PasswordEncryption,
-		preserveKnown,
-	)
-	m.EngineConfigPGPGPartmanBGWInterval = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGPGPartmanBGWInterval,
-		db.EngineConfig.PG.PGPartmanBGWInterval,
-		preserveKnown,
-	)
-	m.EngineConfigPGPGPartmanBGWRole = helper.KeepOrUpdateStringPointer(
-		m.EngineConfigPGPGPartmanBGWRole,
-		db.EngineConfig.PG.PGPartmanBGWRole,
-		preserveKnown,
-	)
-	m.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan = helper.KeepOrUpdateBoolPointer(
-		m.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan,
-		db.EngineConfig.PG.PGStatMonitorPGSMEnableQueryPlan,
-		preserveKnown,
-	)
-	m.EngineConfigPGPGStatMonitorPGSMMaxBuckets = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGPGStatMonitorPGSMMaxBuckets,
-		db.EngineConfig.PG.PGStatMonitorPGSMMaxBuckets,
-		preserveKnown,
-	)
-	m.EngineConfigPGPGStatStatementsTrack = helper.KeepOrUpdateStringPointer(
-		m.EngineConfigPGPGStatStatementsTrack,
-		db.EngineConfig.PG.PGStatStatementsTrack,
-		preserveKnown,
-	)
-	m.EngineConfigPGTempFileLimit = helper.KeepOrUpdateInt32Pointer(
-		m.EngineConfigPGTempFileLimit,
-		db.EngineConfig.PG.TempFileLimit,
-		preserveKnown,
-	)
-	m.EngineConfigPGTimezone = helper.KeepOrUpdateStringPointer(
-		m.EngineConfigPGTimezone,
-		db.EngineConfig.PG.Timezone,
-		preserveKnown,
-	)
-	m.EngineConfigPGTrackActivityQuerySize = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGTrackActivityQuerySize,
-		db.EngineConfig.PG.TrackActivityQuerySize,
-		preserveKnown,
-	)
-	m.EngineConfigPGTrackCommitTimestamp = helper.KeepOrUpdateStringPointer(
-		m.EngineConfigPGTrackCommitTimestamp,
-		db.EngineConfig.PG.TrackCommitTimestamp,
-		preserveKnown,
-	)
-	m.EngineConfigPGTrackFunctions = helper.KeepOrUpdateStringPointer(
-		m.EngineConfigPGTrackFunctions,
-		db.EngineConfig.PG.TrackFunctions,
-		preserveKnown,
-	)
-	m.EngineConfigPGTrackIOTiming = helper.KeepOrUpdateStringPointer(
-		m.EngineConfigPGTrackIOTiming,
-		db.EngineConfig.PG.TrackIOTiming,
-		preserveKnown,
-	)
-	m.EngineConfigPGWALSenderTimeout = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGWALSenderTimeout,
-		db.EngineConfig.PG.WALSenderTimeout,
-		preserveKnown,
-	)
-	m.EngineConfigPGWALWriterDelay = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigPGWALWriterDelay,
-		db.EngineConfig.PG.WALWriterDelay,
-		preserveKnown,
-	)
-	m.EngineConfigPGStatMonitorEnable = helper.KeepOrUpdateBoolPointer(
-		m.EngineConfigPGStatMonitorEnable,
-		db.EngineConfig.PGStatMonitorEnable,
-		preserveKnown,
-	)
-	m.EngineConfigPGLookoutMaxFailoverReplicationTimeLag = helper.KeepOrUpdateInt64Pointer(
-		m.EngineConfigPGLookoutMaxFailoverReplicationTimeLag,
-		db.EngineConfig.PGLookout.MaxFailoverReplicationTimeLag,
-		preserveKnown,
-	)
-	m.EngineConfigSharedBuffersPercentage = helper.KeepOrUpdateFloat64Pointer(
-		m.EngineConfigSharedBuffersPercentage,
-		db.EngineConfig.SharedBuffersPercentage,
-		preserveKnown,
-	)
-	m.EngineConfigWorkMem = helper.KeepOrUpdateIntPointer(
-		m.EngineConfigWorkMem,
-		db.EngineConfig.WorkMem,
-		preserveKnown,
-	)
+	m.EngineConfigPGAutovacuumAnalyzeScaleFactor = helper.KeepOrUpdateFloat64Pointer(m.EngineConfigPGAutovacuumAnalyzeScaleFactor, db.EngineConfig.PG.AutovacuumAnalyzeScaleFactor, preserveKnown)
+	m.EngineConfigPGAutovacuumAnalyzeThreshold = helper.KeepOrUpdateInt32Pointer(m.EngineConfigPGAutovacuumAnalyzeThreshold, db.EngineConfig.PG.AutovacuumAnalyzeThreshold, preserveKnown)
+	m.EngineConfigPGAutovacuumMaxWorkers = helper.KeepOrUpdateIntPointer(m.EngineConfigPGAutovacuumMaxWorkers, db.EngineConfig.PG.AutovacuumMaxWorkers, preserveKnown)
+	m.EngineConfigPGAutovacuumNaptime = helper.KeepOrUpdateIntPointer(m.EngineConfigPGAutovacuumNaptime, db.EngineConfig.PG.AutovacuumNaptime, preserveKnown)
+	m.EngineConfigPGAutovacuumVacuumCostDelay = helper.KeepOrUpdateIntPointer(m.EngineConfigPGAutovacuumVacuumCostDelay, db.EngineConfig.PG.AutovacuumVacuumCostDelay, preserveKnown)
+	m.EngineConfigPGAutovacuumVacuumCostLimit = helper.KeepOrUpdateIntPointer(m.EngineConfigPGAutovacuumVacuumCostLimit, db.EngineConfig.PG.AutovacuumVacuumCostLimit, preserveKnown)
+	m.EngineConfigPGAutovacuumVacuumScaleFactor = helper.KeepOrUpdateFloat64Pointer(m.EngineConfigPGAutovacuumVacuumScaleFactor, db.EngineConfig.PG.AutovacuumVacuumScaleFactor, preserveKnown)
+	m.EngineConfigPGAutovacuumVacuumThreshold = helper.KeepOrUpdateInt32Pointer(m.EngineConfigPGAutovacuumVacuumThreshold, db.EngineConfig.PG.AutovacuumVacuumThreshold, preserveKnown)
+	m.EngineConfigPGBGWriterDelay = helper.KeepOrUpdateIntPointer(m.EngineConfigPGBGWriterDelay, db.EngineConfig.PG.BGWriterDelay, preserveKnown)
+	m.EngineConfigPGBGWriterFlushAfter = helper.KeepOrUpdateIntPointer(m.EngineConfigPGBGWriterFlushAfter, db.EngineConfig.PG.BGWriterFlushAfter, preserveKnown)
+	m.EngineConfigPGBGWriterLRUMaxpages = helper.KeepOrUpdateIntPointer(m.EngineConfigPGBGWriterLRUMaxpages, db.EngineConfig.PG.BGWriterLRUMaxPages, preserveKnown)
+	m.EngineConfigPGBGWriterLRUMultiplier = helper.KeepOrUpdateFloat64Pointer(m.EngineConfigPGBGWriterLRUMultiplier, db.EngineConfig.PG.BGWriterLRUMultiplier, preserveKnown)
+	m.EngineConfigPGDeadlockTimeout = helper.KeepOrUpdateIntPointer(m.EngineConfigPGDeadlockTimeout, db.EngineConfig.PG.DeadlockTimeout, preserveKnown)
+	m.EngineConfigPGDefaultToastCompression = helper.KeepOrUpdateStringPointer(m.EngineConfigPGDefaultToastCompression, db.EngineConfig.PG.DefaultToastCompression, preserveKnown)
+	m.EngineConfigPGIdleInTransactionSessionTimeout = helper.KeepOrUpdateIntPointer(m.EngineConfigPGIdleInTransactionSessionTimeout, db.EngineConfig.PG.IdleInTransactionSessionTimeout, preserveKnown)
+	m.EngineConfigPGJIT = helper.KeepOrUpdateBoolPointer(m.EngineConfigPGJIT, db.EngineConfig.PG.JIT, preserveKnown)
+	m.EngineConfigPGMaxFilesPerProcess = helper.KeepOrUpdateIntPointer(m.EngineConfigPGMaxFilesPerProcess, db.EngineConfig.PG.MaxFilesPerProcess, preserveKnown)
+	m.EngineConfigPGMaxLocksPerTransaction = helper.KeepOrUpdateIntPointer(m.EngineConfigPGMaxLocksPerTransaction, db.EngineConfig.PG.MaxLocksPerTransaction, preserveKnown)
+	m.EngineConfigPGMaxLogicalReplicationWorkers = helper.KeepOrUpdateIntPointer(m.EngineConfigPGMaxLogicalReplicationWorkers, db.EngineConfig.PG.MaxLogicalReplicationWorkers, preserveKnown)
+	m.EngineConfigPGMaxParallelWorkers = helper.KeepOrUpdateIntPointer(m.EngineConfigPGMaxParallelWorkers, db.EngineConfig.PG.MaxParallelWorkers, preserveKnown)
+	m.EngineConfigPGMaxParallelWorkersPerGather = helper.KeepOrUpdateIntPointer(m.EngineConfigPGMaxParallelWorkersPerGather, db.EngineConfig.PG.MaxParallelWorkersPerGather, preserveKnown)
+	m.EngineConfigPGMaxPredLocksPerTransaction = helper.KeepOrUpdateIntPointer(m.EngineConfigPGMaxPredLocksPerTransaction, db.EngineConfig.PG.MaxPredLocksPerTransaction, preserveKnown)
+	m.EngineConfigPGMaxReplicationSlots = helper.KeepOrUpdateIntPointer(m.EngineConfigPGMaxReplicationSlots, db.EngineConfig.PG.MaxReplicationSlots, preserveKnown)
+	m.EngineConfigPGMaxSlotWALKeepSize = helper.KeepOrUpdateInt32Pointer(m.EngineConfigPGMaxSlotWALKeepSize, db.EngineConfig.PG.MaxSlotWALKeepSize, preserveKnown)
+	m.EngineConfigPGMaxStackDepth = helper.KeepOrUpdateIntPointer(m.EngineConfigPGMaxStackDepth, db.EngineConfig.PG.MaxStackDepth, preserveKnown)
+	m.EngineConfigPGMaxStandbyArchiveDelay = helper.KeepOrUpdateIntPointer(m.EngineConfigPGMaxStandbyArchiveDelay, db.EngineConfig.PG.MaxStandbyArchiveDelay, preserveKnown)
+	m.EngineConfigPGMaxStandbyStreamingDelay = helper.KeepOrUpdateIntPointer(m.EngineConfigPGMaxStandbyStreamingDelay, db.EngineConfig.PG.MaxStandbyStreamingDelay, preserveKnown)
+	m.EngineConfigPGMaxWALSenders = helper.KeepOrUpdateIntPointer(m.EngineConfigPGMaxWALSenders, db.EngineConfig.PG.MaxWALSenders, preserveKnown)
+	m.EngineConfigPGMaxWorkerProcesses = helper.KeepOrUpdateIntPointer(m.EngineConfigPGMaxWorkerProcesses, db.EngineConfig.PG.MaxWorkerProcesses, preserveKnown)
+	m.EngineConfigPGPasswordEncryption = helper.KeepOrUpdateStringPointer(m.EngineConfigPGPasswordEncryption, db.EngineConfig.PG.PasswordEncryption, preserveKnown)
+	m.EngineConfigPGPGPartmanBGWInterval = helper.KeepOrUpdateIntPointer(m.EngineConfigPGPGPartmanBGWInterval, db.EngineConfig.PG.PGPartmanBGWInterval, preserveKnown)
+	m.EngineConfigPGPGPartmanBGWRole = helper.KeepOrUpdateStringPointer(m.EngineConfigPGPGPartmanBGWRole, db.EngineConfig.PG.PGPartmanBGWRole, preserveKnown)
+	m.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan = helper.KeepOrUpdateBoolPointer(m.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan, db.EngineConfig.PG.PGStatMonitorPGSMEnableQueryPlan, preserveKnown)
+	m.EngineConfigPGPGStatMonitorPGSMMaxBuckets = helper.KeepOrUpdateIntPointer(m.EngineConfigPGPGStatMonitorPGSMMaxBuckets, db.EngineConfig.PG.PGStatMonitorPGSMMaxBuckets, preserveKnown)
+	m.EngineConfigPGPGStatStatementsTrack = helper.KeepOrUpdateStringPointer(m.EngineConfigPGPGStatStatementsTrack, db.EngineConfig.PG.PGStatStatementsTrack, preserveKnown)
+	m.EngineConfigPGTempFileLimit = helper.KeepOrUpdateInt32Pointer(m.EngineConfigPGTempFileLimit, db.EngineConfig.PG.TempFileLimit, preserveKnown)
+	m.EngineConfigPGTimezone = helper.KeepOrUpdateStringPointer(m.EngineConfigPGTimezone, db.EngineConfig.PG.Timezone, preserveKnown)
+	m.EngineConfigPGTrackActivityQuerySize = helper.KeepOrUpdateIntPointer(m.EngineConfigPGTrackActivityQuerySize, db.EngineConfig.PG.TrackActivityQuerySize, preserveKnown)
+	m.EngineConfigPGTrackCommitTimestamp = helper.KeepOrUpdateStringPointer(m.EngineConfigPGTrackCommitTimestamp, db.EngineConfig.PG.TrackCommitTimestamp, preserveKnown)
+	m.EngineConfigPGTrackFunctions = helper.KeepOrUpdateStringPointer(m.EngineConfigPGTrackFunctions, db.EngineConfig.PG.TrackFunctions, preserveKnown)
+	m.EngineConfigPGTrackIOTiming = helper.KeepOrUpdateStringPointer(m.EngineConfigPGTrackIOTiming, db.EngineConfig.PG.TrackIOTiming, preserveKnown)
+	m.EngineConfigPGWALSenderTimeout = helper.KeepOrUpdateIntPointer(m.EngineConfigPGWALSenderTimeout, db.EngineConfig.PG.WALSenderTimeout, preserveKnown)
+	m.EngineConfigPGWALWriterDelay = helper.KeepOrUpdateIntPointer(m.EngineConfigPGWALWriterDelay, db.EngineConfig.PG.WALWriterDelay, preserveKnown)
+	m.EngineConfigPGStatMonitorEnable = helper.KeepOrUpdateBoolPointer(m.EngineConfigPGStatMonitorEnable, db.EngineConfig.PGStatMonitorEnable, preserveKnown)
+	m.EngineConfigPGLookoutMaxFailoverReplicationTimeLag = helper.KeepOrUpdateInt64Pointer(m.EngineConfigPGLookoutMaxFailoverReplicationTimeLag, db.EngineConfig.PGLookout.MaxFailoverReplicationTimeLag, preserveKnown)
+	m.EngineConfigSharedBuffersPercentage = helper.KeepOrUpdateFloat64Pointer(m.EngineConfigSharedBuffersPercentage, db.EngineConfig.SharedBuffersPercentage, preserveKnown)
+	m.EngineConfigWorkMem = helper.KeepOrUpdateIntPointer(m.EngineConfigWorkMem, db.EngineConfig.WorkMem, preserveKnown)
 
 	pendingObjects := helper.MapSlice(
 		db.Updates.Pending,
@@ -585,25 +379,13 @@ func (m *Model) CopyFrom(other *Model, preserveKnown bool) {
 	m.Encrypted = helper.KeepOrUpdateValue(m.Encrypted, other.Encrypted, preserveKnown)
 	m.Engine = helper.KeepOrUpdateValue(m.Engine, other.Engine, preserveKnown)
 	m.EngineID = helper.KeepOrUpdateValue(m.EngineID, other.EngineID, preserveKnown)
-	m.ForkRestoreTime = helper.KeepOrUpdateValue(
-		m.ForkRestoreTime,
-		other.ForkRestoreTime,
-		preserveKnown,
-	)
+	m.ForkRestoreTime = helper.KeepOrUpdateValue(m.ForkRestoreTime, other.ForkRestoreTime, preserveKnown)
 	m.HostPrimary = helper.KeepOrUpdateValue(m.HostPrimary, other.HostPrimary, preserveKnown)
 	m.HostSecondary = helper.KeepOrUpdateValue(m.HostSecondary, other.HostSecondary, preserveKnown)
 	m.Label = helper.KeepOrUpdateValue(m.Label, other.Label, preserveKnown)
 	m.Members = helper.KeepOrUpdateValue(m.Members, other.Members, preserveKnown)
-	m.OldestRestoreTime = helper.KeepOrUpdateValue(
-		m.OldestRestoreTime,
-		other.OldestRestoreTime,
-		preserveKnown,
-	)
-	m.PendingUpdates = helper.KeepOrUpdateValue(
-		m.PendingUpdates,
-		other.PendingUpdates,
-		preserveKnown,
-	)
+	m.OldestRestoreTime = helper.KeepOrUpdateValue(m.OldestRestoreTime, other.OldestRestoreTime, preserveKnown)
+	m.PendingUpdates = helper.KeepOrUpdateValue(m.PendingUpdates, other.PendingUpdates, preserveKnown)
 	m.Platform = helper.KeepOrUpdateValue(m.Platform, other.Platform, preserveKnown)
 	m.Port = helper.KeepOrUpdateValue(m.Port, other.Port, preserveKnown)
 	m.Region = helper.KeepOrUpdateValue(m.Region, other.Region, preserveKnown)
@@ -617,241 +399,53 @@ func (m *Model) CopyFrom(other *Model, preserveKnown bool) {
 	m.Updates = helper.KeepOrUpdateValue(m.Updates, other.Updates, preserveKnown)
 	m.Version = helper.KeepOrUpdateValue(m.Version, other.Version, preserveKnown)
 
-	m.EngineConfigPGAutovacuumAnalyzeScaleFactor = helper.KeepOrUpdateValue(
-		m.EngineConfigPGAutovacuumAnalyzeScaleFactor,
-		other.EngineConfigPGAutovacuumAnalyzeScaleFactor,
-		preserveKnown,
-	)
-	m.EngineConfigPGAutovacuumAnalyzeThreshold = helper.KeepOrUpdateValue(
-		m.EngineConfigPGAutovacuumAnalyzeThreshold,
-		other.EngineConfigPGAutovacuumAnalyzeThreshold,
-		preserveKnown,
-	)
-	m.EngineConfigPGAutovacuumMaxWorkers = helper.KeepOrUpdateValue(
-		m.EngineConfigPGAutovacuumMaxWorkers,
-		other.EngineConfigPGAutovacuumMaxWorkers,
-		preserveKnown,
-	)
-	m.EngineConfigPGAutovacuumNaptime = helper.KeepOrUpdateValue(
-		m.EngineConfigPGAutovacuumNaptime,
-		other.EngineConfigPGAutovacuumNaptime,
-		preserveKnown,
-	)
-	m.EngineConfigPGAutovacuumVacuumCostDelay = helper.KeepOrUpdateValue(
-		m.EngineConfigPGAutovacuumVacuumCostDelay,
-		other.EngineConfigPGAutovacuumVacuumCostDelay,
-		preserveKnown,
-	)
-	m.EngineConfigPGAutovacuumVacuumCostLimit = helper.KeepOrUpdateValue(
-		m.EngineConfigPGAutovacuumVacuumCostLimit,
-		other.EngineConfigPGAutovacuumVacuumCostLimit,
-		preserveKnown,
-	)
-	m.EngineConfigPGAutovacuumVacuumScaleFactor = helper.KeepOrUpdateValue(
-		m.EngineConfigPGAutovacuumVacuumScaleFactor,
-		other.EngineConfigPGAutovacuumVacuumScaleFactor,
-		preserveKnown,
-	)
-	m.EngineConfigPGAutovacuumVacuumThreshold = helper.KeepOrUpdateValue(
-		m.EngineConfigPGAutovacuumVacuumThreshold,
-		other.EngineConfigPGAutovacuumVacuumThreshold,
-		preserveKnown,
-	)
-	m.EngineConfigPGBGWriterDelay = helper.KeepOrUpdateValue(
-		m.EngineConfigPGBGWriterDelay,
-		other.EngineConfigPGBGWriterDelay,
-		preserveKnown,
-	)
-	m.EngineConfigPGBGWriterFlushAfter = helper.KeepOrUpdateValue(
-		m.EngineConfigPGBGWriterFlushAfter,
-		other.EngineConfigPGBGWriterFlushAfter,
-		preserveKnown,
-	)
-	m.EngineConfigPGBGWriterLRUMaxpages = helper.KeepOrUpdateValue(
-		m.EngineConfigPGBGWriterLRUMaxpages,
-		other.EngineConfigPGBGWriterLRUMaxpages,
-		preserveKnown,
-	)
-	m.EngineConfigPGBGWriterLRUMultiplier = helper.KeepOrUpdateValue(
-		m.EngineConfigPGBGWriterLRUMultiplier,
-		other.EngineConfigPGBGWriterLRUMultiplier,
-		preserveKnown,
-	)
-	m.EngineConfigPGDeadlockTimeout = helper.KeepOrUpdateValue(
-		m.EngineConfigPGDeadlockTimeout,
-		other.EngineConfigPGDeadlockTimeout,
-		preserveKnown,
-	)
-	m.EngineConfigPGDefaultToastCompression = helper.KeepOrUpdateValue(
-		m.EngineConfigPGDefaultToastCompression,
-		other.EngineConfigPGDefaultToastCompression,
-		preserveKnown,
-	)
-	m.EngineConfigPGIdleInTransactionSessionTimeout = helper.KeepOrUpdateValue(
-		m.EngineConfigPGIdleInTransactionSessionTimeout,
-		other.EngineConfigPGIdleInTransactionSessionTimeout,
-		preserveKnown,
-	)
-	m.EngineConfigPGJIT = helper.KeepOrUpdateValue(
-		m.EngineConfigPGJIT,
-		other.EngineConfigPGJIT,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxFilesPerProcess = helper.KeepOrUpdateValue(
-		m.EngineConfigPGMaxFilesPerProcess,
-		other.EngineConfigPGMaxFilesPerProcess,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxLocksPerTransaction = helper.KeepOrUpdateValue(
-		m.EngineConfigPGMaxLocksPerTransaction,
-		other.EngineConfigPGMaxLocksPerTransaction,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxLogicalReplicationWorkers = helper.KeepOrUpdateValue(
-		m.EngineConfigPGMaxLogicalReplicationWorkers,
-		other.EngineConfigPGMaxLogicalReplicationWorkers,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxParallelWorkers = helper.KeepOrUpdateValue(
-		m.EngineConfigPGMaxParallelWorkers,
-		other.EngineConfigPGMaxParallelWorkers,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxParallelWorkersPerGather = helper.KeepOrUpdateValue(
-		m.EngineConfigPGMaxParallelWorkersPerGather,
-		other.EngineConfigPGMaxParallelWorkersPerGather,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxPredLocksPerTransaction = helper.KeepOrUpdateValue(
-		m.EngineConfigPGMaxPredLocksPerTransaction,
-		other.EngineConfigPGMaxPredLocksPerTransaction,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxReplicationSlots = helper.KeepOrUpdateValue(
-		m.EngineConfigPGMaxReplicationSlots,
-		other.EngineConfigPGMaxReplicationSlots,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxSlotWALKeepSize = helper.KeepOrUpdateValue(
-		m.EngineConfigPGMaxSlotWALKeepSize,
-		other.EngineConfigPGMaxSlotWALKeepSize,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxStackDepth = helper.KeepOrUpdateValue(
-		m.EngineConfigPGMaxStackDepth,
-		other.EngineConfigPGMaxStackDepth,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxStandbyArchiveDelay = helper.KeepOrUpdateValue(
-		m.EngineConfigPGMaxStandbyArchiveDelay,
-		other.EngineConfigPGMaxStandbyArchiveDelay,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxStandbyStreamingDelay = helper.KeepOrUpdateValue(
-		m.EngineConfigPGMaxStandbyStreamingDelay,
-		other.EngineConfigPGMaxStandbyStreamingDelay,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxWALSenders = helper.KeepOrUpdateValue(
-		m.EngineConfigPGMaxWALSenders,
-		other.EngineConfigPGMaxWALSenders,
-		preserveKnown,
-	)
-	m.EngineConfigPGMaxWorkerProcesses = helper.KeepOrUpdateValue(
-		m.EngineConfigPGMaxWorkerProcesses,
-		other.EngineConfigPGMaxWorkerProcesses,
-		preserveKnown,
-	)
-	m.EngineConfigPGPasswordEncryption = helper.KeepOrUpdateValue(
-		m.EngineConfigPGPasswordEncryption,
-		other.EngineConfigPGPasswordEncryption,
-		preserveKnown,
-	)
-	m.EngineConfigPGPGPartmanBGWInterval = helper.KeepOrUpdateValue(
-		m.EngineConfigPGPGPartmanBGWInterval,
-		other.EngineConfigPGPGPartmanBGWInterval,
-		preserveKnown,
-	)
-	m.EngineConfigPGPGPartmanBGWRole = helper.KeepOrUpdateValue(
-		m.EngineConfigPGPGPartmanBGWRole,
-		other.EngineConfigPGPGPartmanBGWRole,
-		preserveKnown,
-	)
-	m.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan = helper.KeepOrUpdateValue(
-		m.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan,
-		other.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan,
-		preserveKnown,
-	)
-	m.EngineConfigPGPGStatMonitorPGSMMaxBuckets = helper.KeepOrUpdateValue(
-		m.EngineConfigPGPGStatMonitorPGSMMaxBuckets,
-		other.EngineConfigPGPGStatMonitorPGSMMaxBuckets,
-		preserveKnown,
-	)
-	m.EngineConfigPGPGStatStatementsTrack = helper.KeepOrUpdateValue(
-		m.EngineConfigPGPGStatStatementsTrack,
-		other.EngineConfigPGPGStatStatementsTrack,
-		preserveKnown,
-	)
-	m.EngineConfigPGTempFileLimit = helper.KeepOrUpdateValue(
-		m.EngineConfigPGTempFileLimit,
-		other.EngineConfigPGTempFileLimit,
-		preserveKnown,
-	)
-	m.EngineConfigPGTimezone = helper.KeepOrUpdateValue(
-		m.EngineConfigPGTimezone,
-		other.EngineConfigPGTimezone,
-		preserveKnown,
-	)
-	m.EngineConfigPGTrackActivityQuerySize = helper.KeepOrUpdateValue(
-		m.EngineConfigPGTrackActivityQuerySize,
-		other.EngineConfigPGTrackActivityQuerySize,
-		preserveKnown,
-	)
-	m.EngineConfigPGTrackCommitTimestamp = helper.KeepOrUpdateValue(
-		m.EngineConfigPGTrackCommitTimestamp,
-		other.EngineConfigPGTrackCommitTimestamp,
-		preserveKnown,
-	)
-	m.EngineConfigPGTrackFunctions = helper.KeepOrUpdateValue(
-		m.EngineConfigPGTrackFunctions,
-		other.EngineConfigPGTrackFunctions,
-		preserveKnown,
-	)
-	m.EngineConfigPGTrackIOTiming = helper.KeepOrUpdateValue(
-		m.EngineConfigPGTrackIOTiming,
-		other.EngineConfigPGTrackIOTiming,
-		preserveKnown,
-	)
-	m.EngineConfigPGWALSenderTimeout = helper.KeepOrUpdateValue(
-		m.EngineConfigPGWALSenderTimeout,
-		other.EngineConfigPGWALSenderTimeout,
-		preserveKnown,
-	)
-	m.EngineConfigPGWALWriterDelay = helper.KeepOrUpdateValue(
-		m.EngineConfigPGWALWriterDelay,
-		other.EngineConfigPGWALWriterDelay,
-		preserveKnown,
-	)
-	m.EngineConfigPGStatMonitorEnable = helper.KeepOrUpdateValue(
-		m.EngineConfigPGStatMonitorEnable,
-		other.EngineConfigPGStatMonitorEnable,
-		preserveKnown,
-	)
-	m.EngineConfigPGLookoutMaxFailoverReplicationTimeLag = helper.KeepOrUpdateValue(
-		m.EngineConfigPGLookoutMaxFailoverReplicationTimeLag,
-		other.EngineConfigPGLookoutMaxFailoverReplicationTimeLag,
-		preserveKnown,
-	)
-	m.EngineConfigSharedBuffersPercentage = helper.KeepOrUpdateValue(
-		m.EngineConfigSharedBuffersPercentage,
-		other.EngineConfigSharedBuffersPercentage,
-		preserveKnown,
-	)
-	m.EngineConfigWorkMem = helper.KeepOrUpdateValue(
-		m.EngineConfigWorkMem,
-		other.EngineConfigWorkMem,
-		preserveKnown,
-	)
+	m.EngineConfigPGAutovacuumAnalyzeScaleFactor = helper.KeepOrUpdateValue(m.EngineConfigPGAutovacuumAnalyzeScaleFactor, other.EngineConfigPGAutovacuumAnalyzeScaleFactor, preserveKnown)
+	m.EngineConfigPGAutovacuumAnalyzeThreshold = helper.KeepOrUpdateValue(m.EngineConfigPGAutovacuumAnalyzeThreshold, other.EngineConfigPGAutovacuumAnalyzeThreshold, preserveKnown)
+	m.EngineConfigPGAutovacuumMaxWorkers = helper.KeepOrUpdateValue(m.EngineConfigPGAutovacuumMaxWorkers, other.EngineConfigPGAutovacuumMaxWorkers, preserveKnown)
+	m.EngineConfigPGAutovacuumNaptime = helper.KeepOrUpdateValue(m.EngineConfigPGAutovacuumNaptime, other.EngineConfigPGAutovacuumNaptime, preserveKnown)
+	m.EngineConfigPGAutovacuumVacuumCostDelay = helper.KeepOrUpdateValue(m.EngineConfigPGAutovacuumVacuumCostDelay, other.EngineConfigPGAutovacuumVacuumCostDelay, preserveKnown)
+	m.EngineConfigPGAutovacuumVacuumCostLimit = helper.KeepOrUpdateValue(m.EngineConfigPGAutovacuumVacuumCostLimit, other.EngineConfigPGAutovacuumVacuumCostLimit, preserveKnown)
+	m.EngineConfigPGAutovacuumVacuumScaleFactor = helper.KeepOrUpdateValue(m.EngineConfigPGAutovacuumVacuumScaleFactor, other.EngineConfigPGAutovacuumVacuumScaleFactor, preserveKnown)
+	m.EngineConfigPGAutovacuumVacuumThreshold = helper.KeepOrUpdateValue(m.EngineConfigPGAutovacuumVacuumThreshold, other.EngineConfigPGAutovacuumVacuumThreshold, preserveKnown)
+	m.EngineConfigPGBGWriterDelay = helper.KeepOrUpdateValue(m.EngineConfigPGBGWriterDelay, other.EngineConfigPGBGWriterDelay, preserveKnown)
+	m.EngineConfigPGBGWriterFlushAfter = helper.KeepOrUpdateValue(m.EngineConfigPGBGWriterFlushAfter, other.EngineConfigPGBGWriterFlushAfter, preserveKnown)
+	m.EngineConfigPGBGWriterLRUMaxpages = helper.KeepOrUpdateValue(m.EngineConfigPGBGWriterLRUMaxpages, other.EngineConfigPGBGWriterLRUMaxpages, preserveKnown)
+	m.EngineConfigPGBGWriterLRUMultiplier = helper.KeepOrUpdateValue(m.EngineConfigPGBGWriterLRUMultiplier, other.EngineConfigPGBGWriterLRUMultiplier, preserveKnown)
+	m.EngineConfigPGDeadlockTimeout = helper.KeepOrUpdateValue(m.EngineConfigPGDeadlockTimeout, other.EngineConfigPGDeadlockTimeout, preserveKnown)
+	m.EngineConfigPGDefaultToastCompression = helper.KeepOrUpdateValue(m.EngineConfigPGDefaultToastCompression, other.EngineConfigPGDefaultToastCompression, preserveKnown)
+	m.EngineConfigPGIdleInTransactionSessionTimeout = helper.KeepOrUpdateValue(m.EngineConfigPGIdleInTransactionSessionTimeout, other.EngineConfigPGIdleInTransactionSessionTimeout, preserveKnown)
+	m.EngineConfigPGJIT = helper.KeepOrUpdateValue(m.EngineConfigPGJIT, other.EngineConfigPGJIT, preserveKnown)
+	m.EngineConfigPGMaxFilesPerProcess = helper.KeepOrUpdateValue(m.EngineConfigPGMaxFilesPerProcess, other.EngineConfigPGMaxFilesPerProcess, preserveKnown)
+	m.EngineConfigPGMaxLocksPerTransaction = helper.KeepOrUpdateValue(m.EngineConfigPGMaxLocksPerTransaction, other.EngineConfigPGMaxLocksPerTransaction, preserveKnown)
+	m.EngineConfigPGMaxLogicalReplicationWorkers = helper.KeepOrUpdateValue(m.EngineConfigPGMaxLogicalReplicationWorkers, other.EngineConfigPGMaxLogicalReplicationWorkers, preserveKnown)
+	m.EngineConfigPGMaxParallelWorkers = helper.KeepOrUpdateValue(m.EngineConfigPGMaxParallelWorkers, other.EngineConfigPGMaxParallelWorkers, preserveKnown)
+	m.EngineConfigPGMaxParallelWorkersPerGather = helper.KeepOrUpdateValue(m.EngineConfigPGMaxParallelWorkersPerGather, other.EngineConfigPGMaxParallelWorkersPerGather, preserveKnown)
+	m.EngineConfigPGMaxPredLocksPerTransaction = helper.KeepOrUpdateValue(m.EngineConfigPGMaxPredLocksPerTransaction, other.EngineConfigPGMaxPredLocksPerTransaction, preserveKnown)
+	m.EngineConfigPGMaxReplicationSlots = helper.KeepOrUpdateValue(m.EngineConfigPGMaxReplicationSlots, other.EngineConfigPGMaxReplicationSlots, preserveKnown)
+	m.EngineConfigPGMaxSlotWALKeepSize = helper.KeepOrUpdateValue(m.EngineConfigPGMaxSlotWALKeepSize, other.EngineConfigPGMaxSlotWALKeepSize, preserveKnown)
+	m.EngineConfigPGMaxStackDepth = helper.KeepOrUpdateValue(m.EngineConfigPGMaxStackDepth, other.EngineConfigPGMaxStackDepth, preserveKnown)
+	m.EngineConfigPGMaxStandbyArchiveDelay = helper.KeepOrUpdateValue(m.EngineConfigPGMaxStandbyArchiveDelay, other.EngineConfigPGMaxStandbyArchiveDelay, preserveKnown)
+	m.EngineConfigPGMaxStandbyStreamingDelay = helper.KeepOrUpdateValue(m.EngineConfigPGMaxStandbyStreamingDelay, other.EngineConfigPGMaxStandbyStreamingDelay, preserveKnown)
+	m.EngineConfigPGMaxWALSenders = helper.KeepOrUpdateValue(m.EngineConfigPGMaxWALSenders, other.EngineConfigPGMaxWALSenders, preserveKnown)
+	m.EngineConfigPGMaxWorkerProcesses = helper.KeepOrUpdateValue(m.EngineConfigPGMaxWorkerProcesses, other.EngineConfigPGMaxWorkerProcesses, preserveKnown)
+	m.EngineConfigPGPasswordEncryption = helper.KeepOrUpdateValue(m.EngineConfigPGPasswordEncryption, other.EngineConfigPGPasswordEncryption, preserveKnown)
+	m.EngineConfigPGPGPartmanBGWInterval = helper.KeepOrUpdateValue(m.EngineConfigPGPGPartmanBGWInterval, other.EngineConfigPGPGPartmanBGWInterval, preserveKnown)
+	m.EngineConfigPGPGPartmanBGWRole = helper.KeepOrUpdateValue(m.EngineConfigPGPGPartmanBGWRole, other.EngineConfigPGPGPartmanBGWRole, preserveKnown)
+	m.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan = helper.KeepOrUpdateValue(m.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan, other.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan, preserveKnown)
+	m.EngineConfigPGPGStatMonitorPGSMMaxBuckets = helper.KeepOrUpdateValue(m.EngineConfigPGPGStatMonitorPGSMMaxBuckets, other.EngineConfigPGPGStatMonitorPGSMMaxBuckets, preserveKnown)
+	m.EngineConfigPGPGStatStatementsTrack = helper.KeepOrUpdateValue(m.EngineConfigPGPGStatStatementsTrack, other.EngineConfigPGPGStatStatementsTrack, preserveKnown)
+	m.EngineConfigPGTempFileLimit = helper.KeepOrUpdateValue(m.EngineConfigPGTempFileLimit, other.EngineConfigPGTempFileLimit, preserveKnown)
+	m.EngineConfigPGTimezone = helper.KeepOrUpdateValue(m.EngineConfigPGTimezone, other.EngineConfigPGTimezone, preserveKnown)
+	m.EngineConfigPGTrackActivityQuerySize = helper.KeepOrUpdateValue(m.EngineConfigPGTrackActivityQuerySize, other.EngineConfigPGTrackActivityQuerySize, preserveKnown)
+	m.EngineConfigPGTrackCommitTimestamp = helper.KeepOrUpdateValue(m.EngineConfigPGTrackCommitTimestamp, other.EngineConfigPGTrackCommitTimestamp, preserveKnown)
+	m.EngineConfigPGTrackFunctions = helper.KeepOrUpdateValue(m.EngineConfigPGTrackFunctions, other.EngineConfigPGTrackFunctions, preserveKnown)
+	m.EngineConfigPGTrackIOTiming = helper.KeepOrUpdateValue(m.EngineConfigPGTrackIOTiming, other.EngineConfigPGTrackIOTiming, preserveKnown)
+	m.EngineConfigPGWALSenderTimeout = helper.KeepOrUpdateValue(m.EngineConfigPGWALSenderTimeout, other.EngineConfigPGWALSenderTimeout, preserveKnown)
+	m.EngineConfigPGWALWriterDelay = helper.KeepOrUpdateValue(m.EngineConfigPGWALWriterDelay, other.EngineConfigPGWALWriterDelay, preserveKnown)
+	m.EngineConfigPGStatMonitorEnable = helper.KeepOrUpdateValue(m.EngineConfigPGStatMonitorEnable, other.EngineConfigPGStatMonitorEnable, preserveKnown)
+	m.EngineConfigPGLookoutMaxFailoverReplicationTimeLag = helper.KeepOrUpdateValue(m.EngineConfigPGLookoutMaxFailoverReplicationTimeLag, other.EngineConfigPGLookoutMaxFailoverReplicationTimeLag, preserveKnown)
+	m.EngineConfigSharedBuffersPercentage = helper.KeepOrUpdateValue(m.EngineConfigSharedBuffersPercentage, other.EngineConfigSharedBuffersPercentage, preserveKnown)
+	m.EngineConfigWorkMem = helper.KeepOrUpdateValue(m.EngineConfigWorkMem, other.EngineConfigWorkMem, preserveKnown)
 }
 
 // GetFork returns the linodego.DatabaseFork for this model if specified, else nil.
@@ -935,31 +529,19 @@ func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.PostgresDatabaseEn
 	}
 
 	if !m.EngineConfigPGAutovacuumMaxWorkers.IsUnknown() {
-		engineConfigPG.AutovacuumMaxWorkers = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGAutovacuumMaxWorkers.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.AutovacuumMaxWorkers = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGAutovacuumMaxWorkers.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGAutovacuumNaptime.IsUnknown() {
-		engineConfigPG.AutovacuumNaptime = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGAutovacuumNaptime.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.AutovacuumNaptime = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGAutovacuumNaptime.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGAutovacuumVacuumCostDelay.IsUnknown() {
-		engineConfigPG.AutovacuumVacuumCostDelay = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGAutovacuumVacuumCostDelay.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.AutovacuumVacuumCostDelay = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGAutovacuumVacuumCostDelay.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGAutovacuumVacuumCostLimit.IsUnknown() {
-		engineConfigPG.AutovacuumVacuumCostLimit = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGAutovacuumVacuumCostLimit.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.AutovacuumVacuumCostLimit = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGAutovacuumVacuumCostLimit.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGAutovacuumVacuumScaleFactor.IsUnknown() {
@@ -971,24 +553,15 @@ func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.PostgresDatabaseEn
 	}
 
 	if !m.EngineConfigPGBGWriterDelay.IsUnknown() {
-		engineConfigPG.BGWriterDelay = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGBGWriterDelay.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.BGWriterDelay = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGBGWriterDelay.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGBGWriterFlushAfter.IsUnknown() {
-		engineConfigPG.BGWriterFlushAfter = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGBGWriterFlushAfter.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.BGWriterFlushAfter = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGBGWriterFlushAfter.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGBGWriterLRUMaxpages.IsUnknown() {
-		engineConfigPG.BGWriterLRUMaxPages = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGBGWriterLRUMaxpages.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.BGWriterLRUMaxPages = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGBGWriterLRUMaxpages.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGBGWriterLRUMultiplier.IsUnknown() {
@@ -996,10 +569,7 @@ func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.PostgresDatabaseEn
 	}
 
 	if !m.EngineConfigPGDeadlockTimeout.IsUnknown() {
-		engineConfigPG.DeadlockTimeout = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGDeadlockTimeout.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.DeadlockTimeout = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGDeadlockTimeout.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGDefaultToastCompression.IsUnknown() {
@@ -1007,10 +577,7 @@ func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.PostgresDatabaseEn
 	}
 
 	if !m.EngineConfigPGIdleInTransactionSessionTimeout.IsUnknown() {
-		engineConfigPG.IdleInTransactionSessionTimeout = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGIdleInTransactionSessionTimeout.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.IdleInTransactionSessionTimeout = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGIdleInTransactionSessionTimeout.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGJIT.IsUnknown() {
@@ -1018,52 +585,31 @@ func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.PostgresDatabaseEn
 	}
 
 	if !m.EngineConfigPGMaxFilesPerProcess.IsUnknown() {
-		engineConfigPG.MaxFilesPerProcess = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGMaxFilesPerProcess.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.MaxFilesPerProcess = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGMaxFilesPerProcess.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGMaxLocksPerTransaction.IsUnknown() {
-		engineConfigPG.MaxLocksPerTransaction = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGMaxLocksPerTransaction.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.MaxLocksPerTransaction = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGMaxLocksPerTransaction.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGMaxLogicalReplicationWorkers.IsUnknown() {
-		engineConfigPG.MaxLogicalReplicationWorkers = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGMaxLogicalReplicationWorkers.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.MaxLogicalReplicationWorkers = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGMaxLogicalReplicationWorkers.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGMaxParallelWorkers.IsUnknown() {
-		engineConfigPG.MaxParallelWorkers = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGMaxParallelWorkers.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.MaxParallelWorkers = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGMaxParallelWorkers.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGMaxParallelWorkersPerGather.IsUnknown() {
-		engineConfigPG.MaxParallelWorkersPerGather = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGMaxParallelWorkersPerGather.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.MaxParallelWorkersPerGather = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGMaxParallelWorkersPerGather.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGMaxPredLocksPerTransaction.IsUnknown() {
-		engineConfigPG.MaxPredLocksPerTransaction = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGMaxPredLocksPerTransaction.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.MaxPredLocksPerTransaction = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGMaxPredLocksPerTransaction.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGMaxReplicationSlots.IsUnknown() {
-		engineConfigPG.MaxReplicationSlots = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGMaxReplicationSlots.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.MaxReplicationSlots = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGMaxReplicationSlots.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGMaxSlotWALKeepSize.IsUnknown() {
@@ -1071,38 +617,23 @@ func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.PostgresDatabaseEn
 	}
 
 	if !m.EngineConfigPGMaxStackDepth.IsUnknown() {
-		engineConfigPG.MaxStackDepth = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGMaxStackDepth.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.MaxStackDepth = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGMaxStackDepth.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGMaxStandbyArchiveDelay.IsUnknown() {
-		engineConfigPG.MaxStandbyArchiveDelay = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGMaxStandbyArchiveDelay.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.MaxStandbyArchiveDelay = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGMaxStandbyArchiveDelay.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGMaxStandbyStreamingDelay.IsUnknown() {
-		engineConfigPG.MaxStandbyStreamingDelay = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGMaxStandbyStreamingDelay.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.MaxStandbyStreamingDelay = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGMaxStandbyStreamingDelay.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGMaxWALSenders.IsUnknown() {
-		engineConfigPG.MaxWALSenders = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGMaxWALSenders.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.MaxWALSenders = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGMaxWALSenders.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGMaxWorkerProcesses.IsUnknown() {
-		engineConfigPG.MaxWorkerProcesses = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGMaxWorkerProcesses.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.MaxWorkerProcesses = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGMaxWorkerProcesses.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGPasswordEncryption.IsUnknown() {
@@ -1110,10 +641,7 @@ func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.PostgresDatabaseEn
 	}
 
 	if !m.EngineConfigPGPGPartmanBGWInterval.IsUnknown() {
-		engineConfigPG.PGPartmanBGWInterval = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGPGPartmanBGWInterval.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.PGPartmanBGWInterval = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGPGPartmanBGWInterval.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGPGPartmanBGWRole.IsUnknown() {
@@ -1125,10 +653,7 @@ func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.PostgresDatabaseEn
 	}
 
 	if !m.EngineConfigPGPGStatMonitorPGSMMaxBuckets.IsUnknown() {
-		engineConfigPG.PGStatMonitorPGSMMaxBuckets = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGPGStatMonitorPGSMMaxBuckets.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.PGStatMonitorPGSMMaxBuckets = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGPGStatMonitorPGSMMaxBuckets.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGPGStatStatementsTrack.IsUnknown() {
@@ -1144,10 +669,7 @@ func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.PostgresDatabaseEn
 	}
 
 	if !m.EngineConfigPGTrackActivityQuerySize.IsUnknown() {
-		engineConfigPG.TrackActivityQuerySize = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGTrackActivityQuerySize.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.TrackActivityQuerySize = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGTrackActivityQuerySize.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGTrackCommitTimestamp.IsUnknown() {
@@ -1162,17 +684,11 @@ func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.PostgresDatabaseEn
 	}
 
 	if !m.EngineConfigPGWALSenderTimeout.IsUnknown() {
-		engineConfigPG.WALSenderTimeout = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGWALSenderTimeout.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.WALSenderTimeout = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGWALSenderTimeout.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGWALWriterDelay.IsUnknown() {
-		engineConfigPG.WALWriterDelay = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigPGWALWriterDelay.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfigPG.WALWriterDelay = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigPGWALWriterDelay.ValueInt64Pointer(), &d)
 	}
 
 	if !m.EngineConfigPGStatMonitorEnable.IsUnknown() {
@@ -1188,10 +704,7 @@ func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.PostgresDatabaseEn
 	}
 
 	if !m.EngineConfigWorkMem.IsUnknown() {
-		engineConfig.WorkMem = helper.FrameworkSafeInt64PointerToIntPointer(
-			m.EngineConfigWorkMem.ValueInt64Pointer(),
-			&d,
-		)
+		engineConfig.WorkMem = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigWorkMem.ValueInt64Pointer(), &d)
 	}
 
 	engineConfig.PG = &engineConfigPG

@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/linode/linodego"
 	"golang.org/x/net/context"
 )
@@ -87,10 +88,7 @@ func refreshDevices(
 ) {
 	devices, err := client.ListFirewallDevices(ctx, firewallID, nil)
 	if err != nil {
-		diags.AddError(
-			fmt.Sprintf("Failed to Get Devices for Firewall %d", firewallID),
-			err.Error(),
-		)
+		diags.AddError(fmt.Sprintf("Failed to Get Devices for Firewall %d", firewallID), err.Error())
 		return
 	}
 

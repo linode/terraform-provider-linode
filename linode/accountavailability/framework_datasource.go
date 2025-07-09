@@ -41,10 +41,7 @@ func (d *DataSource) Read(
 	availability, err := client.GetAccountAvailability(ctx, data.Region.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf(
-				"Failed to get account availability in the region %v",
-				data.Region.ValueString(),
-			),
+			fmt.Sprintf("Failed to get account availability in the region %v", data.Region.ValueString()),
 			err.Error(),
 		)
 		return

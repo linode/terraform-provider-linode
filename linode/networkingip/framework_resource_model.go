@@ -2,10 +2,11 @@ package networkingip
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
 type ResourceModel struct {
@@ -32,11 +33,7 @@ func (m *ResourceModel) FlattenIPAddress(
 	m.ID = helper.KeepOrUpdateString(m.ID, ip.Address, preserveKnown)
 
 	if ip.LinodeID != 0 {
-		m.LinodeID = helper.KeepOrUpdateValue(
-			m.LinodeID,
-			types.Int64Value(int64(ip.LinodeID)),
-			preserveKnown,
-		)
+		m.LinodeID = helper.KeepOrUpdateValue(m.LinodeID, types.Int64Value(int64(ip.LinodeID)), preserveKnown)
 	} else {
 		m.LinodeID = helper.KeepOrUpdateValue(m.LinodeID, types.Int64Null(), preserveKnown)
 	}

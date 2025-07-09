@@ -23,21 +23,14 @@ func TestAccDataSourceAccountAvailabilities_basic(t *testing.T) {
 				Config: tmpl.DataBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "availabilities.0.region"),
-					resource.TestCheckResourceAttrSet(
-						resourceName,
-						"availabilities.0.unavailable.#",
-					),
+					resource.TestCheckResourceAttrSet(resourceName, "availabilities.0.unavailable.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "availabilities.0.available.#"),
 				),
 			},
 			{
 				Config: tmpl.DataFilterRegion(t, "us-east"),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						resourceName,
-						"availabilities.0.region",
-						"us-east",
-					),
+					resource.TestCheckResourceAttr(resourceName, "availabilities.0.region", "us-east"),
 				),
 			},
 		},

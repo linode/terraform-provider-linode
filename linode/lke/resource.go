@@ -69,10 +69,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	cluster, err := client.GetLKECluster(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			log.Printf(
-				"[WARN] removing LKE Cluster ID %q from state because it no longer exists",
-				d.Id(),
-			)
+			log.Printf("[WARN] removing LKE Cluster ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
 		}
@@ -147,11 +144,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func createResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Create linode_lke_cluster")
 
@@ -174,9 +167,7 @@ func createResource(
 	}
 
 	if len(controlPlane) > 0 {
-		expandedControlPlane, diags := expandControlPlaneOptions(
-			controlPlane[0].(map[string]interface{}),
-		)
+		expandedControlPlane, diags := expandControlPlaneOptions(controlPlane[0].(map[string]interface{}))
 		if diags.HasError() {
 			return diags
 		}
@@ -205,11 +196,9 @@ func createResource(
 		}
 
 		createOpts.NodePools = append(createOpts.NodePools, linodego.LKENodePoolCreateOptions{
-			Type: poolSpec["type"].(string),
-			Tags: helper.ExpandStringSet(poolSpec["tags"].(*schema.Set)),
-			Taints: expandNodePoolTaints(
-				helper.ExpandObjectSet(poolSpec["taint"].(*schema.Set)),
-			),
+			Type:       poolSpec["type"].(string),
+			Tags:       helper.ExpandStringSet(poolSpec["tags"].(*schema.Set)),
+			Taints:     expandNodePoolTaints(helper.ExpandObjectSet(poolSpec["taint"].(*schema.Set))),
 			Labels:     helper.StringAnyMapToTyped[string](poolSpec["labels"].(map[string]any)),
 			Count:      count,
 			Autoscaler: autoscaler,
@@ -236,12 +225,7 @@ func createResource(
 	var retryContextTimeout time.Duration
 	if cluster.Tier == TierEnterprise {
 		retryContextTimeout = time.Second * 120
-		err = waitForLKEKubeConfig(
-			ctx,
-			client,
-			meta.(*helper.ProviderMeta).Config.EventPollMilliseconds,
-			cluster.ID,
-		)
+		err = waitForLKEKubeConfig(ctx, client, meta.(*helper.ProviderMeta).Config.EventPollMilliseconds, cluster.ID)
 		if err != nil {
 			return diag.Errorf("failed to get LKE cluster kubeconfig: %s", err)
 		}
@@ -275,11 +259,7 @@ func createResource(
 	return readResource(ctx, d, meta)
 }
 
-func updateResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_lke_cluster")
 
@@ -302,9 +282,7 @@ func updateResource(
 
 	controlPlane := d.Get("control_plane").([]interface{})
 	if len(controlPlane) > 0 {
-		expandedControlPlane, diags := expandControlPlaneOptions(
-			controlPlane[0].(map[string]interface{}),
-		)
+		expandedControlPlane, diags := expandControlPlaneOptions(controlPlane[0].(map[string]interface{}))
 		if diags.HasError() {
 			return diags
 		}
@@ -348,10 +326,7 @@ func updateResource(
 	cluster, err := client.GetLKECluster(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			log.Printf(
-				"[WARN] removing LKE Cluster ID %q from state because it no longer exists",
-				d.Id(),
-			)
+			log.Printf("[WARN] removing LKE Cluster ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
 		}
@@ -427,23 +402,14 @@ func updateResource(
 			id,
 			poolID,
 		); err != nil {
-			return diag.Errorf(
-				"failed to wait for LKE Cluster %d pool %d ready: %s",
-				id,
-				poolID,
-				err,
-			)
+			return diag.Errorf("failed to wait for LKE Cluster %d pool %d ready: %s", id, poolID, err)
 		}
 	}
 
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_lke_cluster")
 
@@ -509,11 +475,7 @@ func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.
 // can ensure we're only validating on the user's config rather
 // than state. This will prevent any possible false-negatives
 // during updates.
-func customDiffValidateOptionalCount(
-	ctx context.Context,
-	diff *schema.ResourceDiff,
-	meta any,
-) error {
+func customDiffValidateOptionalCount(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
 	invalidPools := make([]string, 0)
 
 	poolIterator := diff.GetRawConfig().GetAttr("pool").ElementIterator()

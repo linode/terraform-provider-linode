@@ -66,9 +66,7 @@ func ReconcileLKENodePoolSpecs(
 
 		if createOpts.Count == 0 {
 			if !spec.AutoScalerEnabled {
-				return fmt.Errorf(
-					"count was 0 without an autoscaler. This is always a provider issue",
-				)
+				return fmt.Errorf("count was 0 without an autoscaler. This is always a provider issue")
 			}
 			createOpts.Count = spec.AutoScalerMin
 		}
@@ -146,22 +144,16 @@ func ReconcileLKENodePoolSpecs(
 			if newSpec.UpdateStrategy != nil && oldSpec.UpdateStrategy != nil &&
 				*newSpec.UpdateStrategy != *oldSpec.UpdateStrategy {
 
-				updateOpts.UpdateStrategy = linodego.Pointer(
-					linodego.LKENodePoolUpdateStrategy(*newSpec.UpdateStrategy),
-				)
+				updateOpts.UpdateStrategy = linodego.Pointer(linodego.LKENodePoolUpdateStrategy(*newSpec.UpdateStrategy))
 			}
 		}
 
-		if !helper.CompareSets(
-			helper.TypedSliceToAny(newSpec.Taints),
-			helper.TypedSliceToAny(oldSpec.Taints),
-		) {
+		if !helper.CompareSets(helper.TypedSliceToAny(newSpec.Taints), helper.TypedSliceToAny(oldSpec.Taints)) {
 			taints := expandNodePoolTaints(newSpec.Taints)
 			updateOpts.Taints = &taints
 		}
 
-		if !reflect.DeepEqual(newSpec.Labels, oldSpec.Labels) &&
-			!(len(newSpec.Labels) == 0 && len(oldSpec.Labels) == 0) {
+		if !reflect.DeepEqual(newSpec.Labels, oldSpec.Labels) && !(len(newSpec.Labels) == 0 && len(oldSpec.Labels) == 0) {
 			labels := linodego.LKENodePoolLabels(newSpecs[i].Labels)
 			updateOpts.Labels = &labels
 		}
@@ -270,12 +262,7 @@ func waitForNodesDeleted(
 	}
 }
 
-func recycleLKECluster(
-	ctx context.Context,
-	meta *helper.ProviderMeta,
-	id int,
-	pools []linodego.LKENodePool,
-) error {
+func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, pools []linodego.LKENodePool) error {
 	client := meta.Client
 
 	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
@@ -305,10 +292,7 @@ func recycleLKECluster(
 		return fmt.Errorf("failed to wait for old nodes to be recycled: %w", err)
 	}
 
-	tflog.Debug(
-		ctx,
-		"All old nodes detected as deleted, waiting for all node pools to enter ready status",
-	)
+	tflog.Debug(ctx, "All old nodes detected as deleted, waiting for all node pools to enter ready status")
 
 	// Wait for all node pools to be ready
 	for _, pool := range pools {
@@ -324,11 +308,7 @@ func recycleLKECluster(
 
 // This cannot currently be handled efficiently by a DiffSuppressFunc
 // See: https://github.com/hashicorp/terraform-plugin-sdk/issues/477
-func matchPoolsWithSchema(
-	ctx context.Context,
-	pools []linodego.LKENodePool,
-	declaredPools []interface{},
-) ([]linodego.LKENodePool, error) {
+func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, declaredPools []interface{}) ([]linodego.LKENodePool, error) {
 	tflog.Info(ctx, "Enter matchPoolsWithSchema helper function")
 	result := make([]linodego.LKENodePool, len(declaredPools))
 
@@ -382,9 +362,7 @@ func matchPoolsWithSchema(
 			declaredCount := declaredPool["count"].(int)
 			if declaredCount == 0 {
 				if declaredAutoscaler == nil {
-					return nil, fmt.Errorf(
-						"autoscaler is null when count is 0. This is always a provider issue",
-					)
+					return nil, fmt.Errorf("autoscaler is null when count is 0. This is always a provider issue")
 				}
 				declaredCount = declaredAutoscaler.Min
 			}
@@ -404,27 +382,17 @@ func matchPoolsWithSchema(
 				continue
 			}
 
-			if !helper.CompareStringSets(
-				helper.ExpandStringSet(declaredPool["tags"].(*schema.Set)),
-				apiPool.Tags,
-			) {
+			if !helper.CompareStringSets(helper.ExpandStringSet(declaredPool["tags"].(*schema.Set)), apiPool.Tags) {
 				continue
 			}
 
-			declaredTaints := expandNodePoolTaints(
-				helper.ExpandObjectSet(declaredPool["taint"].(*schema.Set)),
-			)
+			declaredTaints := expandNodePoolTaints(helper.ExpandObjectSet(declaredPool["taint"].(*schema.Set)))
 
-			if !helper.CompareSets(
-				helper.TypedSliceToAny(declaredTaints),
-				helper.TypedSliceToAny(apiPool.Taints),
-			) {
+			if !helper.CompareSets(helper.TypedSliceToAny(declaredTaints), helper.TypedSliceToAny(apiPool.Taints)) {
 				continue
 			}
 
-			declaredLabels := helper.StringAnyMapToTyped[string](
-				declaredPool["labels"].(map[string]any),
-			)
+			declaredLabels := helper.StringAnyMapToTyped[string](declaredPool["labels"].(map[string]any))
 
 			// - Length comparison is for handling the case of nil vs empty slice
 			// - Converting `apiPool.Labels` back to original (non-alias) type to make `reflect.DeepEqual` to really compare them
@@ -433,16 +401,13 @@ func matchPoolsWithSchema(
 				continue
 			}
 
-			if declaredUpdateStrategy, ok := declaredPool["update_strategy"].(string); ok &&
-				declaredUpdateStrategy != "" {
-				if apiPool.UpdateStrategy == nil ||
-					declaredUpdateStrategy != string(*apiPool.UpdateStrategy) {
+			if declaredUpdateStrategy, ok := declaredPool["update_strategy"].(string); ok && declaredUpdateStrategy != "" {
+				if apiPool.UpdateStrategy == nil || declaredUpdateStrategy != string(*apiPool.UpdateStrategy) {
 					continue
 				}
 			}
 
-			if declaredK8sVersion, ok := declaredPool["k8s_version"].(string); ok &&
-				declaredK8sVersion != "" {
+			if declaredK8sVersion, ok := declaredPool["k8s_version"].(string); ok && declaredK8sVersion != "" {
 				if apiPool.K8sVersion == nil || declaredK8sVersion != *apiPool.K8sVersion {
 					continue
 				}
@@ -465,9 +430,7 @@ func matchPoolsWithSchema(
 	return result, nil
 }
 
-func expandLinodeLKEClusterAutoscalerFromPool(
-	pool map[string]interface{},
-) *linodego.LKENodePoolAutoscaler {
+func expandLinodeLKEClusterAutoscalerFromPool(pool map[string]interface{}) *linodego.LKENodePoolAutoscaler {
 	scalersSpec, ok := pool["autoscaler"].([]interface{})
 
 	// Return nil if the autoscaler isn't defined
@@ -483,10 +446,7 @@ func expandLinodeLKEClusterAutoscalerFromPool(
 	}
 }
 
-func expandLinodeLKENodePoolSpecs(
-	pool []interface{},
-	preserveNoTarget bool,
-) (poolSpecs []NodePoolSpec) {
+func expandLinodeLKENodePoolSpecs(pool []interface{}, preserveNoTarget bool) (poolSpecs []NodePoolSpec) {
 	for _, spec := range pool {
 		specMap := spec.(map[string]interface{})
 		autoscaler := expandLinodeLKEClusterAutoscalerFromPool(specMap)
@@ -513,13 +473,11 @@ func expandLinodeLKENodePoolSpecs(
 		}
 
 		poolSpecs = append(poolSpecs, NodePoolSpec{
-			ID:     specMap["id"].(int),
-			Type:   specMap["type"].(string),
-			Tags:   helper.ExpandStringSet(specMap["tags"].(*schema.Set)),
-			Taints: helper.ExpandObjectSet(specMap["taint"].(*schema.Set)),
-			Labels: helper.StringAnyMapToTyped[string](
-				specMap["labels"].(map[string]any),
-			),
+			ID:                specMap["id"].(int),
+			Type:              specMap["type"].(string),
+			Tags:              helper.ExpandStringSet(specMap["tags"].(*schema.Set)),
+			Taints:            helper.ExpandObjectSet(specMap["taint"].(*schema.Set)),
+			Labels:            helper.StringAnyMapToTyped[string](specMap["labels"].(map[string]any)),
 			Count:             specMap["count"].(int),
 			AutoScalerEnabled: autoscaler.Enabled,
 			AutoScalerMin:     autoscaler.Min,
@@ -586,10 +544,7 @@ func flattenNodePoolTaints(taints []linodego.LKENodePoolTaint) []map[string]stri
 	return result
 }
 
-func flattenLKEClusterControlPlane(
-	controlPlane linodego.LKEClusterControlPlane,
-	aclResp *linodego.LKEClusterControlPlaneACLResponse,
-) map[string]interface{} {
+func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane, aclResp *linodego.LKEClusterControlPlaneACLResponse) map[string]interface{} {
 	flattened := make(map[string]any)
 	if aclResp != nil {
 		acl := aclResp.ACL
@@ -639,9 +594,7 @@ func expandControlPlaneOptions(controlPlane map[string]interface{}) (
 	return
 }
 
-func expandACLOptions(
-	aclOptions map[string]interface{},
-) (*linodego.LKEClusterControlPlaneACLOptions, diag.Diagnostics) {
+func expandACLOptions(aclOptions map[string]interface{}) (*linodego.LKEClusterControlPlaneACLOptions, diag.Diagnostics) {
 	var result linodego.LKEClusterControlPlaneACLOptions
 
 	if value, ok := aclOptions["enabled"]; ok {
@@ -666,9 +619,7 @@ func expandACLOptions(
 	return &result, nil
 }
 
-func expandACLAddressOptions(
-	addressOptions map[string]interface{},
-) *linodego.LKEClusterControlPlaneACLAddressesOptions {
+func expandACLAddressOptions(addressOptions map[string]interface{}) *linodego.LKEClusterControlPlaneACLAddressesOptions {
 	var result linodego.LKEClusterControlPlaneACLAddressesOptions
 
 	if value, ok := addressOptions["ipv4"]; ok {
@@ -684,11 +635,7 @@ func expandACLAddressOptions(
 	return &result
 }
 
-func filterExternalPools(
-	ctx context.Context,
-	externalPoolTags []string,
-	pools []linodego.LKENodePool,
-) []linodego.LKENodePool {
+func filterExternalPools(ctx context.Context, externalPoolTags []string, pools []linodego.LKENodePool) []linodego.LKENodePool {
 	var filteredPools []linodego.LKENodePool
 	if len(externalPoolTags) == 0 {
 		return pools
@@ -700,15 +647,11 @@ func filterExternalPools(
 	for _, pool := range pools {
 		tag := poolHasAnyOfTags(pool, tagSet)
 		if tag != nil {
-			tflog.Info(
-				ctx,
-				"Excluding pool from management by this resource",
-				map[string]interface{}{
-					"pool_id": pool.ID,
-					"tag":     tag,
-					"reason":  "Pool tagged to be managed by a separate linode_lke_node_pool resource",
-				},
-			)
+			tflog.Info(ctx, "Excluding pool from management by this resource", map[string]interface{}{
+				"pool_id": pool.ID,
+				"tag":     tag,
+				"reason":  "Pool tagged to be managed by a separate linode_lke_node_pool resource",
+			})
 			continue
 		}
 		filteredPools = append(filteredPools, pool)
@@ -738,12 +681,7 @@ func expandNodePoolTaints(poolTaints []map[string]any) []linodego.LKENodePoolTai
 	return taints
 }
 
-func waitForLKEKubeConfig(
-	ctx context.Context,
-	client linodego.Client,
-	intervalMS int,
-	clusterID int,
-) error {
+func waitForLKEKubeConfig(ctx context.Context, client linodego.Client, intervalMS int, clusterID int) error {
 	ticker := time.NewTicker(time.Duration(intervalMS) * time.Millisecond)
 	defer ticker.Stop()
 

@@ -103,12 +103,7 @@ func ListAllVPCIPs(ctx context.Context, client *linodego.Client, filter string) 
 	return helper.TypedSliceToAny(vpcIps), nil
 }
 
-func ListVPCIPs(
-	ctx context.Context,
-	client *linodego.Client,
-	filter string,
-	vpcID int,
-) ([]any, error) {
+func ListVPCIPs(ctx context.Context, client *linodego.Client, filter string, vpcID int) ([]any, error) {
 	tflog.Trace(ctx, "client.ListVPCIPAddresses(...)", map[string]any{
 		"filter": filter,
 	})

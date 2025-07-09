@@ -25,11 +25,7 @@ type VPCIPModel struct {
 
 func (m *VPCIPModel) FlattenVPCIP(vpcIp *linodego.VPCIP, preserveKnown bool) {
 	m.Address = helper.KeepOrUpdateStringPointer(m.Address, vpcIp.Address, preserveKnown)
-	m.AddressRange = helper.KeepOrUpdateStringPointer(
-		m.AddressRange,
-		vpcIp.AddressRange,
-		preserveKnown,
-	)
+	m.AddressRange = helper.KeepOrUpdateStringPointer(m.AddressRange, vpcIp.AddressRange, preserveKnown)
 	m.Gateway = helper.KeepOrUpdateString(m.Gateway, vpcIp.Gateway, preserveKnown)
 	m.SubnetMask = helper.KeepOrUpdateString(m.SubnetMask, vpcIp.SubnetMask, preserveKnown)
 	m.Prefix = helper.KeepOrUpdateInt64(m.Prefix, int64(vpcIp.Prefix), preserveKnown)

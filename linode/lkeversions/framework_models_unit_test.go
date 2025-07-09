@@ -56,11 +56,6 @@ func TestParseLKETierVersions(t *testing.T) {
 
 	for i, mockVersion := range mockVersions {
 		assert.Equal(t, data.Versions[i].ID, types.StringValue(mockVersion.ID), "ID doesn't match")
-		assert.Equal(
-			t,
-			data.Versions[i].Tier,
-			types.StringValue(string(mockVersion.Tier)),
-			"Tier doesn't match",
-		)
+		assert.Equal(t, data.Versions[i].Tier, types.StringValue(string(mockVersion.Tier)), "Tier doesn't match")
 	}
 }

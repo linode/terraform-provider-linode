@@ -49,11 +49,7 @@ func DataSource() *schema.Resource {
 	}
 }
 
-func readDataSource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Debug(ctx, "Read data.linode_instances")
 
 	client := meta.(*helper.ProviderMeta).Client

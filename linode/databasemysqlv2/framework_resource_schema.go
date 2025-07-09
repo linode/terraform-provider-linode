@@ -4,15 +4,18 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
@@ -261,10 +264,7 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "Default server time zone as an offset from UTC (from -12:00 to +12:00), a time zone name, or 'SYSTEM' to use the MySQL server default.",
 			Validators: []validator.String{
 				stringvalidator.LengthBetween(2, 100),
-				stringvalidator.RegexMatches(
-					regexp.MustCompile(`^([-+][\d:]*|[\w/]*)$`),
-					"must be a valid time zone offset, name, or 'SYSTEM'",
-				),
+				stringvalidator.RegexMatches(regexp.MustCompile(`^([-+][\d:]*|[\w/]*)$`), "must be a valid time zone offset, name, or 'SYSTEM'"),
 			},
 			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},
@@ -318,10 +318,7 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "This option is used to specify your own InnoDB FULLTEXT index stopword list for all InnoDB tables.",
 			Validators: []validator.String{
 				stringvalidator.LengthAtMost(1024),
-				stringvalidator.RegexMatches(
-					regexp.MustCompile(`^.+/.+$`),
-					"must be in the format 'db_name/table_name'",
-				),
+				stringvalidator.RegexMatches(regexp.MustCompile(`^.+/.+$`), "must be in the format 'db_name/table_name'"),
 			},
 			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},
@@ -463,10 +460,7 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "Global SQL mode. Set to empty to use MySQL server defaults. When creating a new service and not setting this field Aiven default SQL mode (strict, SQL standard compliant) will be assigned.",
 			Validators: []validator.String{
 				stringvalidator.LengthAtMost(1024),
-				stringvalidator.RegexMatches(
-					regexp.MustCompile(`^[A-Z_]*(,[A-Z_]+)*$`),
-					"must be a valid SQL mode format",
-				),
+				stringvalidator.RegexMatches(regexp.MustCompile(`^[A-Z_]*(,[A-Z_]+)*$`), "must be a valid SQL mode format"),
 			},
 			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},

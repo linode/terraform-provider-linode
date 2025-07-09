@@ -54,9 +54,7 @@ func (plan ResourceModel) GetUpdateOptions(
 	return
 }
 
-func (plan ResourceModel) GetCreateOptions(
-	ctx context.Context,
-) (opts linodego.ObjectStorageKeyCreateOptions) {
+func (plan ResourceModel) GetCreateOptions(ctx context.Context) (opts linodego.ObjectStorageKeyCreateOptions) {
 	opts.Label = plan.Label.ValueString()
 
 	if plan.BucketAccess != nil {
@@ -124,11 +122,7 @@ func (rm *ResourceModel) FlattenObjectStorageKey(
 
 	rm.BucketAccess = FlattenBucketAccessEntries(key.BucketAccess, rm.BucketAccess, preserveKnown)
 
-	regionDetailsSet, newDiags := types.SetValueFrom(
-		ctx,
-		RegionDetailType,
-		getRegionDetails(key.Regions),
-	)
+	regionDetailsSet, newDiags := types.SetValueFrom(ctx, RegionDetailType, getRegionDetails(key.Regions))
 	diags.Append(newDiags...)
 	if diags.HasError() {
 		return
@@ -186,21 +180,14 @@ func (rm *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	rm.SecretKey = helper.KeepOrUpdateValue(rm.SecretKey, other.SecretKey, preserveKnown)
 	rm.Limited = helper.KeepOrUpdateValue(rm.Limited, other.Limited, preserveKnown)
 	rm.Regions = helper.KeepOrUpdateValue(rm.Regions, other.Regions, preserveKnown)
-	rm.RegionDetails = helper.KeepOrUpdateValue(
-		rm.RegionDetails,
-		other.RegionDetails,
-		preserveKnown,
-	)
+	rm.RegionDetails = helper.KeepOrUpdateValue(rm.RegionDetails, other.RegionDetails, preserveKnown)
 
 	if !preserveKnown {
 		rm.BucketAccess = other.BucketAccess
 	}
 }
 
-func (b *BucketAccessModelEntry) FlattenBucketAccess(
-	access *linodego.ObjectStorageKeyBucketAccess,
-	preserveKnown bool,
-) {
+func (b *BucketAccessModelEntry) FlattenBucketAccess(access *linodego.ObjectStorageKeyBucketAccess, preserveKnown bool) {
 	b.BucketName = helper.KeepOrUpdateString(b.BucketName, access.BucketName, preserveKnown)
 	b.Cluster = helper.KeepOrUpdateString(b.Cluster, access.Cluster, preserveKnown)
 	b.Region = helper.KeepOrUpdateString(b.Region, access.Region, preserveKnown)

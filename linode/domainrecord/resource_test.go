@@ -231,11 +231,7 @@ func TestAccResourceDomainRecord_SRVNoFQDN(t *testing.T) {
 				Config: tmpl.SRV(t, domainName, "mysubdomainbutnew"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "name", expectedName),
-					resource.TestCheckResourceAttr(
-						resName,
-						"target",
-						"mysubdomainbutnew."+domainName,
-					),
+					resource.TestCheckResourceAttr(resName, "target", "mysubdomainbutnew."+domainName),
 					resource.TestCheckResourceAttr(resName, "record_type", "SRV"),
 					resource.TestCheckResourceAttr(resName, "protocol", "tcp"),
 				),
@@ -258,22 +254,14 @@ func TestAccResourceDomainRecord_update(t *testing.T) {
 				Config: tmpl.Basic(t, domainRecordName),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainRecordExists,
-					resource.TestCheckResourceAttr(
-						"linode_domain_record.foobar",
-						"name",
-						domainRecordName,
-					),
+					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", domainRecordName),
 				),
 			},
 			{
 				Config: tmpl.Updates(t, domainRecordName),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainRecordExists,
-					resource.TestCheckResourceAttr(
-						"linode_domain_record.foobar",
-						"name",
-						fmt.Sprintf("renamed-%s", domainRecordName),
-					),
+					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", fmt.Sprintf("renamed-%s", domainRecordName)),
 				),
 			},
 		},
@@ -295,11 +283,7 @@ func TestAccResourceDomainRecord_reconcileName(t *testing.T) {
 				Config: tmpl.WithDomain(t, domainName, domainName),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainRecordExists,
-					resource.TestCheckResourceAttr(
-						"linode_domain_record.foobar",
-						"name",
-						domainName,
-					),
+					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", domainName),
 				),
 			},
 			{
@@ -312,11 +296,7 @@ func TestAccResourceDomainRecord_reconcileName(t *testing.T) {
 				Config: tmpl.WithDomain(t, domainName, ""),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainRecordExists,
-					resource.TestCheckResourceAttr(
-						"linode_domain_record.foobar",
-						"name",
-						domainName,
-					),
+					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", domainName),
 				),
 			},
 			{
@@ -329,11 +309,7 @@ func TestAccResourceDomainRecord_reconcileName(t *testing.T) {
 				Config: tmpl.WithDomain(t, domainName, "test."+domainName),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainRecordExists,
-					resource.TestCheckResourceAttr(
-						"linode_domain_record.foobar",
-						"name",
-						"test."+domainName,
-					),
+					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", "test."+domainName),
 				),
 			},
 			{
@@ -369,10 +345,7 @@ func importStateID(s *terraform.State) (string, error) {
 		}
 		domainID, err := strconv.Atoi(rs.Primary.Attributes["domain_id"])
 		if err != nil {
-			return "", fmt.Errorf(
-				"Error parsing domain_id %v to int",
-				rs.Primary.Attributes["domain_id"],
-			)
+			return "", fmt.Errorf("Error parsing domain_id %v to int", rs.Primary.Attributes["domain_id"])
 		}
 		return fmt.Sprintf("%d,%d", domainID, id), nil
 	}
@@ -398,11 +371,7 @@ func checkDomainRecordExists(s *terraform.State) error {
 		}
 		_, err = client.GetDomainRecord(context.Background(), domainID, id)
 		if err != nil {
-			return fmt.Errorf(
-				"Error retrieving state of DomainRecord %s: %s",
-				rs.Primary.Attributes["name"],
-				err,
-			)
+			return fmt.Errorf("Error retrieving state of DomainRecord %s: %s", rs.Primary.Attributes["name"], err)
 		}
 	}
 
@@ -421,10 +390,7 @@ func checkDomainRecordDestroy(s *terraform.State) error {
 		}
 		domainID, err := strconv.Atoi(rs.Primary.Attributes["domain_id"])
 		if err != nil {
-			return fmt.Errorf(
-				"Error parsing domain_id %v to int",
-				rs.Primary.Attributes["domain_id"],
-			)
+			return fmt.Errorf("Error parsing domain_id %v to int", rs.Primary.Attributes["domain_id"])
 		}
 
 		if id == 0 {

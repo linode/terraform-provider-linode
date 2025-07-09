@@ -79,11 +79,7 @@ func TestAccDataSourceAccountLogins_filterByRestricted(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "logins.0.id"),
 					resource.TestCheckResourceAttrSet(resourceName, "logins.0.ip"),
 					resource.TestCheckResourceAttrSet(resourceName, "logins.0.username"),
-					resource.TestCheckResourceAttr(
-						resourceName,
-						"logins.0.restricted",
-						strconv.FormatBool(restricted),
-					),
+					resource.TestCheckResourceAttr(resourceName, "logins.0.restricted", strconv.FormatBool(restricted)),
 					resource.TestCheckResourceAttrSet(resourceName, "logins.0.datetime"),
 					resource.TestCheckResourceAttrSet(resourceName, "logins.0.status"),
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "logins.#", 0),

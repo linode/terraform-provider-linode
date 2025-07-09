@@ -29,14 +29,8 @@ func TestAccDataSourceNodeBalancerTypes_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.price.0.hourly"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.price.0.monthly"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.region_prices.0.id"),
-					resource.TestCheckResourceAttrSet(
-						dataSourceName,
-						"types.0.region_prices.0.hourly",
-					),
-					resource.TestCheckResourceAttrSet(
-						dataSourceName,
-						"types.0.region_prices.0.monthly",
-					),
+					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.region_prices.0.hourly"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.region_prices.0.monthly"),
 				),
 			},
 		},

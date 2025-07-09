@@ -157,10 +157,7 @@ func (r *Resource) Read(
 		if lerr, ok := err.(*linodego.Error); ok && (lerr.Code == 404 || lerr.Code == 405) {
 			resp.Diagnostics.AddWarning(
 				"IPv6 range does not exist.",
-				fmt.Sprintf(
-					"IPv6 range \"%s\" does not exist, removing from state.",
-					data.ID.ValueString(),
-				),
+				fmt.Sprintf("IPv6 range \"%s\" does not exist, removing from state.", data.ID.ValueString()),
 			)
 			resp.State.RemoveResource(ctx)
 			return
@@ -278,10 +275,7 @@ func (r *Resource) Delete(
 		if lerr, ok := err.(*linodego.Error); ok && (lerr.Code == 404 || lerr.Code == 405) {
 			resp.Diagnostics.AddWarning(
 				"IPv6 range does not exist.",
-				fmt.Sprintf(
-					"IPv6 range \"%s\" does not exist, removing from state.",
-					data.ID.ValueString(),
-				),
+				fmt.Sprintf("IPv6 range \"%s\" does not exist, removing from state.", data.ID.ValueString()),
 			)
 			return
 		}

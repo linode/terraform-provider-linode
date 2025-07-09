@@ -5,8 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -18,11 +19,7 @@ import (
 //
 // This is useful to simplifying the logic around checking whether a nested field has been
 // explicitly defined by a user.
-func SDKv2UnwrapOptionalConfigAttr[T any](
-	ctx context.Context,
-	d *schema.ResourceData,
-	path string,
-) *T {
+func SDKv2UnwrapOptionalConfigAttr[T any](ctx context.Context, d *schema.ResourceData, path string) *T {
 	ctyPath := SDKv2PathToCtyPath(path)
 
 	ctyValue, err := ctyPath.Apply(d.GetRawConfig())

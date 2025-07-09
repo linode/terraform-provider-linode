@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -31,11 +32,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func createResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Debug(ctx, "Create linode_user")
 
 	client := meta.(*helper.ProviderMeta).Client
@@ -78,10 +75,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	user, err := client.GetUser(ctx, username)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			log.Printf(
-				"[WARN] removing Linode User %q from state because it no longer exists",
-				d.Id(),
-			)
+			log.Printf("[WARN] removing Linode User %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
 		}
@@ -117,11 +111,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func updateResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_user")
 
@@ -155,11 +145,7 @@ func updateResource(
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_user")
 
@@ -199,9 +185,7 @@ func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interfac
 	updateOpts.Longview = expandGrantsEntities(d.Get("longview_grant").(*schema.Set).List())
 	updateOpts.NodeBalancer = expandGrantsEntities(d.Get("nodebalancer_grant").(*schema.Set).List())
 	updateOpts.StackScript = expandGrantsEntities(d.Get("stackscript_grant").(*schema.Set).List())
-	updateOpts.PlacementGroup = expandGrantsEntities(
-		d.Get("placement_group_grant").(*schema.Set).List(),
-	)
+	updateOpts.PlacementGroup = expandGrantsEntities(d.Get("placement_group_grant").(*schema.Set).List())
 	updateOpts.VPC = expandGrantsEntities(d.Get("vpc_grant").(*schema.Set).List())
 	updateOpts.Volume = expandGrantsEntities(d.Get("volume_grant").(*schema.Set).List())
 

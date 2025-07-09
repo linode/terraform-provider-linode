@@ -62,11 +62,7 @@ func TestAccResourceObject_basic_cluster(t *testing.T) {
 	contentUpdated := "testing456"
 
 	contentSource := acceptance.CreateTempFile(t, "tf-test-obj-source", content)
-	contentSourceUpdated := acceptance.CreateTempFile(
-		t,
-		"tf-test-obj-source-updated",
-		contentUpdated,
-	)
+	contentSourceUpdated := acceptance.CreateTempFile(t, "tf-test-obj-source-updated", contentUpdated)
 
 	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
 		bucketName := acctest.RandomWithPrefix("tf-test")
@@ -78,14 +74,7 @@ func TestAccResourceObject_basic_cluster(t *testing.T) {
 			CheckDestroy:             checkObjectDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.BasicWithCluster(
-						t,
-						bucketName,
-						testCluster,
-						keyName,
-						content,
-						contentSource.Name(),
-					),
+					Config: tmpl.BasicWithCluster(t, bucketName, testCluster, keyName, content, contentSource.Name()),
 					Check: resource.ComposeTestCheckFunc(
 						validateObject(getObjectResourceName("basic"), "test_basic", content),
 						validateObject(getObjectResourceName("base64"), "test_base64", content),
@@ -93,30 +82,11 @@ func TestAccResourceObject_basic_cluster(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.Updates(
-						t,
-						bucketName,
-						testRegion,
-						keyName,
-						contentUpdated,
-						contentSourceUpdated.Name(),
-					),
+					Config: tmpl.Updates(t, bucketName, testRegion, keyName, contentUpdated, contentSourceUpdated.Name()),
 					Check: resource.ComposeTestCheckFunc(
-						validateObjectUpdates(
-							getObjectResourceName("basic"),
-							"test_basic",
-							contentUpdated,
-						),
-						validateObjectUpdates(
-							getObjectResourceName("base64"),
-							"test_base64",
-							contentUpdated,
-						),
-						validateObjectUpdates(
-							getObjectResourceName("source"),
-							"test_source",
-							contentUpdated,
-						),
+						validateObjectUpdates(getObjectResourceName("basic"), "test_basic", contentUpdated),
+						validateObjectUpdates(getObjectResourceName("base64"), "test_base64", contentUpdated),
+						validateObjectUpdates(getObjectResourceName("source"), "test_source", contentUpdated),
 					),
 				},
 			},
@@ -147,11 +117,7 @@ func TestAccResourceObject_basic(t *testing.T) {
 	contentUpdated := "testing456"
 
 	contentSource := acceptance.CreateTempFile(t, "tf-test-obj-source", content)
-	contentSourceUpdated := acceptance.CreateTempFile(
-		t,
-		"tf-test-obj-source-updated",
-		contentUpdated,
-	)
+	contentSourceUpdated := acceptance.CreateTempFile(t, "tf-test-obj-source-updated", contentUpdated)
 
 	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
 		bucketName := acctest.RandomWithPrefix("tf-test")
@@ -163,14 +129,7 @@ func TestAccResourceObject_basic(t *testing.T) {
 			CheckDestroy:             checkObjectDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Basic(
-						t,
-						bucketName,
-						testRegion,
-						keyName,
-						content,
-						contentSource.Name(),
-					),
+					Config: tmpl.Basic(t, bucketName, testRegion, keyName, content, contentSource.Name()),
 					Check: resource.ComposeTestCheckFunc(
 						validateObject(getObjectResourceName("basic"), "test_basic", content),
 						validateObject(getObjectResourceName("base64"), "test_base64", content),
@@ -178,30 +137,11 @@ func TestAccResourceObject_basic(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.Updates(
-						t,
-						bucketName,
-						testRegion,
-						keyName,
-						contentUpdated,
-						contentSourceUpdated.Name(),
-					),
+					Config: tmpl.Updates(t, bucketName, testRegion, keyName, contentUpdated, contentSourceUpdated.Name()),
 					Check: resource.ComposeTestCheckFunc(
-						validateObjectUpdates(
-							getObjectResourceName("basic"),
-							"test_basic",
-							contentUpdated,
-						),
-						validateObjectUpdates(
-							getObjectResourceName("base64"),
-							"test_base64",
-							contentUpdated,
-						),
-						validateObjectUpdates(
-							getObjectResourceName("source"),
-							"test_source",
-							contentUpdated,
-						),
+						validateObjectUpdates(getObjectResourceName("basic"), "test_basic", contentUpdated),
+						validateObjectUpdates(getObjectResourceName("base64"), "test_base64", contentUpdated),
+						validateObjectUpdates(getObjectResourceName("source"), "test_source", contentUpdated),
 					),
 				},
 			},
@@ -226,11 +166,7 @@ func TestAccResourceObject_credsConfiged(t *testing.T) {
 				{
 					Config: tmpl.CredsConfiged(t, bucketName, testRegion, keyName, content),
 					Check: resource.ComposeTestCheckFunc(
-						validateObject(
-							getObjectResourceName("creds_configed"),
-							"test_creds_configed",
-							content,
-						),
+						validateObject(getObjectResourceName("creds_configed"), "test_creds_configed", content),
 					),
 				},
 			},
@@ -255,11 +191,7 @@ func TestAccResourceObject_tempKeys(t *testing.T) {
 				{
 					Config: tmpl.TempKeys(t, bucketName, testRegion, keyName, content),
 					Check: resource.ComposeTestCheckFunc(
-						validateObject(
-							getObjectResourceName("temp_keys"),
-							"test_temp_keys",
-							content,
-						),
+						validateObject(getObjectResourceName("temp_keys"), "test_temp_keys", content),
 					),
 				},
 			},

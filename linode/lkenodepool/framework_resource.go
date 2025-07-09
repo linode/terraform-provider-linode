@@ -63,11 +63,7 @@ func (r *Resource) Read(
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
 				"Error reading Linode Node Pool",
-				fmt.Sprintf(
-					"Removing Linode Node Pool %d in cluster %d, from state because it no longer exists",
-					poolID,
-					clusterID,
-				),
+				fmt.Sprintf("Removing Linode Node Pool %d in cluster %d, from state because it no longer exists", poolID, clusterID),
 			)
 			resp.State.RemoveResource(ctx)
 			return
@@ -194,13 +190,7 @@ func (r *Resource) Update(
 
 	var updateOpts linodego.LKENodePoolUpdateOptions
 
-	shouldUpdate := plan.SetNodePoolUpdateOptions(
-		ctx,
-		&updateOpts,
-		&resp.Diagnostics,
-		&state,
-		cluster.Tier,
-	)
+	shouldUpdate := plan.SetNodePoolUpdateOptions(ctx, &updateOpts, &resp.Diagnostics, &state, cluster.Tier)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -271,11 +261,7 @@ func (r *Resource) Delete(
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
 				"Node Pool does not exist.",
-				fmt.Sprintf(
-					"Node Pool %v does not exist in cluster %v, removing from state.",
-					poolID,
-					clusterID,
-				),
+				fmt.Sprintf("Node Pool %v does not exist in cluster %v, removing from state.", poolID, clusterID),
 			)
 			resp.State.RemoveResource(ctx)
 			return

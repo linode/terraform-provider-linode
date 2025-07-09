@@ -57,11 +57,7 @@ func (r *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func listNodeBalancerTypes(
-	ctx context.Context,
-	client *linodego.Client,
-	filter string,
-) ([]any, error) {
+func listNodeBalancerTypes(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
 	tflog.Debug(ctx, "Listing Node Balancer types", map[string]any{
 		"filter_header": filter,
 	})

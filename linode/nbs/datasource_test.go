@@ -31,48 +31,22 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t, nbLabel, nbRegion),
 				Check: resource.ComposeTestCheckFunc(
+
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.id"),
-					resource.TestCheckResourceAttrSet(
-						resourceName,
-						"nodebalancers.0.client_conn_throttle",
-					),
-					resource.TestCheckResourceAttrSet(
-						resourceName,
-						"nodebalancers.0.client_udp_sess_throttle",
-					),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.client_conn_throttle"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.client_udp_sess_throttle"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.hostname"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.ipv4"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.ipv6"),
-					resource.TestCheckResourceAttr(
-						resourceName,
-						"nodebalancers.0.label",
-						nbLabel+"-0",
-					),
-					resource.TestCheckResourceAttr(
-						resourceName,
-						"nodebalancers.0.region",
-						nbRegion,
-					),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.label", nbLabel+"-0"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.region", nbRegion),
 					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.transfer.#", "1"),
-					resource.TestCheckResourceAttrSet(
-						resourceName,
-						"nodebalancers.0.transfer.0.in",
-					),
-					resource.TestCheckResourceAttrSet(
-						resourceName,
-						"nodebalancers.0.transfer.0.out",
-					),
-					resource.TestCheckResourceAttrSet(
-						resourceName,
-						"nodebalancers.0.transfer.0.total",
-					),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.transfer.0.in"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.transfer.0.out"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.transfer.0.total"),
 					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.tags.#", "1"),
-					resource.TestCheckResourceAttr(
-						resourceName,
-						"nodebalancers.0.tags.0",
-						"tf_test_1",
-					),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.tags.0", "tf_test_1"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.updated"),
 				),
 			},
@@ -91,11 +65,7 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 			{
 				Config: tmpl.DataOrder(t, nbLabel, nbRegion),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						resourceName,
-						"nodebalancers.0.label",
-						nbLabel+"-0",
-					),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.label", nbLabel+"-0"),
 				),
 			},
 		},

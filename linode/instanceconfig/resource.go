@@ -27,11 +27,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func importResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) ([]*schema.ResourceData, error) {
+func importResource(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	tflog.Debug(ctx, "Import linode_instance_config", map[string]any{
 		"id": d.Id(),
 	})
@@ -286,11 +282,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diag.Errorf("failed to get config %d: %s", id, err)
 		}
 
-		powerOffRequired = instancehelpers.VPCInterfaceIncluded(
-			config.Interfaces,
-			putRequest.Interfaces,
-		) &&
-			isBootedConfig
+		powerOffRequired = instancehelpers.VPCInterfaceIncluded(config.Interfaces, putRequest.Interfaces) && isBootedConfig
 		shouldUpdate = true
 	}
 
@@ -304,10 +296,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			if err := instancehelpers.ShutdownInstanceForVPCInterfaceUpdate(
 				ctx, &client, meta.(*helper.ProviderMeta).Config.SkipImplicitReboots, linodeID, helper.GetDeadlineSeconds(ctx, d),
 			); err != nil {
-				return diag.Errorf(
-					"failed to shutdown linode instance for VPC interface update: %s",
-					err,
-				)
+				return diag.Errorf("failed to shutdown linode instance for VPC interface update: %s", err)
 			}
 		}
 
@@ -325,8 +314,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 	}
 
-	shouldReboot := isBootedConfig && shouldUpdate && !powerOffRequired &&
-		!meta.(*helper.ProviderMeta).Config.SkipImplicitReboots
+	shouldReboot := isBootedConfig && shouldUpdate && !powerOffRequired && !meta.(*helper.ProviderMeta).Config.SkipImplicitReboots
 	if managedBoot {
 		if err := applyBootStatus(ctx, &client, linodeID, id,
 			helper.GetDeadlineSeconds(ctx, d),

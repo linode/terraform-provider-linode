@@ -63,16 +63,8 @@ func TestParseRegions(t *testing.T) {
 			assert.Equal(t, types.StringValue(capability), model.Regions[i].Capabilities[j])
 		}
 
-		assert.Equal(
-			t,
-			types.StringValue(expectedRegion.Resolvers.IPv4),
-			model.Regions[i].Resolvers[0].IPv4,
-		)
-		assert.Equal(
-			t,
-			types.StringValue(expectedRegion.Resolvers.IPv6),
-			model.Regions[i].Resolvers[0].IPv6,
-		)
+		assert.Equal(t, types.StringValue(expectedRegion.Resolvers.IPv4), model.Regions[i].Resolvers[0].IPv4)
+		assert.Equal(t, types.StringValue(expectedRegion.Resolvers.IPv6), model.Regions[i].Resolvers[0].IPv6)
 
 		assert.Equal(
 			t,

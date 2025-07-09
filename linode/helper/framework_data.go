@@ -54,11 +54,7 @@ func KeepOrUpdateStringMap(
 }
 
 func KeepOrUpdateSet(
-	elementType attr.Type,
-	original types.Set,
-	updated []attr.Value,
-	preserveKnown bool,
-	diags *diag.Diagnostics,
+	elementType attr.Type, original types.Set, updated []attr.Value, preserveKnown bool, diags *diag.Diagnostics,
 ) types.Set {
 	setValue, newDiags := types.SetValue(elementType, updated)
 	diags.Append(newDiags...)
@@ -70,35 +66,19 @@ func KeepOrUpdateSet(
 	return KeepOrUpdateValue(original, setValue, preserveKnown)
 }
 
-func KeepOrUpdateStringPointer(
-	original types.String,
-	updated *string,
-	preserveKnown bool,
-) types.String {
+func KeepOrUpdateStringPointer(original types.String, updated *string, preserveKnown bool) types.String {
 	return KeepOrUpdateValue(original, types.StringPointerValue(updated), preserveKnown)
 }
 
-func KeepOrUpdateInt64Pointer(
-	original types.Int64,
-	updated *int64,
-	preserveKnown bool,
-) types.Int64 {
+func KeepOrUpdateInt64Pointer(original types.Int64, updated *int64, preserveKnown bool) types.Int64 {
 	return KeepOrUpdateValue(original, types.Int64PointerValue(updated), preserveKnown)
 }
 
-func KeepOrUpdateInt32Pointer(
-	original types.Int32,
-	updated *int32,
-	preserveKnown bool,
-) types.Int32 {
+func KeepOrUpdateInt32Pointer(original types.Int32, updated *int32, preserveKnown bool) types.Int32 {
 	return KeepOrUpdateValue(original, types.Int32PointerValue(updated), preserveKnown)
 }
 
-func KeepOrUpdateFloat64Pointer(
-	original types.Float64,
-	updated *float64,
-	preserveKnown bool,
-) types.Float64 {
+func KeepOrUpdateFloat64Pointer(original types.Float64, updated *float64, preserveKnown bool) types.Float64 {
 	return KeepOrUpdateValue(original, types.Float64PointerValue(updated), preserveKnown)
 }
 

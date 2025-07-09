@@ -66,11 +66,7 @@ func (r *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func listAvailabilities(
-	ctx context.Context,
-	client *linodego.Client,
-	filter string,
-) ([]any, error) {
+func listAvailabilities(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
 	tflog.Trace(ctx, "client.ListAccountAvailabilities(...)", map[string]any{
 		"filter": filter,
 	})

@@ -18,22 +18,13 @@ func WaitForNodePoolReady(
 	for {
 		select {
 		case <-ctx.Done():
-			return nil, fmt.Errorf(
-				"timed out waiting for LKE Cluster (%d) Pool (%d) to be ready",
-				clusterID,
-				poolID,
-			)
+			return nil, fmt.Errorf("timed out waiting for LKE Cluster (%d) Pool (%d) to be ready", clusterID, poolID)
 
 		case <-eventTicker.C:
 			tflog.Trace(ctx, "client.GetLKENodePool(...)")
 			pool, err := client.GetLKENodePool(ctx, clusterID, poolID)
 			if err != nil {
-				return nil, fmt.Errorf(
-					"failed to get LKE Cluster (%d) Pool (%d): %w",
-					clusterID,
-					poolID,
-					err,
-				)
+				return nil, fmt.Errorf("failed to get LKE Cluster (%d) Pool (%d): %w", clusterID, poolID, err)
 			}
 
 			allNodesReady := true

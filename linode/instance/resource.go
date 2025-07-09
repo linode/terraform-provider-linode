@@ -184,11 +184,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func createResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Create linode_instance")
 
@@ -231,10 +227,7 @@ func createResource(
 	if interfaces, interfacesOk := d.GetOk("interface"); interfacesOk {
 		interfaces := interfaces.([]interface{})
 
-		createOpts.Interfaces = make(
-			[]linodego.InstanceConfigInterfaceCreateOptions,
-			len(interfaces),
-		)
+		createOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 		for i, ni := range interfaces {
 			createOpts.Interfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
@@ -262,18 +255,14 @@ func createResource(
 	if !disksOk && !configsOk {
 		for _, key := range d.Get("authorized_keys").([]interface{}) {
 			if key == nil {
-				return diag.Errorf(
-					"invalid input for authorized_keys: keys cannot be empty or null",
-				)
+				return diag.Errorf("invalid input for authorized_keys: keys cannot be empty or null")
 			}
 
 			createOpts.AuthorizedKeys = append(createOpts.AuthorizedKeys, key.(string))
 		}
 		for _, user := range d.Get("authorized_users").([]interface{}) {
 			if user == nil {
-				return diag.Errorf(
-					"invalid input for authorized_users: users cannot be empty or null",
-				)
+				return diag.Errorf("invalid input for authorized_users: users cannot be empty or null")
 			}
 
 			createOpts.AuthorizedUsers = append(createOpts.AuthorizedUsers, user.(string))
@@ -305,9 +294,7 @@ func createResource(
 		if stackscriptDataRaw, ok := d.GetOk("stackscript_data"); ok {
 			stackscriptData, ok := stackscriptDataRaw.(map[string]interface{})
 			if !ok {
-				return diag.Errorf(
-					"Error parsing stackscript_data: expected map[string]interface{}",
-				)
+				return diag.Errorf("Error parsing stackscript_data: expected map[string]interface{}")
 			}
 			createOpts.StackScriptData = make(map[string]string, len(stackscriptData))
 			for name, value := range stackscriptData {
@@ -318,10 +305,7 @@ func createResource(
 		createOpts.Booted = &boolFalse // necessary to prepare disks and configs
 	}
 
-	createPoller, err := client.NewEventPollerWithoutEntity(
-		linodego.EntityLinode,
-		linodego.ActionLinodeCreate,
-	)
+	createPoller, err := client.NewEventPollerWithoutEntity(linodego.EntityLinode, linodego.ActionLinodeCreate)
 	if err != nil {
 		return diag.Errorf("failed to initialize event poller: %s", err)
 	}
@@ -423,14 +407,7 @@ func createResource(
 		configSpecs := d.Get("config").([]interface{})
 		detacher := makeVolumeDetacher(client, d)
 
-		configIDMap, err := createInstanceConfigsFromSet(
-			ctx,
-			client,
-			instance.ID,
-			configSpecs,
-			diskIDLabelMap,
-			detacher,
-		)
+		configIDMap, err := createInstanceConfigsFromSet(ctx, client, instance.ID, configSpecs, diskIDLabelMap, detacher)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -473,12 +450,7 @@ func createResource(
 
 	if createOpts.Booted == nil || !*createOpts.Booted {
 		if disksOk && configsOk && (bootedNull || booted) {
-			p, err := client.NewEventPoller(
-				ctx,
-				instance.ID,
-				linodego.EntityLinode,
-				linodego.ActionLinodeBoot,
-			)
+			p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeBoot)
 			if err != nil {
 				return diag.Errorf("failed to initialize event poller: %s", err)
 			}
@@ -517,22 +489,14 @@ func createResource(
 		})
 
 		if _, err = client.WaitForInstanceStatus(ctx, instance.ID, targetStatus, getDeadlineSeconds(ctx, d)); err != nil {
-			return diag.Errorf(
-				"timed-out waiting for Linode instance %d to reach status %s: %s",
-				instance.ID,
-				targetStatus,
-				err,
-			)
+			return diag.Errorf("timed-out waiting for Linode instance %d to reach status %s: %s", instance.ID, targetStatus, err)
 		}
 	}
 
 	return readResource(ctx, d, meta)
 }
 
-func findDiskByFS(
-	disks []linodego.InstanceDisk,
-	fs linodego.DiskFilesystem,
-) *linodego.InstanceDisk {
+func findDiskByFS(disks []linodego.InstanceDisk, fs linodego.DiskFilesystem) *linodego.InstanceDisk {
 	for _, disk := range disks {
 		if disk.Filesystem == fs {
 			return &disk
@@ -546,10 +510,7 @@ func findDiskByFS(
 //
 // returns bool describing whether the linode needs to be restarted.
 func adjustSwapSizeIfNeeded(
-	ctx context.Context,
-	d *schema.ResourceData,
-	client *linodego.Client,
-	instance *linodego.Instance,
+	ctx context.Context, d *schema.ResourceData, client *linodego.Client, instance *linodego.Instance,
 ) (bool, error) {
 	if !d.HasChange("swap_size") {
 		return false, nil
@@ -594,11 +555,7 @@ func adjustSwapSizeIfNeeded(
 	return true, nil
 }
 
-func updateResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_instance")
 
@@ -707,11 +664,8 @@ func updateResource(
 
 	if d.HasChange("private_ip") {
 		if _, ok := d.GetOk("private_ip"); !ok {
-			return diag.Errorf(
-				"Error removing private IP address for Instance %d: Removing a Private IP "+
-					"address must be handled through a support ticket",
-				instance.ID,
-			)
+			return diag.Errorf("Error removing private IP address for Instance %d: Removing a Private IP "+
+				"address must be handled through a support ticket", instance.ID)
 		}
 
 		tflog.Info(ctx, "client.AddInstanceIPAddress(...)", map[string]any{
@@ -720,11 +674,7 @@ func updateResource(
 
 		privateIP, err := client.AddInstanceIPAddress(ctx, instance.ID, false)
 		if err != nil {
-			return diag.Errorf(
-				"Error activating private networking on Instance %d: %s",
-				instance.ID,
-				err,
-			)
+			return diag.Errorf("Error activating private networking on Instance %d: %s", instance.ID, err)
 		}
 		d.Set("private_ip_address", privateIP.Address)
 		rebootInstance = true
@@ -761,8 +711,7 @@ func updateResource(
 
 	// We only need to do this if explicit disks are defined
 	if d.GetRawConfig().GetAttr("image").IsNull() {
-		if didChange, err := applyInstanceDiskSpec(ctx, d, &client, instance, newSpec); err == nil &&
-			didChange {
+		if didChange, err := applyInstanceDiskSpec(ctx, d, &client, instance, newSpec); err == nil && didChange {
 			rebootInstance = true
 		} else if err != nil && newSpec.Disk < oldSpec.Disk && !d.HasChange("disk") {
 			// Linode was downsized but the pre-existing disk config does not fit new instance spec
@@ -839,8 +788,7 @@ func updateResource(
 		// it's currently on and booted attribute is unset by the user.
 		// Otherwise, it will stay off (if it's already off) or be handled by
 		// `handleBootedUpdate` (if booted is set to an explicit value)
-		shouldPowerOn := bootedNull && powerOffRequired &&
-			instance.Status == linodego.InstanceRunning
+		shouldPowerOn := bootedNull && powerOffRequired && instance.Status == linodego.InstanceRunning
 
 		if powerOffRequired {
 			if err := ShutdownInstanceForVPCInterfaceUpdate(
@@ -927,11 +875,7 @@ func updateResource(
 
 		_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
 		if err != nil {
-			return diag.Errorf(
-				"Error waiting for Instance %d to finish rebooting: %s",
-				instance.ID,
-				err,
-			)
+			return diag.Errorf("Error waiting for Instance %d to finish rebooting: %s", instance.ID, err)
 		}
 
 		tflog.Debug(ctx, "Instance has finished rebooting")
@@ -939,11 +883,7 @@ func updateResource(
 		if _, err = client.WaitForInstanceStatus(
 			ctx, instance.ID, linodego.InstanceRunning, getDeadlineSeconds(ctx, d),
 		); err != nil {
-			return diag.Errorf(
-				"Timed-out waiting for Linode instance %d to boot: %s",
-				instance.ID,
-				err,
-			)
+			return diag.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
 		}
 	}
 
@@ -954,11 +894,7 @@ func updateResource(
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_instance")
 

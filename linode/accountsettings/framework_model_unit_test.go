@@ -5,8 +5,9 @@ package accountsettings
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func TestFlattenAccountSettings(t *testing.T) {
@@ -38,11 +39,7 @@ func TestFlattenAccountSettings(t *testing.T) {
 	}
 
 	if model.LongviewSubscription != types.StringValue("longview-3") {
-		t.Errorf(
-			"Expected LongviewSubscription to be %s, but got %s",
-			"longview-3",
-			model.LongviewSubscription,
-		)
+		t.Errorf("Expected LongviewSubscription to be %s, but got %s", "longview-3", model.LongviewSubscription)
 	}
 
 	if model.ObjectStorage != types.StringValue("active") {

@@ -31,11 +31,7 @@ func CheckMySQLDatabaseExists(name string, db *linodego.MySQLDatabase) resource.
 
 		found, err := client.GetMySQLDatabase(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf(
-				"error retrieving state of mysql database %s: %s",
-				rs.Primary.Attributes["label"],
-				err,
-			)
+			return fmt.Errorf("error retrieving state of mysql database %s: %s", rs.Primary.Attributes["label"], err)
 		}
 
 		if db != nil {
@@ -46,10 +42,7 @@ func CheckMySQLDatabaseExists(name string, db *linodego.MySQLDatabase) resource.
 	}
 }
 
-func CheckPostgresDatabaseExists(
-	name string,
-	db *linodego.PostgresDatabase,
-) resource.TestCheckFunc {
+func CheckPostgresDatabaseExists(name string, db *linodego.PostgresDatabase) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
@@ -69,11 +62,7 @@ func CheckPostgresDatabaseExists(
 
 		found, err := client.GetPostgresDatabase(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf(
-				"error retrieving state of postgres database %s: %s",
-				rs.Primary.Attributes["label"],
-				err,
-			)
+			return fmt.Errorf("error retrieving state of postgres database %s: %s", rs.Primary.Attributes["label"], err)
 		}
 
 		if db != nil {

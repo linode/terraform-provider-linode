@@ -68,10 +68,7 @@ func (d *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (d *DataSource) getDomainByID(
-	ctx context.Context,
-	id int,
-) (*linodego.Domain, diag.Diagnostic) {
+func (d *DataSource) getDomainByID(ctx context.Context, id int) (*linodego.Domain, diag.Diagnostic) {
 	domain, err := d.Meta.Client.GetDomain(ctx, id)
 	if err != nil {
 		return nil, diag.NewErrorDiagnostic(
@@ -83,10 +80,7 @@ func (d *DataSource) getDomainByID(
 	return domain, nil
 }
 
-func (d *DataSource) getDomainByDomain(
-	ctx context.Context,
-	domain string,
-) (*linodego.Domain, diag.Diagnostic) {
+func (d *DataSource) getDomainByDomain(ctx context.Context, domain string) (*linodego.Domain, diag.Diagnostic) {
 	tflog.Trace(ctx, "Get domain by domain", map[string]any{
 		"domain": domain,
 	})

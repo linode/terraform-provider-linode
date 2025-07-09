@@ -71,10 +71,7 @@ func OBJBucketDelete500Retry() func(response *resty.Response, err error) bool {
 	return GenericRetryCondition(500, OBJBucketDelete)
 }
 
-func GenericRetryCondition(
-	statusCode int,
-	pathPattern *regexp.Regexp,
-) func(response *resty.Response, err error) bool {
+func GenericRetryCondition(statusCode int, pathPattern *regexp.Regexp) func(response *resty.Response, err error) bool {
 	return func(response *resty.Response, _ error) bool {
 		if response.StatusCode() != statusCode || response.Request == nil {
 			return false

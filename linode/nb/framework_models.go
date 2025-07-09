@@ -69,11 +69,7 @@ func (data *NodeBalancerModel) FlattenNodeBalancer(
 	data.ID = helper.KeepOrUpdateString(data.ID, strconv.Itoa(nodebalancer.ID), preserveKnown)
 	data.Label = helper.KeepOrUpdateStringPointer(data.Label, nodebalancer.Label, preserveKnown)
 
-	tags, diags := types.SetValueFrom(
-		ctx,
-		types.StringType,
-		helper.StringSliceToFramework(nodebalancer.Tags),
-	)
+	tags, diags := types.SetValueFrom(ctx, types.StringType, helper.StringSliceToFramework(nodebalancer.Tags))
 	if diags.HasError() {
 		return diags
 	}
@@ -86,11 +82,7 @@ func (data *NodeBalancerModel) FlattenNodeBalancer(
 	data.ClientUDPSessThrottle = helper.KeepOrUpdateInt64(
 		data.ClientUDPSessThrottle, int64(nodebalancer.ClientUDPSessThrottle), preserveKnown,
 	)
-	data.Hostname = helper.KeepOrUpdateStringPointer(
-		data.Hostname,
-		nodebalancer.Hostname,
-		preserveKnown,
-	)
+	data.Hostname = helper.KeepOrUpdateStringPointer(data.Hostname, nodebalancer.Hostname, preserveKnown)
 	data.IPv4 = helper.KeepOrUpdateStringPointer(data.IPv4, nodebalancer.IPv4, preserveKnown)
 	data.IPv6 = helper.KeepOrUpdateStringPointer(data.IPv6, nodebalancer.IPv6, preserveKnown)
 	data.Created = helper.KeepOrUpdateValue(
@@ -160,12 +152,7 @@ func parseNBFirewalls(
 		nbFirewalls[i].Tags = tags
 
 		if fw.Rules.Inbound != nil {
-			inBound, diags := firewall.FlattenFirewallRules(
-				ctx,
-				fw.Rules.Inbound,
-				nbFirewalls[i].Inbound,
-				false,
-			)
+			inBound, diags := firewall.FlattenFirewallRules(ctx, fw.Rules.Inbound, nbFirewalls[i].Inbound, false)
 			if diags.HasError() {
 				return nil, diags
 			}
@@ -173,12 +160,7 @@ func parseNBFirewalls(
 		}
 
 		if fw.Rules.Outbound != nil {
-			outBound, diags := firewall.FlattenFirewallRules(
-				ctx,
-				fw.Rules.Outbound,
-				nbFirewalls[i].Inbound,
-				false,
-			)
+			outBound, diags := firewall.FlattenFirewallRules(ctx, fw.Rules.Outbound, nbFirewalls[i].Inbound, false)
 			if diags.HasError() {
 				return nil, diags
 			}

@@ -44,11 +44,7 @@ type Resource struct {
 }
 
 func createResourceFromUpload(
-	ctx context.Context,
-	plan *ResourceModel,
-	client *linodego.Client,
-	resp *resource.CreateResponse,
-	timeoutSeconds int,
+	ctx context.Context, plan *ResourceModel, client *linodego.Client, resp *resource.CreateResponse, timeoutSeconds int,
 ) *linodego.Image {
 	tflog.Debug(ctx, "Create linode_image from file uploading")
 
@@ -110,11 +106,7 @@ func createResourceFromUpload(
 }
 
 func createResourceFromLinode(
-	ctx context.Context,
-	plan *ResourceModel,
-	client *linodego.Client,
-	resp *resource.CreateResponse,
-	timeoutSeconds int,
+	ctx context.Context, plan *ResourceModel, client *linodego.Client, resp *resource.CreateResponse, timeoutSeconds int,
 ) *linodego.Image {
 	tflog.Debug(ctx, "Create linode_image from a Linode instance")
 
@@ -175,8 +167,7 @@ func createResourceFromLinode(
 		resp.Diagnostics.AddError(
 			fmt.Sprintf(
 				"Failed to wait for linode instance %d disk %d to become ready while taking an image",
-				linodeID,
-				diskID,
+				linodeID, diskID,
 			),
 			err.Error(),
 		)
@@ -366,8 +357,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		if plan.ReplicaRegions.IsNull() || plan.ReplicaRegions.IsUnknown() ||
-			!isAvailableRegionLeft {
+		if plan.ReplicaRegions.IsNull() || plan.ReplicaRegions.IsUnknown() || !isAvailableRegionLeft {
 			resp.Diagnostics.AddError(
 				"Invalid regions to replicate.",
 				"At least one available region must be specified. "+
@@ -381,22 +371,13 @@ func (r *Resource) Update(
 			return
 		}
 
-		timeoutSeconds := helper.FrameworkSafeFloat64ToInt(
-			createTimeout.Seconds(),
-			&resp.Diagnostics,
-		)
+		timeoutSeconds := helper.FrameworkSafeFloat64ToInt(createTimeout.Seconds(), &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 
 		// make sure image is ready for replication
-		waitForImageToBeAvailable(
-			ctx,
-			client,
-			plan.ID.ValueString(),
-			timeoutSeconds,
-			&resp.Diagnostics,
-		)
+		waitForImageToBeAvailable(ctx, client, plan.ID.ValueString(), timeoutSeconds, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -570,19 +551,10 @@ func replicateImage(
 		})
 
 		for _, region := range replicaRegionWaitList {
-			image, err = client.WaitForImageRegionStatus(
-				ctx,
-				imageID,
-				region,
-				linodego.ImageRegionStatusAvailable,
-			)
+			image, err = client.WaitForImageRegionStatus(ctx, imageID, region, linodego.ImageRegionStatusAvailable)
 			if err != nil {
 				diags.AddError(
-					fmt.Sprintf(
-						"Failed to get image %v replication status in region %v",
-						imageID,
-						region,
-					),
+					fmt.Sprintf("Failed to get image %v replication status in region %v", imageID, region),
 					err.Error(),
 				)
 				return nil, diags

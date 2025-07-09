@@ -80,10 +80,7 @@ func TestSmokeTests_databasepostgresql(t *testing.T) {
 		name string
 		test func(*testing.T)
 	}{
-		{
-			"TestAccResourceDatabasePostgres_basic_smoke",
-			TestAccResourceDatabasePostgres_basic_smoke,
-		},
+		{"TestAccResourceDatabasePostgres_basic_smoke", TestAccResourceDatabasePostgres_basic_smoke},
 	}
 
 	for _, tt := range tests {
@@ -127,16 +124,8 @@ func TestAccResourceDatabasePostgres_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
 
-					resource.TestCheckResourceAttr(
-						resName,
-						"engine",
-						strings.Split(engineVersion, "/")[0],
-					),
-					resource.TestCheckResourceAttr(
-						resName,
-						"version",
-						strings.Split(engineVersion, "/")[1],
-					),
+					resource.TestCheckResourceAttr(resName, "engine", strings.Split(engineVersion, "/")[0]),
+					resource.TestCheckResourceAttr(resName, "version", strings.Split(engineVersion, "/")[1]),
 				),
 			},
 			{
@@ -204,16 +193,8 @@ func TestAccResourceDatabasePostgres_complex(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
 
-					resource.TestCheckResourceAttr(
-						resName,
-						"engine",
-						strings.Split(engineVersion, "/")[0],
-					),
-					resource.TestCheckResourceAttr(
-						resName,
-						"version",
-						strings.Split(engineVersion, "/")[1],
-					),
+					resource.TestCheckResourceAttr(resName, "engine", strings.Split(engineVersion, "/")[0]),
+					resource.TestCheckResourceAttr(resName, "version", strings.Split(engineVersion, "/")[1]),
 				),
 			},
 			{
@@ -258,16 +239,8 @@ func TestAccResourceDatabasePostgres_complex(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
 
-					resource.TestCheckResourceAttr(
-						resName,
-						"engine",
-						strings.Split(engineVersion, "/")[0],
-					),
-					resource.TestCheckResourceAttr(
-						resName,
-						"version",
-						strings.Split(engineVersion, "/")[1],
-					),
+					resource.TestCheckResourceAttr(resName, "engine", strings.Split(engineVersion, "/")[0]),
+					resource.TestCheckResourceAttr(resName, "version", strings.Split(engineVersion, "/")[1]),
 				),
 			},
 			{

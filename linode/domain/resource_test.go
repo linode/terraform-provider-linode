@@ -121,11 +121,7 @@ func TestAccResourceDomain_update(t *testing.T) {
 				Config: tmpl.Updates(t, domainName),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainExists,
-					resource.TestCheckResourceAttr(
-						resName,
-						"domain",
-						fmt.Sprintf("renamed-%s", domainName),
-					),
+					resource.TestCheckResourceAttr(resName, "domain", fmt.Sprintf("renamed-%s", domainName)),
 					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "tags.1", "tf_test_2"),
@@ -242,11 +238,7 @@ func checkDomainExists(s *terraform.State) error {
 
 		_, err = client.GetDomain(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf(
-				"Error retrieving state of Domain %s: %s",
-				rs.Primary.Attributes["domain"],
-				err,
-			)
+			return fmt.Errorf("Error retrieving state of Domain %s: %s", rs.Primary.Attributes["domain"], err)
 		}
 	}
 

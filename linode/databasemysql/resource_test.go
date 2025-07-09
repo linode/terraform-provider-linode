@@ -111,16 +111,8 @@ func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
 
-					resource.TestCheckResourceAttr(
-						resName,
-						"engine",
-						strings.Split(engineVersion, "/")[0],
-					),
-					resource.TestCheckResourceAttr(
-						resName,
-						"version",
-						strings.Split(engineVersion, "/")[1],
-					),
+					resource.TestCheckResourceAttr(resName, "engine", strings.Split(engineVersion, "/")[0]),
+					resource.TestCheckResourceAttr(resName, "version", strings.Split(engineVersion, "/")[1]),
 				),
 			},
 			{
@@ -186,16 +178,8 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
 
-					resource.TestCheckResourceAttr(
-						resName,
-						"engine",
-						strings.Split(engineVersion, "/")[0],
-					),
-					resource.TestCheckResourceAttr(
-						resName,
-						"version",
-						strings.Split(engineVersion, "/")[1],
-					),
+					resource.TestCheckResourceAttr(resName, "engine", strings.Split(engineVersion, "/")[0]),
+					resource.TestCheckResourceAttr(resName, "version", strings.Split(engineVersion, "/")[1]),
 				),
 			},
 			{
@@ -239,16 +223,8 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
 
-					resource.TestCheckResourceAttr(
-						resName,
-						"engine",
-						strings.Split(engineVersion, "/")[0],
-					),
-					resource.TestCheckResourceAttr(
-						resName,
-						"version",
-						strings.Split(engineVersion, "/")[1],
-					),
+					resource.TestCheckResourceAttr(resName, "engine", strings.Split(engineVersion, "/")[0]),
+					resource.TestCheckResourceAttr(resName, "version", strings.Split(engineVersion, "/")[1]),
 				),
 			},
 			{

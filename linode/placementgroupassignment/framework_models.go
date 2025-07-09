@@ -33,11 +33,7 @@ func (m *PGAssignmentModel) CopyFrom(
 	preserveKnown bool,
 ) {
 	m.ID = helper.KeepOrUpdateValue(m.ID, other.ID, preserveKnown)
-	m.PlacementGroupID = helper.KeepOrUpdateValue(
-		m.PlacementGroupID,
-		other.PlacementGroupID,
-		preserveKnown,
-	)
+	m.PlacementGroupID = helper.KeepOrUpdateValue(m.PlacementGroupID, other.PlacementGroupID, preserveKnown)
 	m.LinodeID = helper.KeepOrUpdateValue(m.LinodeID, other.LinodeID, preserveKnown)
 }
 

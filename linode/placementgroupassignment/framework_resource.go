@@ -209,13 +209,9 @@ func (r *Resource) Delete(
 		"linode_id":          linodeID,
 	})
 
-	_, err := client.UnassignPlacementGroupLinodes(
-		ctx,
-		pgID,
-		linodego.PlacementGroupUnAssignOptions{
-			Linodes: []int{linodeID},
-		},
-	)
+	_, err := client.UnassignPlacementGroupLinodes(ctx, pgID, linodego.PlacementGroupUnAssignOptions{
+		Linodes: []int{linodeID},
+	})
 	if err != nil {
 		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(

@@ -84,13 +84,10 @@ func TestAccResourceStackscript_basic_smoke(t *testing.T) {
 			},
 
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"created",
-					"updated",
-				}, // Ignore strict comparison for these attributes
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"created", "updated"}, // Ignore strict comparison for these attributes
 			},
 		},
 	})
@@ -123,11 +120,7 @@ func TestAccResourceStackscript_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
 					resource.TestCheckResourceAttr(resName, "rev_note", "initial"),
 					acceptance.CheckListContains(resName, "images", "linode/ubuntu18.04"),
-					resource.TestCheckResourceAttr(
-						resName,
-						"label",
-						fmt.Sprintf("%s_renamed", stackscriptName),
-					),
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", stackscriptName)),
 				),
 			},
 			{
@@ -167,30 +160,14 @@ func TestAccResourceStackscript_codeChange(t *testing.T) {
 					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
 					resource.TestCheckResourceAttr(resName, "rev_note", "second"),
-					resource.TestCheckResourceAttr(
-						resName,
-						"script",
-						"#!/bin/bash\n# <UDF name=\"hasudf\" label=\"a label\" example=\"an example\" default=\"a default\">\necho bye\n",
-					),
+					resource.TestCheckResourceAttr(resName, "script", "#!/bin/bash\n# <UDF name=\"hasudf\" label=\"a label\" example=\"an example\" default=\"a default\">\necho bye\n"),
 					acceptance.CheckListContains(resName, "images", "linode/ubuntu18.04"),
 					acceptance.CheckListContains(resName, "images", "linode/ubuntu16.04lts"),
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.#", "1"),
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.name", "hasudf"),
-					resource.TestCheckResourceAttr(
-						resName,
-						"user_defined_fields.0.label",
-						"a label",
-					),
-					resource.TestCheckResourceAttr(
-						resName,
-						"user_defined_fields.0.default",
-						"a default",
-					),
-					resource.TestCheckResourceAttr(
-						resName,
-						"user_defined_fields.0.example",
-						"an example",
-					),
+					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.label", "a label"),
+					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.default", "a default"),
+					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.example", "an example"),
 					resource.TestCheckResourceAttr(resName, "label", stackscriptName),
 				),
 			},
@@ -218,11 +195,7 @@ func checkStackscriptExists(s *terraform.State) error {
 
 		_, err = client.GetStackscript(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf(
-				"Error retrieving state of Stackscript %s: %s",
-				rs.Primary.Attributes["label"],
-				err,
-			)
+			return fmt.Errorf("Error retrieving state of Stackscript %s: %s", rs.Primary.Attributes["label"], err)
 		}
 	}
 

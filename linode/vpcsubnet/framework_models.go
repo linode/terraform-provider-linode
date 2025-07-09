@@ -22,9 +22,7 @@ type VPCSubnetModel struct {
 	Updated timetypes.RFC3339 `tfsdk:"updated"`
 }
 
-func FlattenSubnetLinodeInterface(
-	iface linodego.VPCSubnetLinodeInterface,
-) (types.Object, diag.Diagnostics) {
+func FlattenSubnetLinodeInterface(iface linodego.VPCSubnetLinodeInterface) (types.Object, diag.Diagnostics) {
 	return types.ObjectValue(LinodeInterfaceObjectType.AttrTypes, map[string]attr.Value{
 		"id":     types.Int64Value(int64(iface.ID)),
 		"active": types.BoolValue(iface.Active),

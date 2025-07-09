@@ -43,11 +43,7 @@ func TestVolumeModelParsing(t *testing.T) {
 	assert.Equal(t, types.StringValue("us-east"), data.Region)
 	assert.Equal(t, types.Int64Value(30), data.Size)
 	assert.Equal(t, types.Int64Value(12346), data.LinodeID)
-	assert.Equal(
-		t,
-		types.StringValue("/dev/disk/by-id/scsi-0Linode_Volume_my-volume"),
-		data.FilesystemPath,
-	)
+	assert.Equal(t, types.StringValue("/dev/disk/by-id/scsi-0Linode_Volume_my-volume"), data.FilesystemPath)
 	assert.Equal(t, types.StringValue("disabled"), data.Encryption)
 
 	assert.NotContains(t, data.Tags.String(), "example tag")

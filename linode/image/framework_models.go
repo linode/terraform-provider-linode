@@ -77,10 +77,7 @@ func (data *ResourceModel) FlattenImage(
 	data.Vendor = helper.KeepOrUpdateString(data.Vendor, image.Vendor, preserveKnown)
 	data.TotalSize = helper.KeepOrUpdateInt64(data.TotalSize, int64(image.TotalSize), preserveKnown)
 
-	tags, newDiags := types.ListValue(
-		types.StringType,
-		helper.StringSliceToFrameworkValueSlice(image.Tags),
-	)
+	tags, newDiags := types.ListValue(types.StringType, helper.StringSliceToFrameworkValueSlice(image.Tags))
 	diags.Append(newDiags...)
 	if diags.HasError() {
 		return
@@ -107,11 +104,7 @@ func (data *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	data.FileHash = helper.KeepOrUpdateValue(data.FileHash, other.FileHash, preserveKnown)
 	data.Description = helper.KeepOrUpdateValue(data.Description, other.Description, preserveKnown)
 	data.CloudInit = helper.KeepOrUpdateValue(data.CloudInit, other.CloudInit, preserveKnown)
-	data.Capabilities = helper.KeepOrUpdateValue(
-		data.Capabilities,
-		other.Capabilities,
-		preserveKnown,
-	)
+	data.Capabilities = helper.KeepOrUpdateValue(data.Capabilities, other.Capabilities, preserveKnown)
 	data.Created = helper.KeepOrUpdateValue(data.Created, other.Created, preserveKnown)
 	data.CreatedBy = helper.KeepOrUpdateValue(data.CreatedBy, other.CreatedBy, preserveKnown)
 	data.Deprecated = helper.KeepOrUpdateValue(data.Deprecated, other.Deprecated, preserveKnown)
@@ -124,21 +117,9 @@ func (data *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	data.Timeouts = helper.KeepOrUpdateValue(data.Timeouts, other.Timeouts, preserveKnown)
 	data.Tags = helper.KeepOrUpdateValue(data.Tags, other.Tags, preserveKnown)
 	data.TotalSize = helper.KeepOrUpdateValue(data.TotalSize, other.TotalSize, preserveKnown)
-	data.ReplicaRegions = helper.KeepOrUpdateValue(
-		data.ReplicaRegions,
-		other.ReplicaRegions,
-		preserveKnown,
-	)
-	data.Replications = helper.KeepOrUpdateValue(
-		data.Replications,
-		other.Replications,
-		preserveKnown,
-	)
-	data.WaitForReplications = helper.KeepOrUpdateValue(
-		data.WaitForReplications,
-		other.WaitForReplications,
-		preserveKnown,
-	)
+	data.ReplicaRegions = helper.KeepOrUpdateValue(data.ReplicaRegions, other.ReplicaRegions, preserveKnown)
+	data.Replications = helper.KeepOrUpdateValue(data.Replications, other.Replications, preserveKnown)
+	data.WaitForReplications = helper.KeepOrUpdateValue(data.WaitForReplications, other.WaitForReplications, preserveKnown)
 }
 
 // ImageModel describes the Terraform resource data model to match the

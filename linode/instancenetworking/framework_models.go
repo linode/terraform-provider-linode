@@ -44,59 +44,31 @@ func (data *DataSourceModel) parseInstanceIPAddressResponse(
 	data.ID = types.StringValue(string(id))
 }
 
-func flattenIPv4(
-	network *linodego.InstanceIPv4Response,
-	diags *diag.Diagnostics,
-) *basetypes.ListValue {
+func flattenIPv4(network *linodego.InstanceIPv4Response, diags *diag.Diagnostics) *basetypes.ListValue {
 	result := make(map[string]attr.Value)
 
-	result["private"] = helper.GenericSliceToList(
-		network.Private,
-		networkObjectType,
-		flattenIP,
-		diags,
-	)
+	result["private"] = helper.GenericSliceToList(network.Private, networkObjectType, flattenIP, diags)
 	if diags.HasError() {
 		return nil
 	}
 
-	result["public"] = helper.GenericSliceToList(
-		network.Public,
-		networkObjectType,
-		flattenIP,
-		diags,
-	)
+	result["public"] = helper.GenericSliceToList(network.Public, networkObjectType, flattenIP, diags)
 	if diags.HasError() {
 		return nil
 	}
 
-	result["reserved"] = helper.GenericSliceToList(
-		network.Reserved,
-		networkObjectType,
-		flattenIP,
-		diags,
-	)
+	result["reserved"] = helper.GenericSliceToList(network.Reserved, networkObjectType, flattenIP, diags)
 
 	if diags.HasError() {
 		return nil
 	}
 
-	result["shared"] = helper.GenericSliceToList(
-		network.Shared,
-		networkObjectType,
-		flattenIP,
-		diags,
-	)
+	result["shared"] = helper.GenericSliceToList(network.Shared, networkObjectType, flattenIP, diags)
 	if diags.HasError() {
 		return nil
 	}
 
-	result["vpc"] = helper.GenericSliceToList(
-		network.VPC,
-		vpcNetworkObjectType,
-		flattenVPCIP,
-		diags,
-	)
+	result["vpc"] = helper.GenericSliceToList(network.VPC, vpcNetworkObjectType, flattenVPCIP, diags)
 	if diags.HasError() {
 		return nil
 	}
@@ -109,10 +81,7 @@ func flattenIPv4(
 	return &resultList
 }
 
-func flattenIPv6(
-	network *linodego.InstanceIPv6Response,
-	diags *diag.Diagnostics,
-) *basetypes.ListValue {
+func flattenIPv6(network *linodego.InstanceIPv6Response, diags *diag.Diagnostics) *basetypes.ListValue {
 	result := make(map[string]attr.Value)
 
 	global := helper.GenericSliceToList(network.Global, globalObjectType, flattenIPV6Range, diags)
@@ -149,9 +118,7 @@ func flattenIPv6(
 	return &resultList
 }
 
-func FlattenIPVPCNAT1To1(
-	data *linodego.InstanceIPNAT1To1,
-) (basetypes.ObjectValue, diag.Diagnostics) {
+func FlattenIPVPCNAT1To1(data *linodego.InstanceIPNAT1To1) (basetypes.ObjectValue, diag.Diagnostics) {
 	if data == nil {
 		return types.ObjectNull(VPCNAT1To1Type.AttrTypes), nil
 	}

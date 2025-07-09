@@ -93,10 +93,7 @@ func fwCreateTempKeys(
 	}
 
 	if isCluster(regionOrCluster) {
-		tflog.Warn(
-			ctx,
-			"Cluster is deprecated for Linode Object Storage service, please consider switch to using region.",
-		)
+		tflog.Warn(ctx, "Cluster is deprecated for Linode Object Storage service, please consider switch to using region.")
 		tempBucketAccess.Cluster = regionOrCluster
 	} else {
 		tflog.Info(ctx, fmt.Sprintf("%q Is Region", regionOrCluster))
@@ -137,10 +134,7 @@ func createTempKeys(
 	}
 
 	if isCluster(regionOrCluster) {
-		tflog.Warn(
-			ctx,
-			"Cluster is deprecated for Linode Object Storage service, please consider switch to using region.",
-		)
+		tflog.Warn(ctx, "Cluster is deprecated for Linode Object Storage service, please consider switch to using region.")
 		tempBucketAccess.Cluster = regionOrCluster
 	} else {
 		tempBucketAccess.Region = regionOrCluster
@@ -182,13 +176,9 @@ func cleanUpTempKeys(
 	client *linodego.Client,
 	keyId int,
 ) {
-	tflog.Trace(
-		ctx,
-		"Clean up temporary keys: client.DeleteObjectStorageKey(...)",
-		map[string]interface{}{
-			"key_id": keyId,
-		},
-	)
+	tflog.Trace(ctx, "Clean up temporary keys: client.DeleteObjectStorageKey(...)", map[string]interface{}{
+		"key_id": keyId,
+	})
 
 	if err := client.DeleteObjectStorageKey(ctx, keyId); err != nil {
 		tflog.Warn(ctx, "Failed to clean up temporary object storage keys", map[string]interface{}{
@@ -289,12 +279,7 @@ func getQuotesTrimmedETag(
 	return nil
 }
 
-func deleteObject(
-	ctx context.Context,
-	client *s3.Client,
-	bucket, key, version string,
-	force bool,
-) error {
+func deleteObject(ctx context.Context, client *s3.Client, bucket, key, version string, force bool) error {
 	tflog.Debug(ctx, "deleting the object key")
 	deleteObjectInput := &s3.DeleteObjectInput{
 		Bucket:                    &bucket,

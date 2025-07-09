@@ -16,10 +16,7 @@ type AccountAvailabilityFilterModel struct {
 	Availabilities []accountavailability.AccountAvailabilityModel `tfsdk:"availabilities"`
 }
 
-func (model *AccountAvailabilityFilterModel) parseAvailabilities(
-	ctx context.Context,
-	availabilities []linodego.AccountAvailability,
-) diag.Diagnostics {
+func (model *AccountAvailabilityFilterModel) parseAvailabilities(ctx context.Context, availabilities []linodego.AccountAvailability) diag.Diagnostics {
 	result := make([]accountavailability.AccountAvailabilityModel, len(availabilities))
 
 	for i := range availabilities {

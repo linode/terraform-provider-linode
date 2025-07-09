@@ -161,10 +161,7 @@ func (r *Resource) Read(
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
 				"Reserved IP No Longer Exists",
-				fmt.Sprintf(
-					"Removing reserved IP %s from state because it no longer exists",
-					state.ID.ValueString(),
-				),
+				fmt.Sprintf("Removing reserved IP %s from state because it no longer exists", state.ID.ValueString()),
 			)
 			resp.State.RemoveResource(ctx)
 			return

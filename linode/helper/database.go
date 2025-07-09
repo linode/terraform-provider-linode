@@ -6,11 +6,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 )
 
@@ -101,9 +102,7 @@ func ParseDatabaseEngineSlug(engineID string) (string, string, error) {
 	return components[0], components[1], nil
 }
 
-func FlattenMaintenanceWindow(
-	window linodego.MySQLDatabaseMaintenanceWindow,
-) map[string]interface{} {
+func FlattenMaintenanceWindow(window linodego.MySQLDatabaseMaintenanceWindow) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	result["day_of_week"] = FlattenDayOfWeek(window.DayOfWeek)
@@ -119,9 +118,7 @@ func FlattenMaintenanceWindow(
 	return result
 }
 
-func ExpandMaintenanceWindow(
-	window map[string]interface{},
-) (linodego.DatabaseMaintenanceWindow, error) {
+func ExpandMaintenanceWindow(window map[string]interface{}) (linodego.DatabaseMaintenanceWindow, error) {
 	result := linodego.DatabaseMaintenanceWindow{
 		Duration:    window["duration"].(int),
 		Frequency:   linodego.DatabaseMaintenanceFrequency(window["frequency"].(string)),
@@ -166,10 +163,7 @@ func WaitForDatabaseUpdated(ctx context.Context, client linodego.Client, dbID in
 	return nil
 }
 
-func FlattenDatabaseMaintenanceWindow(
-	ctx context.Context,
-	maintenance linodego.DatabaseMaintenanceWindow,
-) (
+func FlattenDatabaseMaintenanceWindow(ctx context.Context, maintenance linodego.DatabaseMaintenanceWindow) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
@@ -200,8 +194,7 @@ func FlattenDatabaseMaintenanceWindow(
 
 // DatabaseStatusIsSuspended returns whether the given status is a "suspended" state.
 func DatabaseStatusIsSuspended(databaseStatus linodego.DatabaseStatus) bool {
-	return databaseStatus == linodego.DatabaseStatusSuspended ||
-		databaseStatus == linodego.DatabaseStatusSuspending
+	return databaseStatus == linodego.DatabaseStatusSuspended || databaseStatus == linodego.DatabaseStatusSuspending
 }
 
 type databaseSuspensionFunc func(context.Context, int) error

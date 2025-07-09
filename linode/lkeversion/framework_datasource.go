@@ -24,11 +24,7 @@ type DataSource struct {
 	helper.BaseDataSource
 }
 
-func (d DataSource) Read(
-	ctx context.Context,
-	req datasource.ReadRequest,
-	resp *datasource.ReadResponse,
-) {
+func (d DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	tflog.Debug(ctx, "Read data."+d.Config.Name)
 
 	client := d.Meta.Client

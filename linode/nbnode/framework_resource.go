@@ -6,9 +6,10 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -29,23 +30,10 @@ type Resource struct {
 	helper.BaseResource
 }
 
-func AddNodeResource(
-	ctx context.Context,
-	node linodego.NodeBalancerNode,
-	resp *resource.CreateResponse,
-	plan ResourceModel,
-) {
+func AddNodeResource(ctx context.Context, node linodego.NodeBalancerNode, resp *resource.CreateResponse, plan ResourceModel) {
 	resp.State.SetAttribute(ctx, path.Root("id"), types.StringValue(strconv.Itoa(node.ID)))
-	resp.State.SetAttribute(
-		ctx,
-		path.Root("nodebalancer_id"),
-		types.StringValue(strconv.Itoa(node.NodeBalancerID)),
-	)
-	resp.State.SetAttribute(
-		ctx,
-		path.Root("config_id"),
-		types.StringValue(strconv.Itoa(node.ConfigID)),
-	)
+	resp.State.SetAttribute(ctx, path.Root("nodebalancer_id"), types.StringValue(strconv.Itoa(node.NodeBalancerID)))
+	resp.State.SetAttribute(ctx, path.Root("config_id"), types.StringValue(strconv.Itoa(node.ConfigID)))
 }
 
 func (r *Resource) Create(
@@ -126,8 +114,7 @@ func (r *Resource) Read(
 			resp.Diagnostics.AddWarning(
 				"The NodeBalancer Node No Longer Exists",
 				fmt.Sprintf(
-					"Removing NodeBalancer Node with ID %v from state because it no longer exists",
-					id,
+					"Removing NodeBalancer Node with ID %v from state because it no longer exists", id,
 				),
 			)
 			resp.State.RemoveResource(ctx)

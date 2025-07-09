@@ -6,8 +6,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-cty/cty"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/stretchr/testify/require"
+
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func TestSDKv2PathToCtyPath(t *testing.T) {

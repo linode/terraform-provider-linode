@@ -33,11 +33,7 @@ func TestAccDataSourceVPCSubnet_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "linodes.0.id"),
 					resource.TestCheckResourceAttr(resourceName, "linodes.0.interfaces.#", "1"),
 					resource.TestCheckResourceAttrSet(resourceName, "linodes.0.interfaces.0.id"),
-					resource.TestCheckResourceAttr(
-						resourceName,
-						"linodes.0.interfaces.0.active",
-						"false",
-					),
+					resource.TestCheckResourceAttr(resourceName, "linodes.0.interfaces.0.active", "false"),
 				),
 			},
 		},

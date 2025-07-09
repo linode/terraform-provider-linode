@@ -68,14 +68,11 @@ func (r *Resource) Create(
 	defer cancel()
 
 	createOpts := linodego.PostgresCreateOptions{
-		Label:  data.Label.ValueString(),
-		Region: data.Region.ValueString(),
-		Type:   data.Type.ValueString(),
-		Engine: data.EngineID.ValueString(),
-		ClusterSize: helper.FrameworkSafeInt64ToInt(
-			data.ClusterSize.ValueInt64(),
-			&resp.Diagnostics,
-		),
+		Label:        data.Label.ValueString(),
+		Region:       data.Region.ValueString(),
+		Type:         data.Type.ValueString(),
+		Engine:       data.EngineID.ValueString(),
+		ClusterSize:  helper.FrameworkSafeInt64ToInt(data.ClusterSize.ValueInt64(), &resp.Diagnostics),
 		Fork:         data.GetFork(resp.Diagnostics),
 		AllowList:    data.GetAllowList(ctx, resp.Diagnostics),
 		EngineConfig: data.GetEngineConfig(resp.Diagnostics),
@@ -85,10 +82,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	createPoller, err := client.NewEventPollerWithoutEntity(
-		linodego.EntityDatabase,
-		linodego.ActionDatabaseCreate,
-	)
+	createPoller, err := client.NewEventPollerWithoutEntity(linodego.EntityDatabase, linodego.ActionDatabaseCreate)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create event poller",
@@ -353,187 +347,52 @@ func (r *Resource) Update(
 	}
 
 	engineConfigFields := []bool{
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGAutovacuumAnalyzeScaleFactor,
-			plan.EngineConfigPGAutovacuumAnalyzeScaleFactor,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGAutovacuumAnalyzeThreshold,
-			plan.EngineConfigPGAutovacuumAnalyzeThreshold,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGAutovacuumMaxWorkers,
-			plan.EngineConfigPGAutovacuumMaxWorkers,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGAutovacuumNaptime,
-			plan.EngineConfigPGAutovacuumNaptime,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGAutovacuumVacuumCostDelay,
-			plan.EngineConfigPGAutovacuumVacuumCostDelay,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGAutovacuumVacuumCostLimit,
-			plan.EngineConfigPGAutovacuumVacuumCostLimit,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGAutovacuumVacuumScaleFactor,
-			plan.EngineConfigPGAutovacuumVacuumScaleFactor,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGAutovacuumVacuumThreshold,
-			plan.EngineConfigPGAutovacuumVacuumThreshold,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGBGWriterDelay,
-			plan.EngineConfigPGBGWriterDelay,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGBGWriterFlushAfter,
-			plan.EngineConfigPGBGWriterFlushAfter,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGBGWriterLRUMaxpages,
-			plan.EngineConfigPGBGWriterLRUMaxpages,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGBGWriterLRUMultiplier,
-			plan.EngineConfigPGBGWriterLRUMultiplier,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGDeadlockTimeout,
-			plan.EngineConfigPGDeadlockTimeout,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGDefaultToastCompression,
-			plan.EngineConfigPGDefaultToastCompression,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGIdleInTransactionSessionTimeout,
-			plan.EngineConfigPGIdleInTransactionSessionTimeout,
-		),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGAutovacuumAnalyzeScaleFactor, plan.EngineConfigPGAutovacuumAnalyzeScaleFactor),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGAutovacuumAnalyzeThreshold, plan.EngineConfigPGAutovacuumAnalyzeThreshold),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGAutovacuumMaxWorkers, plan.EngineConfigPGAutovacuumMaxWorkers),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGAutovacuumNaptime, plan.EngineConfigPGAutovacuumNaptime),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGAutovacuumVacuumCostDelay, plan.EngineConfigPGAutovacuumVacuumCostDelay),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGAutovacuumVacuumCostLimit, plan.EngineConfigPGAutovacuumVacuumCostLimit),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGAutovacuumVacuumScaleFactor, plan.EngineConfigPGAutovacuumVacuumScaleFactor),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGAutovacuumVacuumThreshold, plan.EngineConfigPGAutovacuumVacuumThreshold),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGBGWriterDelay, plan.EngineConfigPGBGWriterDelay),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGBGWriterFlushAfter, plan.EngineConfigPGBGWriterFlushAfter),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGBGWriterLRUMaxpages, plan.EngineConfigPGBGWriterLRUMaxpages),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGBGWriterLRUMultiplier, plan.EngineConfigPGBGWriterLRUMultiplier),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGDeadlockTimeout, plan.EngineConfigPGDeadlockTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGDefaultToastCompression, plan.EngineConfigPGDefaultToastCompression),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGIdleInTransactionSessionTimeout, plan.EngineConfigPGIdleInTransactionSessionTimeout),
 		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGJIT, plan.EngineConfigPGJIT),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGMaxFilesPerProcess,
-			plan.EngineConfigPGMaxFilesPerProcess,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGMaxLocksPerTransaction,
-			plan.EngineConfigPGMaxLocksPerTransaction,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGMaxLogicalReplicationWorkers,
-			plan.EngineConfigPGMaxLogicalReplicationWorkers,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGMaxParallelWorkers,
-			plan.EngineConfigPGMaxParallelWorkers,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGMaxParallelWorkersPerGather,
-			plan.EngineConfigPGMaxParallelWorkersPerGather,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGMaxPredLocksPerTransaction,
-			plan.EngineConfigPGMaxPredLocksPerTransaction,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGMaxReplicationSlots,
-			plan.EngineConfigPGMaxReplicationSlots,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGMaxSlotWALKeepSize,
-			plan.EngineConfigPGMaxSlotWALKeepSize,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGMaxStackDepth,
-			plan.EngineConfigPGMaxStackDepth,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGMaxStandbyArchiveDelay,
-			plan.EngineConfigPGMaxStandbyArchiveDelay,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGMaxStandbyStreamingDelay,
-			plan.EngineConfigPGMaxStandbyStreamingDelay,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGMaxWALSenders,
-			plan.EngineConfigPGMaxWALSenders,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGMaxWorkerProcesses,
-			plan.EngineConfigPGMaxWorkerProcesses,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGPasswordEncryption,
-			plan.EngineConfigPGPasswordEncryption,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGPGPartmanBGWInterval,
-			plan.EngineConfigPGPGPartmanBGWInterval,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGPGPartmanBGWRole,
-			plan.EngineConfigPGPGPartmanBGWRole,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan,
-			plan.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGPGStatMonitorPGSMMaxBuckets,
-			plan.EngineConfigPGPGStatMonitorPGSMMaxBuckets,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGPGStatStatementsTrack,
-			plan.EngineConfigPGPGStatStatementsTrack,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGTempFileLimit,
-			plan.EngineConfigPGTempFileLimit,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGTimezone,
-			plan.EngineConfigPGTimezone,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGTrackActivityQuerySize,
-			plan.EngineConfigPGTrackActivityQuerySize,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGTrackCommitTimestamp,
-			plan.EngineConfigPGTrackCommitTimestamp,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGTrackFunctions,
-			plan.EngineConfigPGTrackFunctions,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGTrackIOTiming,
-			plan.EngineConfigPGTrackIOTiming,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGWALSenderTimeout,
-			plan.EngineConfigPGWALSenderTimeout,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGWALWriterDelay,
-			plan.EngineConfigPGWALWriterDelay,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGStatMonitorEnable,
-			plan.EngineConfigPGStatMonitorEnable,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigPGLookoutMaxFailoverReplicationTimeLag,
-			plan.EngineConfigPGLookoutMaxFailoverReplicationTimeLag,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigSharedBuffersPercentage,
-			plan.EngineConfigSharedBuffersPercentage,
-		),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGMaxFilesPerProcess, plan.EngineConfigPGMaxFilesPerProcess),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGMaxLocksPerTransaction, plan.EngineConfigPGMaxLocksPerTransaction),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGMaxLogicalReplicationWorkers, plan.EngineConfigPGMaxLogicalReplicationWorkers),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGMaxParallelWorkers, plan.EngineConfigPGMaxParallelWorkers),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGMaxParallelWorkersPerGather, plan.EngineConfigPGMaxParallelWorkersPerGather),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGMaxPredLocksPerTransaction, plan.EngineConfigPGMaxPredLocksPerTransaction),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGMaxReplicationSlots, plan.EngineConfigPGMaxReplicationSlots),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGMaxSlotWALKeepSize, plan.EngineConfigPGMaxSlotWALKeepSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGMaxStackDepth, plan.EngineConfigPGMaxStackDepth),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGMaxStandbyArchiveDelay, plan.EngineConfigPGMaxStandbyArchiveDelay),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGMaxStandbyStreamingDelay, plan.EngineConfigPGMaxStandbyStreamingDelay),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGMaxWALSenders, plan.EngineConfigPGMaxWALSenders),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGMaxWorkerProcesses, plan.EngineConfigPGMaxWorkerProcesses),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGPasswordEncryption, plan.EngineConfigPGPasswordEncryption),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGPGPartmanBGWInterval, plan.EngineConfigPGPGPartmanBGWInterval),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGPGPartmanBGWRole, plan.EngineConfigPGPGPartmanBGWRole),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan, plan.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGPGStatMonitorPGSMMaxBuckets, plan.EngineConfigPGPGStatMonitorPGSMMaxBuckets),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGPGStatStatementsTrack, plan.EngineConfigPGPGStatStatementsTrack),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGTempFileLimit, plan.EngineConfigPGTempFileLimit),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGTimezone, plan.EngineConfigPGTimezone),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGTrackActivityQuerySize, plan.EngineConfigPGTrackActivityQuerySize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGTrackCommitTimestamp, plan.EngineConfigPGTrackCommitTimestamp),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGTrackFunctions, plan.EngineConfigPGTrackFunctions),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGTrackIOTiming, plan.EngineConfigPGTrackIOTiming),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGWALSenderTimeout, plan.EngineConfigPGWALSenderTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGWALWriterDelay, plan.EngineConfigPGWALWriterDelay),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGStatMonitorEnable, plan.EngineConfigPGStatMonitorEnable),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigPGLookoutMaxFailoverReplicationTimeLag, plan.EngineConfigPGLookoutMaxFailoverReplicationTimeLag),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigSharedBuffersPercentage, plan.EngineConfigSharedBuffersPercentage),
 		!helper.FrameworkValuesShallowEqual(state.EngineConfigWorkMem, plan.EngineConfigWorkMem),
 	}
 	if slices.Contains(engineConfigFields, true) {
@@ -572,10 +431,7 @@ func (r *Resource) Update(
 	if !state.ClusterSize.Equal(plan.ClusterSize) {
 		shouldResize = true
 
-		updateOpts.ClusterSize = helper.FrameworkSafeInt64ToInt(
-			plan.ClusterSize.ValueInt64(),
-			&resp.Diagnostics,
-		)
+		updateOpts.ClusterSize = helper.FrameworkSafeInt64ToInt(plan.ClusterSize.ValueInt64(), &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -586,12 +442,7 @@ func (r *Resource) Update(
 		var err error
 
 		if shouldUpdate {
-			updatePoller, err = client.NewEventPoller(
-				ctx,
-				id,
-				linodego.EntityDatabase,
-				linodego.ActionDatabaseUpdate,
-			)
+			updatePoller, err = client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
 			if err != nil {
 				resp.Diagnostics.AddError(
 					"Failed to create update EventPoller for database",
@@ -602,12 +453,7 @@ func (r *Resource) Update(
 		}
 
 		if shouldResize {
-			resizePoller, err = client.NewEventPoller(
-				ctx,
-				id,
-				linodego.EntityDatabase,
-				linodego.ActionDatabaseResize,
-			)
+			resizePoller, err = client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseResize)
 			if err != nil {
 				resp.Diagnostics.AddError(
 					"Failed to create resize EventPoller for database",
@@ -628,10 +474,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		timeoutSeconds := helper.FrameworkSafeFloat64ToInt(
-			updateTimeout.Seconds(),
-			&resp.Diagnostics,
-		)
+		timeoutSeconds := helper.FrameworkSafeFloat64ToInt(updateTimeout.Seconds(), &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}

@@ -166,8 +166,7 @@ var resourceSchema = map[string]*schema.Schema{
 							if i == index {
 								continue
 							}
-							if strings.EqualFold(item, oldValue) ||
-								strings.EqualFold(item, newValue) {
+							if strings.EqualFold(item, oldValue) || strings.EqualFold(item, newValue) {
 								return true
 							}
 						}

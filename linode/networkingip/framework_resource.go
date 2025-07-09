@@ -56,8 +56,7 @@ func (r *Resource) ModifyPlan(
 			return
 		}
 
-		if planReserved.ValueBool() || planLinodeID.IsUnknown() ||
-			planLinodeID.Equal(stateLinodeID) {
+		if planReserved.ValueBool() || planLinodeID.IsUnknown() || planLinodeID.Equal(stateLinodeID) {
 			// Nothing to do here
 			return
 		}
@@ -73,11 +72,7 @@ func (r *Resource) ModifyPlan(
 	reconcileIPReassignment()
 }
 
-func (r *Resource) Create(
-	ctx context.Context,
-	req resource.CreateRequest,
-	resp *resource.CreateResponse,
-) {
+func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	tflog.Debug(ctx, "Create "+r.Config.Name)
 	var plan ResourceModel
 
@@ -124,11 +119,7 @@ func (r *Resource) Create(
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
-func (r *Resource) Read(
-	ctx context.Context,
-	req resource.ReadRequest,
-	resp *resource.ReadResponse,
-) {
+func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	tflog.Debug(ctx, "Read "+r.Config.Name)
 	var state ResourceModel
 
@@ -172,11 +163,7 @@ func (r *Resource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
-func (r *Resource) Update(
-	ctx context.Context,
-	req resource.UpdateRequest,
-	resp *resource.UpdateResponse,
-) {
+func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	tflog.Debug(ctx, "Update "+r.Config.Name)
 	var plan, state ResourceModel
 
@@ -226,11 +213,7 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *Resource) Delete(
-	ctx context.Context,
-	req resource.DeleteRequest,
-	resp *resource.DeleteResponse,
-) {
+func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	tflog.Debug(ctx, "Delete "+r.Config.Name)
 	var state ResourceModel
 

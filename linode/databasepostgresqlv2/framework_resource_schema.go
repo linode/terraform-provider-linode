@@ -4,17 +4,19 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
+
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
@@ -586,10 +588,7 @@ var frameworkResourceSchema = schema.Schema{
 			},
 			Validators: []validator.String{
 				stringvalidator.LengthAtMost(64),
-				stringvalidator.RegexMatches(
-					regexp.MustCompile(`^[_A-Za-z0-9][-._A-Za-z0-9]{0,63}$`),
-					"must be in the format 'myrolename'",
-				),
+				stringvalidator.RegexMatches(regexp.MustCompile(`^[_A-Za-z0-9][-._A-Za-z0-9]{0,63}$`), "must be in the format 'myrolename'"),
 			},
 		},
 		"engine_config_pg_pg_stat_monitor_pgsm_enable_query_plan": schema.BoolAttribute{
@@ -642,10 +641,7 @@ var frameworkResourceSchema = schema.Schema{
 			},
 			Validators: []validator.String{
 				stringvalidator.LengthAtMost(64),
-				stringvalidator.RegexMatches(
-					regexp.MustCompile(`^[\w/]*$`),
-					"must be in the format 'Area/Location' (e.g., 'Europe/Helsinki')",
-				),
+				stringvalidator.RegexMatches(regexp.MustCompile(`^[\w/]*$`), "must be in the format 'Area/Location' (e.g., 'Europe/Helsinki')"),
 			},
 		},
 		"engine_config_pg_track_activity_query_size": schema.Int64Attribute{

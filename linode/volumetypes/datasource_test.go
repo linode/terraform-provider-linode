@@ -24,23 +24,13 @@ func TestAccDataSourceVolumeTypes_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceName, "types.#", "1"),
 					resource.TestCheckResourceAttr(dataSourceName, "types.0.id", "volume"),
-					resource.TestCheckResourceAttr(
-						dataSourceName,
-						"types.0.label",
-						"Storage Volume",
-					),
+					resource.TestCheckResourceAttr(dataSourceName, "types.0.label", "Storage Volume"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.transfer"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.price.0.hourly"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.price.0.monthly"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.region_prices.0.id"),
-					resource.TestCheckResourceAttrSet(
-						dataSourceName,
-						"types.0.region_prices.0.hourly",
-					),
-					resource.TestCheckResourceAttrSet(
-						dataSourceName,
-						"types.0.region_prices.0.monthly",
-					),
+					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.region_prices.0.hourly"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.region_prices.0.monthly"),
 				),
 			},
 		},

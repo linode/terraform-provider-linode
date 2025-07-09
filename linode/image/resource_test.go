@@ -147,11 +147,7 @@ func TestAccImage_update(t *testing.T) {
 				Config: tmpl.Updates(t, imageName, testRegion, label, "updated-tag"),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, nil),
-					resource.TestCheckResourceAttr(
-						resName,
-						"label",
-						fmt.Sprintf("%s_renamed", imageName),
-					),
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", imageName)),
 					resource.TestCheckResourceAttr(resName, "description", "more descriptive text"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttrSet(resName, "created_by"),
@@ -197,11 +193,7 @@ func TestAccImage_uploadFile(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, &image),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
-					resource.TestCheckResourceAttr(
-						resName,
-						"description",
-						"really descriptive text",
-					),
+					resource.TestCheckResourceAttr(resName, "description", "really descriptive text"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttrSet(resName, "created_by"),
 					resource.TestCheckResourceAttrSet(resName, "size"),
@@ -209,11 +201,7 @@ func TestAccImage_uploadFile(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "is_public", "false"),
 					resource.TestCheckResourceAttrSet(resName, "deprecated"),
 					resource.TestCheckResourceAttr(resName, "file_hash", testImageMD5),
-					resource.TestCheckResourceAttr(
-						resName,
-						"status",
-						string(linodego.ImageStatusAvailable),
-					),
+					resource.TestCheckResourceAttr(resName, "status", string(linodego.ImageStatusAvailable)),
 					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
 				),
 			},
@@ -224,11 +212,7 @@ func TestAccImage_uploadFile(t *testing.T) {
 				Config: tmpl.Upload(t, imageName, file.Name(), testRegion, "test-tag"),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, &image),
-					resource.TestCheckResourceAttr(
-						resName,
-						"status",
-						string(linodego.ImageStatusAvailable),
-					),
+					resource.TestCheckResourceAttr(resName, "status", string(linodego.ImageStatusAvailable)),
 				),
 			},
 		},
@@ -306,11 +290,7 @@ func checkImageExists(name string, image *linodego.Image) resource.TestCheckFunc
 
 		found, err := client.GetImage(context.Background(), rs.Primary.ID)
 		if err != nil {
-			return fmt.Errorf(
-				"failed to retrieve state of image %s: %s",
-				rs.Primary.Attributes["label"],
-				err,
-			)
+			return fmt.Errorf("failed to retrieve state of image %s: %s", rs.Primary.Attributes["label"], err)
 		}
 
 		if image != nil {

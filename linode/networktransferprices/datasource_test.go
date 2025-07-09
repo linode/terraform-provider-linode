@@ -23,28 +23,14 @@ func TestAccDataSourceNetworkTransferPrices_basic(t *testing.T) {
 				Config: tmpl.DataBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceName, "types.#", "1"),
-					resource.TestCheckResourceAttr(
-						dataSourceName,
-						"types.0.id",
-						"network_transfer",
-					),
-					resource.TestCheckResourceAttr(
-						dataSourceName,
-						"types.0.label",
-						"Network Transfer",
-					),
+					resource.TestCheckResourceAttr(dataSourceName, "types.0.id", "network_transfer"),
+					resource.TestCheckResourceAttr(dataSourceName, "types.0.label", "Network Transfer"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.transfer"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.price.0.hourly"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.price.0.monthly"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.region_prices.0.id"),
-					resource.TestCheckResourceAttrSet(
-						dataSourceName,
-						"types.0.region_prices.0.hourly",
-					),
-					resource.TestCheckResourceAttrSet(
-						dataSourceName,
-						"types.0.region_prices.0.monthly",
-					),
+					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.region_prices.0.hourly"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.region_prices.0.monthly"),
 				),
 			},
 		},

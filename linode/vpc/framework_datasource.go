@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 

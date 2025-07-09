@@ -27,11 +27,7 @@ func TestAccDataSourceObjectCluster_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "region", region),
 					resource.TestCheckResourceAttr(resourceName, "id", objectStorageClusterID),
-					resource.TestCheckResourceAttr(
-						resourceName,
-						"static_site_domain",
-						staticSiteDomain,
-					),
+					resource.TestCheckResourceAttr(resourceName, "static_site_domain", staticSiteDomain),
 				),
 			},
 		},

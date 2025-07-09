@@ -52,11 +52,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func createResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	dbID := d.Get("database_id").(int)
 	dbType := d.Get("database_type").(string)
 
@@ -65,11 +61,7 @@ func createResource(
 	return updateResource(ctx, d, meta)
 }
 
-func updateResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	dbID, dbType, err := parseID(d.Id())
@@ -93,11 +85,7 @@ func updateResource(
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	meta interface{},
-) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	dbID, dbType, err := parseID(d.Id())
@@ -144,12 +132,7 @@ func updateDBAllowListByEngine(
 		return nil
 	}
 
-	updatePoller, err := client.NewEventPoller(
-		ctx,
-		id,
-		linodego.EntityDatabase,
-		linodego.ActionDatabaseUpdate,
-	)
+	updatePoller, err := client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
 	if err != nil {
 		return fmt.Errorf("failed to create update EventPoller: %w", err)
 	}
@@ -187,12 +170,7 @@ func updateDBAllowListByEngine(
 	return nil
 }
 
-func getDBAllowListByEngine(
-	ctx context.Context,
-	client linodego.Client,
-	engine string,
-	id int,
-) (*schema.Set, error) {
+func getDBAllowListByEngine(ctx context.Context, client linodego.Client, engine string, id int) (*schema.Set, error) {
 	switch engine {
 	case "mysql":
 		db, err := client.GetMySQLDatabase(ctx, id)

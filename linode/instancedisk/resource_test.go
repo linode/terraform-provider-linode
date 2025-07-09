@@ -212,11 +212,7 @@ func checkExists(name string, disk *linodego.InstanceDisk) resource.TestCheckFun
 
 		found, err := client.GetInstanceDisk(context.Background(), linodeID, id)
 		if err != nil {
-			return fmt.Errorf(
-				"error retrieving state of disk %s: %s",
-				rs.Primary.Attributes["label"],
-				err,
-			)
+			return fmt.Errorf("error retrieving state of disk %s: %s", rs.Primary.Attributes["label"], err)
 		}
 
 		if disk != nil {

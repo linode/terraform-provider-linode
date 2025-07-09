@@ -30,11 +30,7 @@ func TestExpandConfigInterface(t *testing.T) {
 
 	expectedIPAMAddress := "192.168.1.2/24"
 	if interfaceResult.IPAMAddress != expectedIPAMAddress {
-		t.Errorf(
-			"Expected IPAMAddress %s, but got %s",
-			expectedIPAMAddress,
-			interfaceResult.IPAMAddress,
-		)
+		t.Errorf("Expected IPAMAddress %s, but got %s", expectedIPAMAddress, interfaceResult.IPAMAddress)
 	}
 }
 
@@ -55,12 +51,7 @@ func TestFlattenConfigInterface(t *testing.T) {
 
 	for key, expectedValue := range expected {
 		if resultValue, ok := result[key]; !ok || resultValue != expectedValue {
-			t.Errorf(
-				"Mismatch for key %s: Expected %v, but got %v",
-				key,
-				expectedValue,
-				resultValue,
-			)
+			t.Errorf("Mismatch for key %s: Expected %v, but got %v", key, expectedValue, resultValue)
 		}
 	}
 }

@@ -146,36 +146,19 @@ func TestReconcileLKENodePoolSpecs(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			updates, err := lke.ReconcileLKENodePoolSpecs(
-				context.Background(),
-				tc.oldSpecs,
-				tc.newSpecs,
-				false,
-			)
+			updates, err := lke.ReconcileLKENodePoolSpecs(context.Background(), tc.oldSpecs, tc.newSpecs, false)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			if !reflect.DeepEqual(tc.expectedToCreate, updates.ToCreate) {
-				t.Errorf(
-					"expected to create:\n%#v\ngot:\n%#v",
-					tc.expectedToCreate,
-					updates.ToCreate,
-				)
+				t.Errorf("expected to create:\n%#v\ngot:\n%#v", tc.expectedToCreate, updates.ToCreate)
 			}
 			if !reflect.DeepEqual(tc.expectedToUpdate, updates.ToUpdate) {
-				t.Errorf(
-					"expected to update:\n%#v\ngot:\n%#v",
-					tc.expectedToUpdate,
-					updates.ToUpdate,
-				)
+				t.Errorf("expected to update:\n%#v\ngot:\n%#v", tc.expectedToUpdate, updates.ToUpdate)
 			}
 			if !reflect.DeepEqual(tc.expectedToDelete, updates.ToDelete) {
-				t.Errorf(
-					"expected to delete:\n%#v\ngot:\n%#v",
-					tc.expectedToDelete,
-					updates.ToDelete,
-				)
+				t.Errorf("expected to delete:\n%#v\ngot:\n%#v", tc.expectedToDelete, updates.ToDelete)
 			}
 		})
 	}

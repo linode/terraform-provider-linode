@@ -107,13 +107,7 @@ func TestAccResourceDatabaseAccessControls_PostgreSQL(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.PostgreSQL(
-					t,
-					dbName,
-					postgresEngineVersion,
-					"192.168.0.25/32",
-					testRegion,
-				),
+				Config: tmpl.PostgreSQL(t, dbName, postgresEngineVersion, "192.168.0.25/32", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
 					resource.TestCheckResourceAttr(resName, "allow_list.0", "192.168.0.25/32"),
@@ -143,11 +137,7 @@ func checkMySQLDatabaseExists(s *terraform.State) error {
 
 		_, err = client.GetMySQLDatabase(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf(
-				"error retrieving state of mysql database %s: %s",
-				rs.Primary.Attributes["label"],
-				err,
-			)
+			return fmt.Errorf("error retrieving state of mysql database %s: %s", rs.Primary.Attributes["label"], err)
 		}
 	}
 

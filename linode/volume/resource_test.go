@@ -126,11 +126,7 @@ func TestAccResourceVolume_update(t *testing.T) {
 				Config: tmpl.Updates(t, volumeName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists(resName, &volume),
-					resource.TestCheckResourceAttr(
-						resName,
-						"label",
-						fmt.Sprintf("%s_r", volumeName),
-					),
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", volumeName)),
 					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "tags.1", "tf_test_2"),
@@ -207,12 +203,7 @@ func TestAccResourceVolume_attached(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"linode_id", "firewall_id"},
-				Check: resource.TestCheckResourceAttrPair(
-					"linode_volume.foobar",
-					"linode_id",
-					"linode_instance.foobar",
-					"id",
-				),
+				Check:                   resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 			},
 		},
 	})
@@ -245,12 +236,7 @@ func TestAccResourceVolume_detached(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"linode_id", "firewall_id"},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("linode_volume.foobar", "linode_id", "0"),
-					resource.TestCheckResourceAttrPair(
-						"linode_volume.foobar",
-						"linode_id",
-						"linode_instance.foobar",
-						"id",
-					),
+					resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 				),
 			},
 		},
@@ -284,25 +270,15 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 				),
 			},
 			{
-				ResourceName: "linode_instance.foobar",
-				Check: resource.TestCheckResourceAttrPair(
-					"linode_volume.foobaz",
-					"linode_id",
-					"linode_instance.foobar",
-					"id",
-				),
+				ResourceName:            "linode_instance.foobar",
+				Check:                   resource.TestCheckResourceAttrPair("linode_volume.foobaz", "linode_id", "linode_instance.foobar", "id"),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id"},
 			},
 			{
-				ResourceName: "linode_instance.foobaz",
-				Check: resource.TestCheckResourceAttrPair(
-					"linode_volume.foobar",
-					"linode_id",
-					"linode_instance.foobaz",
-					"id",
-				),
+				ResourceName:            "linode_instance.foobaz",
+				Check:                   resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobaz", "id"),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id"},
@@ -374,11 +350,7 @@ func TestAccResourceVolume_cloned(t *testing.T) {
 					resource.TestCheckResourceAttrSet("linode_volume.foobar", "linode_id"),
 
 					acceptance.CheckVolumeExists("linode_volume.foobar-cloned", &volume2),
-					resource.TestCheckResourceAttr(
-						"linode_volume.foobar-cloned",
-						"label",
-						volumeName+"-c",
-					),
+					resource.TestCheckResourceAttr("linode_volume.foobar-cloned", "label", volumeName+"-c"),
 					resource.TestCheckResourceAttrSet("linode_volume.foobar-cloned", "linode_id"),
 				),
 			},

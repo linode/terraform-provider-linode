@@ -53,11 +53,7 @@ func TestAccDataSourceRegions_basic_smoke(t *testing.T) {
 						resourceName,
 						"regions.0.placement_group_limits.0.maximum_linodes_per_pg",
 					),
-					acceptance.CheckResourceAttrGreaterThan(
-						resourceName,
-						"regions.0.capabilities.#",
-						0,
-					),
+					acceptance.CheckResourceAttrGreaterThan(resourceName, "regions.0.capabilities.#", 0),
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "regions.#", 0),
 				),
 			},
@@ -105,11 +101,7 @@ func TestAccDataSourceRegions_filterByCountry(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "regions.0.site_type"),
 					resource.TestCheckResourceAttrSet(resourceName, "regions.0.resolvers.0.ipv4"),
 					resource.TestCheckResourceAttrSet(resourceName, "regions.0.resolvers.0.ipv6"),
-					acceptance.CheckResourceAttrGreaterThan(
-						resourceName,
-						"regions.0.capabilities.#",
-						0,
-					),
+					acceptance.CheckResourceAttrGreaterThan(resourceName, "regions.0.capabilities.#", 0),
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "regions.#", 0),
 				),
 			},
@@ -157,11 +149,7 @@ func TestAccDataSourceRegions_filterByStatus(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "regions.0.site_type"),
 					resource.TestCheckResourceAttrSet(resourceName, "regions.0.resolvers.0.ipv4"),
 					resource.TestCheckResourceAttrSet(resourceName, "regions.0.resolvers.0.ipv6"),
-					acceptance.CheckResourceAttrGreaterThan(
-						resourceName,
-						"regions.0.capabilities.#",
-						0,
-					),
+					acceptance.CheckResourceAttrGreaterThan(resourceName, "regions.0.capabilities.#", 0),
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "regions.#", 0),
 				),
 			},
@@ -209,25 +197,11 @@ func TestAccDataSourceRegions_filterByCapabilities(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "regions.0.site_type"),
 					resource.TestCheckResourceAttrSet(resourceName, "regions.0.resolvers.0.ipv4"),
 					resource.TestCheckResourceAttrSet(resourceName, "regions.0.resolvers.0.ipv6"),
-					acceptance.CheckResourceAttrGreaterThan(
-						resourceName,
-						"regions.0.capabilities.#",
-						0,
-					),
+					acceptance.CheckResourceAttrGreaterThan(resourceName, "regions.0.capabilities.#", 0),
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "regions.#", 0),
-					acceptance.LoopThroughStringList(
-						resourceName,
-						"regions",
-						func(resourceName, path string, state *terraform.State) error {
-							return acceptance.CheckResourceAttrListContains(
-								resourceName,
-								path+".capabilities",
-								randomCapability,
-							)(
-								state,
-							)
-						},
-					),
+					acceptance.LoopThroughStringList(resourceName, "regions", func(resourceName, path string, state *terraform.State) error {
+						return acceptance.CheckResourceAttrListContains(resourceName, path+".capabilities", randomCapability)(state)
+					}),
 				),
 			},
 		},

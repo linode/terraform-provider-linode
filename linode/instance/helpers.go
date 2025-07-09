@@ -88,10 +88,7 @@ func createInstanceConfigsFromSet(
 
 		if interfaces, ok := config["interface"]; ok {
 			interfaces := interfaces.([]interface{})
-			configOpts.Interfaces = make(
-				[]linodego.InstanceConfigInterfaceCreateOptions,
-				len(interfaces),
-			)
+			configOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 			for i, ni := range interfaces {
 				configOpts.Interfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
@@ -158,10 +155,7 @@ func updateInstanceConfigs(
 	for _, config := range configs {
 		if _, duplicate := configMap[config.Label]; duplicate {
 			return rebootInstance, updatedConfigMap, updatedConfigs, fmt.Errorf(
-				"Error indexing Instance %d Configs: Label '%s' is assigned to multiple configs",
-				instance.ID,
-				config.Label,
-			)
+				"Error indexing Instance %d Configs: Label '%s' is assigned to multiple configs", instance.ID, config.Label)
 		}
 		configMap[config.Label] = config
 	}
@@ -175,10 +169,7 @@ func updateInstanceConfigs(
 			oldConfigLabels = append(oldConfigLabels, oldLabel)
 			if oldLabel == bootConfigLabel {
 				for _, iface := range oldConfig["interface"].([]interface{}) {
-					oldBootInterfaces = append(
-						oldBootInterfaces,
-						iface.(map[string]interface{})["ipam_address"].(string),
-					)
+					oldBootInterfaces = append(oldBootInterfaces, iface.(map[string]interface{})["ipam_address"].(string))
 				}
 			}
 		}
@@ -217,28 +208,19 @@ func updateInstanceConfigs(
 			if interfaces, ok := tfc["interface"]; ok {
 				interfaces := interfaces.([]interface{})
 
-				configUpdateOpts.Interfaces = make(
-					[]linodego.InstanceConfigInterfaceCreateOptions,
-					len(interfaces),
-				)
+				configUpdateOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 				for i, ni := range interfaces {
 					mappedInterface := ni.(map[string]interface{})
 					configUpdateOpts.Interfaces[i] = helper.ExpandConfigInterface(mappedInterface)
 					if label == bootConfigLabel {
-						newBootInterfaces = append(
-							newBootInterfaces,
-							mappedInterface["ipam_address"].(string),
-						)
+						newBootInterfaces = append(newBootInterfaces, mappedInterface["ipam_address"].(string))
 					}
 				}
 
 			}
 
-			if reflect.DeepEqual(
-				configUpdateOpts.Interfaces,
-				existingConfig.GetUpdateOptions().Interfaces,
-			) {
+			if reflect.DeepEqual(configUpdateOpts.Interfaces, existingConfig.GetUpdateOptions().Interfaces) {
 				configUpdateOpts.Interfaces = nil
 			}
 
@@ -246,15 +228,11 @@ func updateInstanceConfigs(
 			if tfcDevices, ok := tfcDevicesRaw.([]interface{}); devicesFound && ok {
 				devices := tfcDevices[0].(map[string]interface{})
 
-				configUpdateOpts.Devices, err = expandInstanceConfigDeviceMap(
-					devices,
-					diskIDLabelMap,
-				)
+				configUpdateOpts.Devices, err = expandInstanceConfigDeviceMap(devices, diskIDLabelMap)
 				if err != nil {
 					return rebootInstance, updatedConfigMap, updatedConfigs, err
 				}
-				if configUpdateOpts.Devices != nil &&
-					emptyConfigDeviceMap(*configUpdateOpts.Devices) {
+				if configUpdateOpts.Devices != nil && emptyConfigDeviceMap(*configUpdateOpts.Devices) {
 					configUpdateOpts.Devices = nil
 				}
 			} else {
@@ -273,12 +251,7 @@ func updateInstanceConfigs(
 				"options":   configUpdateOpts,
 				"config_id": existingConfig.ID,
 			})
-			updatedConfig, err := client.UpdateInstanceConfig(
-				ctx,
-				instance.ID,
-				existingConfig.ID,
-				configUpdateOpts,
-			)
+			updatedConfig, err := client.UpdateInstanceConfig(ctx, instance.ID, existingConfig.ID, configUpdateOpts)
 			if err != nil {
 				return rebootInstance, updatedConfigMap, updatedConfigs, fmt.Errorf(
 					"Error updating Instance %d Config %d: %s", instance.ID, existingConfig.ID, err)
@@ -306,14 +279,7 @@ func updateInstanceConfigs(
 		rebootInstance = true
 	}
 
-	updatedConfigMap, err = deleteInstanceConfigs(
-		ctx,
-		client,
-		instance.ID,
-		oldConfigLabels,
-		updatedConfigMap,
-		configMap,
-	)
+	updatedConfigMap, err = deleteInstanceConfigs(ctx, client, instance.ID, oldConfigLabels, updatedConfigMap, configMap)
 	if err != nil {
 		return rebootInstance, updatedConfigMap, updatedConfigs, err
 	}
@@ -427,10 +393,7 @@ func makeVolumeDetacher(client linodego.Client, d *schema.ResourceData) volumeDe
 	}
 }
 
-func makeVolumeDetacherIgnoreAttached(
-	client linodego.Client,
-	d *schema.ResourceData,
-) volumeDetacher {
+func makeVolumeDetacherIgnoreAttached(client linodego.Client, d *schema.ResourceData) volumeDetacher {
 	return func(ctx context.Context, volumeID int, reason string) error {
 		ctx = helper.SetLogFieldBulk(ctx, map[string]any{
 			"volume_id": volumeID,
@@ -511,9 +474,7 @@ func createInstanceDisk(
 		if stackscriptDataRaw, ok := disk["stackscript_data"]; ok {
 			stackscriptData, ok := stackscriptDataRaw.(map[string]interface{})
 			if !ok {
-				return nil, fmt.Errorf(
-					"Error parsing stackscript_data: expected map[string]interface{}",
-				)
+				return nil, fmt.Errorf("Error parsing stackscript_data: expected map[string]interface{}")
 			}
 			diskOpts.StackscriptData = make(map[string]string, len(stackscriptData))
 			for name, value := range stackscriptData {
@@ -526,12 +487,7 @@ func createInstanceDisk(
 		"options": diskOpts,
 	})
 
-	p, err := client.NewEventPoller(
-		ctx,
-		instance.ID,
-		linodego.EntityLinode,
-		linodego.ActionDiskCreate,
-	)
+	p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize event poller: %s", err)
 	}
@@ -550,11 +506,7 @@ func createInstanceDisk(
 	tflog.Debug(ctx, "Waiting for disk creation to complete")
 	_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
 	if err != nil {
-		return nil, fmt.Errorf(
-			"Error waiting for Linode instance %d disk: %s",
-			instanceDisk.ID,
-			err,
-		)
+		return nil, fmt.Errorf("Error waiting for Linode instance %d disk: %s", instanceDisk.ID, err)
 	}
 
 	tflog.Debug(ctx, "Instance disk creation complete")
@@ -574,11 +526,8 @@ func getInstanceDisks(
 	diskMap := make(map[string]linodego.InstanceDisk)
 	for _, disk := range disks {
 		if _, duplicate := diskMap[disk.Label]; duplicate {
-			return nil, fmt.Errorf(
-				"Error indexing Instance %d Disks: Label '%s' is assigned to multiple disks",
-				instanceID,
-				disk.Label,
-			)
+			return nil, fmt.Errorf("Error indexing Instance %d Disks: Label '%s' is assigned to multiple disks",
+				instanceID, disk.Label)
 		}
 		diskMap[disk.Label] = disk
 	}
@@ -608,9 +557,7 @@ func getInstanceDiskLabelIDMap(
 }
 
 // getInstanceDiskSpecChange returns a map of disk specs indexed by label.
-func getInstanceDiskSpecChange(
-	d *schema.ResourceData,
-) (oldDiskSpecs, newDiskSpecs map[string]diskSpec) {
+func getInstanceDiskSpecChange(d *schema.ResourceData) (oldDiskSpecs, newDiskSpecs map[string]diskSpec) {
 	old, new := d.GetChange("disk")
 	oldDisk := old.([]interface{})
 	newDisk := new.([]interface{})
@@ -675,11 +622,7 @@ func updateInstanceDisks(
 	for label := range oldDisk {
 		_, wasRemoved := removed[label]
 		if _, ok := disks[label]; !ok && !wasRemoved {
-			return hasChanges, fmt.Errorf(
-				`disk "%s" was not found on instance %d`,
-				label,
-				instance.ID,
-			)
+			return hasChanges, fmt.Errorf(`disk "%s" was not found on instance %d`, label, instance.ID)
 		}
 	}
 	// keep track of all disks visited for accounting
@@ -697,12 +640,7 @@ func updateInstanceDisks(
 
 		tflog.Info(ctx, "Deleting unused disk")
 
-		p, err := client.NewEventPoller(
-			ctx,
-			instance.ID,
-			linodego.EntityLinode,
-			linodego.ActionDiskDelete,
-		)
+		p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionDiskDelete)
 		if err != nil {
 			return false, fmt.Errorf("failed to initialize event poller: %s", err)
 		}
@@ -717,11 +655,7 @@ func updateInstanceDisks(
 		_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
 		if err != nil {
 			return hasChanges, fmt.Errorf(
-				"error waiting for Instance %d Disk %d to finish deleting: %s",
-				instance.ID,
-				disk.ID,
-				err,
-			)
+				"error waiting for Instance %d Disk %d to finish deleting: %s", instance.ID, disk.ID, err)
 		}
 
 		tflog.Debug(ctx, "Unused disk finished deleting")
@@ -741,10 +675,7 @@ func updateInstanceDisks(
 			hasChanges = true
 		}
 		if spec["filesystem"].(string) != string(existingDisk.Filesystem) {
-			return hasChanges, fmt.Errorf(
-				"failed to update disk %d; filesystems can not be changed",
-				existingDisk.ID,
-			)
+			return hasChanges, fmt.Errorf("failed to update disk %d; filesystems can not be changed", existingDisk.ID)
 		}
 		visited[label] = struct{}{}
 	}
@@ -760,12 +691,7 @@ func updateInstanceDisks(
 	for label, disk := range disks {
 		if _, ok := visited[label]; !ok {
 			// warn if disk found that is not in terraform state
-			fmt.Printf(
-				"[WARN] found disk %s (%d) on instance %d not found in state",
-				label,
-				disk.ID,
-				instance.ID,
-			)
+			fmt.Printf("[WARN] found disk %s (%d) on instance %d not found in state", label, disk.ID, instance.ID)
 		}
 	}
 
@@ -867,12 +793,7 @@ func changeInstanceType(
 		"migration_type": migrationType,
 	})
 
-	p, err := client.NewEventPoller(
-		ctx,
-		instance.ID,
-		linodego.EntityLinode,
-		linodego.ActionLinodeResize,
-	)
+	p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize event poller %d: %s", instance.ID, err)
 	}
@@ -883,11 +804,7 @@ func changeInstanceType(
 
 	_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
 	if err != nil {
-		return nil, fmt.Errorf(
-			"Error waiting for instance %d to finish resizing: %s",
-			instance.ID,
-			err,
-		)
+		return nil, fmt.Errorf("Error waiting for instance %d to finish resizing: %s", instance.ID, err)
 	}
 
 	tflog.Debug(ctx, "Instance resize completed")
@@ -896,11 +813,7 @@ func changeInstanceType(
 	if instance, err = client.WaitForInstanceStatus(
 		ctx, instance.ID, linodego.InstanceOffline, getDeadlineSeconds(ctx, d),
 	); err != nil {
-		return nil, fmt.Errorf(
-			"Error waiting for Instance %d to enter offline state: %s",
-			instance.ID,
-			err,
-		)
+		return nil, fmt.Errorf("Error waiting for Instance %d to enter offline state: %s", instance.ID, err)
 	}
 
 	// Sometimes the API falls behind on updating the disk info, let's make sure it has updated
@@ -941,11 +854,7 @@ func changeInstanceDiskSize(
 	d *schema.ResourceData,
 ) error {
 	if instance.Specs.Disk < targetSize {
-		return fmt.Errorf(
-			"Error resizing disk %d: size exceeds disk size for Instance %d",
-			disk.ID,
-			instance.ID,
-		)
+		return fmt.Errorf("Error resizing disk %d: size exceeds disk size for Instance %d", disk.ID, instance.ID)
 	}
 
 	ctx = tflog.SetField(ctx, "disk_id", disk.ID)
@@ -977,12 +886,7 @@ func changeInstanceDiskSize(
 
 	tflog.Info(ctx, "Instance has reached offline status, resizing disk")
 
-	p, err := client.NewEventPoller(
-		ctx,
-		instance.ID,
-		linodego.EntityLinode,
-		linodego.ActionDiskResize,
-	)
+	p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionDiskResize)
 	if err != nil {
 		return fmt.Errorf("failed to initialize event poller: %s", err)
 	}
@@ -1000,23 +904,13 @@ func changeInstanceDiskSize(
 	// Wait for the disk resize operation to complete.
 	_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
 	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for resize of Instance %d Disk %d: %s",
-			instance.ID,
-			disk.ID,
-			err,
-		)
+		return fmt.Errorf("Error waiting for resize of Instance %d Disk %d: %s", instance.ID, disk.ID, err)
 	}
 
 	// Check to see if the resize operation worked
 	if updatedDisk, err := client.WaitForInstanceDiskStatus(ctx, instance.ID, disk.ID, linodego.DiskReady,
 		getDeadlineSeconds(ctx, d)); err != nil {
-		return fmt.Errorf(
-			"Error waiting disk %d on instance %d to be ready: %s",
-			disk.ID,
-			instance.ID,
-			err,
-		)
+		return fmt.Errorf("Error waiting disk %d on instance %d to be ready: %s", disk.ID, instance.ID, err)
 	} else if updatedDisk.Size != targetSize {
 		return fmt.Errorf(
 			"Error resizing disk %d on instance %d from %d to %d", disk.ID, instance.ID, disk.Size, targetSize)
@@ -1033,15 +927,12 @@ func privateIP(ip net.IP) bool {
 	_, private24BitBlock, _ := net.ParseCIDR("10.0.0.0/8")
 	_, private20BitBlock, _ := net.ParseCIDR("172.16.0.0/12")
 	_, private16BitBlock, _ := net.ParseCIDR("192.168.0.0/16")
-	private := private24BitBlock.Contains(ip) || private20BitBlock.Contains(ip) ||
-		private16BitBlock.Contains(ip)
+	private := private24BitBlock.Contains(ip) || private20BitBlock.Contains(ip) || private16BitBlock.Contains(ip)
 	return private
 }
 
 func assignConfigDevice(
-	device *linodego.InstanceConfigDevice,
-	dev map[string]interface{},
-	diskIDLabelMap map[string]int,
+	device *linodego.InstanceConfigDevice, dev map[string]interface{}, diskIDLabelMap map[string]int,
 ) error {
 	if label, ok := dev["disk_label"].(string); ok && len(label) > 0 {
 		if dev["disk_id"], ok = diskIDLabelMap[label]; !ok {
@@ -1140,8 +1031,7 @@ func applyInstanceTypeChange(
 
 	if resizeDisk {
 		// Verify that there are implicit disks defined
-		if d.GetRawConfig().GetAttr("image").IsNull() &&
-			d.GetRawConfig().GetAttr("disk").LengthInt() > 0 {
+		if d.GetRawConfig().GetAttr("image").IsNull() && d.GetRawConfig().GetAttr("disk").LengthInt() > 0 {
 			return nil, fmt.Errorf("resize_disk requires that no explicit disks are defined")
 		}
 
@@ -1185,12 +1075,7 @@ func applyInstanceMigration(
 
 	tflog.Debug(ctx, "Migrating instance to new region")
 
-	p, err := client.NewEventPoller(
-		ctx,
-		instance.ID,
-		linodego.EntityLinode,
-		linodego.ActionLinodeMigrateDatacenter,
-	)
+	p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeMigrateDatacenter)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize event poller %d: %s", instance.ID, err)
 	}
@@ -1205,23 +1090,14 @@ func applyInstanceMigration(
 	})
 
 	if err := client.MigrateInstance(ctx, instance.ID, migrateOpts); err != nil {
-		return nil, fmt.Errorf(
-			"failed to migrate instance %d to region %s: %w",
-			instance.ID,
-			targetRegion,
-			err,
-		)
+		return nil, fmt.Errorf("failed to migrate instance %d to region %s: %w", instance.ID, targetRegion, err)
 	}
 
 	tflog.Debug(ctx, "Waiting for migration to finish")
 
 	_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
 	if err != nil {
-		return nil, fmt.Errorf(
-			"failed to wait for instance %d to finish migration: %w",
-			instance.ID,
-			err,
-		)
+		return nil, fmt.Errorf("failed to wait for instance %d to finish migration: %w", instance.ID, err)
 	}
 
 	tflog.Debug(ctx, "Instance migration has finished")
@@ -1388,17 +1264,9 @@ func validateImplicitDisks(ctx context.Context,
 		return nil
 	}
 
-	if getFirstDiskWithFilesystem(
-		disks,
-		[]linodego.DiskFilesystem{
-			linodego.FilesystemExt4,
-			linodego.FilesystemExt3,
-		},
-	) == nil || len(disks) > 2 {
-		return fmt.Errorf(
-			"invalid implicit disk configuration: %s",
-			invalidImplicitDiskConfigMessage,
-		)
+	if getFirstDiskWithFilesystem(disks,
+		[]linodego.DiskFilesystem{linodego.FilesystemExt4, linodego.FilesystemExt3}) == nil || len(disks) > 2 {
+		return fmt.Errorf("invalid implicit disk configuration: %s", invalidImplicitDiskConfigMessage)
 	}
 
 	return nil
@@ -1413,10 +1281,7 @@ func getPrimaryImplicitDisk(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if len(disks) > 2 {
-		return nil, fmt.Errorf(
-			"invalid implicit disk configuration: %s",
-			invalidImplicitDiskConfigMessage,
-		)
+		return nil, fmt.Errorf("invalid implicit disk configuration: %s", invalidImplicitDiskConfigMessage)
 	}
 
 	targetDisk := getFirstDiskWithFilesystem(disks,
@@ -1484,11 +1349,7 @@ func VPCInterfaceIncluded(
 	return false
 }
 
-func BootInstanceAfterVPCInterfaceUpdate(
-	ctx context.Context,
-	meta *helper.ProviderMeta,
-	instanceID, targetConfigID, deadlineSeconds int,
-) diag.Diagnostics {
+func BootInstanceAfterVPCInterfaceUpdate(ctx context.Context, meta *helper.ProviderMeta, instanceID, targetConfigID, deadlineSeconds int) diag.Diagnostics {
 	tflog.Debug(ctx, "Booting instance after VPC interface change applied")
 	if err := helper.BootInstanceSync(
 		ctx, &meta.Client, instanceID, targetConfigID, deadlineSeconds,
@@ -1498,12 +1359,7 @@ func BootInstanceAfterVPCInterfaceUpdate(
 	return nil
 }
 
-func ShutdownInstanceForVPCInterfaceUpdate(
-	ctx context.Context,
-	client *linodego.Client,
-	skipImplicitReboots bool,
-	instanceID, deadlineSeconds int,
-) error {
+func ShutdownInstanceForVPCInterfaceUpdate(ctx context.Context, client *linodego.Client, skipImplicitReboots bool, instanceID, deadlineSeconds int) error {
 	if skipImplicitReboots {
 		return fmt.Errorf(
 			"Adding, removing, and reordering a Linode VPC interface requires the implicit " +
@@ -1515,11 +1371,7 @@ func ShutdownInstanceForVPCInterfaceUpdate(
 	return SafeShutdownInstance(ctx, client, instanceID, deadlineSeconds)
 }
 
-func SafeShutdownInstance(
-	ctx context.Context,
-	client *linodego.Client,
-	instanceID, deadlineSeconds int,
-) error {
+func SafeShutdownInstance(ctx context.Context, client *linodego.Client, instanceID, deadlineSeconds int) error {
 	tflog.Debug(ctx, "Shutting down Linode instance")
 
 	instanceStatus, err := helper.WaitForInstanceNonTransientStatus(
@@ -1617,10 +1469,7 @@ func reassignPlacementGroup(
 
 // expandInstancePlacementGroup expands the user-defined `placement_group` block into the
 // linodego InstanceCreatePlacementGroupOptions struct.
-func getPlacementGroupCreateOptions(
-	ctx context.Context,
-	d *schema.ResourceData,
-) *linodego.InstanceCreatePlacementGroupOptions {
+func getPlacementGroupCreateOptions(ctx context.Context, d *schema.ResourceData) *linodego.InstanceCreatePlacementGroupOptions {
 	if _, ok := d.GetOk("placement_group.0"); !ok {
 		return nil
 	}

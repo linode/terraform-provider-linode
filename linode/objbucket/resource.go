@@ -59,11 +59,7 @@ func readResource(
 
 	regionOrCluster, label, err := DecodeBucketID(ctx, d.Id(), d)
 	if err != nil {
-		return diag.Errorf(
-			"failed to parse Linode ObjectStorageBucket id %s: %s",
-			d.Id(),
-			err.Error(),
-		)
+		return diag.Errorf("failed to parse Linode ObjectStorageBucket id %s: %s", d.Id(), err.Error())
 	}
 
 	bucket, err := client.GetObjectStorageBucket(ctx, regionOrCluster, label)
@@ -85,10 +81,7 @@ func readResource(
 	tflog.Debug(ctx, "getting bucket access info")
 	access, err := client.GetObjectStorageBucketAccessV2(ctx, regionOrCluster, label)
 	if err != nil {
-		return diag.Errorf(
-			"failed to find the access config for the specified Linode ObjectStorageBucket: %s",
-			err,
-		)
+		return diag.Errorf("failed to find the access config for the specified Linode ObjectStorageBucket: %s", err)
 	}
 
 	_, versioningPresent := d.GetOk("versioning")
@@ -100,15 +93,7 @@ func readResource(
 			"lifecyclePresent":  lifecyclePresent,
 		})
 
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(
-			ctx,
-			d,
-			config,
-			client,
-			bucket.Label,
-			regionOrCluster,
-			"read_only",
-		)
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket.Label, regionOrCluster, "read_only")
 		if diags != nil {
 			return diags
 		}
@@ -245,15 +230,7 @@ func updateResource(
 
 		bucket := d.Get("label").(string)
 
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(
-			ctx,
-			d,
-			config,
-			client,
-			bucket,
-			regionOrCluster,
-			"read_write",
-		)
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket, regionOrCluster, "read_write")
 		if diags != nil {
 			return diags
 		}
@@ -262,13 +239,7 @@ func updateResource(
 			defer teardownKeysCleanUp()
 		}
 
-		s3client, err := helper.S3ConnectionFromData(
-			ctx,
-			d,
-			meta,
-			objKeys.AccessKey,
-			objKeys.SecretKey,
-		)
+		s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -306,15 +277,7 @@ func deleteResource(
 	}
 
 	if config.ObjBucketForceDelete {
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(
-			ctx,
-			d,
-			config,
-			client,
-			label,
-			regionOrCluster,
-			"read_write",
-		)
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, label, regionOrCluster, "read_write")
 		if diags != nil {
 			return diags
 		}
@@ -323,13 +286,7 @@ func deleteResource(
 			defer teardownKeysCleanUp()
 		}
 
-		s3client, err := helper.S3ConnectionFromData(
-			ctx,
-			d,
-			meta,
-			objKeys.AccessKey,
-			objKeys.SecretKey,
-		)
+		s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -337,11 +294,7 @@ func deleteResource(
 		tflog.Debug(ctx, "helper.PurgeAllObjects(...)")
 		err = helper.PurgeAllObjects(ctx, label, s3client, true, true)
 		if err != nil {
-			return diag.Errorf(
-				"Error purging all objects from ObjectStorageBucket: %s: %s",
-				d.Id(),
-				err,
-			)
+			return diag.Errorf("Error purging all objects from ObjectStorageBucket: %s: %s", d.Id(), err)
 		}
 	}
 
@@ -489,11 +442,7 @@ func updateBucketAccess(
 		newCorsBool := d.Get("cors_enabled").(bool)
 		updateOpts.CorsEnabled = &newCorsBool
 	}
-	tflog.Debug(
-		ctx,
-		"client.UpdateObjectStorageBucketAccess(...)",
-		map[string]any{"options": updateOpts},
-	)
+	tflog.Debug(ctx, "client.UpdateObjectStorageBucketAccess(...)", map[string]any{"options": updateOpts})
 	if err := client.UpdateObjectStorageBucketAccess(ctx, regionOrCluster, label, updateOpts); err != nil {
 		return fmt.Errorf("failed to update bucket access: %s", err)
 	}
@@ -538,11 +487,7 @@ func expandBucketCert(v any) linodego.ObjectStorageBucketCertUploadOptions {
 	}
 }
 
-func DecodeBucketID(
-	ctx context.Context,
-	id string,
-	d *schema.ResourceData,
-) (regionOrCluster, label string, err error) {
+func DecodeBucketID(ctx context.Context, id string, d *schema.ResourceData) (regionOrCluster, label string, err error) {
 	tflog.Debug(ctx, "decoding bucket ID")
 	parts := strings.Split(id, ":")
 	if len(parts) == 2 && parts[0] != "" && parts[1] != "" {
@@ -550,10 +495,7 @@ func DecodeBucketID(
 		label = parts[1]
 		return
 	}
-	tflog.Warn(
-		ctx,
-		"Corrupted bucket ID detected, trying to recover it from cluster and label attributes.",
-	)
+	tflog.Warn(ctx, "Corrupted bucket ID detected, trying to recover it from cluster and label attributes.")
 
 	recoveredCluster, clusterOk := d.GetOk("cluster")
 	recoveredLabel, labelOk := d.GetOk("label")
@@ -595,8 +537,7 @@ func flattenLifecycleRules(ctx context.Context, rules []s3types.LifecycleRule) [
 
 		ruleMap["enabled"] = rule.Status == s3types.ExpirationStatusEnabled
 
-		if rule.AbortIncompleteMultipartUpload != nil &&
-			rule.AbortIncompleteMultipartUpload.DaysAfterInitiation != nil {
+		if rule.AbortIncompleteMultipartUpload != nil && rule.AbortIncompleteMultipartUpload.DaysAfterInitiation != nil {
 			ruleMap["abort_incomplete_multipart_upload_days"] = *rule.AbortIncompleteMultipartUpload.DaysAfterInitiation
 		}
 
@@ -697,9 +638,7 @@ func expandLifecycleRules(ctx context.Context, ruleSpecs []any) ([]s3types.Lifec
 			}
 		}
 
-		if expirationList := ruleSpec["noncurrent_version_expiration"].([]any); len(
-			expirationList,
-		) > 0 {
+		if expirationList := ruleSpec["noncurrent_version_expiration"].([]any); len(expirationList) > 0 {
 			tflog.Debug(ctx, "expanding noncurrent_version_expiration list")
 			rule.NoncurrentVersionExpiration = &s3types.NoncurrentVersionExpiration{}
 

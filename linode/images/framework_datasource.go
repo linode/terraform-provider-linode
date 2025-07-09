@@ -3,8 +3,9 @@ package images
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -61,8 +62,7 @@ func (d *DataSource) Read(
 		}
 	}
 
-	resp.Diagnostics.Append(
-		data.parseImages(ctx, helper.AnySliceToTyped[linodego.Image](result))...)
+	resp.Diagnostics.Append(data.parseImages(ctx, helper.AnySliceToTyped[linodego.Image](result))...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

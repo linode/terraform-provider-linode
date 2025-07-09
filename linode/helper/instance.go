@@ -80,12 +80,7 @@ func rebootInstance(
 
 	tflog.Info(ctx, "Rebooting instance")
 
-	p, err := client.NewEventPoller(
-		ctx,
-		entityID,
-		linodego.EntityLinode,
-		linodego.ActionLinodeReboot,
-	)
+	p, err := client.NewEventPoller(ctx, entityID, linodego.EntityLinode, linodego.ActionLinodeReboot)
 	if err != nil {
 		return fmt.Errorf("failed to initialize event poller: %s", err)
 	}
@@ -101,11 +96,7 @@ func rebootInstance(
 	}
 	_, err = p.WaitForFinished(ctx, deadlineSeconds)
 	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for Instance [%d] to finish rebooting: %s",
-			instance.ID,
-			err,
-		)
+		return fmt.Errorf("Error waiting for Instance [%d] to finish rebooting: %s", instance.ID, err)
 	}
 
 	if deadline, ok := ctx.Deadline(); ok {
@@ -114,11 +105,7 @@ func rebootInstance(
 	if _, err = client.WaitForInstanceStatus(
 		ctx, instance.ID, linodego.InstanceRunning, deadlineSeconds,
 	); err != nil {
-		return fmt.Errorf(
-			"Timed-out waiting for Linode instance [%d] to boot: %s",
-			instance.ID,
-			err,
-		)
+		return fmt.Errorf("Timed-out waiting for Linode instance [%d] to boot: %s", instance.ID, err)
 	}
 
 	tflog.Debug(ctx, "Instance has finished rebooting")
@@ -232,9 +219,7 @@ func ExpandInterfaceIPv4(ipv4 any) *linodego.VPCIPv4 {
 	return result
 }
 
-func ExpandConfigInterface(
-	ifaceMap map[string]interface{},
-) linodego.InstanceConfigInterfaceCreateOptions {
+func ExpandConfigInterface(ifaceMap map[string]interface{}) linodego.InstanceConfigInterfaceCreateOptions {
 	purpose := linodego.ConfigInterfacePurpose(ifaceMap["purpose"].(string))
 	result := linodego.InstanceConfigInterfaceCreateOptions{
 		Purpose: purpose,
@@ -275,10 +260,7 @@ func ExpandConfigInterface(
 	return result
 }
 
-func ExpandConfigInterfaces(
-	ctx context.Context,
-	ifaces []any,
-) []linodego.InstanceConfigInterfaceCreateOptions {
+func ExpandConfigInterfaces(ctx context.Context, ifaces []any) []linodego.InstanceConfigInterfaceCreateOptions {
 	result := make([]linodego.InstanceConfigInterfaceCreateOptions, len(ifaces))
 
 	for i, iface := range ifaces {
@@ -343,12 +325,7 @@ func BootInstanceSync(
 
 	tflog.Info(ctx, "Booting instance")
 
-	p, err := client.NewEventPoller(
-		ctx,
-		instanceID,
-		linodego.EntityLinode,
-		linodego.ActionLinodeBoot,
-	)
+	p, err := client.NewEventPoller(ctx, instanceID, linodego.EntityLinode, linodego.ActionLinodeBoot)
 	if err != nil {
 		return fmt.Errorf("failed to initialize event poller: %s", err)
 	}
@@ -382,12 +359,7 @@ func ShutDownInstanceSync(
 
 	tflog.Info(ctx, "Shutting down instance")
 
-	p, err := client.NewEventPoller(
-		ctx,
-		instanceID,
-		linodego.EntityLinode,
-		linodego.ActionLinodeShutdown,
-	)
+	p, err := client.NewEventPoller(ctx, instanceID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
 	if err != nil {
 		return fmt.Errorf("failed to initialize event poller: %s", err)
 	}
@@ -436,10 +408,7 @@ func WaitForInstanceNonTransientStatus(
 		return instance.Status, nil
 
 	default:
-		return "", fmt.Errorf(
-			"cannot wait for instance to exit transient status %s",
-			instance.Status,
-		)
+		return "", fmt.Errorf("cannot wait for instance to exit transient status %s", instance.Status)
 	}
 
 	instance, err = client.WaitForInstanceStatus(
@@ -449,11 +418,7 @@ func WaitForInstanceNonTransientStatus(
 		timeoutSeconds,
 	)
 	if err != nil {
-		return "", fmt.Errorf(
-			"failed to wait for instance to reach status %s: %w",
-			targetStatus,
-			err,
-		)
+		return "", fmt.Errorf("failed to wait for instance to reach status %s: %w", targetStatus, err)
 	}
 
 	return instance.Status, nil

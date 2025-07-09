@@ -118,8 +118,7 @@ func (r *DataSource) Read(
 		}
 	}
 
-	resp.Diagnostics.Append(
-		data.parseLKEAttributes(ctx, cluster, pools, kubeconfig, endpoints, dashboard, acl)...)
+	resp.Diagnostics.Append(data.parseLKEAttributes(ctx, cluster, pools, kubeconfig, endpoints, dashboard, acl)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

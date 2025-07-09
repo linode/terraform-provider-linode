@@ -18,8 +18,7 @@ type DataSourceModel struct {
 	Transfer     types.Int64  `tfsdk:"transfer"`
 }
 
-func (data *DataSourceModel) parseNetworkTransferPrice(
-	networkTransferPrice *linodego.NetworkTransferPrice,
+func (data *DataSourceModel) parseNetworkTransferPrice(networkTransferPrice *linodego.NetworkTransferPrice,
 ) diag.Diagnostics {
 	data.ID = types.StringValue(networkTransferPrice.ID)
 
@@ -101,8 +100,7 @@ type NetworkTransferPriceFilterModel struct {
 	Types   []DataSourceModel                `tfsdk:"types"`
 }
 
-func (model *NetworkTransferPriceFilterModel) parseNetworkTransferPrices(
-	networkTransferPrices []linodego.NetworkTransferPrice,
+func (model *NetworkTransferPriceFilterModel) parseNetworkTransferPrices(networkTransferPrices []linodego.NetworkTransferPrice,
 ) diag.Diagnostics {
 	result := make([]DataSourceModel, len(networkTransferPrices))
 

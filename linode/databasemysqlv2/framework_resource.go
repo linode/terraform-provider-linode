@@ -69,14 +69,11 @@ func (r *Resource) Create(
 	defer cancel()
 
 	createOpts := linodego.MySQLCreateOptions{
-		Label:  data.Label.ValueString(),
-		Region: data.Region.ValueString(),
-		Type:   data.Type.ValueString(),
-		Engine: data.EngineID.ValueString(),
-		ClusterSize: helper.FrameworkSafeInt64ToInt(
-			data.ClusterSize.ValueInt64(),
-			&resp.Diagnostics,
-		),
+		Label:        data.Label.ValueString(),
+		Region:       data.Region.ValueString(),
+		Type:         data.Type.ValueString(),
+		Engine:       data.EngineID.ValueString(),
+		ClusterSize:  helper.FrameworkSafeInt64ToInt(data.ClusterSize.ValueInt64(), &resp.Diagnostics),
 		Fork:         data.GetFork(resp.Diagnostics),
 		AllowList:    data.GetAllowList(ctx, resp.Diagnostics),
 		EngineConfig: data.GetEngineConfig(resp.Diagnostics),
@@ -86,10 +83,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	createPoller, err := client.NewEventPollerWithoutEntity(
-		linodego.EntityDatabase,
-		linodego.ActionDatabaseCreate,
-	)
+	createPoller, err := client.NewEventPollerWithoutEntity(linodego.EntityDatabase, linodego.ActionDatabaseCreate)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create event poller",
@@ -355,118 +349,34 @@ func (r *Resource) Update(
 
 	// `engine_config` field updates
 	engineConfigFields := []bool{
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigBinlogRetentionPeriod,
-			plan.EngineConfigBinlogRetentionPeriod,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLConnectTimeout,
-			plan.EngineConfigMySQLConnectTimeout,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLDefaultTimeZone,
-			plan.EngineConfigMySQLDefaultTimeZone,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLGroupConcatMaxLen,
-			plan.EngineConfigMySQLGroupConcatMaxLen,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLInformationSchemaStatsExpiry,
-			plan.EngineConfigMySQLInformationSchemaStatsExpiry,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLInnoDBChangeBufferMaxSize,
-			plan.EngineConfigMySQLInnoDBChangeBufferMaxSize,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLInnoDBFlushNeighbors,
-			plan.EngineConfigMySQLInnoDBFlushNeighbors,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLInnoDBFTMinTokenSize,
-			plan.EngineConfigMySQLInnoDBFTMinTokenSize,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLInnoDBFTServerStopwordTable,
-			plan.EngineConfigMySQLInnoDBFTServerStopwordTable,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLInnoDBLockWaitTimeout,
-			plan.EngineConfigMySQLInnoDBLockWaitTimeout,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLInnoDBLogBufferSize,
-			plan.EngineConfigMySQLInnoDBLogBufferSize,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize,
-			plan.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLInnoDBReadIOThreads,
-			plan.EngineConfigMySQLInnoDBReadIOThreads,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLInnoDBRollbackOnTimeout,
-			plan.EngineConfigMySQLInnoDBRollbackOnTimeout,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLInnoDBThreadConcurrency,
-			plan.EngineConfigMySQLInnoDBThreadConcurrency,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLInnoDBWriteIOThreads,
-			plan.EngineConfigMySQLInnoDBWriteIOThreads,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLInteractiveTimeout,
-			plan.EngineConfigMySQLInteractiveTimeout,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLInternalTmpMemStorageEngine,
-			plan.EngineConfigMySQLInternalTmpMemStorageEngine,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLMaxAllowedPacket,
-			plan.EngineConfigMySQLMaxAllowedPacket,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLMaxHeapTableSize,
-			plan.EngineConfigMySQLMaxHeapTableSize,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLNetBufferLength,
-			plan.EngineConfigMySQLNetBufferLength,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLNetReadTimeout,
-			plan.EngineConfigMySQLNetReadTimeout,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLNetWriteTimeout,
-			plan.EngineConfigMySQLNetWriteTimeout,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLSortBufferSize,
-			plan.EngineConfigMySQLSortBufferSize,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLSQLMode,
-			plan.EngineConfigMySQLSQLMode,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLSQLRequirePrimaryKey,
-			plan.EngineConfigMySQLSQLRequirePrimaryKey,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLTmpTableSize,
-			plan.EngineConfigMySQLTmpTableSize,
-		),
-		!helper.FrameworkValuesShallowEqual(
-			state.EngineConfigMySQLWaitTimeout,
-			plan.EngineConfigMySQLWaitTimeout,
-		),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigBinlogRetentionPeriod, plan.EngineConfigBinlogRetentionPeriod),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLConnectTimeout, plan.EngineConfigMySQLConnectTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLDefaultTimeZone, plan.EngineConfigMySQLDefaultTimeZone),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLGroupConcatMaxLen, plan.EngineConfigMySQLGroupConcatMaxLen),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInformationSchemaStatsExpiry, plan.EngineConfigMySQLInformationSchemaStatsExpiry),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBChangeBufferMaxSize, plan.EngineConfigMySQLInnoDBChangeBufferMaxSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBFlushNeighbors, plan.EngineConfigMySQLInnoDBFlushNeighbors),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBFTMinTokenSize, plan.EngineConfigMySQLInnoDBFTMinTokenSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBFTServerStopwordTable, plan.EngineConfigMySQLInnoDBFTServerStopwordTable),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBLockWaitTimeout, plan.EngineConfigMySQLInnoDBLockWaitTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBLogBufferSize, plan.EngineConfigMySQLInnoDBLogBufferSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize, plan.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBReadIOThreads, plan.EngineConfigMySQLInnoDBReadIOThreads),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBRollbackOnTimeout, plan.EngineConfigMySQLInnoDBRollbackOnTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBThreadConcurrency, plan.EngineConfigMySQLInnoDBThreadConcurrency),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBWriteIOThreads, plan.EngineConfigMySQLInnoDBWriteIOThreads),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInteractiveTimeout, plan.EngineConfigMySQLInteractiveTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInternalTmpMemStorageEngine, plan.EngineConfigMySQLInternalTmpMemStorageEngine),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLMaxAllowedPacket, plan.EngineConfigMySQLMaxAllowedPacket),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLMaxHeapTableSize, plan.EngineConfigMySQLMaxHeapTableSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLNetBufferLength, plan.EngineConfigMySQLNetBufferLength),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLNetReadTimeout, plan.EngineConfigMySQLNetReadTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLNetWriteTimeout, plan.EngineConfigMySQLNetWriteTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLSortBufferSize, plan.EngineConfigMySQLSortBufferSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLSQLMode, plan.EngineConfigMySQLSQLMode),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLSQLRequirePrimaryKey, plan.EngineConfigMySQLSQLRequirePrimaryKey),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLTmpTableSize, plan.EngineConfigMySQLTmpTableSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLWaitTimeout, plan.EngineConfigMySQLWaitTimeout),
 	}
 	if slices.Contains(engineConfigFields, true) {
 		shouldUpdate = true
@@ -504,10 +414,7 @@ func (r *Resource) Update(
 	if !state.ClusterSize.Equal(plan.ClusterSize) {
 		shouldResize = true
 
-		updateOpts.ClusterSize = helper.FrameworkSafeInt64ToInt(
-			plan.ClusterSize.ValueInt64(),
-			&resp.Diagnostics,
-		)
+		updateOpts.ClusterSize = helper.FrameworkSafeInt64ToInt(plan.ClusterSize.ValueInt64(), &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -518,12 +425,7 @@ func (r *Resource) Update(
 		var err error
 
 		if shouldUpdate {
-			updatePoller, err = client.NewEventPoller(
-				ctx,
-				id,
-				linodego.EntityDatabase,
-				linodego.ActionDatabaseUpdate,
-			)
+			updatePoller, err = client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
 			if err != nil {
 				resp.Diagnostics.AddError(
 					"Failed to create update EventPoller for database",
@@ -534,12 +436,7 @@ func (r *Resource) Update(
 		}
 
 		if shouldResize {
-			resizePoller, err = client.NewEventPoller(
-				ctx,
-				id,
-				linodego.EntityDatabase,
-				linodego.ActionDatabaseResize,
-			)
+			resizePoller, err = client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseResize)
 			if err != nil {
 				resp.Diagnostics.AddError(
 					"Failed to create resize EventPoller for database",
@@ -560,10 +457,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		timeoutSeconds := helper.FrameworkSafeFloat64ToInt(
-			updateTimeout.Seconds(),
-			&resp.Diagnostics,
-		)
+		timeoutSeconds := helper.FrameworkSafeFloat64ToInt(updateTimeout.Seconds(), &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
