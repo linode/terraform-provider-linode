@@ -160,7 +160,11 @@ func TestAccResourceStackscript_codeChange(t *testing.T) {
 					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
 					resource.TestCheckResourceAttr(resName, "rev_note", "second"),
-					resource.TestCheckResourceAttr(resName, "script", "#!/bin/bash\n# <UDF name=\"hasudf\" label=\"a label\" example=\"an example\" default=\"a default\">\necho bye\n"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"script",
+						"#!/bin/bash\n# <UDF name=\"hasudf\" label=\"a label\" example=\"an example\" default=\"a default\">\necho bye\n",
+					),
 					acceptance.CheckListContains(resName, "images", "linode/ubuntu18.04"),
 					acceptance.CheckListContains(resName, "images", "linode/ubuntu16.04lts"),
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.#", "1"),
