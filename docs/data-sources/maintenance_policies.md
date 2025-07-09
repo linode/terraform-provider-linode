@@ -36,4 +36,3 @@ Each Linode Maintenance Policy will be stored in the `maintenance_policies` attr
 * `notification_period_sec` - The notification lead time in seconds.
 
 * `is_default` - Whether this is the default policy for the account.
-* 
