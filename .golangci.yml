@@ -31,6 +31,9 @@ linters:
           - staticcheck
         text: "ST1005:"
 formatters:
+  settings:
+    golines:
+      max-len: 160
   enable:
     - gci
     - gofmt
