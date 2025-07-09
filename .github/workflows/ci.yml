@@ -17,6 +17,7 @@ jobs:
         uses: golangci/golangci-lint-action@v8
       - name: Tidy
         run: go mod tidy
+      - run: make deps
       - name: tflint
         run: make tflint
       - name: Fail if changes
