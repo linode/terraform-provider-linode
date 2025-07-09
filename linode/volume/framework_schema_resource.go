@@ -3,6 +3,8 @@ package volume
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -13,8 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	linodeplanmodifiers "github.com/linode/terraform-provider-linode/v2/linode/helper/planmodifiers"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	linodeplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/planmodifiers"
 )
 
 const RequireReplacementWhenNewSourceVolumeIDIsNotNull = "When source_volume_id is set to a non-null new value, a replacement will be required."
@@ -110,6 +112,16 @@ var frameworkResourceSchema = schema.Schema{
 				linodeplanmodifiers.CaseInsensitiveSet(),
 			},
 			Default: helper.EmptySetDefault(types.StringType),
+		},
+		"encryption": schema.StringAttribute{
+			Description: "Whether Block Storage Disk Encryption is enabled or disabled on this Volume. " +
+				"Note: Block Storage Disk Encryption is not currently available to all users.",
+			Optional: true,
+			Computed: true,
+			Default:  stringdefault.StaticString("disabled"),
+			Validators: []validator.String{
+				stringvalidator.OneOf("enabled", "disabled"),
+			},
 		},
 	},
 }

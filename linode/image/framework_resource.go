@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 const (
@@ -532,6 +532,13 @@ func replicateImage(
 		var replicaRegionWaitList []string
 
 		image, err = client.GetImage(ctx, imageID)
+		if err != nil {
+			diags.AddError(
+				fmt.Sprintf("Failed to get image %v", imageID),
+				err.Error(),
+			)
+			return nil, diags
+		}
 		for _, region := range image.Regions {
 			// remove pending deletion replicas from the wait list
 			if region.Status != linodego.ImageRegionStatusPendingDeletion {
@@ -607,6 +614,7 @@ func waitForImageToBeAvailable(
 	)
 	if err != nil {
 		diags.AddError("Failed to Wait for Image to be Available", err.Error())
+		return nil
 	}
 
 	return image

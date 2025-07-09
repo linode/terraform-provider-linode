@@ -10,8 +10,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/lkeclusters/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/lkeclusters/tmpl"
 )
 
 var (
@@ -57,11 +57,11 @@ func TestAccDataSourceLKEClusters_basic(t *testing.T) {
 
 	dataSourceName := "data.linode_lke_clusters.test"
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -79,6 +79,7 @@ func TestAccDataSourceLKEClusters_basic(t *testing.T) {
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.k8s_version", k8sVersionLatest),
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.status", "ready"),
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.tags.#", "1"),
+						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.tier", "standard"),
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.control_plane.high_availability", "false"),
 					),
 				},

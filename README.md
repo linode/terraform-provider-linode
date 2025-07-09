@@ -18,8 +18,8 @@ This provider plugin is maintained by Linode.
 
 ## Requirements
 
-- [Terraform](https://www.terraform.io/downloads.html) 0.12.0+
-- [Go](https://golang.org/doc/install) 1.20.0 or higher (to build the provider plugin)
+- [Terraform](https://www.terraform.io/downloads.html) 1.0.0+
+- [Go](https://golang.org/doc/install) 1.23.0 or higher (to build the provider plugin)
 
 ## Using the provider
 
@@ -54,24 +54,25 @@ make
 
 ### Testing the provider
 
-In order to run the full suite of Acceptance tests, run `make int-test`. Acceptance testing will require the `LINODE_TOKEN` variable to be populated with a Linode APIv4 Token.  See [Linode Provider documentation](https://www.terraform.io/docs/providers/linode/index.html) for more details.
+In order to run the full suite of Acceptance tests, run `make test-int`. Acceptance testing will require the `LINODE_TOKEN` variable to be populated with a Linode APIv4 Token.  See [Linode Provider documentation](https://www.terraform.io/docs/providers/linode/index.html) for more details.
 
 *Note:* Acceptance tests create real resources, and often cost money to run.
 
 ```sh
-make int-test
+make test-int
 ```
 
-Use the following command template to execute specific Acceptance test
+Use the following command template to execute specific Acceptance test, 
 
 ```shell
-make ARGS="-run TestAccResourceVolume_basic" int-test
+# PKG_NAME is the directory in linode/ that contains the corresponding TEST_CASE
+make PKG_NAME="volume" TEST_CASE="TestAccResourceVolume_basic" test-int
 ```
 
 Use the following command template to execute particular Acceptance tests within a specific package
 
 ```shell
-make TEST_TAGS="volume" int-test
+make TEST_SUITE="volume" test-int
 ```
 
 There are a number of useful flags and variables to aid in debugging.

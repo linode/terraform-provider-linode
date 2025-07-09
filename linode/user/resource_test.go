@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/user/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/user/tmpl"
 )
 
 const testUserResName = "linode_user.test"
@@ -25,7 +25,7 @@ func TestAccResourceUser_basic(t *testing.T) {
 	email := username + "@example.com"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkUserDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -51,7 +51,7 @@ func TestAccResourceUser_updates(t *testing.T) {
 	email := username + "@example.com"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkUserDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -87,7 +87,7 @@ func TestAccResourceUser_grants(t *testing.T) {
 	email := username + "@example.com"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkUserDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -101,8 +101,10 @@ func TestAccResourceUser_grants(t *testing.T) {
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_linodes", "true"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_longview", "false"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_nodebalancers", "true"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_placement_groups", "false"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_stackscripts", "false"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_volumes", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_vpcs", "false"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.cancel_account", "false"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.longview_subscription", "false"),
 					resource.TestCheckResourceAttr(testUserResName, "linode_grant.#", "0"),
@@ -119,8 +121,10 @@ func TestAccResourceUser_grants(t *testing.T) {
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_linodes", "true"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_longview", "false"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_nodebalancers", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_placement_groups", "false"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_stackscripts", "false"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_volumes", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_vpcs", "false"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.cancel_account", "false"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.longview_subscription", "false"),
 					resource.TestCheckResourceAttr(testUserResName, "linode_grant.#", "1"),
@@ -132,7 +136,7 @@ func TestAccResourceUser_grants(t *testing.T) {
 }
 
 func checkUserDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_user" {
 			continue

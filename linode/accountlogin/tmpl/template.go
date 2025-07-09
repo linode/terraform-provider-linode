@@ -3,14 +3,14 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 )
 
 type TemplateData struct {
 	ID int
 }
 
-func DataBasic(t *testing.T, id int) string {
+func DataBasic(t testing.TB, id int) string {
 	return acceptance.ExecuteTemplate(t,
 		"account_login_data_basic", TemplateData{
 			ID: id,

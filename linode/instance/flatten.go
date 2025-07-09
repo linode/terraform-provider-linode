@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func flattenInstance(
@@ -46,6 +46,7 @@ func flattenInstance(
 	result["watchdog_enabled"] = instance.WatchdogEnabled
 	result["group"] = instance.Group
 	result["tags"] = instance.Tags
+	result["capabilities"] = instance.Capabilities
 	result["image"] = instance.Image
 	result["host_uuid"] = instance.HostUUID
 	result["has_user_data"] = instance.HasUserData
@@ -190,10 +191,12 @@ func flattenInstanceConfigs(
 
 func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {
 	return []map[string]int{{
-		"vcpus":    instance.Specs.VCPUs,
-		"disk":     instance.Specs.Disk,
-		"memory":   instance.Specs.Memory,
-		"transfer": instance.Specs.Transfer,
+		"vcpus":               instance.Specs.VCPUs,
+		"disk":                instance.Specs.Disk,
+		"memory":              instance.Specs.Memory,
+		"transfer":            instance.Specs.Transfer,
+		"accelerated_devices": instance.Specs.AcceleratedDevices,
+		"gpus":                instance.Specs.GPUs,
 	}}
 }
 
@@ -215,6 +218,7 @@ func flattenInstanceSimple(instance *linodego.Instance) (map[string]interface{},
 	result["watchdog_enabled"] = instance.WatchdogEnabled
 	result["group"] = instance.Group
 	result["tags"] = instance.Tags
+	result["capabilities"] = instance.Capabilities
 	result["image"] = instance.Image
 	result["host_uuid"] = instance.HostUUID
 	result["backups"] = flattenInstanceBackups(*instance)

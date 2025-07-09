@@ -3,80 +3,97 @@ package linode
 import (
 	"context"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/vpcips"
+	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlconfig"
+	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlconfig"
+	"github.com/linode/terraform-provider-linode/v3/linode/lkeversion"
+	"github.com/linode/terraform-provider-linode/v3/linode/objquota"
+	"github.com/linode/terraform-provider-linode/v3/linode/objquotas"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/linode/terraform-provider-linode/v2/linode/account"
-	"github.com/linode/terraform-provider-linode/v2/linode/accountavailabilities"
-	"github.com/linode/terraform-provider-linode/v2/linode/accountavailability"
-	"github.com/linode/terraform-provider-linode/v2/linode/accountlogin"
-	"github.com/linode/terraform-provider-linode/v2/linode/accountlogins"
-	"github.com/linode/terraform-provider-linode/v2/linode/accountsettings"
-	"github.com/linode/terraform-provider-linode/v2/linode/backup"
-	"github.com/linode/terraform-provider-linode/v2/linode/childaccount"
-	"github.com/linode/terraform-provider-linode/v2/linode/childaccounts"
-	"github.com/linode/terraform-provider-linode/v2/linode/databasebackups"
-	"github.com/linode/terraform-provider-linode/v2/linode/databaseengines"
-	"github.com/linode/terraform-provider-linode/v2/linode/databasemysql"
-	"github.com/linode/terraform-provider-linode/v2/linode/databasepostgresql"
-	"github.com/linode/terraform-provider-linode/v2/linode/databases"
-	"github.com/linode/terraform-provider-linode/v2/linode/domain"
-	"github.com/linode/terraform-provider-linode/v2/linode/domainrecord"
-	"github.com/linode/terraform-provider-linode/v2/linode/domains"
-	"github.com/linode/terraform-provider-linode/v2/linode/domainzonefile"
-	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
-	"github.com/linode/terraform-provider-linode/v2/linode/firewalldevice"
-	"github.com/linode/terraform-provider-linode/v2/linode/firewalls"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/image"
-	"github.com/linode/terraform-provider-linode/v2/linode/images"
-	"github.com/linode/terraform-provider-linode/v2/linode/instancedisk"
-	"github.com/linode/terraform-provider-linode/v2/linode/instanceip"
-	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
-	"github.com/linode/terraform-provider-linode/v2/linode/instancesharedips"
-	"github.com/linode/terraform-provider-linode/v2/linode/instancetype"
-	"github.com/linode/terraform-provider-linode/v2/linode/instancetypes"
-	"github.com/linode/terraform-provider-linode/v2/linode/ipv6range"
-	"github.com/linode/terraform-provider-linode/v2/linode/ipv6ranges"
-	"github.com/linode/terraform-provider-linode/v2/linode/kernel"
-	"github.com/linode/terraform-provider-linode/v2/linode/kernels"
-	"github.com/linode/terraform-provider-linode/v2/linode/lke"
-	"github.com/linode/terraform-provider-linode/v2/linode/lkeclusters"
-	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
-	"github.com/linode/terraform-provider-linode/v2/linode/lkeversions"
-	"github.com/linode/terraform-provider-linode/v2/linode/nb"
-	"github.com/linode/terraform-provider-linode/v2/linode/nbconfig"
-	"github.com/linode/terraform-provider-linode/v2/linode/nbconfigs"
-	"github.com/linode/terraform-provider-linode/v2/linode/nbnode"
-	"github.com/linode/terraform-provider-linode/v2/linode/nbs"
-	"github.com/linode/terraform-provider-linode/v2/linode/networkingip"
-	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
-	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
-	"github.com/linode/terraform-provider-linode/v2/linode/objkey"
-	"github.com/linode/terraform-provider-linode/v2/linode/placementgroup"
-	"github.com/linode/terraform-provider-linode/v2/linode/placementgroupassignment"
-	"github.com/linode/terraform-provider-linode/v2/linode/placementgroups"
-	"github.com/linode/terraform-provider-linode/v2/linode/profile"
-	"github.com/linode/terraform-provider-linode/v2/linode/rdns"
-	"github.com/linode/terraform-provider-linode/v2/linode/region"
-	"github.com/linode/terraform-provider-linode/v2/linode/regions"
-	"github.com/linode/terraform-provider-linode/v2/linode/sshkey"
-	"github.com/linode/terraform-provider-linode/v2/linode/sshkeys"
-	"github.com/linode/terraform-provider-linode/v2/linode/stackscript"
-	"github.com/linode/terraform-provider-linode/v2/linode/stackscripts"
-	"github.com/linode/terraform-provider-linode/v2/linode/token"
-	"github.com/linode/terraform-provider-linode/v2/linode/user"
-	"github.com/linode/terraform-provider-linode/v2/linode/users"
-	"github.com/linode/terraform-provider-linode/v2/linode/vlan"
-	"github.com/linode/terraform-provider-linode/v2/linode/volume"
-	"github.com/linode/terraform-provider-linode/v2/linode/volumes"
-	"github.com/linode/terraform-provider-linode/v2/linode/vpc"
-	"github.com/linode/terraform-provider-linode/v2/linode/vpcs"
-	"github.com/linode/terraform-provider-linode/v2/linode/vpcsubnet"
-	"github.com/linode/terraform-provider-linode/v2/linode/vpcsubnets"
+
+	"github.com/linode/terraform-provider-linode/v3/linode/account"
+	"github.com/linode/terraform-provider-linode/v3/linode/accountavailabilities"
+	"github.com/linode/terraform-provider-linode/v3/linode/accountavailability"
+	"github.com/linode/terraform-provider-linode/v3/linode/accountlogin"
+	"github.com/linode/terraform-provider-linode/v3/linode/accountlogins"
+	"github.com/linode/terraform-provider-linode/v3/linode/accountsettings"
+	"github.com/linode/terraform-provider-linode/v3/linode/backup"
+	"github.com/linode/terraform-provider-linode/v3/linode/childaccount"
+	"github.com/linode/terraform-provider-linode/v3/linode/childaccounts"
+	"github.com/linode/terraform-provider-linode/v3/linode/databasebackups"
+	"github.com/linode/terraform-provider-linode/v3/linode/databaseengines"
+	"github.com/linode/terraform-provider-linode/v3/linode/databasemysql"
+	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlv2"
+	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresql"
+	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlv2"
+	"github.com/linode/terraform-provider-linode/v3/linode/databases"
+	"github.com/linode/terraform-provider-linode/v3/linode/domain"
+	"github.com/linode/terraform-provider-linode/v3/linode/domainrecord"
+	"github.com/linode/terraform-provider-linode/v3/linode/domains"
+	"github.com/linode/terraform-provider-linode/v3/linode/domainzonefile"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewalldevice"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewalls"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/image"
+	"github.com/linode/terraform-provider-linode/v3/linode/images"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancedisk"
+	"github.com/linode/terraform-provider-linode/v3/linode/instanceip"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancereservedipassignment"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancesharedips"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancetype"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancetypes"
+	"github.com/linode/terraform-provider-linode/v3/linode/ipv6range"
+	"github.com/linode/terraform-provider-linode/v3/linode/ipv6ranges"
+	"github.com/linode/terraform-provider-linode/v3/linode/kernel"
+	"github.com/linode/terraform-provider-linode/v3/linode/kernels"
+	"github.com/linode/terraform-provider-linode/v3/linode/lke"
+	"github.com/linode/terraform-provider-linode/v3/linode/lkeclusters"
+	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
+	"github.com/linode/terraform-provider-linode/v3/linode/lketypes"
+	"github.com/linode/terraform-provider-linode/v3/linode/lkeversions"
+	"github.com/linode/terraform-provider-linode/v3/linode/nb"
+	"github.com/linode/terraform-provider-linode/v3/linode/nbconfig"
+	"github.com/linode/terraform-provider-linode/v3/linode/nbconfigs"
+	"github.com/linode/terraform-provider-linode/v3/linode/nbnode"
+	"github.com/linode/terraform-provider-linode/v3/linode/nbs"
+	"github.com/linode/terraform-provider-linode/v3/linode/nbtypes"
+	"github.com/linode/terraform-provider-linode/v3/linode/networkingip"
+	"github.com/linode/terraform-provider-linode/v3/linode/networkingipassignment"
+	"github.com/linode/terraform-provider-linode/v3/linode/networkingips"
+	"github.com/linode/terraform-provider-linode/v3/linode/networktransferprices"
+	"github.com/linode/terraform-provider-linode/v3/linode/obj"
+	"github.com/linode/terraform-provider-linode/v3/linode/objbucket"
+	"github.com/linode/terraform-provider-linode/v3/linode/objcluster"
+	"github.com/linode/terraform-provider-linode/v3/linode/objendpoints"
+	"github.com/linode/terraform-provider-linode/v3/linode/objkey"
+	"github.com/linode/terraform-provider-linode/v3/linode/placementgroup"
+	"github.com/linode/terraform-provider-linode/v3/linode/placementgroupassignment"
+	"github.com/linode/terraform-provider-linode/v3/linode/placementgroups"
+	"github.com/linode/terraform-provider-linode/v3/linode/profile"
+	"github.com/linode/terraform-provider-linode/v3/linode/rdns"
+	"github.com/linode/terraform-provider-linode/v3/linode/region"
+	"github.com/linode/terraform-provider-linode/v3/linode/regions"
+	"github.com/linode/terraform-provider-linode/v3/linode/sshkey"
+	"github.com/linode/terraform-provider-linode/v3/linode/sshkeys"
+	"github.com/linode/terraform-provider-linode/v3/linode/stackscript"
+	"github.com/linode/terraform-provider-linode/v3/linode/stackscripts"
+	"github.com/linode/terraform-provider-linode/v3/linode/token"
+	"github.com/linode/terraform-provider-linode/v3/linode/user"
+	"github.com/linode/terraform-provider-linode/v3/linode/users"
+	"github.com/linode/terraform-provider-linode/v3/linode/vlan"
+	"github.com/linode/terraform-provider-linode/v3/linode/volume"
+	"github.com/linode/terraform-provider-linode/v3/linode/volumes"
+	"github.com/linode/terraform-provider-linode/v3/linode/volumetypes"
+	"github.com/linode/terraform-provider-linode/v3/linode/vpc"
+	"github.com/linode/terraform-provider-linode/v3/linode/vpcips"
+	"github.com/linode/terraform-provider-linode/v3/linode/vpcs"
+	"github.com/linode/terraform-provider-linode/v3/linode/vpcsubnet"
+	"github.com/linode/terraform-provider-linode/v3/linode/vpcsubnets"
 )
 
 type FrameworkProvider struct {
@@ -107,6 +124,7 @@ func (p *FrameworkProvider) Metadata(
 	resp *provider.MetadataResponse,
 ) {
 	resp.TypeName = "linode"
+	resp.Version = p.ProviderVersion
 }
 
 func (p *FrameworkProvider) Schema(
@@ -139,6 +157,10 @@ func (p *FrameworkProvider) Schema(
 			"api_version": schema.StringAttribute{
 				Optional:    true,
 				Description: "The version of Linode API.",
+			},
+			"api_ca_path": schema.StringAttribute{
+				Optional:    true,
+				Description: "The path to a Linode API CA file to trust.",
 			},
 			"skip_instance_ready_poll": schema.BoolAttribute{
 				Optional:    true,
@@ -201,27 +223,34 @@ func (p *FrameworkProvider) Schema(
 
 func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		token.NewResource,
-		stackscript.NewResource,
-		rdns.NewResource,
-		objkey.NewResource,
-		sshkey.NewResource,
-		ipv6range.NewResource,
-		nb.NewResource,
 		accountsettings.NewResource,
-		vpcsubnet.NewResource,
-		vpc.NewResource,
-		instanceip.NewResource,
-		firewalldevice.NewResource,
-		volume.NewResource,
-		instancesharedips.NewResource,
-		instancedisk.NewResource,
-		lkenodepool.NewResource,
-		image.NewResource,
-		nbconfig.NewResource,
 		firewall.NewResource,
+		firewalldevice.NewResource,
+		image.NewResource,
+		instancedisk.NewResource,
+		instanceip.NewResource,
+		instancesharedips.NewResource,
+		ipv6range.NewResource,
+		lkenodepool.NewResource,
+		nb.NewResource,
+		nbconfig.NewResource,
+		nbnode.NewResource,
+		objkey.NewResource,
 		placementgroup.NewResource,
 		placementgroupassignment.NewResource,
+		instancereservedipassignment.NewResource,
+		rdns.NewResource,
+		sshkey.NewResource,
+		stackscript.NewResource,
+		token.NewResource,
+		volume.NewResource,
+		vpc.NewResource,
+		vpcsubnet.NewResource,
+		databasepostgresqlv2.NewResource,
+		networkingip.NewResource,
+		networkingipassignment.NewResource,
+		obj.NewResource,
+		databasemysqlv2.NewResource,
 	}
 }
 
@@ -237,6 +266,8 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		profile.NewDataSource,
 		nb.NewDataSource,
 		networkingip.NewDataSource,
+		networktransferprices.NewDataSource,
+		lkeversion.NewDataSource,
 		lkeversions.NewDataSource,
 		regions.NewDataSource,
 		ipv6range.NewDataSource,
@@ -253,6 +284,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		domain.NewDataSource,
 		user.NewDataSource,
 		nbconfig.NewDataSource,
+		nbtypes.NewDataSource,
 		instancetype.NewDataSource,
 		instancetypes.NewDataSource,
 		image.NewDataSource,
@@ -276,15 +308,25 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		vpcsubnets.NewDataSource,
 		vpcs.NewDataSource,
 		volumes.NewDataSource,
+		volumetypes.NewDataSource,
 		accountavailability.NewDataSource,
 		nbconfigs.NewDataSource,
 		ipv6ranges.NewDataSource,
 		domains.NewDataSource,
 		lke.NewDataSource,
 		lkeclusters.NewDataSource,
+		lketypes.NewDataSource,
 		placementgroup.NewDataSource,
 		placementgroups.NewDataSource,
 		childaccount.NewDataSource,
 		childaccounts.NewDataSource,
+		networkingips.NewDataSource,
+		databasemysqlv2.NewDataSource,
+		databasepostgresqlv2.NewDataSource,
+		databasemysqlconfig.NewDataSource,
+		databasepostgresqlconfig.NewDataSource,
+		objendpoints.NewDataSource,
+		objquota.NewDataSource,
+		objquotas.NewDataSource,
 	}
 }

@@ -6,8 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
 
 // LKEClusterFilterModel describes the Terraform resource data model to match the
@@ -30,6 +30,8 @@ type LKEClusterModel struct {
 	K8sVersion   types.String         `tfsdk:"k8s_version"`
 	Tags         types.Set            `tfsdk:"tags"`
 	ControlPlane LKEControlPlaneModel `tfsdk:"control_plane"`
+	Tier         types.String         `tfsdk:"tier"`
+	APLEnabled   types.Bool           `tfsdk:"apl_enabled"`
 }
 
 type LKEControlPlaneModel struct {
@@ -65,6 +67,7 @@ func (data *LKEClusterModel) parseLKECluster(
 	data.Region = types.StringValue(cluster.Region)
 	data.Status = types.StringValue(string(cluster.Status))
 	data.K8sVersion = types.StringValue(cluster.K8sVersion)
+	data.Tier = types.StringValue(cluster.Tier)
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, cluster.Tags)
 	if diags != nil {

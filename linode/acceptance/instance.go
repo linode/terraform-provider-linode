@@ -9,12 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func CheckInstanceExists(name string, instance *linodego.Instance) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -42,7 +42,7 @@ func CheckInstanceExists(name string, instance *linodego.Instance) resource.Test
 }
 
 func CheckInstanceDestroy(s *terraform.State) error {
-	client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_instance" {
 			continue
@@ -71,11 +71,11 @@ func CheckInstanceDestroy(s *terraform.State) error {
 	return nil
 }
 
-func AssertInstanceReboot(t *testing.T, shouldRestart bool, instance *linodego.Instance) func() {
+func AssertInstanceReboot(t testing.TB, shouldRestart bool, instance *linodego.Instance) func() {
 	t.Helper()
 
 	return func() {
-		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 		eventFilter := fmt.Sprintf(
 			`{"entity.type": "linode", "entity.id": %d, "action": "linode_reboot", "created": { "+gte": "%s" }}`,
 			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))

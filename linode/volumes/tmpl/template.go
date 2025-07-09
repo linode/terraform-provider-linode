@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 )
 
 type TemplateData struct {
@@ -11,7 +11,7 @@ type TemplateData struct {
 	Region string
 }
 
-func DataBasic(t *testing.T, volume, region string) string {
+func DataBasic(t testing.TB, volume, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"volumes_data_basic", TemplateData{Label: volume, Region: region})
 }

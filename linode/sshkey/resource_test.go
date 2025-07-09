@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/sshkey/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/sshkey/tmpl"
 )
 
 func init() {
@@ -56,7 +56,7 @@ func TestAccResourceSSHKey_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -78,6 +78,33 @@ func TestAccResourceSSHKey_basic(t *testing.T) {
 	})
 }
 
+func TestAccResourceSSHKey_space_in_label(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_sshkey.foobar"
+	sshkeyName := acctest.RandomWithPrefix("tf_test") + " "
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkSSHKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Basic(t, sshkeyName, acceptance.PublicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					checkSSHKeyExists,
+					resource.TestCheckResourceAttr(resName, "label", sshkeyName),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccResourceSSHKey_update(t *testing.T) {
 	t.Parallel()
 	resName := "linode_sshkey.foobar"
@@ -85,7 +112,7 @@ func TestAccResourceSSHKey_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -116,7 +143,7 @@ func TestAccResourceSSHKey_update(t *testing.T) {
 }
 
 func checkSSHKeyExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_sshkey" {
@@ -138,7 +165,7 @@ func checkSSHKeyExists(s *terraform.State) error {
 }
 
 func checkSSHKeyDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_sshkey" {
 			continue

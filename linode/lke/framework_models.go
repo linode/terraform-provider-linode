@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
 )
 
 // LKEDataModel describes the Terraform resource data model to match the
@@ -22,7 +22,9 @@ type LKEDataModel struct {
 	Region       types.String      `tfsdk:"region"`
 	Status       types.String      `tfsdk:"status"`
 	K8sVersion   types.String      `tfsdk:"k8s_version"`
+	APLEnabled   types.Bool        `tfsdk:"apl_enabled"`
 	Tags         types.Set         `tfsdk:"tags"`
+	Tier         types.String      `tfsdk:"tier"`
 	ControlPlane []LKEControlPlane `tfsdk:"control_plane"`
 
 	// LKE Node Pools
@@ -64,6 +66,8 @@ type LKENodePool struct {
 	Nodes          []LKENodePoolNode                `tfsdk:"nodes"`
 	Autoscaler     []LKENodePoolAutoscaler          `tfsdk:"autoscaler"`
 	Taints         []lkenodepool.NodePoolTaintModel `tfsdk:"taints"`
+	K8sVersion     types.String                     `tfsdk:"k8s_version"`
+	UpdateStrategy types.String                     `tfsdk:"update_strategy"`
 }
 
 type LKENodePoolDisk struct {
@@ -98,6 +102,8 @@ func (data *LKEDataModel) parseLKEAttributes(
 	data.Region = types.StringValue(cluster.Region)
 	data.Status = types.StringValue(string(cluster.Status))
 	data.K8sVersion = types.StringValue(cluster.K8sVersion)
+	data.APLEnabled = types.BoolValue(cluster.APLEnabled)
+	data.Tier = types.StringValue(cluster.Tier)
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, cluster.Tags)
 	if diags != nil {
@@ -121,6 +127,10 @@ func (data *LKEDataModel) parseLKEAttributes(
 			pool.Count = types.Int64Value(int64(p.Count))
 			pool.Type = types.StringValue(p.Type)
 			pool.DiskEncryption = types.StringValue(string(p.DiskEncryption))
+			pool.K8sVersion = types.StringPointerValue(p.K8sVersion)
+			if p.UpdateStrategy != nil {
+				pool.UpdateStrategy = types.StringValue(string(*p.UpdateStrategy))
+			}
 
 			tags, diags := types.ListValueFrom(ctx, types.StringType, p.Tags)
 			if diags != nil {
@@ -177,7 +187,11 @@ func (data *LKEDataModel) parseLKEAttributes(
 	}
 	data.Pools = lkePools
 
-	data.Kubeconfig = types.StringValue(kubeconfig.KubeConfig)
+	if kubeconfig != nil {
+		data.Kubeconfig = types.StringValue(kubeconfig.KubeConfig)
+	} else {
+		data.Kubeconfig = types.StringNull()
+	}
 
 	var urls []string
 	for _, e := range endpoints {
@@ -190,7 +204,11 @@ func (data *LKEDataModel) parseLKEAttributes(
 	}
 	data.APIEndpoints = apiEndpoints
 
-	data.DashboardURL = types.StringValue(dashboard.URL)
+	if dashboard != nil {
+		data.DashboardURL = types.StringValue(dashboard.URL)
+	} else {
+		data.DashboardURL = types.StringNull()
+	}
 
 	return nil
 }
@@ -204,23 +222,26 @@ func parseControlPlane(
 
 	if aclResp != nil {
 		acl := aclResp.ACL
-		var aclAddresses LKEControlPlaneACLAddresses
-
-		ipv4, diags := types.SetValueFrom(ctx, types.StringType, acl.Addresses.IPv4)
-		if diags.HasError() {
-			return cp, diags
-		}
-		aclAddresses.IPv4 = ipv4
-
-		ipv6, diags := types.SetValueFrom(ctx, types.StringType, acl.Addresses.IPv6)
-		if diags.HasError() {
-			return cp, diags
-		}
-		aclAddresses.IPv6 = ipv6
-
 		var cpACL LKEControlPlaneACL
+
+		if acl.Addresses != nil {
+			ipv4, diags := types.SetValueFrom(ctx, types.StringType, acl.Addresses.IPv4)
+			if diags.HasError() {
+				return cp, diags
+			}
+
+			ipv6, diags := types.SetValueFrom(ctx, types.StringType, acl.Addresses.IPv6)
+			if diags.HasError() {
+				return cp, diags
+			}
+
+			cpACL.Addresses = []LKEControlPlaneACLAddresses{{
+				IPv4: ipv4,
+				IPv6: ipv6,
+			}}
+		}
+
 		cpACL.Enabled = types.BoolValue(acl.Enabled)
-		cpACL.Addresses = []LKEControlPlaneACLAddresses{aclAddresses}
 		cp.ACL = []LKEControlPlaneACL{cpACL}
 	} else {
 		cp.ACL = []LKEControlPlaneACL{}

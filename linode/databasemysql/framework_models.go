@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 type DataSourceModel struct {
@@ -61,7 +61,7 @@ func (data *DataSourceModel) parseMySQLDatabase(
 	data.Created = types.StringValue(db.Created.Format(time.RFC3339))
 	data.Updated = types.StringValue(db.Updated.Format(time.RFC3339))
 
-	data.EngineID = types.StringValue(helper.CreateDatabaseEngineSlug(db.Engine, db.Version))
+	data.EngineID = types.StringValue(helper.CreateLegacyDatabaseEngineSlug(db.Engine, db.Version))
 
 	updates, diags := helper.FlattenDatabaseMaintenanceWindow(ctx, db.Updates)
 	if diags.HasError() {

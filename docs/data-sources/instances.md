@@ -75,6 +75,8 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `tags` - A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
+* `capabilities` - A list of capabilities of this Linode instance.
+
 * `private_ip` - If true, the Linode has private networking enabled, allowing use of the 192.168.128.0/17 network within the Linode's region.
   
 * `alerts.0.cpu` - The percentage of CPU usage required to trigger an alert. If the average CPU usage over two hours exceeds this value, we'll send you an alert. If this is set to 0, the alert is disabled.
@@ -95,11 +97,11 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `status` - The status of the instance, indicating the current readiness state. (`running`, `offline`, ...)
 
-* `ip_address` - A string containing the Linode's public IP address.
+* `ip_address` - (Deprecated) A string containing the Linode's public IP address.
 
 * `private_ip_address` - This Linode's Private IPv4 Address, if enabled.  The regional private IP address range, 192.168.128.0/17, is shared by all Linode Instances in a region.
 
-* `ipv6` - This Linode's IPv6 SLAAC addresses. This address is specific to a Linode, and may not be shared.  The prefix (`/64`) is included in this attribute.
+* `ipv6` - This Linode's IPv6 SLAAC addresses. This address is specific to a Linode, and may not be shared.  The prefix (`/128`) is included in this attribute.
 
 * `ipv4` - This Linode's IPv4 Addresses. Each Linode is assigned a single public IPv4 address upon creation, and may get a single private IPv4 address if needed. You may need to open a support ticket to get additional IPv4 addresses.
 
@@ -116,6 +118,10 @@ Each Linode instance will be stored in the `instances` attribute and will export
 * `specs.0.memory` - The amount of RAM, in MB, this Linode has access to. Typically a Linode will choose to boot with all of its available RAM, but this can be configured in a Config profile.
 
 * `specs.0.vcpus` - The number of vcpus this Linode has access to. Typically a Linode will choose to boot with all of its available vcpus, but this can be configured in a Config Profile.
+
+* `specs.0.accelerated_devices` - The number of VPUs this Linode has access to.
+
+* `specs.0.gpus` - The number of GPUs this Linode has access to.
 
 * `specs.0.transfer` - The amount of network transfer this Linode is allotted each month.
 

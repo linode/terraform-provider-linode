@@ -7,9 +7,17 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 )
 
 func CompareTimeStrings(t1, t2, timeFormat string) bool {
+	// time.Parse(...) does not support parsing empty string times,
+	// but this is a valid case in certain scenarios.
+	if t1 == "" && t2 == "" {
+		return true
+	}
+
 	parsedT1, err := time.Parse(timeFormat, t1)
 	if err != nil {
 		return false
@@ -113,4 +121,11 @@ func CompareSlices(ignoreNil, unordered bool, a, b []any) bool {
 	}
 
 	return reflect.DeepEqual(a, b)
+}
+
+func FrameworkValuesShallowEqual[T attr.Value](a, b T) bool {
+	aNull := a.IsUnknown() || a.IsNull()
+	bNull := b.IsUnknown() || b.IsNull()
+
+	return (aNull && bNull) || a.Equal(b)
 }

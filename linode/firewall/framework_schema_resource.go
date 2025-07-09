@@ -9,13 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	linodeplanmodifiers "github.com/linode/terraform-provider-linode/v2/linode/helper/planmodifiers"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	linodeplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/planmodifiers"
 )
 
 var ruleNestedObject = schema.NestedBlockObject{
@@ -145,12 +146,18 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:    true,
 			Computed:    true,
 			ElementType: types.Int64Type,
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"nodebalancers": schema.SetAttribute{
 			Description: "The IDs of NodeBalancers to apply this firewall to.",
 			Optional:    true,
 			Computed:    true,
 			ElementType: types.Int64Type,
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"devices": schema.ListAttribute{
 			Description: "The devices associated with this firewall.",

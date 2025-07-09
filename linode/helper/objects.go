@@ -12,6 +12,7 @@ import (
 	s3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -24,6 +25,15 @@ func GetRegionOrCluster(d *schema.ResourceData) (regionOrCluster string) {
 		regionOrCluster = d.Get("cluster").(string)
 	}
 	return
+}
+
+func FwS3Connection(ctx context.Context, endpoint, accessKey, secretKey string, diags *diag.Diagnostics) *s3.Client {
+	s3client, err := S3Connection(ctx, endpoint, accessKey, secretKey)
+	if err != nil {
+		diags.AddError("Failed to Create S3 Connection", err.Error())
+	}
+
+	return s3client
 }
 
 func S3Connection(ctx context.Context, endpoint, accessKey, secretKey string) (*s3.Client, error) {
@@ -41,6 +51,8 @@ func S3Connection(ctx context.Context, endpoint, accessKey, secretKey string) (*
 	}
 	s3Client := s3.NewFromConfig(awsSDKConfig, func(opts *s3.Options) {
 		opts.BaseEndpoint = aws.String("https://" + endpoint)
+
+		opts.DisableLogOutputChecksumValidationSkipped = true
 	})
 	return s3Client, nil
 }
@@ -54,7 +66,7 @@ func S3ConnectionFromData(
 	accessKey, secretKey string,
 ) (*s3.Client, error) {
 	tflog.Debug(ctx, "Creating Object Storage client from resource data")
-	endpoint := d.Get("endpoint").(string)
+	endpoint := d.Get("s3_endpoint").(string)
 	if endpoint == "" {
 		var err error
 		if endpoint, err = ComputeS3Endpoint(ctx, d, meta); err != nil {
@@ -68,9 +80,9 @@ func S3ConnectionFromData(
 func ComputeS3Endpoint(ctx context.Context, d *schema.ResourceData, meta interface{}) (string, error) {
 	tflog.Debug(ctx, "Getting Object Storage bucket from resource data")
 	regionOrCluster := GetRegionOrCluster(d)
-	bucket := d.Get("bucket").(string)
+	bucketLabel := d.Get("label").(string)
 
-	b, err := meta.(*ProviderMeta).Client.GetObjectStorageBucket(ctx, regionOrCluster, bucket)
+	b, err := meta.(*ProviderMeta).Client.GetObjectStorageBucket(ctx, regionOrCluster, bucketLabel)
 	if err != nil {
 		return "", fmt.Errorf("failed to find the specified Linode ObjectStorageBucket: %s", err)
 	}
@@ -81,12 +93,6 @@ func ComputeS3Endpoint(ctx context.Context, d *schema.ResourceData, meta interfa
 func ComputeS3EndpointFromBucket(ctx context.Context, bucket linodego.ObjectStorageBucket) string {
 	tflog.Debug(ctx, "Computing Object Storage endpoint from bucket instance")
 	return strings.TrimPrefix(bucket.Hostname, fmt.Sprintf("%s.", bucket.Label))
-}
-
-func BuildObjectStorageObjectID(d *schema.ResourceData) string {
-	bucket := d.Get("bucket").(string)
-	key := d.Get("key").(string)
-	return fmt.Sprintf("%s/%s", bucket, key)
 }
 
 func IsObjNotFoundErr(err error) bool {
@@ -187,11 +193,11 @@ func DeleteAllObjects(
 }
 
 // deleteAllObjectVersions deletes all versions of a given object
-func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Client, bucket, key string, bypassRetention, ignoreNotFound bool) error {
+func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Client, bucket, prefix string, bypassRetention, ignoreNotFound bool) error {
 	tflog.Debug(ctx, fmt.Sprintf("Deleting all versions and deletion marker in bucket '%s'", bucket))
 	paginator := s3.NewListObjectVersionsPaginator(client, &s3.ListObjectVersionsInput{
 		Bucket: aws.String(bucket),
-		Prefix: aws.String(key),
+		Prefix: aws.String(prefix),
 	})
 
 	var objectsToDelete []s3types.ObjectIdentifier

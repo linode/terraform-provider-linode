@@ -33,6 +33,12 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 		Elem:        &schema.Schema{Type: schema.TypeString},
 		Computed:    true,
 	},
+	"capabilities": {
+		Type:        schema.TypeSet,
+		Elem:        &schema.Schema{Type: schema.TypeString},
+		Computed:    true,
+		Description: "A list of capabilities of this Linode instance.",
+	},
 	"boot_config_label": {
 		Type:        schema.TypeString,
 		Description: "The Label of the Instance Config that should be used to boot the Linode instance.",
@@ -144,6 +150,16 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 					Type:        schema.TypeInt,
 					Computed:    true,
 					Description: "The amount of network transfer this Linode is allotted each month.",
+				},
+				"accelerated_devices": {
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Description: "The number of VPUs this Linode has access to.",
+				},
+				"gpus": {
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Description: "The number of GPUs this Linode has access to.",
 				},
 			},
 		},

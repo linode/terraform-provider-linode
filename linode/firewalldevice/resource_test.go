@@ -8,14 +8,14 @@ import (
 	"strconv"
 	"testing"
 
-	acceptanceTmpl "github.com/linode/terraform-provider-linode/v2/linode/acceptance/tmpl"
+	acceptanceTmpl "github.com/linode/terraform-provider-linode/v3/linode/acceptance/tmpl"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/firewalldevice/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewalldevice/tmpl"
 )
 
 var testRegion string
@@ -56,7 +56,7 @@ func TestAccResourceFirewallDevice_basic_smoke(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories:  acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Basic(t, label, testRegion),
@@ -113,7 +113,7 @@ func TestAccResourceFirewallDevice_withNodeBalancer(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories:  acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.WithNodeBalancer(t, label, testRegion),

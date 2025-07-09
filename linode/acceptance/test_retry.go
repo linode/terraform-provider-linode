@@ -1,136 +1,88 @@
 package acceptance
 
 import (
-	"errors"
 	"fmt"
-	"runtime"
+	"sync/atomic"
 	"testing"
 )
 
-// RunTestRetry attempts to retry the given test if an intermittent error occurs.
+// RunTestWithRetries attempts to retry the given test if an intermittent error occurs.
 // This function wraps the given testing.T and handles errors accordingly.
 // This should only be used for flapping API tests.
-func RunTestRetry(t *testing.T, maxAttempts int, f func(t *TRetry)) {
+func RunTestWithRetries(t testing.TB, maxAttempts int, f func(t *WrappedT)) {
 	for i := 0; i < maxAttempts; i++ {
-		newT := NewTRetry(t)
-		t.Cleanup(newT.Close)
+		wrappedT := &WrappedT{
+			TB:     t,
+			failed: atomic.Bool{},
+		}
 
-		go func() {
-			f(newT)
+		closurePanic := false
 
-			newT.SuccessChannel <- true
+		// Run the retryable test closure,
+		// capturing any test failures
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					closurePanic = true
+				}
+			}()
+
+			f(wrappedT)
 		}()
 
-		select {
-		case err := <-newT.ErrorChannel:
-			t.Logf("Retrying on test failure: %s\n", err)
-		case <-newT.SuccessChannel:
+		if !closurePanic && !t.Failed() {
 			return
 		}
+
+		t.Logf("Retrying %s due to failure. (Attempt %d)", t.Name(), i+1)
 	}
 
 	t.Fatalf("Test failed after %d attempts", maxAttempts)
 }
 
-// TRetry implements testing.T with additional retry logic
-type TRetry struct {
-	t *testing.T
+// WrappedT implements testing.T with additional retry logic
+type WrappedT struct {
+	testing.TB
 
-	ErrorChannel   chan error
-	SuccessChannel chan bool
+	failed atomic.Bool
 }
 
-func NewTRetry(t *testing.T) *TRetry {
-	return &TRetry{
-		t:              t,
-		ErrorChannel:   make(chan error, 0),
-		SuccessChannel: make(chan bool, 0),
-	}
+func (t *WrappedT) Failed() bool {
+	return t.failed.Load()
 }
 
-func (t *TRetry) Close() {
-	close(t.ErrorChannel)
-	close(t.SuccessChannel)
+func (t *WrappedT) Fail() {
+	t.failed.Store(true)
 }
 
-func (t *TRetry) Cleanup(f func()) {
-	t.t.Cleanup(f)
+func (t *WrappedT) FailNow() {
+	t.Fail()
+
+	// This is necessary to prevent further closure execution.
+	// lintignore: R009
+	panic(nil)
 }
 
-func (t *TRetry) Error(args ...any) {
-	t.ErrorChannel <- errors.New(fmt.Sprint(args...))
-}
-
-func (t *TRetry) Errorf(format string, args ...any) {
-	t.ErrorChannel <- fmt.Errorf(format, args...)
-}
-
-func (t *TRetry) Fail() {
-	runtime.Goexit()
-}
-
-func (t *TRetry) Failed() bool {
-	// We wrap this logic using channels
-	return false
-}
-
-func (t *TRetry) Fatal(args ...any) {
-	t.ErrorChannel <- errors.New(fmt.Sprint(args...))
+func (t *WrappedT) Error(args ...any) {
+	t.TB.Log("ERROR:", fmt.Sprint(args...))
 	t.Fail()
 }
 
-func (t *TRetry) Fatalf(format string, args ...any) {
-	t.ErrorChannel <- fmt.Errorf(format, args...)
+func (t *WrappedT) Errorf(format string, args ...any) {
+	t.TB.Log("ERROR:", fmt.Sprintf(format, args...))
 	t.Fail()
 }
 
-func (t *TRetry) Helper() {
-	t.t.Helper()
+func (t *WrappedT) Fatal(args ...any) {
+	t.TB.Log("FATAL:", fmt.Sprint(args...))
+	t.FailNow()
 }
 
-func (t *TRetry) Log(args ...any) {
-	t.t.Log(args...)
+func (t *WrappedT) Fatalf(format string, args ...any) {
+	t.TB.Log("FATAL:", fmt.Sprintf(format, args...))
+	t.FailNow()
 }
 
-func (t *TRetry) Logf(format string, args ...any) {
-	t.t.Logf(format, args...)
+func (t *WrappedT) Parallel() {
+	t.TB.Fatal("Parallel() cannot be called on instances of WrappedT")
 }
-
-func (t *TRetry) Name() string {
-	return t.t.Name()
-}
-
-func (t *TRetry) Setenv(key, value string) {
-	t.t.Setenv(key, value)
-}
-
-func (t *TRetry) Skip(args ...any) {
-	t.t.Skip(args...)
-}
-
-func (t *TRetry) SkipNow() {
-	t.t.SkipNow()
-}
-
-func (t *TRetry) Skipf(format string, args ...any) {
-	t.t.Skipf(format, args...)
-}
-
-func (t *TRetry) Skipped() bool {
-	return t.t.Skipped()
-}
-
-func (t *TRetry) TempDir() string {
-	return t.t.TempDir()
-}
-
-func (t *TRetry) FailNow() {
-	t.Fail()
-}
-
-func (t *TRetry) Parallel() {
-	t.t.Parallel()
-}
-
-//lint:ignore U1000 Ignore unused function
-func (t *TRetry) private() {}

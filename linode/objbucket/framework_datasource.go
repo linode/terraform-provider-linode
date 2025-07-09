@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func NewDataSource() datasource.DataSource {
@@ -36,17 +36,21 @@ func (data *DataSourceModel) parseObjectStorageBucket(bucket *linodego.ObjectSto
 	data.Label = types.StringValue(bucket.Label)
 	data.Objects = types.Int64Value(int64(bucket.Objects))
 	data.Size = types.Int64Value(int64(bucket.Size))
+	data.EndpointType = types.StringValue(string(bucket.EndpointType))
+	data.S3Endpoint = types.StringValue(bucket.S3Endpoint)
 }
 
 type DataSourceModel struct {
-	Cluster  types.String `tfsdk:"cluster"`
-	Region   types.String `tfsdk:"region"`
-	Created  types.String `tfsdk:"created"`
-	Hostname types.String `tfsdk:"hostname"`
-	ID       types.String `tfsdk:"id"`
-	Label    types.String `tfsdk:"label"`
-	Objects  types.Int64  `tfsdk:"objects"`
-	Size     types.Int64  `tfsdk:"size"`
+	Cluster      types.String `tfsdk:"cluster"`
+	Region       types.String `tfsdk:"region"`
+	Created      types.String `tfsdk:"created"`
+	Hostname     types.String `tfsdk:"hostname"`
+	ID           types.String `tfsdk:"id"`
+	Label        types.String `tfsdk:"label"`
+	Objects      types.Int64  `tfsdk:"objects"`
+	Size         types.Int64  `tfsdk:"size"`
+	EndpointType types.String `tfsdk:"endpoint_type"`
+	S3Endpoint   types.String `tfsdk:"s3_endpoint"`
 }
 
 func (d *DataSource) Read(
@@ -54,7 +58,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_object_storage_bucket")
+	tflog.Debug(ctx, "Read data."+d.Config.Name)
 	client := d.Meta.Client
 
 	var data DataSourceModel

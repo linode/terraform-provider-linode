@@ -3,7 +3,7 @@ package databaseaccesscontrols
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 var resourceSchema = map[string]*schema.Schema{
@@ -28,6 +28,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "A list of IP addresses that can access the Managed Database. " +
 			"Each item can be a single IP address or a range in CIDR format.",
 		Required: true,
+		Set:      schema.HashString,
 		Elem:     &schema.Schema{Type: schema.TypeString},
 	},
 }

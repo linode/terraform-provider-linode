@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/databaseaccesscontrols/tmpl"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/databaseaccesscontrols/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 var (
@@ -53,7 +53,6 @@ func init() {
 }
 
 func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
-	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	resName := "linode_database_access_controls.foobar"
@@ -61,7 +60,7 @@ func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -90,7 +89,6 @@ func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
 }
 
 func TestAccResourceDatabaseAccessControls_PostgreSQL(t *testing.T) {
-	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	resName := "linode_database_access_controls.foobar"
@@ -98,7 +96,7 @@ func TestAccResourceDatabaseAccessControls_PostgreSQL(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -125,7 +123,7 @@ func TestAccResourceDatabaseAccessControls_PostgreSQL(t *testing.T) {
 }
 
 func checkMySQLDatabaseExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_database_mysql" {
@@ -147,7 +145,7 @@ func checkMySQLDatabaseExists(s *terraform.State) error {
 }
 
 func checkDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_database_mysql" {
 			continue

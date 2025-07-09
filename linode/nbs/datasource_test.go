@@ -8,8 +8,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/nbs/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/nbs/tmpl"
 )
 
 func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
@@ -25,7 +25,7 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 
 		Steps: []resource.TestStep{
 			{
@@ -34,6 +34,7 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.id"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.client_conn_throttle"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.client_udp_sess_throttle"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.hostname"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.ipv4"),

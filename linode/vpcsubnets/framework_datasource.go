@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func NewDataSource() datasource.DataSource {
@@ -33,7 +33,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_vpc_subnets")
+	tflog.Debug(ctx, "Read data."+r.Config.Name)
 	var data VPCSubnetFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)

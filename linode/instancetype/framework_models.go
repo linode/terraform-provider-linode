@@ -3,6 +3,8 @@ package instancetype
 import (
 	"context"
 
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -11,17 +13,18 @@ import (
 )
 
 type DataSourceModel struct {
-	ID           types.String `tfsdk:"id"`
-	Label        types.String `tfsdk:"label"`
-	Disk         types.Int64  `tfsdk:"disk"`
-	Class        types.String `tfsdk:"class"`
-	Price        types.List   `tfsdk:"price"`
-	Addons       types.List   `tfsdk:"addons"`
-	RegionPrices types.List   `tfsdk:"region_prices"`
-	NetworkOut   types.Int64  `tfsdk:"network_out"`
-	Memory       types.Int64  `tfsdk:"memory"`
-	Transfer     types.Int64  `tfsdk:"transfer"`
-	VCPUs        types.Int64  `tfsdk:"vcpus"`
+	ID                 types.String `tfsdk:"id"`
+	Label              types.String `tfsdk:"label"`
+	Disk               types.Int64  `tfsdk:"disk"`
+	Class              types.String `tfsdk:"class"`
+	Price              types.List   `tfsdk:"price"`
+	Addons             types.List   `tfsdk:"addons"`
+	RegionPrices       types.List   `tfsdk:"region_prices"`
+	NetworkOut         types.Int64  `tfsdk:"network_out"`
+	Memory             types.Int64  `tfsdk:"memory"`
+	Transfer           types.Int64  `tfsdk:"transfer"`
+	VCPUs              types.Int64  `tfsdk:"vcpus"`
+	AcceleratedDevices types.Int64  `tfsdk:"accelerated_devices"`
 }
 
 func (data *DataSourceModel) ParseLinodeType(
@@ -55,6 +58,7 @@ func (data *DataSourceModel) ParseLinodeType(
 	data.Memory = types.Int64Value(int64(linodeType.Memory))
 	data.Transfer = types.Int64Value(int64(linodeType.Transfer))
 	data.VCPUs = types.Int64Value(int64(linodeType.VCPUs))
+	data.AcceleratedDevices = types.Int64Value(int64(linodeType.AcceleratedDevices))
 
 	return nil
 }
@@ -134,7 +138,7 @@ func FlattenPrice(ctx context.Context, price linodego.LinodePrice) (
 	result["hourly"] = types.Float64Value(float64(price.Hourly))
 	result["monthly"] = types.Float64Value(float64(price.Monthly))
 
-	obj, diag := types.ObjectValue(priceObjectType.AttrTypes, result)
+	obj, diag := types.ObjectValue(helper.PriceObjectType.AttrTypes, result)
 	if diag.HasError() {
 		return nil, diag
 	}
@@ -142,7 +146,7 @@ func FlattenPrice(ctx context.Context, price linodego.LinodePrice) (
 	objList := []attr.Value{obj}
 
 	resultList, diag := types.ListValue(
-		priceObjectType,
+		helper.PriceObjectType,
 		objList,
 	)
 	if diag.HasError() {
@@ -158,7 +162,7 @@ func FlattenRegionPrices(prices []linodego.LinodeRegionPrice) (
 	result := make([]attr.Value, len(prices))
 
 	for i, price := range prices {
-		obj, d := types.ObjectValue(regionPriceObjectType.AttrTypes, map[string]attr.Value{
+		obj, d := types.ObjectValue(helper.RegionPriceObjectType.AttrTypes, map[string]attr.Value{
 			"id":      types.StringValue(price.ID),
 			"hourly":  types.Float64Value(float64(price.Hourly)),
 			"monthly": types.Float64Value(float64(price.Monthly)),
@@ -171,7 +175,7 @@ func FlattenRegionPrices(prices []linodego.LinodeRegionPrice) (
 	}
 
 	priceList, d := basetypes.NewListValue(
-		regionPriceObjectType,
+		helper.RegionPriceObjectType,
 		result,
 	)
 	return &priceList, d

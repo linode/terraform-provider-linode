@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func NewDataSource() datasource.DataSource {
@@ -30,7 +30,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_account_availabilities")
+	tflog.Debug(ctx, "Read data."+r.Config.Name)
 	var data AccountAvailabilityFilterModel
 
 	client := r.Meta.Client

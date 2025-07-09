@@ -10,9 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/databasemysqlbackups/tmpl"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlbackups/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 var (
@@ -55,7 +55,7 @@ func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, tmpl.TemplateData{
@@ -71,7 +71,7 @@ func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 					if err := client.CreateMySQLDatabaseBackup(context.Background(), db.ID, linodego.MySQLBackupCreateOptions{
 						Label:  backupLabel,

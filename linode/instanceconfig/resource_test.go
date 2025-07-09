@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/instanceconfig/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/instanceconfig/tmpl"
 )
 
 var testRegion string
@@ -37,7 +37,7 @@ func TestAccResourceInstanceConfig_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -76,7 +76,7 @@ func TestAccResourceInstanceConfig_deviceBlock(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			// Ensure the provider doesn't panic when creating an instance
@@ -133,7 +133,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -217,7 +217,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -266,7 +266,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
 		var instance linodego.Instance
 
 		config1Name := "linode_instance_config.foobar1"
@@ -274,9 +274,9 @@ func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 		instanceName := acctest.RandomWithPrefix("tf_test")
 		rootPass := acctest.RandString(64)
 
-		resource.Test(retryT, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -330,7 +330,7 @@ func TestAccResourceInstanceConfig_provisioner(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -362,7 +362,7 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -461,7 +461,7 @@ func TestAccResourceInstanceConfig_rescueBooted(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -525,7 +525,7 @@ func TestAccResourceInstanceConfig_rescueBooted(t *testing.T) {
 
 func checkExists(name string, config *linodego.InstanceConfig) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -555,7 +555,7 @@ func checkExists(name string, config *linodego.InstanceConfig) resource.TestChec
 }
 
 func checkDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_instance_config" {
 			continue

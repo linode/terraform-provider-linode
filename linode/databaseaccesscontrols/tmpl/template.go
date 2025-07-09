@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 )
 
 type TemplateData struct {
@@ -13,7 +13,7 @@ type TemplateData struct {
 	AllowedIP string
 }
 
-func MySQL(t *testing.T, label, engine, ip, region string) string {
+func MySQL(t testing.TB, label, engine, ip, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_access_controls_mysql", TemplateData{
 			Engine:    engine,
@@ -23,7 +23,7 @@ func MySQL(t *testing.T, label, engine, ip, region string) string {
 		})
 }
 
-func PostgreSQL(t *testing.T, label, engine, ip, region string) string {
+func PostgreSQL(t testing.TB, label, engine, ip, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_access_controls_postgresql", TemplateData{
 			Engine:    engine,

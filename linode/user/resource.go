@@ -10,12 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 var resourceLinodeUserGrantFields = []string{
 	"global_grants", "domain_grant", "firewall_grant", "image_grant",
-	"linode_grant", "longview_grant", "nodebalancer_grant", "stackscript_grant", "volume_grant",
+	"linode_grant", "longview_grant", "nodebalancer_grant", "stackscript_grant",
+	"vpc_grant", "placement_group_grant", "volume_grant",
 }
 
 func Resource() *schema.Resource {
@@ -95,8 +96,10 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		d.Set("linode_grant", flattenGrantsEntities(grants.Linode))
 		d.Set("longview_grant", flattenGrantsEntities(grants.Longview))
 		d.Set("nodebalancer_grant", flattenGrantsEntities(grants.NodeBalancer))
+		d.Set("placement_group_grant", flattenGrantsEntities(grants.PlacementGroup))
 		d.Set("stackscript_grant", flattenGrantsEntities(grants.StackScript))
 		d.Set("volume_grant", flattenGrantsEntities(grants.Volume))
+		d.Set("vpc_grant", flattenGrantsEntities(grants.VPC))
 	}
 
 	d.Set("username", username)
@@ -182,6 +185,8 @@ func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interfac
 	updateOpts.Longview = expandGrantsEntities(d.Get("longview_grant").(*schema.Set).List())
 	updateOpts.NodeBalancer = expandGrantsEntities(d.Get("nodebalancer_grant").(*schema.Set).List())
 	updateOpts.StackScript = expandGrantsEntities(d.Get("stackscript_grant").(*schema.Set).List())
+	updateOpts.PlacementGroup = expandGrantsEntities(d.Get("placement_group_grant").(*schema.Set).List())
+	updateOpts.VPC = expandGrantsEntities(d.Get("vpc_grant").(*schema.Set).List())
 	updateOpts.Volume = expandGrantsEntities(d.Get("volume_grant").(*schema.Set).List())
 
 	tflog.Debug(ctx, "client.UpdateUserGrants(...)", map[string]any{
@@ -235,8 +240,10 @@ func expandGrantsGlobal(global map[string]interface{}) linodego.GlobalUserGrants
 	result.AddLinodes = global["add_linodes"].(bool)
 	result.AddLongview = global["add_longview"].(bool)
 	result.AddNodeBalancers = global["add_nodebalancers"].(bool)
+	result.AddPlacementGroups = global["add_placement_groups"].(bool)
 	result.AddStackScripts = global["add_stackscripts"].(bool)
 	result.AddVolumes = global["add_volumes"].(bool)
+	result.AddVPCs = global["add_vpcs"].(bool)
 	result.CancelAccount = global["cancel_account"].(bool)
 	result.LongviewSubscription = global["longview_subscription"].(bool)
 

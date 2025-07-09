@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 const deviceDescription = "Device can be either a Disk or Volume identified by disk_id or " +
@@ -114,9 +114,6 @@ var InterfaceSchema = &schema.Resource{
 			Type:        schema.TypeString,
 			Description: "The type of interface.",
 			Required:    true,
-			ValidateDiagFunc: validation.ToDiagFunc(
-				validation.StringInSlice([]string{"public", "vlan", "vpc"}, true),
-			),
 		},
 		"ipam_address": {
 			Type: schema.TypeString,
@@ -267,6 +264,12 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 		Computed:    true,
 	},
+	"capabilities": {
+		Type:        schema.TypeSet,
+		Elem:        &schema.Schema{Type: schema.TypeString},
+		Computed:    true,
+		Description: "A list of capabilities of this Linode instance.",
+	},
 	"boot_config_label": {
 		Type:        schema.TypeString,
 		Description: "The Label of the Instance Config that should be used to boot the Linode instance.",
@@ -314,6 +317,9 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "This Linode's Public IPv4 Address. If there are multiple public IPv4 addresses on this " +
 			"Instance, an arbitrary address will be used for this field.",
 		Computed: true,
+		Deprecated: "The `ip_address` attribute in linode_instance resource is deprecated. " +
+			"Please consider using the `ipv4` set attribute in the same resource or a " +
+			"`linode_instance_networking` data source instead.",
 	},
 	"ipv6": {
 		Type:        schema.TypeString,
@@ -325,9 +331,11 @@ var resourceSchema = map[string]*schema.Schema{
 		Type: schema.TypeSet,
 		Elem: &schema.Schema{Type: schema.TypeString},
 		Description: "This Linode's IPv4 Addresses. Each Linode is assigned a single public IPv4 address upon " +
-			"creation, and may get a single private IPv4 address if needed. You may need to open a support ticket " +
+			"creation, and may get a single private IPv4 address if needed. You could pass a reserved IPv4 address here to create a linode with a particular reserved IP address. You may need to open a support ticket " +
 			"to get additional IPv4 addresses.",
+		Optional: true,
 		Computed: true,
+		ForceNew: true,
 	},
 
 	"private_ip": {
@@ -523,6 +531,16 @@ var resourceSchema = map[string]*schema.Schema{
 					Type:        schema.TypeInt,
 					Computed:    true,
 					Description: "The amount of network transfer this Linode is allotted each month.",
+				},
+				"accelerated_devices": {
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Description: "The number of VPUs this Linode has access to.",
+				},
+				"gpus": {
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Description: "The number of GPUs this Linode has access to.",
 				},
 			},
 		},

@@ -35,9 +35,45 @@ func ImageUpload500Retry() func(response *http.Response, err error) bool {
 	return GenericRetryCondition(500, ImageUpload)
 }
 
+// OBJKeyCreate500Retry for [500] error when creating an Object Storage Key
+func OBJKeyCreate500Retry() func(response *http.Response, err error) bool {
+	OBJKeyCreate, err := regexp.Compile("object-storage/keys")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return GenericRetryCondition(500, OBJKeyCreate)
+}
+
+// OBJKeyDelete500Retry for [500] error when deleting an Object Storage Key
+func OBJKeyDelete500Retry() func(response *http.Response, err error) bool {
+	OBJKeyDelete, err := regexp.Compile("object-storage/keys/[0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return GenericRetryCondition(500, OBJKeyDelete)
+}
+
+// OBJBucketCreate500Retry for [500] error when creating an Object Storage Bucket
+func OBJBucketCreate500Retry() func(response *http.Response, err error) bool {
+	OBJBucketCreate, err := regexp.Compile("object-storage/buckets")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return GenericRetryCondition(500, OBJBucketCreate)
+}
+
+// OBJBucketDelete500Retry for [500] error when deleting an Object Storage Bucket
+func OBJBucketDelete500Retry() func(response *http.Response, err error) bool {
+	OBJBucketDelete, err := regexp.Compile("object-storage/buckets/[0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return GenericRetryCondition(500, OBJBucketDelete)
+}
+
 func GenericRetryCondition(statusCode int, pathPattern *regexp.Regexp) func(response *http.Response, err error) bool {
 	return func(response *http.Response, _ error) bool {
-		if response == nil || response.StatusCode != statusCode || response.Request == nil {
+		if response.StatusCode != statusCode || response.Request == nil {
 			return false
 		}
 
@@ -56,4 +92,8 @@ func ApplyAllRetryConditions(client *linodego.Client) {
 	client.AddRetryCondition(Database502Retry())
 	client.AddRetryCondition(LinodeInstance500Retry())
 	client.AddRetryCondition(ImageUpload500Retry())
+	client.AddRetryCondition(OBJKeyCreate500Retry())
+	client.AddRetryCondition(OBJKeyDelete500Retry())
+	client.AddRetryCondition(OBJBucketCreate500Retry())
+	client.AddRetryCondition(OBJBucketDelete500Retry())
 }

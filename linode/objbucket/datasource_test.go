@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/objbucket/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/objbucket/tmpl"
 )
 
 func TestAccDataSourceBucket_basic(t *testing.T) {
@@ -17,10 +17,10 @@ func TestAccDataSourceBucket_basic(t *testing.T) {
 	resourceName := "data.linode_object_storage_bucket.foobar"
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
-	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
-		resource.Test(retryT, resource.TestCase{
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -47,10 +47,10 @@ func TestAccDataSourceBucket_basic_cluster(t *testing.T) {
 	resourceName := "data.linode_object_storage_bucket.foobar"
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
-	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
-		resource.Test(retryT, resource.TestCase{
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{

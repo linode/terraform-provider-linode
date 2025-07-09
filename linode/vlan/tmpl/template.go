@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 )
 
 type TemplateData struct {
@@ -13,7 +13,7 @@ type TemplateData struct {
 	Label     string
 }
 
-func DataBasic(t *testing.T, instLabel, region, vlanLabel, label string) string {
+func DataBasic(t testing.TB, instLabel, region, vlanLabel, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vlan_data_basic", TemplateData{
 			InstLabel: instLabel,
@@ -23,7 +23,7 @@ func DataBasic(t *testing.T, instLabel, region, vlanLabel, label string) string 
 		})
 }
 
-func DataRegex(t *testing.T, instLabel, region, vlanLabel, label string) string {
+func DataRegex(t testing.TB, instLabel, region, vlanLabel, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vlan_data_regex", TemplateData{
 			InstLabel: instLabel,
@@ -33,7 +33,7 @@ func DataRegex(t *testing.T, instLabel, region, vlanLabel, label string) string 
 		})
 }
 
-func DataCheckDuplicate(t *testing.T, instLabel, region, vlanLabel, label string) string {
+func DataCheckDuplicate(t testing.TB, instLabel, region, vlanLabel, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vlan_data_check_duplicate", TemplateData{
 			InstLabel: instLabel,

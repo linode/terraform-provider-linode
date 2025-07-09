@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/vpcsubnet/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/vpcsubnet/tmpl"
 )
 
 var testRegion string
@@ -38,7 +38,7 @@ func TestAccResourceVPCSubnet_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -67,7 +67,7 @@ func TestAccResourceVPCSubnet_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -93,6 +93,8 @@ func TestAccResourceVPCSubnet_update(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: resourceImportStateID,
+				// TODO:: remove when API response for updated timestamp is consistent
+				ImportStateVerifyIgnore: []string{"updated"},
 			},
 		},
 	})
@@ -105,7 +107,7 @@ func TestAccResourceVPCSubnet_create_InvalidLabel_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -125,7 +127,7 @@ func TestAccResourceVPCSubnet_update_invalidLabel(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -153,7 +155,7 @@ func TestAccResourceVPCSubnet_attached(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -187,7 +189,7 @@ func TestAccResourceVPCSubnet_attached(t *testing.T) {
 }
 
 func checkVPCSubnetExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_vpc_subnet" {
@@ -214,7 +216,7 @@ func checkVPCSubnetExists(s *terraform.State) error {
 }
 
 func checkVPCSubnetDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_vpc_subnet" {
 			continue

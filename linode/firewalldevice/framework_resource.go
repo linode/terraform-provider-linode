@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func NewResource() resource.Resource {
@@ -33,7 +33,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_firewall_device")
+	tflog.Debug(ctx, "Create "+r.Config.Name)
 
 	var plan FirewallDeviceModel
 	client := r.Meta.Client
@@ -87,7 +87,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_firewall_device")
+	tflog.Debug(ctx, "Read "+r.Config.Name)
 
 	var state FirewallDeviceModel
 
@@ -149,7 +149,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	tflog.Debug(ctx, "Update linode_firewall_device")
+	tflog.Debug(ctx, "Update "+r.Config.Name)
 	resp.Diagnostics.AddWarning(
 		"Unintended Calling to Update Function",
 		"The Update function of 'linode_firewall_device' should never be "+
@@ -183,7 +183,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_firewall_device")
+	tflog.Debug(ctx, "Delete "+r.Config.Name)
 	var state FirewallDeviceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -235,7 +235,7 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	tflog.Debug(ctx, "Import linode_firewall_device")
+	tflog.Debug(ctx, "Import "+r.Config.Name)
 
 	helper.ImportStateWithMultipleIDs(
 		ctx,

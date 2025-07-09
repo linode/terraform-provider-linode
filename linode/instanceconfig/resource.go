@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	instancehelpers "github.com/linode/terraform-provider-linode/v2/linode/instance"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	instancehelpers "github.com/linode/terraform-provider-linode/v3/linode/instance"
 )
 
 func Resource() *schema.Resource {
@@ -96,7 +96,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		return diag.Errorf("failed to get instance networking: %s", err)
 	}
 
-	configBooted, err := isConfigBooted(ctx, &client, inst, cfg.ID)
+	configBooted, err := isConfigBooted(ctx, &client, inst, cfg.ID, d.Get("booted").(bool))
 	if err != nil {
 		return diag.Errorf("failed to check instance boot status: %s", err)
 	}
@@ -346,7 +346,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	// Shutdown the instance if the config is in use
-	if booted, err := isConfigBooted(ctx, &client, inst, id); err != nil {
+	if booted, err := isConfigBooted(ctx, &client, inst, id, d.Get("booted").(bool)); err != nil {
 		return diag.Errorf("failed to check if config is booted: %s", err)
 	} else if booted {
 		tflog.Info(ctx, "Shutting down instance for config deletion")

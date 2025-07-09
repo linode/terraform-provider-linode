@@ -4,8 +4,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
 
 var filterConfig = frameworkfilter.Config{
@@ -38,6 +38,7 @@ var backupSchema = schema.NestedBlockObject{
 }
 
 var frameworkDataSourceSchema = schema.Schema{
+	DeprecationMessage: "This data source has been deprecated.",
 	Attributes: map[string]schema.Attribute{
 		"database_id": schema.Int64Attribute{
 			Description: "The ID of the Managed Database.",

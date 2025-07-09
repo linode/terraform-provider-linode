@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func NewResource() resource.Resource {
@@ -33,7 +33,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_placement_group_assignment")
+	tflog.Debug(ctx, "Create "+r.Config.Name)
 
 	var plan PGAssignmentModel
 	client := r.Meta.Client
@@ -92,7 +92,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_placement_group_assignment")
+	tflog.Debug(ctx, "Read "+r.Config.Name)
 
 	var state PGAssignmentModel
 
@@ -167,7 +167,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	tflog.Debug(ctx, "Update linode_placement_group_assignment")
+	tflog.Debug(ctx, "Update "+r.Config.Name)
 	resp.Diagnostics.AddWarning(
 		"Unintended Calling to Update Function",
 		"The Update function of 'linode_placement_group_assignment' should never be "+
@@ -193,7 +193,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_placement_group_assignment")
+	tflog.Debug(ctx, "Delete "+r.Config.Name)
 	var state PGAssignmentModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -239,7 +239,7 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	tflog.Debug(ctx, "Import linode_placement_group_assignment")
+	tflog.Debug(ctx, "Import "+r.Config.Name)
 
 	helper.ImportStateWithMultipleIDs(
 		ctx,

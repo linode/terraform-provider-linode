@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 )
 
 type TaintData struct {
@@ -25,8 +25,13 @@ type TemplateData struct {
 	AutoscalerMax     int
 	Taints            []TaintData
 	Labels            map[string]string
+	UpdateStrategy    string
 }
 
-func Generate(t *testing.T, data *TemplateData) string {
+func Generate(t testing.TB, data *TemplateData) string {
 	return acceptance.ExecuteTemplate(t, "nodepool_template", *data)
+}
+
+func EnterpriseBasic(t testing.TB, data *TemplateData) string {
+	return acceptance.ExecuteTemplate(t, "lke_e_nodepool", *data)
 }

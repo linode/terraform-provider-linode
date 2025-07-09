@@ -1,0 +1,27 @@
+{{ define "lke_cluster_apl_enabled" }}
+
+resource "linode_lke_cluster" "test" {
+    label       = "{{.Label}}"
+    region      = "{{ .Region }}"
+    k8s_version = "{{.K8sVersion}}"
+    tags        = ["test"]
+    tier = "standard"
+    apl_enabled = "true"
+
+    pool {
+        type  = "g6-dedicated-4"
+        count = 3
+        tags  = ["test"]
+    }
+}
+
+data "linode_instances" "test" {
+    depends_on = [linode_lke_cluster.test]
+
+    filter {
+        name = "id"
+        values = [linode_lke_cluster.test.pool.0.nodes.0.instance_id]
+    }
+}
+
+{{ end }}

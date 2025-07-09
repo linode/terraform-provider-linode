@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 var _ resource.ResourceWithUpgradeState = &Resource{}
@@ -38,7 +38,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_nodebalancer")
+	tflog.Debug(ctx, "Create "+r.Config.Name)
 	var data NodeBalancerModel
 	client := r.Meta.Client
 
@@ -55,10 +55,19 @@ func (r *Resource) Create(
 		return
 	}
 
+	clientUDPSessThrottle := helper.FrameworkSafeInt64ToInt(
+		data.ClientUDPSessThrottle.ValueInt64(),
+		&resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	createOpts := linodego.NodeBalancerCreateOptions{
-		Region:             data.Region.ValueString(),
-		Label:              data.Label.ValueStringPointer(),
-		ClientConnThrottle: &clientConnThrottle,
+		Region:                data.Region.ValueString(),
+		Label:                 data.Label.ValueStringPointer(),
+		ClientConnThrottle:    &clientConnThrottle,
+		ClientUDPSessThrottle: &clientUDPSessThrottle,
 	}
 
 	if !data.FirewallID.IsNull() {
@@ -97,6 +106,7 @@ func (r *Resource) Create(
 			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", nodebalancer.ID),
 			err.Error(),
 		)
+		return
 	}
 
 	resp.Diagnostics.Append(data.FlattenNodeBalancer(ctx, nodebalancer, firewalls, true)...)
@@ -116,7 +126,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_nodebalancer")
+	tflog.Debug(ctx, "Read "+r.Config.Name)
 
 	var data NodeBalancerModel
 	client := r.Meta.Client
@@ -162,6 +172,7 @@ func (r *Resource) Read(
 			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", id),
 			err.Error(),
 		)
+		return
 	}
 
 	resp.Diagnostics.Append(data.FlattenNodeBalancer(ctx, nodeBalancer, firewalls, false)...)
@@ -177,7 +188,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	tflog.Debug(ctx, "Update linode_nodebalancer")
+	tflog.Debug(ctx, "Update "+r.Config.Name)
 
 	var plan, state NodeBalancerModel
 	client := r.Meta.Client
@@ -198,7 +209,7 @@ func (r *Resource) Update(
 
 	isEqual := state.Label.Equal(plan.Label) &&
 		state.ClientConnThrottle.Equal(plan.ClientConnThrottle) &&
-		state.Tags.Equal(plan.Tags)
+		state.Tags.Equal(plan.Tags) && state.ClientUDPSessThrottle.Equal(plan.ClientUDPSessThrottle)
 
 	if !isEqual {
 		clientConnThrottle := helper.FrameworkSafeInt64ToInt(
@@ -208,9 +219,17 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
+		clientUDPSessThrottle := helper.FrameworkSafeInt64ToInt(
+			plan.ClientUDPSessThrottle.ValueInt64(),
+			&resp.Diagnostics,
+		)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 		updateOpts := linodego.NodeBalancerUpdateOptions{
-			Label:              plan.Label.ValueStringPointer(),
-			ClientConnThrottle: &clientConnThrottle,
+			Label:                 plan.Label.ValueStringPointer(),
+			ClientConnThrottle:    &clientConnThrottle,
+			ClientUDPSessThrottle: &clientUDPSessThrottle,
 		}
 		resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &updateOpts.Tags, false)...)
 		if resp.Diagnostics.HasError() {
@@ -238,6 +257,7 @@ func (r *Resource) Update(
 				fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", id),
 				err.Error(),
 			)
+			return
 		}
 
 		resp.Diagnostics.Append(plan.FlattenNodeBalancer(ctx, nodeBalancer, firewalls, true)...)
@@ -260,7 +280,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_nodebalancer")
+	tflog.Debug(ctx, "Delete "+r.Config.Name)
 
 	var data NodeBalancerModel
 	client := r.Meta.Client

@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/lke"
+	"github.com/linode/terraform-provider-linode/v3/linode/lke"
 )
 
 func TestReconcileLKENodePoolSpecs(t *testing.T) {
@@ -146,7 +146,7 @@ func TestReconcileLKENodePoolSpecs(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			updates, err := lke.ReconcileLKENodePoolSpecs(context.Background(), tc.oldSpecs, tc.newSpecs)
+			updates, err := lke.ReconcileLKENodePoolSpecs(context.Background(), tc.oldSpecs, tc.newSpecs, false)
 			if err != nil {
 				t.Fatal(err)
 			}

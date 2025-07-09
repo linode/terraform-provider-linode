@@ -9,8 +9,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/instancetype/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancetype/tmpl"
 )
 
 func TestAccDataSourceLinodeInstanceType_basic(t *testing.T) {
@@ -39,7 +39,7 @@ func TestAccDataSourceLinodeInstanceType_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, targetType.ID),
@@ -65,6 +65,11 @@ func TestAccDataSourceLinodeInstanceType_basic(t *testing.T) {
 						resourceName,
 						"vcpus",
 						strconv.FormatInt(int64(targetType.VCPUs), 10),
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"accelerated_devices",
+						strconv.FormatInt(int64(targetType.AcceleratedDevices), 10),
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,

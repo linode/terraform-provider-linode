@@ -6,8 +6,6 @@ description: |-
 
 # Data Source: linode\_placement\_group
 
-**NOTE: Placement Groups may not currently be available to all users.**
-
 `linode_placement_group` provides details about a Linode placement group.
 For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-placement-group).
 
@@ -40,6 +38,16 @@ In addition to all arguments above, the following attributes are exported:
 * `is_compliant` - Whether all Linodes in this group are currently compliant with the group's placement group type.
 
 * `members` - A set of Linodes currently assigned to this Placement Group.
+
+* `migrations` - Any Linodes that are being migrated to or from the placement group.
+
+  * `inbound` - A list of the Linodes the system is migrating into the placement group.
+
+    * `linode_id` - The unique identifier for the Linode being migrated into the placement group.
+
+  * `outbound` A list of the Linodes the system is migrating out of the placement group.
+
+    * `linode_id` - The unique identifier for the Linode being migrated out of the placement group.
 
 ### Members
 

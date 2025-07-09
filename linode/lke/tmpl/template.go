@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 )
 
 type TaintData struct {
@@ -15,6 +15,7 @@ type TaintData struct {
 type TemplateData struct {
 	Label            string
 	K8sVersion       string
+	UpdateStrategy   string
 	HighAvailability bool
 	Region           string
 	ACLEnabled       bool
@@ -24,17 +25,17 @@ type TemplateData struct {
 	Labels           map[string]string
 }
 
-func Basic(t *testing.T, name, version, region string) string {
+func Basic(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_basic", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
-func Updates(t *testing.T, name, version, region string) string {
+func Updates(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_updates", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
-func ManyPools(t *testing.T, name, k8sVersion, region string) string {
+func ManyPools(t testing.TB, name, k8sVersion, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_many_pools", TemplateData{
 			Label:      name,
@@ -43,27 +44,27 @@ func ManyPools(t *testing.T, name, k8sVersion, region string) string {
 		})
 }
 
-func ComplexPools(t *testing.T, name, version, region string) string {
+func ComplexPools(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_complex_pools", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
-func Autoscaler(t *testing.T, name, version, region string) string {
+func Autoscaler(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_autoscaler", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
-func AutoscalerUpdates(t *testing.T, name, version, region string) string {
+func AutoscalerUpdates(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_autoscaler_updates", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
-func AutoscalerManyPools(t *testing.T, name, version, region string) string {
+func AutoscalerManyPools(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_autoscaler_many_pools", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
-func ControlPlane(t *testing.T, name, version, region, ipv4, ipv6 string, ha, enabled bool) string {
+func ControlPlane(t testing.TB, name, version, region, ipv4, ipv6 string, ha, enabled bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_control_plane", TemplateData{
 			Label:            name,
@@ -76,7 +77,7 @@ func ControlPlane(t *testing.T, name, version, region, ipv4, ipv6 string, ha, en
 		})
 }
 
-func NoCount(t *testing.T, name, version, region string) string {
+func NoCount(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_no_count", TemplateData{
 			Label:      name,
@@ -85,7 +86,7 @@ func NoCount(t *testing.T, name, version, region string) string {
 		})
 }
 
-func AutoscalerNoCount(t *testing.T, name, version, region string) string {
+func AutoscalerNoCount(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_autoscaler_no_count", TemplateData{
 			Label:      name,
@@ -94,17 +95,27 @@ func AutoscalerNoCount(t *testing.T, name, version, region string) string {
 		})
 }
 
-func DataBasic(t *testing.T, name, version, region string) string {
+func Enterprise(t testing.TB, name, version, region, updateStrategy string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, UpdateStrategy: updateStrategy})
+}
+
+func DataBasic(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_basic", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
-func DataAutoscaler(t *testing.T, name, version, region string) string {
+func DataEnterprise(t testing.TB, name, version, region, updateStrategy string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_data_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, UpdateStrategy: updateStrategy})
+}
+
+func DataAutoscaler(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_autoscaler", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
-func DataControlPlane(t *testing.T, name, version, region, ipv4, ipv6 string, ha, enabled bool) string {
+func DataControlPlane(t testing.TB, name, version, region, ipv4, ipv6 string, ha, enabled bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_control_plane", TemplateData{
 			Label:            name,
@@ -117,7 +128,7 @@ func DataControlPlane(t *testing.T, name, version, region, ipv4, ipv6 string, ha
 		})
 }
 
-func DataTaintsLabels(t *testing.T, name, version, region string, taints []TaintData, labels map[string]string) string {
+func DataTaintsLabels(t testing.TB, name, version, region string, taints []TaintData, labels map[string]string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_taints_labels", TemplateData{
 			Label:      name,
@@ -126,4 +137,16 @@ func DataTaintsLabels(t *testing.T, name, version, region string, taints []Taint
 			Labels:     labels,
 			Taints:     taints,
 		})
+}
+
+func APLEnabled(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_apl_enabled", TemplateData{Label: name, K8sVersion: version, Region: region})
+}
+
+func ACLDisabledAddressesDisallowed(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_acl_disabled_addresses_disallowed",
+		TemplateData{Label: name, K8sVersion: version, Region: region},
+	)
 }

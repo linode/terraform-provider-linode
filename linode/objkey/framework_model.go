@@ -2,17 +2,19 @@ package objkey
 
 import (
 	"context"
+	"slices"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 type RegionDetail struct {
-	ID         types.String `tfsdk:"id"`
-	S3Endpoint types.String `tfsdk:"s3_endpoint"`
+	ID           types.String `tfsdk:"id"`
+	S3Endpoint   types.String `tfsdk:"s3_endpoint"`
+	EndpointType types.String `tfsdk:"endpoint_type"`
 }
 
 type BucketAccessModelEntry struct {
@@ -73,11 +75,19 @@ func (plan ResourceModel) GetCreateOptions(ctx context.Context) (opts linodego.O
 	return
 }
 
-func getObjectStorageKeyRegionIDs(regions []linodego.ObjectStorageKeyRegion) []string {
+func getObjectStorageKeyRegionIDsSet(regions []linodego.ObjectStorageKeyRegion) []string {
 	regionIDs := make([]string, len(regions))
 	for i, r := range regions {
 		regionIDs[i] = r.ID
 	}
+
+	// Deduplicate regions
+	//
+	// Considering migrating to `someMap.Keys()` when upgrading to Go 1.23
+	// https://pkg.go.dev/maps@master#Keys
+	slices.Sort(regionIDs)
+	regionIDs = slices.Compact(regionIDs)
+
 	return regionIDs
 }
 
@@ -107,7 +117,7 @@ func (rm *ResourceModel) FlattenObjectStorageKey(
 		rm.SecretKey = helper.KeepOrUpdateString(rm.SecretKey, key.SecretKey, preserveKnown)
 	}
 
-	newRegions := getObjectStorageKeyRegionIDs(key.Regions)
+	newRegions := getObjectStorageKeyRegionIDsSet(key.Regions)
 	rm.Regions = helper.KeepOrUpdateStringSet(rm.Regions, newRegions, preserveKnown, diags)
 
 	rm.BucketAccess = FlattenBucketAccessEntries(key.BucketAccess, rm.BucketAccess, preserveKnown)
@@ -124,6 +134,7 @@ func (rm *ResourceModel) FlattenObjectStorageKey(
 func FlattenRegionDetail(region linodego.ObjectStorageKeyRegion) (regionDetail RegionDetail) {
 	regionDetail.ID = types.StringValue(region.ID)
 	regionDetail.S3Endpoint = types.StringValue(region.S3Endpoint)
+	regionDetail.EndpointType = types.StringValue(string(region.EndpointType))
 	return
 }
 
@@ -152,7 +163,7 @@ func FlattenBucketAccessEntries(
 	}
 
 	for i := range resultEntries {
-		if i > len(entries) {
+		if i >= len(entries) {
 			break
 		}
 

@@ -9,27 +9,28 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
-	"github.com/linode/terraform-provider-linode/v2/linode/firewalls"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewalls"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 // NodeBalancerModel describes the Terraform resource data model to match the
 // resource schema.
 type NodeBalancerModel struct {
-	ID                 types.String      `tfsdk:"id"`
-	Label              types.String      `tfsdk:"label"`
-	Region             types.String      `tfsdk:"region"`
-	ClientConnThrottle types.Int64       `tfsdk:"client_conn_throttle"`
-	FirewallID         types.Int64       `tfsdk:"firewall_id"`
-	Hostname           types.String      `tfsdk:"hostname"`
-	IPv4               types.String      `tfsdk:"ipv4"`
-	IPv6               types.String      `tfsdk:"ipv6"`
-	Created            timetypes.RFC3339 `tfsdk:"created"`
-	Updated            timetypes.RFC3339 `tfsdk:"updated"`
-	Transfer           types.List        `tfsdk:"transfer"`
-	Tags               types.Set         `tfsdk:"tags"`
-	Firewalls          types.List        `tfsdk:"firewalls"`
+	ID                    types.String      `tfsdk:"id"`
+	Label                 types.String      `tfsdk:"label"`
+	Region                types.String      `tfsdk:"region"`
+	ClientConnThrottle    types.Int64       `tfsdk:"client_conn_throttle"`
+	ClientUDPSessThrottle types.Int64       `tfsdk:"client_udp_sess_throttle"`
+	FirewallID            types.Int64       `tfsdk:"firewall_id"`
+	Hostname              types.String      `tfsdk:"hostname"`
+	IPv4                  types.String      `tfsdk:"ipv4"`
+	IPv6                  types.String      `tfsdk:"ipv6"`
+	Created               timetypes.RFC3339 `tfsdk:"created"`
+	Updated               timetypes.RFC3339 `tfsdk:"updated"`
+	Transfer              types.List        `tfsdk:"transfer"`
+	Tags                  types.Set         `tfsdk:"tags"`
+	Firewalls             types.List        `tfsdk:"firewalls"`
 }
 
 type FirewallModel struct {
@@ -78,6 +79,9 @@ func (data *NodeBalancerModel) FlattenNodeBalancer(
 	data.ClientConnThrottle = helper.KeepOrUpdateInt64(
 		data.ClientConnThrottle, int64(nodebalancer.ClientConnThrottle), preserveKnown,
 	)
+	data.ClientUDPSessThrottle = helper.KeepOrUpdateInt64(
+		data.ClientUDPSessThrottle, int64(nodebalancer.ClientUDPSessThrottle), preserveKnown,
+	)
 	data.Hostname = helper.KeepOrUpdateStringPointer(data.Hostname, nodebalancer.Hostname, preserveKnown)
 	data.IPv4 = helper.KeepOrUpdateStringPointer(data.IPv4, nodebalancer.IPv4, preserveKnown)
 	data.IPv6 = helper.KeepOrUpdateStringPointer(data.IPv6, nodebalancer.IPv6, preserveKnown)
@@ -111,6 +115,9 @@ func (data *NodeBalancerModel) CopyFrom(other NodeBalancerModel, preserveKnown b
 	data.Region = helper.KeepOrUpdateValue(data.Region, other.Region, preserveKnown)
 	data.ClientConnThrottle = helper.KeepOrUpdateValue(
 		data.ClientConnThrottle, other.ClientConnThrottle, preserveKnown,
+	)
+	data.ClientUDPSessThrottle = helper.KeepOrUpdateValue(
+		data.ClientUDPSessThrottle, other.ClientUDPSessThrottle, preserveKnown,
 	)
 	data.FirewallID = helper.KeepOrUpdateValue(data.FirewallID, other.FirewallID, preserveKnown)
 	data.Hostname = helper.KeepOrUpdateValue(data.Hostname, other.Hostname, preserveKnown)
@@ -210,18 +217,19 @@ func UpgradeResourceStateValue(val string) (types.Float64, diag.Diagnostic) {
 // NodeBalancerDataSourceModel describes the Terraform data model to match the
 // data source schema.
 type NodeBalancerDataSourceModel struct {
-	ID                 types.Int64       `tfsdk:"id"`
-	Label              types.String      `tfsdk:"label"`
-	Region             types.String      `tfsdk:"region"`
-	ClientConnThrottle types.Int64       `tfsdk:"client_conn_throttle"`
-	Hostname           types.String      `tfsdk:"hostname"`
-	IPv4               types.String      `tfsdk:"ipv4"`
-	IPv6               types.String      `tfsdk:"ipv6"`
-	Created            timetypes.RFC3339 `tfsdk:"created"`
-	Updated            timetypes.RFC3339 `tfsdk:"updated"`
-	Transfer           types.List        `tfsdk:"transfer"`
-	Tags               types.Set         `tfsdk:"tags"`
-	Firewalls          []NBFirewallModel `tfsdk:"firewalls"`
+	ID                    types.Int64       `tfsdk:"id"`
+	Label                 types.String      `tfsdk:"label"`
+	Region                types.String      `tfsdk:"region"`
+	ClientConnThrottle    types.Int64       `tfsdk:"client_conn_throttle"`
+	ClientUDPSessThrottle types.Int64       `tfsdk:"client_udp_sess_throttle"`
+	Hostname              types.String      `tfsdk:"hostname"`
+	IPv4                  types.String      `tfsdk:"ipv4"`
+	IPv6                  types.String      `tfsdk:"ipv6"`
+	Created               timetypes.RFC3339 `tfsdk:"created"`
+	Updated               timetypes.RFC3339 `tfsdk:"updated"`
+	Transfer              types.List        `tfsdk:"transfer"`
+	Tags                  types.Set         `tfsdk:"tags"`
+	Firewalls             []NBFirewallModel `tfsdk:"firewalls"`
 }
 
 type NBFirewallModel struct {
@@ -246,6 +254,7 @@ func (data *NodeBalancerDataSourceModel) flattenNodeBalancer(
 	data.Label = types.StringPointerValue(nodebalancer.Label)
 	data.Region = types.StringValue(nodebalancer.Region)
 	data.ClientConnThrottle = types.Int64Value(int64(nodebalancer.ClientConnThrottle))
+	data.ClientUDPSessThrottle = types.Int64Value(int64(nodebalancer.ClientUDPSessThrottle))
 	data.Hostname = types.StringPointerValue(nodebalancer.Hostname)
 	data.IPv4 = types.StringPointerValue(nodebalancer.IPv4)
 	data.IPv6 = types.StringPointerValue(nodebalancer.IPv6)

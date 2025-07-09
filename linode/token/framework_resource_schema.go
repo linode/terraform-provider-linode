@@ -2,7 +2,6 @@ package token
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -10,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper/customtypes"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
 )
 
 const (
@@ -72,10 +71,9 @@ var frameworkResourceSchema = schema.Schema{
 						sr planmodifier.StringRequest,
 						rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse,
 					) {
-						rrifr.RequiresReplace = !helper.CompareTimeStrings(
+						rrifr.RequiresReplace = !helper.CompareRFC3339TimeStrings(
 							sr.PlanValue.ValueString(),
 							sr.StateValue.ValueString(),
-							time.RFC3339,
 						)
 					},
 					RequireReplacementWhenScopesChangedDescription,

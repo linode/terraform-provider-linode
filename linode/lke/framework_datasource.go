@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func NewDataSource() datasource.DataSource {
@@ -31,7 +31,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_lke_cluster")
+	tflog.Debug(ctx, "Read data."+r.Config.Name)
 
 	client := r.Meta.Client
 
@@ -69,6 +69,20 @@ func (r *DataSource) Read(
 		return
 	}
 
+	var dashboard *linodego.LKEClusterDashboard
+
+	// Only standard LKE has a dashboard URL
+	if cluster.Tier == TierStandard {
+		dashboard, err = client.GetLKEClusterDashboard(ctx, clusterId)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to get dashboard URL for LKE cluster %d", clusterId),
+				err.Error(),
+			)
+			return
+		}
+	}
+
 	kubeconfig, err := client.GetLKEClusterKubeconfig(ctx, clusterId)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -84,15 +98,6 @@ func (r *DataSource) Read(
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to get API endpoints for LKE cluster %d", clusterId),
-			err.Error(),
-		)
-		return
-	}
-
-	dashboard, err := client.GetLKEClusterDashboard(ctx, clusterId)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to get dashboard URL for LKE cluster %d", clusterId),
 			err.Error(),
 		)
 		return

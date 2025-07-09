@@ -14,8 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/nbnode/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/nbnode/tmpl"
 )
 
 var testRegion string
@@ -39,7 +39,7 @@ func TestAccResourceNodeBalancerNode_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories:  acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:              checkNodeBalancerNodeDestroy,
 		ExternalProviders:         acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
@@ -72,7 +72,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerNodeDestroy,
 
 		Steps: []resource.TestStep{

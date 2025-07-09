@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func NewDataSource() datasource.DataSource {
@@ -29,7 +29,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_volume")
+	tflog.Debug(ctx, "Read data."+r.Config.Name)
 
 	client := r.Meta.Client
 
@@ -54,7 +54,9 @@ func (r *DataSource) Read(
 	volume, err := client.GetVolume(ctx, volumeID)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to get the volume.", err.Error())
+		return
 	}
+
 	data.ParseComputedAttributes(ctx, volume)
 	data.ParseNonComputedAttributes(ctx, volume)
 

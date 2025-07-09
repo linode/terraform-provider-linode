@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func (fp *FrameworkProvider) Configure(
@@ -34,14 +34,32 @@ func (fp *FrameworkProvider) Configure(
 		return
 	}
 
+	meta.Config = &data
+
 	fp.HandleDefaults(&data, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	fp.InitProvider(ctx, &data, req.TerraformVersion, &resp.Diagnostics, &meta)
-	if resp.Diagnostics.HasError() {
-		return
+	if fp.Meta != nil && fp.Meta.Client != nil {
+		// Crossplane provider-linode expects to use a single configured instance of the linode client across all invocations
+		// However, due to how upjet operates, the configureProvider() gets invoked on every resource call. To preserve the client,
+		// see if the fp.Meta.Client is already initialized, and if so, re-use it.
+
+		tflog.Info(ctx, "Linode client was already configured, re-using..")
+		meta.Client = fp.Meta.Client
+	} else {
+		meta.Client = fp.InitLinodeClient(ctx, &data, req.TerraformVersion, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if strings.HasPrefix(req.TerraformVersion, "0.") {
+		resp.Diagnostics.AddWarning(
+			"Support for Terraform 0.x is deprecated",
+			"Please upgrade to Terraform 1.x or later. "+
+				"Support for Terraform 0.x will be removed in a future version of this provider.",
+		)
 	}
 
 	resp.ResourceData = &meta
@@ -157,6 +175,13 @@ func (fp *FrameworkProvider) HandleDefaults(
 		)
 	}
 
+	if lpm.APICAPath.IsNull() {
+		lpm.APICAPath = GetStringFromEnv(
+			linodego.APIHostCert,
+			types.StringNull(),
+		)
+	}
+
 	if lpm.SkipInstanceReadyPoll.IsNull() {
 		lpm.SkipInstanceReadyPoll = types.BoolValue(false)
 	}
@@ -211,35 +236,12 @@ func (fp *FrameworkProvider) HandleDefaults(
 	}
 }
 
-func (fp *FrameworkProvider) InitProvider(
+func (fp *FrameworkProvider) InitLinodeClient(
 	ctx context.Context,
 	lpm *helper.FrameworkProviderModel,
 	tfVersion string,
 	diags *diag.Diagnostics,
-	meta *helper.FrameworkProviderMeta,
-) {
-	if fp.Meta != nil && fp.Meta.Client != nil {
-		// Crossplane provider-linode expects to use a single configured instance of the linode client across all invocations
-		// However, due to how upjet operates, the configureProvider() gets invoked on every resource call. To preserve the client,
-		// see if the fp.Meta.Client is already initialized, and if so, re-use it.
-
-		tflog.Info(ctx, "Linode client was already configured, re-using..")
-		meta.Client = fp.Meta.Client
-		meta.Config = fp.Meta.Config
-		return
-	}
-
-	loggingTransport := helper.NewAPILoggerTransport(
-		logging.NewSubsystemLoggingHTTPTransport(
-			helper.APILoggerSubsystem,
-			http.DefaultTransport,
-		),
-	)
-
-	oauth2Client := &http.Client{
-		Transport: loggingTransport,
-	}
-
+) *linodego.Client {
 	accessToken := lpm.AccessToken.ValueString()
 	APIURL := lpm.APIURL.ValueString()
 	APIVersion := lpm.APIVersion.ValueString()
@@ -259,19 +261,50 @@ func (fp *FrameworkProvider) InitProvider(
 	eventPollMilliseconds := lpm.EventPollMilliseconds.ValueInt64()
 	// LKENodeReadyPollMilliseconds := lpm.LKEEventPollMilliseconds.ValueInt64()
 
+	httpTransport := http.DefaultTransport.(*http.Transport).Clone()
+
+	if !lpm.APICAPath.IsNull() {
+		caPath, err := helper.ExpandPath(lpm.APICAPath.ValueString())
+		if err != nil {
+			diags.AddError("Failed to expand api_ca_path", err.Error())
+			return nil
+		}
+
+		if err := helper.AddRootCAToTransport(caPath, httpTransport); err != nil {
+			diags.AddError("Failed to add root CA to HTTP transport", err.Error())
+			return nil
+		}
+	}
+
+	oauth2Client := &http.Client{
+		Transport: helper.NewAPILoggerTransport(
+			logging.NewSubsystemLoggingHTTPTransport(
+				helper.APILoggerSubsystem,
+				httpTransport,
+			),
+		),
+	}
+
 	client := linodego.NewClient(oauth2Client)
 	// Load the config file if it exists
 	if _, err := os.Stat(configPath); err == nil {
 		tflog.Info(ctx, "Using Linode profile", map[string]any{
 			"config_path": lpm.ConfigPath,
 		})
+
+		configPathExpanded, err := helper.ExpandPath(configPath)
+		if err != nil {
+			diags.AddError("Failed to expand config path", err.Error())
+			return nil
+		}
+
 		err = client.LoadConfig(&linodego.LoadConfigOptions{
-			Path:    configPath,
+			Path:    configPathExpanded,
 			Profile: configProfile,
 		})
 		if err != nil {
 			diags.AddError("Error occurs when loading linode profile.", err.Error())
-			return
+			return nil
 		}
 	} else {
 		tflog.Info(ctx, "Linode config does not exist, skipping..")
@@ -308,8 +341,7 @@ func (fp *FrameworkProvider) InitProvider(
 
 	helper.ApplyAllRetryConditions(&client)
 
-	meta.Config = lpm
-	meta.Client = &client
+	return &client
 }
 
 func (fp *FrameworkProvider) terraformUserAgent(

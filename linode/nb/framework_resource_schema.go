@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	linodeplanmodifier "github.com/linode/terraform-provider-linode/v2/linode/helper/planmodifiers"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	linodeplanmodifier "github.com/linode/terraform-provider-linode/v3/linode/helper/planmodifiers"
 )
 
 const (
@@ -67,6 +67,15 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"client_conn_throttle": schema.Int64Attribute{
 			Description: "Throttle connections per second (0-20). Set to 0 (zero) to disable throttling.",
+			Validators: []validator.Int64{
+				int64validator.Between(0, 20),
+			},
+			Optional: true,
+			Computed: true,
+			Default:  int64default.StaticInt64(0),
+		},
+		"client_udp_sess_throttle": schema.Int64Attribute{
+			Description: "Throttle UDP sessions per second (0-20). Set to 0 (zero) to disable throttling.",
 			Validators: []validator.Int64{
 				int64validator.Between(0, 20),
 			},

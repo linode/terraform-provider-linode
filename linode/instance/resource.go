@@ -3,6 +3,7 @@ package instance
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"time"
 
@@ -11,9 +12,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	linodediffs "github.com/linode/terraform-provider-linode/v3/linode/helper/customdiffs"
 )
+
+// Instance creation with reserved IPv4 is for internal use only : please refer to KB page for more information.
 
 const (
 	LinodeInstanceCreateTimeout = 15 * time.Minute
@@ -90,17 +93,30 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	public, private := instanceNetwork.IPv4.Public, instanceNetwork.IPv4.Private
 
 	if len(public) > 0 {
-		d.Set("ip_address", public[0].Address)
+		oldIP, ok := d.GetOk("ip_address")
 
-		d.SetConnInfo(map[string]string{
-			"type": "ssh",
-			"host": public[0].Address,
-		})
+		if !ok || !slices.ContainsFunc(
+			public, func(newIP *linodego.InstanceIP) bool {
+				return newIP.Address == oldIP.(string)
+			},
+		) {
+			setPublicIPAddress(d, public[0].Address)
+		}
 	}
 
 	if len(private) > 0 {
 		d.Set("private_ip", true)
-		d.Set("private_ip_address", private[0].Address)
+
+		oldIP, ok := d.GetOk("private_ip_address")
+
+		if !ok || !slices.ContainsFunc(
+			private, func(newIP *linodego.InstanceIP) bool {
+				return newIP.Address == oldIP.(string)
+			},
+		) {
+			d.Set("private_ip_address", private[0].Address)
+		}
+
 	} else {
 		d.Set("private_ip", false)
 	}
@@ -112,6 +128,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("watchdog_enabled", instance.WatchdogEnabled)
 	d.Set("group", instance.Group)
 	d.Set("tags", instance.Tags)
+	d.Set("capabilities", instance.Capabilities)
 	d.Set("booted", isInstanceBooted(instance))
 	d.Set("host_uuid", instance.HostUUID)
 	d.Set("has_user_data", instance.HasUserData)
@@ -137,6 +154,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 			placementGroupMap["compliant_only"] = compliantOnly.(bool)
 		}
 		d.Set("placement_group", []map[string]interface{}{placementGroupMap})
+	} else {
+		d.Set("placement_group", nil)
 	}
 
 	disks, swapSize := flattenInstanceDisks(instanceDisks)
@@ -186,6 +205,13 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		DiskEncryption: linodego.InstanceDiskEncryption(
 			d.Get("disk_encryption").(string),
 		),
+	}
+
+	if ipv4Raw, ok := d.GetOk("ipv4"); ok {
+		ipv4Set := ipv4Raw.(*schema.Set)
+		for _, ip := range ipv4Set.List() {
+			createOpts.IPv4 = append(createOpts.IPv4, ip.(string))
+		}
 	}
 
 	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
@@ -310,7 +336,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		if private := privateIP(*address); private {
 			d.Set("private_ip_address", address.String())
 		} else {
-			d.Set("ip_address", address.String())
+			setPublicIPAddress(d, address.String())
 		}
 	}
 

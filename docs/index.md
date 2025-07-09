@@ -80,17 +80,21 @@ This section outlines commonly used provider configuration options.
 
   The Linode API version can also be specified using the `LINODE_API_VERSION` environment variable.
 
-* `obj_access_key` - (Optional) The access key to be used in [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) and [linode_object_storage_object](/docs/resources/object_storage_object.md).
+* `api_ca_path` (Optional) The path to a CA file to trust when making API requests.
+
+  The Linode API CA file path can also be specified using the `LINODE_CA` environment variable.
+
+* `obj_access_key` - (Optional) The access key to be used in [linode_object_storage_bucket](resources/object_storage_bucket.md) and [linode_object_storage_object](resources/object_storage_object.md).
 
   The Object Access Key can also be specified using the `LINODE_OBJ_ACCESS_KEY` shell environment variable.
 
-* `obj_secret_key` - (Optional) The secret key to be used in [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) and [linode_object_storage_object](/docs/resources/object_storage_object.md).
+* `obj_secret_key` - (Optional) The secret key to be used in [linode_object_storage_bucket](resources/object_storage_bucket.md) and [linode_object_storage_object](resources/object_storage_object.md).
 
   The Object Secret Key can also be specified using the `LINODE_OBJ_SECRET_KEY` shell environment variable.
 
-* `obj_use_temp_keys` - (Optional) If true, temporary object keys will be created implicitly at apply-time for the [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) and [linode_object_storage_object](/docs/resources/object_storage_object.md) resource to use.
+* `obj_use_temp_keys` - (Optional) If true, temporary object keys will be created implicitly at apply-time for the [linode_object_storage_bucket](resources/object_storage_bucket.md) and [linode_object_storage_object](resources/object_storage_object.md) resource to use.
 
-* `obj_bucket_force_delete` - (Optional) If true, all objects and versions will purged from a [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) before it is destroyed.
+* `obj_bucket_force_delete` - (Optional) If true, all objects and versions will purged from a [linode_object_storage_bucket](resources/object_storage_bucket.md) before it is destroyed.
 
 * `skip_instance_ready_poll` - (Optional) Skip waiting for a linode_instance resource to be running.
 

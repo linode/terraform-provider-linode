@@ -15,9 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/obj/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/obj/tmpl"
 )
 
 var (
@@ -26,13 +26,17 @@ var (
 )
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Object Storage"}, "core")
+	endpoint, err := acceptance.GetRandomObjectStorageEndpoint()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	testCluster = region + "-1"
-	testRegion = region
+	testCluster, err = acceptance.GetEndpointCluster(*endpoint)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = acceptance.GetEndpointRegion(*endpoint)
 }
 
 func TestAccResourceObject_basic_cluster(t *testing.T) {
@@ -60,13 +64,13 @@ func TestAccResourceObject_basic_cluster(t *testing.T) {
 	contentSource := acceptance.CreateTempFile(t, "tf-test-obj-source", content)
 	contentSourceUpdated := acceptance.CreateTempFile(t, "tf-test-obj-source-updated", contentUpdated)
 
-	acceptance.RunTestRetry(t, 6, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
 		bucketName := acctest.RandomWithPrefix("tf-test")
 		keyName := acctest.RandomWithPrefix("tf_test")
 
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkObjectDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -115,13 +119,13 @@ func TestAccResourceObject_basic(t *testing.T) {
 	contentSource := acceptance.CreateTempFile(t, "tf-test-obj-source", content)
 	contentSourceUpdated := acceptance.CreateTempFile(t, "tf-test-obj-source-updated", contentUpdated)
 
-	acceptance.RunTestRetry(t, 6, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
 		bucketName := acctest.RandomWithPrefix("tf-test")
 		keyName := acctest.RandomWithPrefix("tf_test")
 
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkObjectDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -150,13 +154,13 @@ func TestAccResourceObject_credsConfiged(t *testing.T) {
 
 	content := "test_creds_configed"
 
-	acceptance.RunTestRetry(t, 6, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
 		bucketName := acctest.RandomWithPrefix("tf-test")
 		keyName := acctest.RandomWithPrefix("tf_test")
 
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkObjectDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -175,13 +179,13 @@ func TestAccResourceObject_tempKeys(t *testing.T) {
 
 	content := "test_temp_keys"
 
-	acceptance.RunTestRetry(t, 6, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
 		bucketName := acctest.RandomWithPrefix("tf-test")
 		keyName := acctest.RandomWithPrefix("tf_test")
 
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkObjectDestroy,
 			Steps: []resource.TestStep{
 				{

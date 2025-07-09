@@ -2,6 +2,7 @@ package networkingip
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
 var frameworkDatasourceSchema = schema.Schema{
@@ -31,7 +32,8 @@ var frameworkDatasourceSchema = schema.Schema{
 			Computed:    true,
 		},
 		"rdns": schema.StringAttribute{
-			Description: "The reverse DNS assigned to this address. For public IPv4 addresses, this will be set to " +
+			Description: "The reverse DNS assigned to this address. " +
+				"For public IPv4 addresses, this will be set to " +
 				"a default value provided by Linode if not explicitly set.",
 			Computed: true,
 		},
@@ -43,9 +45,19 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The Region this IP address resides in.",
 			Computed:    true,
 		},
+		"reserved": schema.BoolAttribute{
+			Description: "Whether the IPv4 address should be reserved.",
+			Computed:    true,
+		},
+
 		"id": schema.StringAttribute{
 			Description: "A unique identifier for this datasource.",
 			Computed:    true,
+		},
+		"vpc_nat_1_1": schema.ObjectAttribute{
+			Description:    "Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.",
+			Computed:       true,
+			AttributeTypes: instancenetworking.VPCNAT1To1Type.AttrTypes,
 		},
 	},
 }

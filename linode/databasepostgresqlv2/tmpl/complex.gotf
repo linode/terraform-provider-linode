@@ -1,0 +1,20 @@
+{{ define "database_postgresql_v2_complex" }}
+
+resource "linode_database_postgresql_v2" "foobar" {
+    label = "{{.Label}}"
+    region = "{{ .Region }}"
+    type = "{{ .Type }}"
+    engine_id = "{{ .EngineID }}"
+
+    allow_list = ["{{ .AllowedIP }}"]
+    cluster_size = {{ .ClusterSize }}
+
+    updates = {
+        hour_of_day = {{ .Updates.HourOfDay }}
+        day_of_week = {{ .Updates.DayOfWeek }}
+        frequency = "{{ .Updates.Frequency }}"
+        duration = {{ .Updates.Duration }}
+    }
+}
+
+{{ end }}

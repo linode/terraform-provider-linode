@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/nbconfig/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/nbconfig/tmpl"
 )
 
 func TestAccDataSourceNodeBalancerConfig_basic(t *testing.T) {
@@ -20,7 +20,7 @@ func TestAccDataSourceNodeBalancerConfig_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerConfigDestroy,
 
 		Steps: []resource.TestStep{
@@ -39,6 +39,8 @@ func TestAccDataSourceNodeBalancerConfig_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "check_timeout"),
 					resource.TestCheckResourceAttrSet(resName, "check_interval"),
 					resource.TestCheckResourceAttrSet(resName, "check_passive"),
+					resource.TestCheckResourceAttrSet(resName, "udp_check_port"),
+					resource.TestCheckResourceAttrSet(resName, "udp_session_timeout"),
 					resource.TestCheckResourceAttrSet(resName, "cipher_suite"),
 					resource.TestCheckNoResourceAttr(resName, "ssl_common"),
 					resource.TestCheckNoResourceAttr(resName, "ssl_ciphersuite"),

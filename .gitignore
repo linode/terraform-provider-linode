@@ -32,5 +32,6 @@ modules-dev/
 
 # Binary exclusions
 terraform-provider-linode
+.go-version
 
 dist/**

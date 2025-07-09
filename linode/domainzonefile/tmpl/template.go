@@ -3,8 +3,8 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	domain "github.com/linode/terraform-provider-linode/v2/linode/domain/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	domain "github.com/linode/terraform-provider-linode/v3/linode/domain/tmpl"
 )
 
 type TemplateData struct {
@@ -13,7 +13,7 @@ type TemplateData struct {
 	Record string
 }
 
-func Basic(t *testing.T, domainRecord string) string {
+func Basic(t testing.TB, domainRecord string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_zonefile_basic", TemplateData{
 			Domain: domain.TemplateData{Domain: domainRecord},

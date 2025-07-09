@@ -5,11 +5,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 const (
-	SSHKeyLabelRegex        = "^[a-zA-Z0-9_-]*$"
+	SSHKeyLabelRegex        = "^[a-zA-Z0-9_\\-\\s]*$"
 	SSHKeyLabelErrorMessage = "Labels may only contain letters, number, dashes, and underscores."
 )
 

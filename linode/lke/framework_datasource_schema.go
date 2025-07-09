@@ -29,6 +29,11 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "The desired Kubernetes version for this Kubernetes cluster in the format of <major>.<minor>. " +
 				"The latest supported patch version will be deployed.",
 		},
+		"apl_enabled": schema.BoolAttribute{
+			Computed: true,
+			Description: "Enables the App Platform Layer for this cluster. " +
+				"Note: v4beta only and may not currently be available to all users.",
+		},
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,
 			Computed:    true,
@@ -63,6 +68,10 @@ var frameworkDataSourceSchema = schema.Schema{
 		"updated": schema.StringAttribute{
 			Computed:    true,
 			Description: "When this Kubernetes cluster was updated.",
+		},
+		"tier": schema.StringAttribute{
+			Computed:    true,
+			Description: "The desired Kubernetes tier.",
 		},
 	},
 	Blocks: map[string]schema.Block{
@@ -148,6 +157,16 @@ var frameworkDataSourceSchema = schema.Schema{
 							"the node pool. Labels help classify your nodes and to " +
 							"easily select subsets of objects.",
 						ElementType: types.StringType,
+					},
+					"k8s_version": schema.StringAttribute{
+						Computed: true,
+						Description: "The Kubernetes version for this pool in the format of <major>.<minor>. " +
+							"This is only available for Enterprise clusters.",
+					},
+					"update_strategy": schema.StringAttribute{
+						Computed: true,
+						Description: "The strategy for updating the node pool k8s version. " +
+							"For LKE enterprise only and may not currently available to all users.",
 					},
 				},
 				Blocks: map[string]schema.Block{

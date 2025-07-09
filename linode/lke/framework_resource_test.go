@@ -19,16 +19,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/lke/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/lke/tmpl"
 )
 
 var (
-	k8sVersions        []string
-	k8sVersionLatest   string
-	k8sVersionPrevious string
-	testRegion         string
+	k8sVersions          []string
+	k8sVersionLatest     string
+	k8sVersionPrevious   string
+	k8sVersionEnterprise string
+	testRegion           string
 )
 
 const resourceClusterName = "linode_lke_cluster.test"
@@ -76,6 +77,17 @@ func init() {
 	}
 
 	testRegion = region
+
+	enterpriseVersions, err := client.ListLKETierVersions(context.Background(), "enterprise", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(enterpriseVersions) < 1 {
+		log.Print("no enterprise k8s versions found")
+	} else {
+		k8sVersionEnterprise = enterpriseVersions[0].ID
+	}
 }
 
 func sweep(prefix string) error {
@@ -102,7 +114,7 @@ func sweep(prefix string) error {
 
 func checkLKEExists(cluster *linodego.LKECluster) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[resourceClusterName]
 		if !ok {
@@ -130,11 +142,11 @@ func checkLKEExists(cluster *linodego.LKECluster) resource.TestCheckFunc {
 
 // waitForAllNodesReady waits for every Node in every NodePool of the LKE Cluster to be in
 // a ready state.
-func waitForAllNodesReady(t *testing.T, cluster *linodego.LKECluster, pollInterval, timeout time.Duration) {
+func waitForAllNodesReady(t testing.TB, cluster *linodego.LKECluster, pollInterval, timeout time.Duration) {
 	t.Helper()
 
 	ctx := context.Background()
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	ctx, cancel := context.WithDeadline(ctx, time.Now().Add(timeout))
 	defer cancel()
@@ -182,11 +194,11 @@ func TestSmokeTests_lke(t *testing.T) {
 func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -196,6 +208,7 @@ func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
 						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionLatest),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tier", "standard"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),
@@ -231,11 +244,11 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 
 	var cluster linodego.LKECluster
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -301,10 +314,10 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 			return nil
 		})
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		newClusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:  func() { acceptance.PreCheck(t) },
 			Providers: providerMap,
 			Steps: []resource.TestStep{
@@ -338,12 +351,12 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		newClusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -385,11 +398,11 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 
 	var cluster linodego.LKECluster
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -403,7 +416,7 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 				},
 				{
 					PreConfig: func() {
-						client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+						client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 						if _, err := client.CreateLKENodePool(context.Background(), cluster.ID, linodego.LKENodePoolCreateOptions{
 							Count: 1,
 							Type:  "g6-standard-1",
@@ -431,12 +444,12 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		// newClusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -506,16 +519,16 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		testIPv4 := "0.0.0.0/0"
 		testIPv6 := "2001:db8::/32"
 		testIPv4Updated := "203.0.113.1"
 		testIPv6Updated := "2001:db8:1234:abcd::/64"
 
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -532,20 +545,20 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, true, false),
+					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, true, true),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "true"),
-						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.enabled", "false"),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.enabled", "true"),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv4.0", testIPv4Updated),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv6.0", testIPv6Updated),
 					),
 				},
 				{
-					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, false, false),
+					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, false, true),
 
 					// Expect a 400 response when attempting to disable HA
 					ExpectError: regexp.MustCompile("\\[400]"),
@@ -562,7 +575,7 @@ func TestAccResourceLKECluster_noCount(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -580,7 +593,7 @@ func TestAccResourceLKECluster_implicitCount(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -612,11 +625,11 @@ func TestAccResourceLKECluster_implicitCount(t *testing.T) {
 func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -699,5 +712,100 @@ func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 				},
 			},
 		})
+	})
+}
+
+func TestAccResourceLKECluster_enterprise(t *testing.T) {
+	t.Parallel()
+
+	if k8sVersionEnterprise == "" {
+		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
+	}
+
+	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise"}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "on_recycle"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.k8s_version", k8sVersionEnterprise),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.update_strategy", "on_recycle"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
+					),
+				},
+				{
+					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "rolling_update"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.k8s_version", k8sVersionEnterprise),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.update_strategy", "rolling_update"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
+					),
+				},
+			},
+		})
+	})
+}
+
+func TestAccResourceLKECluster_apl(t *testing.T) {
+	t.Parallel()
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.APLEnabled(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "apl_enabled", "true"),
+					),
+				},
+			},
+		})
+	})
+}
+
+func TestAccResourceLKECluster_acl_disabled_addresses(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf_test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.ACLDisabledAddressesDisallowed(t, clusterName, k8sVersionLatest, testRegion),
+				ExpectError: regexp.MustCompile("addresses are not acceptable when ACL is disabled"),
+			},
+		},
 	})
 }

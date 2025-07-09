@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 const (
@@ -216,9 +216,10 @@ func (r *Resource) CreateVolume(
 	size := helper.FrameworkSafeInt64ToInt(data.Size.ValueInt64(), diags)
 
 	createOpts := linodego.VolumeCreateOptions{
-		Label:  data.Label.ValueString(),
-		Region: data.Region.ValueString(),
-		Size:   size,
+		Label:      data.Label.ValueString(),
+		Region:     data.Region.ValueString(),
+		Size:       size,
+		Encryption: data.Encryption.ValueString(),
 	}
 
 	diags.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
@@ -254,6 +255,7 @@ func (r *Resource) CreateVolume(
 			diags.AddError(
 				"Failed to Wait for Created Volume be Active", err.Error(),
 			)
+			return nil
 		}
 	}
 	return volume
@@ -262,7 +264,7 @@ func (r *Resource) CreateVolume(
 func (r *Resource) Create(
 	ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_volume")
+	tflog.Debug(ctx, "Create "+r.Config.Name)
 
 	var plan VolumeResourceModel
 
@@ -283,6 +285,7 @@ func (r *Resource) Create(
 	timeoutSeconds, err := helper.SafeFloat64ToInt(createTimeout.Seconds())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to Convert Timeout to int", err.Error())
+		return
 	}
 
 	var volume *linodego.Volume
@@ -309,7 +312,7 @@ func (r *Resource) Create(
 func (r *Resource) Read(
 	ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_volume")
+	tflog.Debug(ctx, "Read "+r.Config.Name)
 
 	var state VolumeResourceModel
 
@@ -382,6 +385,7 @@ func HandleResize(
 			fmt.Sprintf("Failed to Wait for Volume %d Ready from Resizing", volumeID),
 			err.Error(),
 		)
+		return nil
 	}
 
 	return volume
@@ -390,7 +394,7 @@ func HandleResize(
 func (r *Resource) Update(
 	ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse,
 ) {
-	tflog.Debug(ctx, "Update linode_volume")
+	tflog.Debug(ctx, "Update "+r.Config.Name)
 
 	var plan, state VolumeResourceModel
 
@@ -585,7 +589,7 @@ func DetachVolumeAndWait(
 func (r *Resource) Delete(
 	ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_volume")
+	tflog.Debug(ctx, "Delete "+r.Config.Name)
 
 	var state VolumeResourceModel
 

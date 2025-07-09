@@ -76,8 +76,10 @@ func TestParseUserGrants(t *testing.T) {
 			AddLinodes:           true,
 			AddLongview:          true,
 			AddNodeBalancers:     true,
+			AddPlacementGroups:   true,
 			AddStackScripts:      true,
 			AddVolumes:           true,
+			AddVPCs:              true,
 			CancelAccount:        false,
 			LongviewSubscription: true,
 		},
@@ -109,17 +111,31 @@ func TestParseUserGrants(t *testing.T) {
 				Permissions: "read_only",
 			},
 		},
-		StackScript: []linodego.GrantedEntity{
+		PlacementGroup: []linodego.GrantedEntity{
 			{
 				ID:          105,
+				Label:       "example-placement-group",
+				Permissions: "read_only",
+			},
+		},
+		StackScript: []linodego.GrantedEntity{
+			{
+				ID:          106,
 				Label:       "example-stackscript",
 				Permissions: "read_write",
 			},
 		},
 		Volume: []linodego.GrantedEntity{
 			{
-				ID:          106,
+				ID:          107,
 				Label:       "example-volume",
+				Permissions: "read_only",
+			},
+		},
+		VPC: []linodego.GrantedEntity{
+			{
+				ID:          108,
+				Label:       "example-vpc",
 				Permissions: "read_only",
 			},
 		},
@@ -136,8 +152,10 @@ func TestParseUserGrants(t *testing.T) {
 	assert.Contains(t, dataModel.LinodeGrant.String(), strconv.Itoa(userGrantsData.Linode[0].ID))
 	assert.Contains(t, dataModel.LongviewGrant.String(), strconv.Itoa(userGrantsData.Longview[0].ID))
 	assert.Contains(t, dataModel.NodebalancerGrant.String(), strconv.Itoa(userGrantsData.NodeBalancer[0].ID))
+	assert.Contains(t, dataModel.PlacementGroupGrant.String(), strconv.Itoa(userGrantsData.PlacementGroup[0].ID))
 	assert.Contains(t, dataModel.StackscriptGrant.String(), strconv.Itoa(userGrantsData.StackScript[0].ID))
 	assert.Contains(t, dataModel.VolumeGrant.String(), strconv.Itoa(userGrantsData.Volume[0].ID))
+	assert.Contains(t, dataModel.VPCGrant.String(), strconv.Itoa(userGrantsData.VPC[0].ID))
 
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"account_access\":\"read_only\"")
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_databases\":true")
@@ -147,8 +165,10 @@ func TestParseUserGrants(t *testing.T) {
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_linodes\":true")
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_longview\":true")
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_nodebalancers\":true")
+	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_placement_groups\":true")
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_stackscripts\":true")
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_volumes\":true")
+	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_vpcs\":true")
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"cancel_account\":false")
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"longview_subscription\":true")
 }

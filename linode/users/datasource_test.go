@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/users/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/users/tmpl"
 )
 
 func TestAccDataSourceUsers_basic(t *testing.T) {
@@ -20,7 +20,7 @@ func TestAccDataSourceUsers_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, username, email),
@@ -45,7 +45,7 @@ func TestAccDataSourceUsers_clientFilter(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataClientFilter(t, username, email),
@@ -64,8 +64,10 @@ func TestAccDataSourceUsers_clientFilter(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "users.0.linode_grant.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "users.0.longview_grant.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "users.0.nodebalancer_grant.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "users.0.placement_group_grant.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "users.0.stackscript_grant.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "users.0.volume_grant.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "users.0.vpc_grant.#"),
 				),
 			},
 		},
@@ -81,7 +83,7 @@ func TestAccDataSourceUsers_substring(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataSubstring(t, username, email),

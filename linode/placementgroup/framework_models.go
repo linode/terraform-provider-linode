@@ -8,17 +8,18 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 type PlacementGroupDataSourceModel struct {
-	ID                   types.Int64                 `tfsdk:"id"`
-	Label                types.String                `tfsdk:"label"`
-	Region               types.String                `tfsdk:"region"`
-	PlacementGroupType   types.String                `tfsdk:"placement_group_type"`
-	IsCompliant          types.Bool                  `tfsdk:"is_compliant"`
-	PlacementGroupPolicy types.String                `tfsdk:"placement_group_policy"`
-	Members              []PlacementGroupMemberModel `tfsdk:"members"`
+	ID                   types.Int64                   `tfsdk:"id"`
+	Label                types.String                  `tfsdk:"label"`
+	Region               types.String                  `tfsdk:"region"`
+	PlacementGroupType   types.String                  `tfsdk:"placement_group_type"`
+	IsCompliant          types.Bool                    `tfsdk:"is_compliant"`
+	PlacementGroupPolicy types.String                  `tfsdk:"placement_group_policy"`
+	Members              []PlacementGroupMemberModel   `tfsdk:"members"`
+	Migrations           *PlacementGroupMigrationModel `tfsdk:"migrations"`
 }
 
 type PlacementGroupResourceModel struct {
@@ -30,6 +31,15 @@ type PlacementGroupResourceModel struct {
 	IsCompliant          types.Bool   `tfsdk:"is_compliant"`
 
 	Members types.Set `tfsdk:"members"`
+}
+
+type PlacementGroupMigrationModel struct {
+	Inbound  []PlacementGroupMigrationInstanceModel `tfsdk:"inbound"`
+	Outbound []PlacementGroupMigrationInstanceModel `tfsdk:"outbound"`
+}
+
+type PlacementGroupMigrationInstanceModel struct {
+	LinodeID types.Int64 `tfsdk:"linode_id"`
 }
 
 type PlacementGroupMemberModel struct {
@@ -55,11 +65,43 @@ func (data *PlacementGroupDataSourceModel) ParsePlacementGroup(
 	}
 
 	data.Members = members
+
+	migrations := pg.Migrations
+
+	if migrations != nil {
+		pgMigrations := new(PlacementGroupMigrationModel)
+		pgMigrations.FlattenMigrations(*migrations)
+		data.Migrations = pgMigrations
+	}
 }
 
 func (m *PlacementGroupMemberModel) FlattenMember(member linodego.PlacementGroupMember) {
 	m.LinodeID = types.Int64Value(int64(member.LinodeID))
 	m.IsCompliant = types.BoolValue(member.IsCompliant)
+}
+
+func (m *PlacementGroupMigrationModel) FlattenMigrations(migrations linodego.PlacementGroupMigrations) {
+	inbound := make([]PlacementGroupMigrationInstanceModel, len(migrations.Inbound))
+	outbound := make([]PlacementGroupMigrationInstanceModel, len(migrations.Outbound))
+
+	for i, instance := range migrations.Inbound {
+		var m PlacementGroupMigrationInstanceModel
+		m.FlattenMigrationInstance(instance)
+		inbound[i] = m
+	}
+
+	for i, instance := range migrations.Outbound {
+		var m PlacementGroupMigrationInstanceModel
+		m.FlattenMigrationInstance(instance)
+		outbound[i] = m
+	}
+
+	m.Inbound = inbound
+	m.Outbound = outbound
+}
+
+func (m *PlacementGroupMigrationInstanceModel) FlattenMigrationInstance(migrationInstance linodego.PlacementGroupMigrationInstance) {
+	m.LinodeID = types.Int64Value(int64(migrationInstance.LinodeID))
 }
 
 func (m *PlacementGroupResourceModel) FlattenPlacementGroup(

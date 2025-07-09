@@ -3,8 +3,8 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	objkey "github.com/linode/terraform-provider-linode/v2/linode/objkey/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	objkey "github.com/linode/terraform-provider-linode/v3/linode/objkey/tmpl"
 )
 
 type TemplateData struct {
@@ -15,38 +15,60 @@ type TemplateData struct {
 	CORSEnabled bool
 	Versioning  bool
 
-	Cert    string
-	PrivKey string
-	Cluster string
-	Region  string
+	Cert         string
+	PrivKey      string
+	Cluster      string
+	Region       string
+	EndpointType string
+	EndpointURL  string
 }
 
-func Basic(t *testing.T, label, region string) string {
+func Basic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_basic", TemplateData{Label: label, Region: region})
 }
 
-func BasicLegacy(t *testing.T, label, cluster string) string {
+func BasicLegacy(t testing.TB, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_basic", TemplateData{Label: label, Cluster: cluster})
 }
 
-func Updates(t *testing.T, label, region string) string {
+func EndpointURL(t testing.TB, label, region, endpointURL string) string {
+	return acceptance.ExecuteTemplate(
+		t, "object_bucket_endpoint_url", TemplateData{
+			Label:       label,
+			Region:      region,
+			EndpointURL: endpointURL,
+		},
+	)
+}
+
+func EndpointType(t testing.TB, label, region, endpointType string) string {
+	return acceptance.ExecuteTemplate(
+		t, "object_bucket_endpoint_type", TemplateData{
+			Label:        label,
+			Region:       region,
+			EndpointType: endpointType,
+		},
+	)
+}
+
+func Updates(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_updates", TemplateData{Label: label, Region: region})
 }
 
-func Access(t *testing.T, label, cluster, acl string, cors bool) string {
+func Access(t testing.TB, label, region, acl string, cors bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_access", TemplateData{
 			Label:       label,
 			ACL:         acl,
 			CORSEnabled: cors,
-			Cluster:     cluster,
+			Region:      region,
 		})
 }
 
-func Cert(t *testing.T, label, region, cert, privKey string) string {
+func Cert(t testing.TB, label, region, cert, privKey string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_cert", TemplateData{
 			Label:   label,
@@ -56,62 +78,62 @@ func Cert(t *testing.T, label, region, cert, privKey string) string {
 		})
 }
 
-func Versioning(t *testing.T, label, cluster, keyName string, versioning bool) string {
+func Versioning(t testing.TB, label, region, keyName string, versioning bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_versioning", TemplateData{
 			Key:        objkey.TemplateData{Label: keyName},
 			Label:      label,
 			Versioning: versioning,
-			Cluster:    cluster,
+			Region:     region,
 		})
 }
 
-func LifeCycle(t *testing.T, label, cluster, keyName string) string {
+func LifeCycle(t testing.TB, label, region, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle", TemplateData{
-			Key:     objkey.TemplateData{Label: keyName},
-			Label:   label,
-			Cluster: cluster,
+			Key:    objkey.TemplateData{Label: keyName},
+			Label:  label,
+			Region: region,
 		})
 }
 
-func LifeCycleNoID(t *testing.T, label, cluster, keyName string) string {
+func LifeCycleNoID(t testing.TB, label, region, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle_no_id", TemplateData{
-			Key:     objkey.TemplateData{Label: keyName},
-			Label:   label,
-			Cluster: cluster,
+			Key:    objkey.TemplateData{Label: keyName},
+			Label:  label,
+			Region: region,
 		})
 }
 
-func LifeCycleUpdates(t *testing.T, label, cluster, keyName string) string {
+func LifeCycleUpdates(t testing.TB, label, region, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle_updates", TemplateData{
-			Key:     objkey.TemplateData{Label: keyName},
-			Label:   label,
-			Cluster: cluster,
+			Key:    objkey.TemplateData{Label: keyName},
+			Label:  label,
+			Region: region,
 		})
 }
 
-func LifeCycleRemoved(t *testing.T, label, cluster, keyName string) string {
+func LifeCycleRemoved(t testing.TB, label, region, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle_removed", TemplateData{
-			Key:     objkey.TemplateData{Label: keyName},
-			Label:   label,
-			Cluster: cluster,
+			Key:    objkey.TemplateData{Label: keyName},
+			Label:  label,
+			Region: region,
 		})
 }
 
-func TempKeys(t *testing.T, label, cluster, keyName string) string {
+func TempKeys(t testing.TB, label, region, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_temp_keys", TemplateData{
-			Key:     objkey.TemplateData{Label: keyName},
-			Label:   label,
-			Cluster: cluster,
+			Key:    objkey.TemplateData{Label: keyName},
+			Label:  label,
+			Region: region,
 		})
 }
 
-func ForceDelete(t *testing.T, label, region string) string {
+func ForceDelete(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_force_delete", TemplateData{
 			Label:  label,
@@ -119,11 +141,11 @@ func ForceDelete(t *testing.T, label, region string) string {
 		})
 }
 
-func ForceDelete_Empty(t *testing.T) string {
+func ForceDelete_Empty(t testing.TB) string {
 	return acceptance.ExecuteTemplate(t, "object_bucket_force_delete_empty", nil)
 }
 
-func ClusterDataBasic(t *testing.T, label, cluster string) string {
+func ClusterDataBasic(t testing.TB, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_cluster_data_basic", TemplateData{
 			Label:   label,
@@ -131,16 +153,16 @@ func ClusterDataBasic(t *testing.T, label, cluster string) string {
 		})
 }
 
-func CredsConfiged(t *testing.T, label, cluster, keyName string) string {
+func CredsConfiged(t testing.TB, label, region, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_creds_configed", TemplateData{
-			Key:     objkey.TemplateData{Label: keyName},
-			Label:   label,
-			Cluster: cluster,
+			Key:    objkey.TemplateData{Label: keyName},
+			Label:  label,
+			Region: region,
 		})
 }
 
-func DataBasicWithCluster(t *testing.T, label, cluster string) string {
+func DataBasicWithCluster(t testing.TB, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_data_basic", TemplateData{
 			Label:   label,
@@ -148,7 +170,7 @@ func DataBasicWithCluster(t *testing.T, label, cluster string) string {
 		})
 }
 
-func DataBasic(t *testing.T, label, region string) string {
+func DataBasic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_data_basic", TemplateData{
 			Label:  label,

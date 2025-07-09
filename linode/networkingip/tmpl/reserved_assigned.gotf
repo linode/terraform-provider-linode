@@ -1,0 +1,21 @@
+{{ define "networking_ip_reserved_assigned" }}
+
+{{ template "e2e_test_firewall" . }}
+
+resource "linode_instance" "test" {
+    count = 2
+
+    label = "{{.Label}}-${count.index}"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+    firewall_id = linode_firewall.e2e_test_firewall.id
+}
+
+resource "linode_networking_ip" "reserved_ip" {
+  linode_id = linode_instance.test.{{.AssignedLinodeIndex}}.id
+  public    = true
+  type      = "ipv4"
+  reserved  = {{ .Reserved }}
+}
+
+{{ end }}

@@ -10,20 +10,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/databaseaccesscontrols"
-	"github.com/linode/terraform-provider-linode/v2/linode/databasemysql"
-	"github.com/linode/terraform-provider-linode/v2/linode/databasemysqlbackups"
-	"github.com/linode/terraform-provider-linode/v2/linode/databasepostgresql"
-	"github.com/linode/terraform-provider-linode/v2/linode/domain"
-	"github.com/linode/terraform-provider-linode/v2/linode/domainrecord"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/instance"
-	"github.com/linode/terraform-provider-linode/v2/linode/instanceconfig"
-	"github.com/linode/terraform-provider-linode/v2/linode/lke"
-	"github.com/linode/terraform-provider-linode/v2/linode/nbnode"
-	"github.com/linode/terraform-provider-linode/v2/linode/obj"
-	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
-	"github.com/linode/terraform-provider-linode/v2/linode/user"
+	"github.com/linode/terraform-provider-linode/v3/linode/databaseaccesscontrols"
+	"github.com/linode/terraform-provider-linode/v3/linode/databasemysql"
+	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlbackups"
+	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresql"
+	"github.com/linode/terraform-provider-linode/v3/linode/domain"
+	"github.com/linode/terraform-provider-linode/v3/linode/domainrecord"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/instance"
+	"github.com/linode/terraform-provider-linode/v3/linode/instanceconfig"
+	"github.com/linode/terraform-provider-linode/v3/linode/lke"
+	"github.com/linode/terraform-provider-linode/v3/linode/objbucket"
+	"github.com/linode/terraform-provider-linode/v3/linode/user"
 )
 
 // Provider creates and manages the resources in a Linode configuration.
@@ -60,6 +58,11 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The version of Linode API.",
+			},
+			"api_ca_path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The path to a Linode API CA file to trust.",
 			},
 
 			"skip_instance_ready_poll": {
@@ -150,9 +153,7 @@ func Provider() *schema.Provider {
 			"linode_instance":                 instance.Resource(),
 			"linode_instance_config":          instanceconfig.Resource(),
 			"linode_lke_cluster":              lke.Resource(),
-			"linode_nodebalancer_node":        nbnode.Resource(),
 			"linode_object_storage_bucket":    objbucket.Resource(),
-			"linode_object_storage_object":    obj.Resource(),
 			"linode_user":                     user.Resource(),
 		},
 	}
@@ -180,6 +181,12 @@ func handleDefault(config *helper.Config, d *schema.ResourceData) diag.Diagnosti
 		config.APIVersion = v.(string)
 	} else {
 		config.APIVersion = os.Getenv("LINODE_API_VERSION")
+	}
+
+	if v, ok := d.GetOk("api_ca_path"); ok {
+		config.APICAPath = v.(string)
+	} else {
+		config.APICAPath = os.Getenv(linodego.APIHostCert)
 	}
 
 	if v, ok := d.GetOk("config_path"); ok {

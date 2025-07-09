@@ -39,7 +39,22 @@ var resourceSchema = map[string]*schema.Schema{
 	"endpoint": {
 		Type:        schema.TypeString,
 		Description: "The endpoint for the bucket used for s3 connections.",
+		Deprecated:  "Use `s3_endpoint` instead",
 		Computed:    true,
+	},
+	"s3_endpoint": {
+		Type:        schema.TypeString,
+		Description: "The endpoint for the bucket used for s3 connections.",
+		Optional:    true,
+		Computed:    true,
+		ForceNew:    true,
+	},
+	"endpoint_type": {
+		Type:        schema.TypeString,
+		Description: "The type of the S3 endpoint available in this region.",
+		Optional:    true,
+		Computed:    true,
+		ForceNew:    true,
 	},
 	"label": {
 		Type:        schema.TypeString,
@@ -57,7 +72,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "If true, the bucket will be created with CORS enabled for all origins.",
 		Optional:    true,
-		Default:     true,
+		Computed:    true,
 	},
 	"lifecycle_rule": {
 		Type:        schema.TypeList,

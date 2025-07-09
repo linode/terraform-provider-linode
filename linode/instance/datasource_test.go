@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/instance/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/instance/tmpl"
 )
 
 func TestAccDataSourceInstances_basic(t *testing.T) {
@@ -20,7 +20,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -50,6 +50,41 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 	})
 }
 
+func TestAccDataSourceInstances_withBlockStorageEncryption(t *testing.T) {
+	t.Parallel()
+
+	resName := "data.linode_instances.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	// Resolve a region with support for Block Storage Encryption
+	targetRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{"Linodes", "Block Storage Encryption"},
+		"core",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rootPass := acctest.RandString(64)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataWithBlockStorageEncryption(t, instanceName, targetRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.id"),
+					resource.TestCheckTypeSetElemAttr(resName, "instances.0.capabilities.*", "Block Storage Encryption"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccDataSourceInstances_withPG(t *testing.T) {
 	t.Parallel()
 
@@ -69,7 +104,7 @@ func TestAccDataSourceInstances_withPG(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -98,7 +133,7 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{

@@ -6,6 +6,7 @@ resource "linode_nodebalancer" "foobar" {
     label = "{{.Label}}"
     region = "{{ .Region }}"
     client_conn_throttle = 20
+    client_udp_sess_throttle = 10
     tags = ["tf_test"]
     firewall_id = linode_firewall.e2e_test_firewall.id
 }

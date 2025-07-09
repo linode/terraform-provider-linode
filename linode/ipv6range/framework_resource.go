@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func NewResource() resource.Resource {
@@ -33,7 +33,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_ipv6_range")
+	tflog.Debug(ctx, "Create "+r.Config.Name)
 
 	var data ResourceModel
 	client := r.Meta.Client
@@ -136,7 +136,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_ipv6_range")
+	tflog.Debug(ctx, "Read "+r.Config.Name)
 
 	var data ResourceModel
 	client := r.Meta.Client
@@ -181,7 +181,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	tflog.Debug(ctx, "Update linode_ipv6_range")
+	tflog.Debug(ctx, "Update "+r.Config.Name)
 
 	var plan, state ResourceModel
 	client := r.Meta.Client
@@ -258,7 +258,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_ipv6_range")
+	tflog.Debug(ctx, "Delete "+r.Config.Name)
 
 	var data ResourceModel
 	client := r.Meta.Client

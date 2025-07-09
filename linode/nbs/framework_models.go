@@ -7,9 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
-	"github.com/linode/terraform-provider-linode/v2/linode/nb"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v3/linode/nb"
 )
 
 // NodeBalancerFilterModel describes the Terraform resource data model to match the
@@ -23,17 +23,18 @@ type NodeBalancerFilterModel struct {
 }
 
 type NodeBalancerModel struct {
-	ID                 types.Int64       `tfsdk:"id"`
-	Label              types.String      `tfsdk:"label"`
-	Region             types.String      `tfsdk:"region"`
-	ClientConnThrottle types.Int64       `tfsdk:"client_conn_throttle"`
-	Hostname           types.String      `tfsdk:"hostname"`
-	Ipv4               types.String      `tfsdk:"ipv4"`
-	Ipv6               types.String      `tfsdk:"ipv6"`
-	Created            timetypes.RFC3339 `tfsdk:"created"`
-	Updated            timetypes.RFC3339 `tfsdk:"updated"`
-	Transfer           types.List        `tfsdk:"transfer"`
-	Tags               types.Set         `tfsdk:"tags"`
+	ID                    types.Int64       `tfsdk:"id"`
+	Label                 types.String      `tfsdk:"label"`
+	Region                types.String      `tfsdk:"region"`
+	ClientConnThrottle    types.Int64       `tfsdk:"client_conn_throttle"`
+	ClientUDPSessThrottle types.Int64       `tfsdk:"client_udp_sess_throttle"`
+	Hostname              types.String      `tfsdk:"hostname"`
+	Ipv4                  types.String      `tfsdk:"ipv4"`
+	Ipv6                  types.String      `tfsdk:"ipv6"`
+	Created               timetypes.RFC3339 `tfsdk:"created"`
+	Updated               timetypes.RFC3339 `tfsdk:"updated"`
+	Transfer              types.List        `tfsdk:"transfer"`
+	Tags                  types.Set         `tfsdk:"tags"`
 }
 
 func (data *NodeBalancerFilterModel) parseNodeBalancers(
@@ -59,6 +60,7 @@ func (data *NodeBalancerModel) flattenNodeBalancer(
 	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Region = types.StringValue(nodebalancer.Region)
 	data.ClientConnThrottle = types.Int64Value(int64(nodebalancer.ClientConnThrottle))
+	data.ClientUDPSessThrottle = types.Int64Value(int64(nodebalancer.ClientUDPSessThrottle))
 	data.Hostname = types.StringPointerValue(nodebalancer.Hostname)
 	data.Ipv4 = types.StringPointerValue(nodebalancer.IPv4)
 	data.Ipv6 = types.StringPointerValue(nodebalancer.IPv6)

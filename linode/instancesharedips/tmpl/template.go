@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 )
 
 type TemplateData struct {
@@ -11,7 +11,7 @@ type TemplateData struct {
 	Region string
 }
 
-func SingleNode(t *testing.T, instanceLabel, region string) string {
+func SingleNode(t testing.TB, instanceLabel, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_shared_ips_single_node", TemplateData{
 			Label:  instanceLabel,
@@ -19,7 +19,7 @@ func SingleNode(t *testing.T, instanceLabel, region string) string {
 		})
 }
 
-func DualNode(t *testing.T, instanceLabel, region string) string {
+func DualNode(t testing.TB, instanceLabel, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_shared_ips_dual_node", TemplateData{
 			Label:  instanceLabel,

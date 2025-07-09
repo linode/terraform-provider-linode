@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v2/linode/firewalls"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewalls"
 )
 
 var TransferObjectType = types.ObjectType{
@@ -31,6 +31,10 @@ var NodeBalancerAttributes = map[string]schema.Attribute{
 	},
 	"client_conn_throttle": schema.Int64Attribute{
 		Description: "Throttle connections per second (0-20). Set to 0 (zero) to disable throttling.",
+		Computed:    true,
+	},
+	"client_udp_sess_throttle": schema.Int64Attribute{
+		Description: "Throttle UDP sessions per second (0-20). Set to 0 (zero) to disable throttling.",
 		Computed:    true,
 	},
 	"hostname": schema.StringAttribute{

@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func NewDataSource() datasource.DataSource {
@@ -45,7 +45,7 @@ func (r *DataSource) Read(
 
 	ctx = tflog.SetField(ctx, "stackscript_id", id)
 
-	tflog.Debug(ctx, "Read data.linode_stackscript")
+	tflog.Debug(ctx, "Read data."+r.Config.Name)
 
 	stackscript, err := client.GetStackscript(ctx, id)
 	if err != nil {

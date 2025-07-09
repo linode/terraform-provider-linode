@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 )
 
 type TemplateData struct {
@@ -18,7 +18,7 @@ type TemplateData struct {
 	Region                string
 }
 
-func Basic(t *testing.T, label, engine, region string) string {
+func Basic(t testing.TB, label, engine, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_postgresql_basic", TemplateData{
 			Engine: engine,
@@ -27,17 +27,17 @@ func Basic(t *testing.T, label, engine, region string) string {
 		})
 }
 
-func Complex(t *testing.T, data TemplateData) string {
+func Complex(t testing.TB, data TemplateData) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_postgresql_complex", data)
 }
 
-func ComplexUpdates(t *testing.T, data TemplateData) string {
+func ComplexUpdates(t testing.TB, data TemplateData) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_postgresql_complex_updates", data)
 }
 
-func DataBasic(t *testing.T, data TemplateData) string {
+func DataBasic(t testing.TB, data TemplateData) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_postgresql_data_basic", data)
 }

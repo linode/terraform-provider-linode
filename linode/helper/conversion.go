@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/linode/linodego"
+
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
@@ -49,7 +51,7 @@ func StringAnyMapToTyped[T any](m map[string]any) map[string]T {
 	return result
 }
 
-func StringAliasSliceToStringSlice[T ~string](obj []T) ([]string, error) {
+func StringAliasSliceToStringSlice[T ~string](obj []T) []string {
 	var result []string
 
 	for _, v := range obj {
@@ -57,7 +59,7 @@ func StringAliasSliceToStringSlice[T ~string](obj []T) ([]string, error) {
 		result = append(result, strValue)
 	}
 
-	return result, nil
+	return result
 }
 
 func StringToInt64(s string, diags *diag.Diagnostics) int64 {
@@ -91,6 +93,22 @@ func FrameworkSafeInt64ToInt(number int64, diags *diag.Diagnostics) int {
 		)
 	}
 	return result
+}
+
+func FrameworkSafeInt64PointerToIntPointer(number *int64, diags *diag.Diagnostics) *int {
+	if number == nil {
+		return nil
+	}
+
+	result, err := SafeInt64ToInt(*number)
+	if err != nil {
+		diags.AddError(
+			"Failed int64 pointer to int pointer conversion",
+			err.Error(),
+		)
+	}
+
+	return linodego.Pointer(result)
 }
 
 func FrameworkSafeFloat64ToInt(number float64, diags *diag.Diagnostics) int {

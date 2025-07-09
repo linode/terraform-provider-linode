@@ -23,9 +23,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/version"
+	"github.com/linode/terraform-provider-linode/v3/linode"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/version"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -48,8 +48,8 @@ var (
 	optInTests               map[string]struct{}
 	privateKeyMaterial       string
 	PublicKeyMaterial        string
-	TestAccProviders         map[string]*schema.Provider
-	TestAccProvider          *schema.Provider
+	TestAccSDKv2Providers    map[string]*schema.Provider
+	TestAccSDKv2Provider     *schema.Provider
 	TestAccFrameworkProvider *linode.FrameworkProvider
 	ConfigTemplates          *template.Template
 	TestImageLatest          string
@@ -107,10 +107,10 @@ func init() {
 
 	initOptInTests()
 
-	TestAccProvider = linode.Provider()
+	TestAccSDKv2Provider = linode.Provider()
 	TestAccFrameworkProvider = linode.CreateFrameworkProvider(version.ProviderVersion).(*linode.FrameworkProvider)
-	TestAccProviders = map[string]*schema.Provider{
-		"linode": TestAccProvider,
+	TestAccSDKv2Providers = map[string]*schema.Provider{
+		"linode": TestAccSDKv2Provider,
 	}
 
 	var templateFiles []string
@@ -149,7 +149,7 @@ func TestProvider(t *testing.T) {
 	}
 }
 
-func PreCheck(t *testing.T) {
+func PreCheck(t testing.TB) {
 	t.Helper()
 
 	if v := os.Getenv("LINODE_TOKEN"); v == "" {
@@ -157,7 +157,7 @@ func PreCheck(t *testing.T) {
 	}
 }
 
-func OptInTest(t *testing.T) {
+func OptInTest(t testing.TB) {
 	t.Helper()
 
 	if _, ok := optInTests[t.Name()]; !ok {
@@ -165,7 +165,7 @@ func OptInTest(t *testing.T) {
 	}
 }
 
-func LongRunningTest(t *testing.T) {
+func LongRunningTest(t testing.TB) {
 	t.Helper()
 
 	shouldRunStr := os.Getenv(runLongTestsEnvVar)
@@ -183,7 +183,7 @@ func LongRunningTest(t *testing.T) {
 	}
 }
 
-func GetSSHClient(t *testing.T, user, addr string) (client *ssh.Client) {
+func GetSSHClient(t testing.TB, user, addr string) (client *ssh.Client) {
 	t.Helper()
 
 	signer, err := ssh.ParsePrivateKey([]byte(privateKeyMaterial))
@@ -366,7 +366,7 @@ func CheckListContains(resName, path, value string) resource.TestCheckFunc {
 }
 
 func CheckLKEClusterDestroy(s *terraform.State) error {
-	client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_lke_cluster" {
@@ -395,7 +395,7 @@ func CheckLKEClusterDestroy(s *terraform.State) error {
 }
 
 func CheckVolumeDestroy(s *terraform.State) error {
-	client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_volume" {
 			continue
@@ -425,7 +425,7 @@ func CheckVolumeDestroy(s *terraform.State) error {
 
 func CheckVolumeExists(name string, volume *linodego.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -454,7 +454,7 @@ func CheckVolumeExists(name string, volume *linodego.Volume) resource.TestCheckF
 
 func CheckFirewallExists(name string, firewall *linodego.Firewall) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -483,7 +483,7 @@ func CheckFirewallExists(name string, firewall *linodego.Firewall) resource.Test
 
 func CheckEventAbsent(name string, entityType linodego.EntityType, action linodego.EventAction) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -526,7 +526,7 @@ func AnyOfTestCheckFunc(funcs ...resource.TestCheckFunc) resource.TestCheckFunc 
 	}
 }
 
-func ExecuteTemplate(t *testing.T, templateName string, data interface{}) string {
+func ExecuteTemplate(t testing.TB, templateName string, data interface{}) string {
 	t.Helper()
 
 	var b bytes.Buffer
@@ -539,7 +539,7 @@ func ExecuteTemplate(t *testing.T, templateName string, data interface{}) string
 	return b.String()
 }
 
-func CreateTempFile(t *testing.T, name, content string) *os.File {
+func CreateTempFile(t testing.TB, name, content string) *os.File {
 	file, err := os.CreateTemp(os.TempDir(), name)
 	if err != nil {
 		t.Fatalf("failed to create temp file: %s", err)
@@ -583,6 +583,64 @@ func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier
 
 		return config, nil
 	}
+}
+
+func GetEndpointType(e linodego.ObjectStorageEndpoint) string {
+	return string(e.EndpointType)
+}
+
+func GetEndpointRegion(e linodego.ObjectStorageEndpoint) string {
+	return e.Region
+}
+
+func GetEndpointCluster(e linodego.ObjectStorageEndpoint) (string, error) {
+	if e.S3Endpoint == nil {
+		return "", fmt.Errorf(
+			"the %q type endpoint is nil for region %q for the user",
+			e.EndpointType, e.Region,
+		)
+	}
+
+	endpointURL := *e.S3Endpoint
+	splittedURL := strings.Split(endpointURL, ".")
+	if len(splittedURL) == 0 {
+		return "", fmt.Errorf("invalid s3 endpoint received: %v", splittedURL)
+	}
+
+	return strings.Split(endpointURL, ".")[0], nil
+}
+
+// Get an Object Storage services endpoint with non-nil S3Endpoint
+func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
+	client, err := GetTestClient()
+	if err != nil {
+		return nil, err
+	}
+
+	endpoints, err := client.ListObjectStorageEndpoints(context.Background(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	rand.Shuffle(len(endpoints), func(i, j int) {
+		endpoints[i], endpoints[j] = endpoints[j], endpoints[i]
+	})
+
+	for i, e := range endpoints {
+		// Linode Object Storage clusters with E2 and E3 (Object Storage gen2) endpoints
+		// doesn't support API call with only `cluster` rather than `region`.
+		// Only selecting E1 (Object Storage gen1) here to make sure tests always pass.
+		//
+		// TODO:
+		// Remove this condition when E1 is deprecated in the future
+		// or test cases with `cluster` are removed.
+		if e.S3Endpoint != nil && e.EndpointType == linodego.ObjectStorageEndpointE1 {
+			result := endpoints[i]
+			return &result, nil
+		}
+	}
+
+	return nil, errors.New("failed to get an object storage endpoint")
 }
 
 // GetRegionsWithCaps returns a list of region IDs that support the given capabilities

@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/domains/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/domains/tmpl"
 )
 
 func TestAccDataSourceDomains_basic(t *testing.T) {
@@ -18,10 +18,10 @@ func TestAccDataSourceDomains_basic(t *testing.T) {
 
 	domainName := acctest.RandomWithPrefix("tf-test") + ".example"
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.DataBasic(t, domainName),

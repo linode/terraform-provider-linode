@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/instance/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/instance/tmpl"
 )
 
 var testRegion string
@@ -87,7 +87,7 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -102,6 +102,7 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
 					resource.TestCheckResourceAttrSet(resName, "host_uuid"),
+					resource.TestMatchResourceAttr(resName, "ipv6", regexp.MustCompile(`/128$`)),
 				),
 			},
 
@@ -109,7 +110,46 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "firewall_id"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "firewall_id", "capabilities"},
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_vpu(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test_vpu")
+	rootPass := acctest.RandString(64)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPU(t, instanceName, acceptance.PublicKeyMaterial, "us-lax", rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g1-accelerated-netint-vpu-t1u1-s"),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "region", "us-lax"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
+					resource.TestCheckResourceAttrSet(resName, "host_uuid"),
+					resource.TestCheckResourceAttrSet(resName, "specs.0.accelerated_devices"),
+				),
+			},
+
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "firewall_id", "capabilities"},
 			},
 		},
 	})
@@ -124,7 +164,7 @@ func TestAccResourceInstance_watchdogDisabled(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -152,7 +192,7 @@ func TestAccResourceInstance_authorizedUsers(t *testing.T) {
 	rootPass := acctest.RandString(64)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -172,7 +212,7 @@ func TestAccResourceInstance_authorizedUsers(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_users", "image", "resize_disk", "migration_type", "firewall_id"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_users", "image", "resize_disk", "migration_type", "firewall_id", "capabilities"},
 			},
 		},
 	})
@@ -186,7 +226,7 @@ func TestAccResourceInstance_validateAuthorizedKeys(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -213,7 +253,7 @@ func TestAccResourceInstance_interfaces(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -269,7 +309,7 @@ func TestAccResourceInstance_config(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -313,7 +353,7 @@ func TestAccResourceInstance_configPair(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -352,7 +392,7 @@ func TestAccResourceInstance_configInterfaces(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -422,7 +462,7 @@ func TestAccResourceInstance_configInterfacesNoReboot(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -468,7 +508,7 @@ func TestAccResourceInstance_configInterfacesNoReboot(t *testing.T) {
 
 func testAccAssertReboot(t *testing.T, shouldRestart bool, instance *linodego.Instance) func() {
 	return func() {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 		eventFilter := fmt.Sprintf(`{"entity.type": "linode", "entity.id": %d, "action": "linode_reboot", "created": { "+gte": "%s" }}`,
 			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))
 
@@ -496,7 +536,7 @@ func TestAccResourceInstance_disk(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -537,7 +577,7 @@ func TestAccResourceInstance_diskImage(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -577,7 +617,7 @@ func TestAccResourceInstance_diskPair(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -618,7 +658,7 @@ func TestAccResourceInstance_diskAndConfig(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -662,7 +702,7 @@ func TestAccResourceInstance_disksAndConfigs(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			acceptance.CheckInstanceDestroy,
 			acceptance.CheckVolumeDestroy,
@@ -714,7 +754,7 @@ func TestAccResourceInstance_volumeAndConfig(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -757,7 +797,7 @@ func TestAccResourceInstance_privateImage(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -796,7 +836,7 @@ func TestAccResourceInstance_noImage(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -830,7 +870,7 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -861,10 +901,10 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	// This test can occasionally fail while running the entire test suite in parallel
-	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
-		resource.Test(retryT, resource.TestCase{
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 			Steps: []resource.TestStep{
@@ -912,7 +952,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1007,7 +1047,7 @@ func TestAccResourceInstance_upsizeWithoutDisk(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1045,7 +1085,7 @@ func TestAccResourceInstance_diskRawResize(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1091,7 +1131,7 @@ func TestAccResourceInstance_tag(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1144,7 +1184,7 @@ func TestAccResourceInstance_tagWithVolume(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1180,7 +1220,7 @@ func TestAccResourceInstance_diskResize(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1223,7 +1263,7 @@ func TestAccResourceInstance_withDiskLinodeUpsize(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1266,7 +1306,7 @@ func TestAccResourceInstance_withDiskLinodeDownsize(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1310,7 +1350,7 @@ func TestAccResourceInstance_downsizeWithoutDisk(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1344,7 +1384,7 @@ func TestAccResourceInstance_fullDiskSwapUpsize(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1408,7 +1448,7 @@ func TestAccResourceInstance_swapUpsize(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1447,7 +1487,7 @@ func TestAccResourceInstance_swapDownsize(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1484,7 +1524,7 @@ func TestAccResourceInstance_diskResizeAndExpanded(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1533,7 +1573,7 @@ func TestAccResourceInstance_diskSlotReorder(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1590,7 +1630,7 @@ func TestAccResourceInstance_privateNetworking(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1615,7 +1655,7 @@ func TestAccResourceInstance_stackScriptInstance(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1650,7 +1690,7 @@ func TestAccResourceInstance_diskImageUpdate(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1691,7 +1731,7 @@ func TestAccResourceInstance_stackScriptDisk(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1718,7 +1758,7 @@ func TestAccResourceInstance_typeChangeDiskImplicit(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1758,7 +1798,7 @@ func TestAccResourceInstance_typeChangeDiskExplicit(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1798,7 +1838,7 @@ func TestAccResourceInstance_typeChangeNoDisks(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1842,7 +1882,7 @@ func TestAccResourceInstance_powerStateUpdates(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1881,7 +1921,7 @@ func TestAccResourceInstance_powerStateUpdates(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 					filter := &linodego.Filter{}
 					filter.AddField(linodego.Eq, "action", linodego.ActionLinodeReboot)
@@ -1917,7 +1957,7 @@ func TestAccResourceInstance_powerStateConfigUpdates(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1959,7 +1999,7 @@ func TestAccResourceInstance_powerStateConfigBooted(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -1984,7 +2024,7 @@ func TestAccResourceInstance_powerStateBooted(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -2007,7 +2047,7 @@ func TestAccResourceInstance_powerStateNoImage(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -2033,7 +2073,7 @@ func TestAccResourceInstance_ipv4Sharing(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -2084,7 +2124,7 @@ func TestAccResourceInstance_userData(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -2186,7 +2226,7 @@ func TestAccResourceInstance_firewallOnCreation(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -2223,34 +2263,36 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf-test")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             acceptance.CheckInstanceDestroy,
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckInstanceDestroy,
 
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.VPCInterface(t, instanceName, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
-					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
-					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vpc"),
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.VPCInterface(t, instanceName, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						acceptance.CheckInstanceExists(resName, &instance),
+						resource.TestCheckResourceAttr(resName, "label", instanceName),
+						resource.TestCheckResourceAttr(resName, "region", testRegion),
+						resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+						resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
+						resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vpc"),
 
-					resource.TestCheckResourceAttr(resName, "config.0.interface.0.ipv4.0.vpc", "10.0.4.150"),
-					resource.TestCheckResourceAttr(resName, "config.0.interface.0.ip_ranges.0", "10.0.4.100/32"),
-					resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv4.0.nat_1_1"),
-				),
+						resource.TestCheckResourceAttr(resName, "config.0.interface.0.ipv4.0.vpc", "10.0.4.150"),
+						resource.TestCheckResourceAttr(resName, "config.0.interface.0.ip_ranges.0", "10.0.4.100/32"),
+						resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv4.0.nat_1_1"),
+					),
+				},
+				{
+					ResourceName:            resName,
+					ImportState:             true,
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type", "firewall_id", "capabilities.#", "capabilities.0", "capabilities.1"},
+				},
 			},
-			{
-				ResourceName:            resName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type", "firewall_id"},
-			},
-		},
+		})
 	})
 }
 
@@ -2263,7 +2305,7 @@ func TestAccResourceInstance_VPCPublicInterfacesAddRemoveSwap(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -2353,7 +2395,7 @@ func TestAccResourceInstance_migration(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
@@ -2407,7 +2449,7 @@ func TestAccResourceInstance_withPG(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -2454,7 +2496,7 @@ func TestAccResourceInstance_pgAssignment(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Create the instance with a PG
@@ -2547,7 +2589,7 @@ func TestAccResourceInstance_diskEncryption(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -2631,7 +2673,7 @@ func checkInstancePrivateNetworkAttributes(n string) resource.TestCheckFunc {
 			return fmt.Errorf("should have an integer Linode ID: %s", err)
 		}
 
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		instanceIPs, err := client.GetInstanceIPAddresses(context.Background(), id)
 		if err != nil {
@@ -2699,7 +2741,7 @@ func testDiskSize(size int) testDiskFunc {
 
 func checkInstanceDisks(instance *linodego.Instance, disksTests ...testDisksFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching disks: invalid Instance argument")
@@ -2814,7 +2856,7 @@ func instanceDiskID(disk *linodego.InstanceDisk) string {
 // checkComputeInstanceConfigs verifies any configs exist and runs config specific tests against a target instance
 func checkComputeInstanceConfigs(instance *linodego.Instance, configsTests ...testConfigsFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching configs: invalid Instance argument")
@@ -2841,7 +2883,7 @@ func checkComputeInstanceConfigs(instance *linodego.Instance, configsTests ...te
 
 func checkInstanceDiskExists(instance *linodego.Instance, label string, instanceDisk *linodego.InstanceDisk) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching disks: invalid Instance argument")
@@ -2869,7 +2911,7 @@ func checkInstanceDiskExists(instance *linodego.Instance, label string, instance
 
 func checkComputeInstanceDisk(instance *linodego.Instance, label string, size int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching disks: invalid Instance argument")
@@ -2892,4 +2934,97 @@ func checkComputeInstanceDisk(instance *linodego.Instance, label string, size in
 
 		return fmt.Errorf("Disk not found: %s", label)
 	}
+}
+
+func TestAccResourceInstance_withReservedIP(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+	resourceName := "linode_instance.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.WithReservedIP(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resourceName, &instance),
+					resource.TestCheckResourceAttr(resourceName, "label", instanceName),
+					resource.TestCheckResourceAttr(resourceName, "ipv4.#", "1"),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "migration_type", "resize_disk", "firewall_id"},
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_deleteWithReservedIP(t *testing.T) {
+	t.Parallel()
+	var instance linodego.Instance
+	resourceName := "linode_instance.foobar"
+	testRegion := "us-east"
+	reservedIP := ""
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	ipResourceName := "linode_networking_ip.test"
+	rootPass := acctest.RandString(16)
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.WithReservedIP(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resourceName, &instance),
+					resource.TestCheckResourceAttr(resourceName, "label", instanceName),
+					resource.TestCheckResourceAttr(resourceName, "ipv4.#", "1"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources[ipResourceName]
+						if !ok {
+							return fmt.Errorf("Not found: %s", ipResourceName)
+						}
+						reservedIP = rs.Primary.Attributes["address"]
+						return nil
+					},
+				),
+			},
+			{
+				Config: tmpl.OnlyReservedIP(t, testRegion), // This config only includes the reserved IP resource
+				Check: resource.ComposeTestCheckFunc(
+					func(s *terraform.State) error {
+						client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
+
+						// Check if the instance is deleted
+						_, err := client.GetInstance(context.Background(), instance.ID)
+						if err == nil {
+							return fmt.Errorf("Linode instance %d still exists", instance.ID)
+						}
+						if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
+							return fmt.Errorf("Error requesting Linode instance %d: %s", instance.ID, err)
+						}
+
+						// Check if the Reserved IP still exists and is reserved
+						ip, err := client.GetIPAddress(context.Background(), reservedIP)
+						if err != nil {
+							return fmt.Errorf("Error checking if Reserved IP exists: %s", err)
+						}
+						if !ip.Reserved {
+							return fmt.Errorf("Reserved IP %s is no longer reserved after instance deletion", reservedIP)
+						}
+
+						return nil
+					},
+				),
+			},
+		},
+	})
 }

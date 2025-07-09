@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/instancetypes/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancetypes/tmpl"
 )
 
 func TestAccDataSourceInstanceTypes_basic(t *testing.T) {
@@ -17,7 +17,7 @@ func TestAccDataSourceInstanceTypes_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t),
@@ -31,6 +31,7 @@ func TestAccDataSourceInstanceTypes_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.memory"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.transfer"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.vcpus"),
+					resource.TestCheckResourceAttrSet(resourceName, "types.0.accelerated_devices"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.price.0.hourly"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.price.0.monthly"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.addons.0.backups.0.price.0.hourly"),
@@ -48,7 +49,7 @@ func TestAccDataSourceInstanceTypes_substring(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataSubstring(t),
@@ -68,7 +69,7 @@ func TestAccDataSourceInstanceTypes_regex(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataRegex(t),
@@ -88,7 +89,7 @@ func TestAccDataSourceInstanceTypes_byClass(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataByClass(t),

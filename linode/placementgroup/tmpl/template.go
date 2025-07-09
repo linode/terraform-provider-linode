@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 )
 
 type TemplateData struct {
@@ -13,7 +13,7 @@ type TemplateData struct {
 	PlacementGroupPolicy string
 }
 
-func DataBasic(t *testing.T, label, region, placementGroupType string, placementGroupPolicy string) string {
+func DataBasic(t testing.TB, label, region, placementGroupType string, placementGroupPolicy string) string {
 	return acceptance.ExecuteTemplate(t,
 		"placement_group_data_basic", TemplateData{
 			Label:                label,
@@ -23,7 +23,7 @@ func DataBasic(t *testing.T, label, region, placementGroupType string, placement
 		})
 }
 
-func Basic(t *testing.T, label, region, placementGroupType string, placementGroupPolicy string) string {
+func Basic(t testing.TB, label, region, placementGroupType string, placementGroupPolicy string) string {
 	return acceptance.ExecuteTemplate(t,
 		"placement_group_basic", TemplateData{
 			Label:                label,

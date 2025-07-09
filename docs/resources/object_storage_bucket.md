@@ -14,21 +14,15 @@ For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/li
 The following example shows how one might use this resource to create an Object Storage Bucket:
 
 ```hcl
-data "linode_object_storage_cluster" "primary" {
-  id = "us-east-1"
-}
-
 resource "linode_object_storage_bucket" "foobar" {
-  cluster = data.linode_object_storage_cluster.primary.id
-  label = "mybucket"
+  region = "us-mia"
+  label  = "mybucket"
 }
-
 ```
 
 Creating an Object Storage Bucket with Lifecycle rules:
 
 ```hcl
-
 resource "linode_object_storage_key" "mykey" {
   label = "image-access"
 }
@@ -37,7 +31,7 @@ resource "linode_object_storage_bucket" "mybucket" {
   access_key = linode_object_storage_key.mykey.access_key
   secret_key = linode_object_storage_key.mykey.secret_key
 
-  cluster = "us-east-1"
+  region  = "us-mia"
   label   = "mybucket"
 
   lifecycle_rule {
@@ -63,7 +57,7 @@ provider "linode" {
 
 resource "linode_object_storage_bucket" "mybucket" {
   # no need to specify the keys with the resource
-  cluster = "us-east-1"
+  region  = "us-mia"
   label   = "mybucket"
 
   lifecycle_rule {
@@ -81,7 +75,7 @@ provider "linode" {
 
 resource "linode_object_storage_bucket" "mybucket" {
   # no need to specify the keys with the resource
-  cluster = "us-east-1"
+  region  = "us-mia"
   label   = "mybucket"
 
   lifecycle_rule {
@@ -110,6 +104,10 @@ For example, `us-mia-1` cluster can be translated into `us-mia` region. Exactly 
 * `secret_key` - (Optional) The secret key to authenticate with. If not specified with the resource, its value can be
   * configured by [`obj_secret_key`](../index.md#configuration-reference) in the provider configuration;
   * or, generated implicitly at apply-time if [`obj_use_temp_keys`](../index.md#configuration-reference) at provider-level is set.
+
+* `endpoint_type` - (Optional) The type of `s3_endpoint` available to the user in this region. See [Endpoint types](https://techdocs.akamai.com/cloud-computing/docs/object-storage#endpoint-type) for more information.
+
+* `s3_endpoint` - (Optional) The user's s3 endpoint URL, based on the `endpoint_type` and `region`.
 
 * `cors_enabled` - (Optional) If true, the bucket will have CORS enabled for all origins.
 

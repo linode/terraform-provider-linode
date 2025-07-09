@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v2/linode"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 )
 
 func TestCreatingFrameworkProvider(t *testing.T) {
@@ -19,7 +19,7 @@ func TestAccFrameworkProvider_AlternativeEndpoint(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: alternativeAPIURLTemplate(

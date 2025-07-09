@@ -1,0 +1,25 @@
+{{ define "lke_cluster_acl_disabled_addresses_disallowed" }}
+
+resource "linode_lke_cluster" "test" {
+    label       = "{{ .Label }}"
+    region      = "{{ .Region }}"
+    k8s_version = "{{ .K8sVersion }}"
+    tags        = ["test"]
+
+    control_plane {      
+        acl {
+            enabled = false
+            addresses {
+                ipv4 = ["0.0.0.0/0"]
+                ipv6 = ["2001:db8::/32"]
+            }
+        }
+    }
+
+    pool {
+        type  = "g6-standard-1"
+        count = 1
+    }
+}
+
+{{ end }}

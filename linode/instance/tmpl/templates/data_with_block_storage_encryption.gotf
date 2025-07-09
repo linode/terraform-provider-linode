@@ -1,0 +1,20 @@
+{{ define "instance_data_with_block_storage_encryption" }}
+
+{{ template "e2e_test_firewall" . }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+    root_pass = "{{ .RootPass }}"
+    firewall_id = linode_firewall.e2e_test_firewall.id
+}
+
+data "linode_instances" "foobar" {
+    filter {
+        name = "id"
+        values = [linode_instance.foobar.id]
+    }
+}
+
+{{ end }}

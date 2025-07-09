@@ -6,10 +6,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 var frameworkDatasourceSchema = schema.Schema{
+	DeprecationMessage: "This data source has been deprecated. " +
+		"Please use linode_database_postgresql_v2 for all future implementations.",
 	Attributes: map[string]schema.Attribute{
 		"database_id": schema.Int64Attribute{
 			DeprecationMessage: "Configure `id` instead. This attribute will be removed " +

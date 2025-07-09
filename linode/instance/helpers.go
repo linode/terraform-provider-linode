@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -33,6 +33,14 @@ func getDeadlineSeconds(ctx context.Context, d *schema.ResourceData) int {
 		duration = time.Until(deadline)
 	}
 	return int(duration.Seconds())
+}
+
+func setPublicIPAddress(d *schema.ResourceData, ip string) {
+	d.Set("ip_address", ip)
+	d.SetConnInfo(map[string]string{
+		"type": "ssh",
+		"host": ip,
+	})
 }
 
 func createInstanceConfigsFromSet(
@@ -746,9 +754,21 @@ func changeInstanceType(
 	diskResize bool,
 	d *schema.ResourceData,
 ) (*linodego.Instance, error) {
-	instance, err := ensureInstanceOffline(ctx, client, instanceID, getDeadlineSeconds(ctx, d))
-	if err != nil {
-		return nil, err
+	var err error
+	var instance *linodego.Instance
+
+	if migrationType == linodego.ColdMigration {
+		// Cold migration: Ensure instance is offline
+		instance, err = ensureInstanceOffline(ctx, client, instanceID, getDeadlineSeconds(ctx, d))
+		if err != nil {
+			return nil, fmt.Errorf("failed to shut down instance for cold migration: %w", err)
+		}
+	} else {
+		// Warm migration: Get the current instance state
+		instance, err = client.GetInstance(ctx, instanceID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch instance details for warm migration: %w", err)
+		}
 	}
 
 	var primaryDisk *linodego.InstanceDisk

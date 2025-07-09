@@ -9,8 +9,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/networkingip/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/networkingip/tmpl"
 )
 
 var testRegion string
@@ -34,7 +34,7 @@ func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 
 		Steps: []resource.TestStep{
 			{
@@ -49,8 +49,10 @@ func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
 					resource.TestMatchResourceAttr(dataResourceName, "gateway", regexp.MustCompile(`\.1$`)),
 					resource.TestCheckResourceAttr(dataResourceName, "type", "ipv4"),
 					resource.TestCheckResourceAttr(dataResourceName, "public", "true"),
+					resource.TestCheckResourceAttrSet(dataResourceName, "reserved"),
 					resource.TestCheckResourceAttr(dataResourceName, "prefix", "24"),
 					resource.TestMatchResourceAttr(dataResourceName, "rdns", regexp.MustCompile(`.ip.linodeusercontent.com$`)),
+					resource.TestCheckNoResourceAttr(resourceName, "vpc_nat_1_1"),
 				),
 			},
 		},

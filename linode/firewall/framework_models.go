@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 // FirewallDataSourceModel describes the Terraform resource data model to match the
@@ -356,7 +356,7 @@ func (state *FirewallResourceModel) RulesAndPoliciesHaveChanges(
 func (state *FirewallResourceModel) LinodesOrNodeBalancersHaveChanges(
 	ctx context.Context, plan FirewallResourceModel,
 ) bool {
-	return !state.Linodes.Equal(plan.Linodes) || state.NodeBalancers.Equal(plan.NodeBalancers)
+	return !state.Linodes.Equal(plan.Linodes) || !state.NodeBalancers.Equal(plan.NodeBalancers)
 }
 
 func FlattenFirewallRules(
@@ -374,7 +374,7 @@ func FlattenFirewallRules(
 	}
 
 	for i := range knownRules {
-		if i > len(rules) {
+		if i >= len(rules) {
 			break
 		}
 

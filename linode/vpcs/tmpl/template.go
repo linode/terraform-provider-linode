@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 )
 
 type TemplateData struct {
@@ -11,7 +11,7 @@ type TemplateData struct {
 	Region string
 }
 
-func DataBasic(t *testing.T, label, region string) string {
+func DataBasic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpcs_data_basic", TemplateData{
 			Label:  label,
@@ -19,7 +19,7 @@ func DataBasic(t *testing.T, label, region string) string {
 		})
 }
 
-func DataFilterLabel(t *testing.T, label, region string) string {
+func DataFilterLabel(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpcs_data_filter_label", TemplateData{
 			Label:  label,

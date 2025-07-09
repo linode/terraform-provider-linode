@@ -6,12 +6,11 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func Resource() *schema.Resource {
@@ -71,9 +70,14 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if d.HasChange("allow_list") {
-		allowList := helper.ExpandStringSet(d.Get("allow_list").(*schema.Set))
-
-		if err := updateDBAllowListByEngine(ctx, client, d, dbType, dbID, allowList); err != nil {
+		if err := updateDBAllowListByEngine(
+			ctx,
+			client,
+			d,
+			dbType,
+			dbID,
+			d.Get("allow_list").(*schema.Set),
+		); err != nil {
 			return diag.Errorf("failed to update allow_list for database %d: %s", dbID, err)
 		}
 	}
@@ -89,7 +93,14 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to parse database id: %s", err)
 	}
 
-	if err := updateDBAllowListByEngine(ctx, client, d, dbType, dbID, []string{}); err != nil {
+	if err := updateDBAllowListByEngine(
+		ctx,
+		client,
+		d,
+		dbType,
+		dbID,
+		schema.NewSet(schema.HashString, []any{}),
+	); err != nil {
 		return diag.Errorf("failed to update allow_list for database %d: %s", dbID, err)
 	}
 
@@ -98,44 +109,68 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func updateDBAllowListByEngine(ctx context.Context, client linodego.Client, d *schema.ResourceData,
-	engine string, id int, allowList []string,
+func updateDBAllowListByEngine(
+	ctx context.Context,
+	client linodego.Client,
+	d *schema.ResourceData,
+	engine string,
+	id int,
+	allowList *schema.Set,
 ) error {
-	var createdDate *time.Time
+	// Rather than using the state, we retrieve and compare DB allow lists here
+	// to account for a case where the state is not populated during creation.
+	//
+	// This is necessary because database_update events are only created when the value
+	// of allow_list is actually changed.
+	oldAllowList, err := getDBAllowListByEngine(ctx, client, engine, id)
+	if err != nil {
+		return fmt.Errorf("failed to get allow_list for database: %w", err)
+	}
+
+	if oldAllowList.Equal(allowList) {
+		// Nothing to do here
+		return nil
+	}
+
+	updatePoller, err := client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to create update EventPoller: %w", err)
+	}
+
+	allowListSlice := helper.AnySliceToTyped[string](allowList.List())
 
 	switch engine {
 	case "mysql":
-		db, err := client.UpdateMySQLDatabase(ctx, id, linodego.MySQLUpdateOptions{
-			AllowList: &allowList,
-		})
-		if err != nil {
+		if _, err := client.UpdateMySQLDatabase(ctx, id, linodego.MySQLUpdateOptions{
+			AllowList: &allowListSlice,
+		}); err != nil {
 			return err
 		}
 
-		createdDate = db.Created
 	case "postgresql":
-		db, err := client.UpdatePostgresDatabase(ctx, id, linodego.PostgresUpdateOptions{
-			AllowList: &allowList,
-		})
-		if err != nil {
+		if _, err := client.UpdatePostgresDatabase(ctx, id, linodego.PostgresUpdateOptions{
+			AllowList: &allowListSlice,
+		}); err != nil {
 			return err
 		}
-
-		createdDate = db.Created
 
 	default:
 		return fmt.Errorf("invalid database engine: %s", engine)
 	}
+
 	timeoutSeconds, err := helper.SafeFloat64ToInt(d.Timeout(schema.TimeoutUpdate).Seconds())
 	if err != nil {
 		return err
 	}
 
-	return helper.WaitForDatabaseUpdated(ctx, client, id, linodego.DatabaseEngineType(engine),
-		createdDate, timeoutSeconds)
+	if _, err := updatePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
+		return fmt.Errorf("failed to wait for update event completion: %w", err)
+	}
+
+	return nil
 }
 
-func getDBAllowListByEngine(ctx context.Context, client linodego.Client, engine string, id int) ([]string, error) {
+func getDBAllowListByEngine(ctx context.Context, client linodego.Client, engine string, id int) (*schema.Set, error) {
 	switch engine {
 	case "mysql":
 		db, err := client.GetMySQLDatabase(ctx, id)
@@ -143,14 +178,14 @@ func getDBAllowListByEngine(ctx context.Context, client linodego.Client, engine 
 			return nil, err
 		}
 
-		return db.AllowList, nil
+		return schema.NewSet(schema.HashString, helper.FlattenToInterfaceSlice(db.AllowList)), nil
 	case "postgresql":
 		db, err := client.GetPostgresDatabase(ctx, id)
 		if err != nil {
 			return nil, err
 		}
 
-		return db.AllowList, nil
+		return schema.NewSet(schema.HashString, helper.FlattenToInterfaceSlice(db.AllowList)), nil
 	}
 
 	return nil, fmt.Errorf("invalid database type: %s", engine)

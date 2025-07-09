@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 const (
@@ -36,6 +36,8 @@ func Resource() *schema.Resource {
 			Update: schema.DefaultTimeout(updateDBTimeout),
 			Delete: schema.DefaultTimeout(deleteDBTimeout),
 		},
+		DeprecationMessage: "This resource has been deprecated. " +
+			"Please use linode_database_postgresql_v2 for all future implementations.",
 	}
 }
 
@@ -67,7 +69,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("failed to get credentials for the specified PostgreSQL database: %s", err)
 	}
 
-	d.Set("engine_id", helper.CreateDatabaseEngineSlug(db.Engine, db.Version))
+	d.Set("engine_id", helper.CreateLegacyDatabaseEngineSlug(db.Engine, db.Version))
 	d.Set("engine", db.Engine)
 	d.Set("label", db.Label)
 	d.Set("region", db.Region)
