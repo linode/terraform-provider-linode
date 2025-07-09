@@ -507,7 +507,7 @@ func createResource(
 	}
 
 	// If the instance has implicit disks and config with no specified image it will not boot.
-	if (!disksOk || !configsOk) && len(createOpts.Image) < 1 {
+	if !(disksOk && configsOk) && len(createOpts.Image) < 1 {
 		targetStatus = linodego.InstanceOffline
 	}
 

@@ -86,7 +86,7 @@ func (d *DataSource) Read(
 
 	var record *linodego.DomainRecord
 
-	if !data.ID.IsNull() && !data.ID.IsUnknown() {
+	if !(data.ID.IsNull() || data.ID.IsUnknown()) {
 		recordID := helper.FrameworkSafeInt64ToInt(
 			data.ID.ValueInt64(),
 			&resp.Diagnostics,

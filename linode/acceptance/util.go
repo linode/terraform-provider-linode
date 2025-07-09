@@ -278,7 +278,7 @@ func CheckResourceAttrGreaterThan(resName, path string, target int) resource.Tes
 			return err
 		}
 
-		if valInt <= target {
+		if !(valInt > target) {
 			return fmt.Errorf("%d <= %d", valInt, target)
 		}
 
