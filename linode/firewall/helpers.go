@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/linode/linodego"
 	"golang.org/x/net/context"
 )
