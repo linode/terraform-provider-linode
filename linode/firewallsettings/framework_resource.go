@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -17,7 +16,6 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_firewall_settings",
-				IDType: types.StringType,
 				Schema: &FrameworkResourceSchema,
 			},
 		),
@@ -146,5 +144,17 @@ func (r *Resource) Delete(
 		ctx, "Firewall settings cannot be deleted. "+
 			"The TF state has been deleted, but the "+
 			"firewall settings will remain in Linode's system.",
+	)
+}
+
+func (r *Resource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
+	resp.Diagnostics.AddError(
+		"Resource Import Not Supported",
+		"Importing state for this resource is not supported. "+
+			"Please use the resource to manage firewall settings directly for your account.",
 	)
 }
