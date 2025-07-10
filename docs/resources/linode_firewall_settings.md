@@ -1,10 +1,10 @@
 ---
-title: "linode_firewall_settings"
+page_title: "Linode: linode_firewall_settings"
 description: |-
   Manages Linode account-level firewall settings.
 ---
 
-# linode_firewall_settings
+# linode\_firewall\_settings
 
 Manages Linode account-level firewall settings. Resetting default firewall IDs
 to null is not available to all customers and unsupported in this resource.
