@@ -20,7 +20,7 @@ const (
 
 var testRegion string
 
-func TestAccDataSourceFirewalls_basic(t *testing.T) {
+func TestAccDataSourceFirewallSettings_basic(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -29,7 +29,11 @@ func TestAccDataSourceFirewalls_basic(t *testing.T) {
 			{
 				Config: tmpl.Data(t, dataName),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(dataFullName, tfjsonpath.New("default_firewall_ids"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(
+						dataFullName,
+						tfjsonpath.New("default_firewall_ids"),
+						knownvalue.NotNull(),
+					),
 				},
 			},
 		},
