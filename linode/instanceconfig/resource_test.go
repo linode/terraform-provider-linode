@@ -8,6 +8,7 @@ import (
 	"log"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -518,6 +519,49 @@ func TestAccResourceInstanceConfig_rescueBooted(t *testing.T) {
 				// Remove this ignorance when the TF SDK issue is fixed
 				// https://github.com/hashicorp/terraform-plugin-sdk/issues/792
 				ImportStateVerifyIgnore: []string{"device"},
+			},
+		},
+	})
+}
+
+// Test case to ensure instance does not get rebooted without a disk
+// after a disk replacement operation
+func TestAccResourceInstanceConfig_diskReplacement(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+	var oldDiskID int
+	var diskReplacementStartTime time.Time
+
+	resName := "linode_instance_config.foobar"
+	diskName := "linode_instance_disk.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(64)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Create instance with Alpine 3.19
+				Config: tmpl.Booted(t, instanceName, testRegion, true, rootPass, "alpine3.19"),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "booted", "true"),
+					resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
+				),
+			},
+			{
+				// Replace the disk with Alpine 3.20 - should trigger disk replacement
+				Config: tmpl.Booted(t, instanceName, testRegion, true, rootPass, "alpine3.20"),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "booted", "true"),
+					resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
+				),
 			},
 		},
 	})
