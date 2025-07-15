@@ -5,11 +5,6 @@ package instanceconfig_test
 import (
 	"context"
 	"fmt"
-	"log"
-	"strconv"
-	"testing"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -17,6 +12,9 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/instanceconfig/tmpl"
+	"log"
+	"strconv"
+	"testing"
 )
 
 var testRegion string
@@ -530,11 +528,8 @@ func TestAccResourceInstanceConfig_diskReplacement(t *testing.T) {
 	t.Parallel()
 
 	var instance linodego.Instance
-	var oldDiskID int
-	var diskReplacementStartTime time.Time
 
 	resName := "linode_instance_config.foobar"
-	diskName := "linode_instance_disk.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	rootPass := acctest.RandString(64)
 
