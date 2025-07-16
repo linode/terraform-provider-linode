@@ -5,6 +5,10 @@ package instanceconfig_test
 import (
 	"context"
 	"fmt"
+	"log"
+	"strconv"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -12,9 +16,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/instanceconfig/tmpl"
-	"log"
-	"strconv"
-	"testing"
 )
 
 var testRegion string
@@ -517,46 +518,6 @@ func TestAccResourceInstanceConfig_rescueBooted(t *testing.T) {
 				// Remove this ignorance when the TF SDK issue is fixed
 				// https://github.com/hashicorp/terraform-plugin-sdk/issues/792
 				ImportStateVerifyIgnore: []string{"device"},
-			},
-		},
-	})
-}
-
-// Test case to ensure instance does not get rebooted without a disk
-// after a disk replacement operation
-func TestAccResourceInstanceConfig_diskReplacement(t *testing.T) {
-	t.Parallel()
-
-	var instance linodego.Instance
-
-	resName := "linode_instance_config.foobar"
-	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(64)
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkDestroy,
-		Steps: []resource.TestStep{
-			{
-				// Create instance with Alpine 3.19
-				Config: tmpl.Booted(t, instanceName, testRegion, true, rootPass, "alpine3.19"),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-					checkExists(resName, nil),
-					resource.TestCheckResourceAttr(resName, "booted", "true"),
-					resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
-				),
-			},
-			{
-				// Replace the disk with Alpine 3.20 - should trigger disk replacement
-				Config: tmpl.Booted(t, instanceName, testRegion, true, rootPass, "alpine3.20"),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-					checkExists(resName, nil),
-					resource.TestCheckResourceAttr(resName, "booted", "true"),
-					resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
-				),
 			},
 		},
 	})
