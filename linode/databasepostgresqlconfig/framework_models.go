@@ -132,7 +132,10 @@ func flattenPGLookoutMaxFailoverReplicationTimeLag(val *linodego.PGLookoutMaxFai
 	return obj
 }
 
-func flattenSharedBuffersPercentage(sharedBuffersPercentage *linodego.PostgresDatabaseConfigInfoSharedBuffersPercentage, diags *diag.Diagnostics) *basetypes.ListValue {
+func flattenSharedBuffersPercentage(
+	sharedBuffersPercentage *linodego.PostgresDatabaseConfigInfoSharedBuffersPercentage,
+	diags *diag.Diagnostics,
+) *basetypes.ListValue {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(sharedBuffersPercentage.Description),
 		"example":          types.Float64Value(sharedBuffersPercentage.Example),

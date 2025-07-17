@@ -269,14 +269,42 @@ func (m *Model) Flatten(
 	d.Append(rd...)
 	m.Updates = helper.KeepOrUpdateValue(m.Updates, updatesObject, preserveKnown)
 
-	m.EngineConfigBinlogRetentionPeriod = helper.KeepOrUpdateIntPointer(m.EngineConfigBinlogRetentionPeriod, db.EngineConfig.BinlogRetentionPeriod, preserveKnown)
+	m.EngineConfigBinlogRetentionPeriod = helper.KeepOrUpdateIntPointer(
+		m.EngineConfigBinlogRetentionPeriod,
+		db.EngineConfig.BinlogRetentionPeriod,
+		preserveKnown,
+	)
 	m.EngineConfigMySQLConnectTimeout = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLConnectTimeout, db.EngineConfig.MySQL.ConnectTimeout, preserveKnown)
-	m.EngineConfigMySQLDefaultTimeZone = helper.KeepOrUpdateStringPointer(m.EngineConfigMySQLDefaultTimeZone, db.EngineConfig.MySQL.DefaultTimeZone, preserveKnown)
-	m.EngineConfigMySQLGroupConcatMaxLen = helper.KeepOrUpdateFloat64Pointer(m.EngineConfigMySQLGroupConcatMaxLen, db.EngineConfig.MySQL.GroupConcatMaxLen, preserveKnown)
-	m.EngineConfigMySQLInformationSchemaStatsExpiry = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLInformationSchemaStatsExpiry, db.EngineConfig.MySQL.InformationSchemaStatsExpiry, preserveKnown)
-	m.EngineConfigMySQLInnoDBChangeBufferMaxSize = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLInnoDBChangeBufferMaxSize, db.EngineConfig.MySQL.InnoDBChangeBufferMaxSize, preserveKnown)
-	m.EngineConfigMySQLInnoDBFlushNeighbors = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLInnoDBFlushNeighbors, db.EngineConfig.MySQL.InnoDBFlushNeighbors, preserveKnown)
-	m.EngineConfigMySQLInnoDBFTMinTokenSize = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLInnoDBFTMinTokenSize, db.EngineConfig.MySQL.InnoDBFTMinTokenSize, preserveKnown)
+	m.EngineConfigMySQLDefaultTimeZone = helper.KeepOrUpdateStringPointer(
+		m.EngineConfigMySQLDefaultTimeZone,
+		db.EngineConfig.MySQL.DefaultTimeZone,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLGroupConcatMaxLen = helper.KeepOrUpdateFloat64Pointer(
+		m.EngineConfigMySQLGroupConcatMaxLen,
+		db.EngineConfig.MySQL.GroupConcatMaxLen,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInformationSchemaStatsExpiry = helper.KeepOrUpdateIntPointer(
+		m.EngineConfigMySQLInformationSchemaStatsExpiry,
+		db.EngineConfig.MySQL.InformationSchemaStatsExpiry,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBChangeBufferMaxSize = helper.KeepOrUpdateIntPointer(
+		m.EngineConfigMySQLInnoDBChangeBufferMaxSize,
+		db.EngineConfig.MySQL.InnoDBChangeBufferMaxSize,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBFlushNeighbors = helper.KeepOrUpdateIntPointer(
+		m.EngineConfigMySQLInnoDBFlushNeighbors,
+		db.EngineConfig.MySQL.InnoDBFlushNeighbors,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBFTMinTokenSize = helper.KeepOrUpdateIntPointer(
+		m.EngineConfigMySQLInnoDBFTMinTokenSize,
+		db.EngineConfig.MySQL.InnoDBFTMinTokenSize,
+		preserveKnown,
+	)
 
 	var stopwordTable *string
 	if db.EngineConfig.MySQL != nil && db.EngineConfig.MySQL.InnoDBFTServerStopwordTable != nil {
@@ -289,23 +317,71 @@ func (m *Model) Flatten(
 		preserveKnown,
 	)
 
-	m.EngineConfigMySQLInnoDBLockWaitTimeout = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLInnoDBLockWaitTimeout, db.EngineConfig.MySQL.InnoDBLockWaitTimeout, preserveKnown)
-	m.EngineConfigMySQLInnoDBLogBufferSize = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLInnoDBLogBufferSize, db.EngineConfig.MySQL.InnoDBLogBufferSize, preserveKnown)
-	m.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize, db.EngineConfig.MySQL.InnoDBOnlineAlterLogMaxSize, preserveKnown)
-	m.EngineConfigMySQLInnoDBReadIOThreads = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLInnoDBReadIOThreads, db.EngineConfig.MySQL.InnoDBReadIOThreads, preserveKnown)
-	m.EngineConfigMySQLInnoDBRollbackOnTimeout = helper.KeepOrUpdateBoolPointer(m.EngineConfigMySQLInnoDBRollbackOnTimeout, db.EngineConfig.MySQL.InnoDBRollbackOnTimeout, preserveKnown)
-	m.EngineConfigMySQLInnoDBThreadConcurrency = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLInnoDBThreadConcurrency, db.EngineConfig.MySQL.InnoDBThreadConcurrency, preserveKnown)
-	m.EngineConfigMySQLInnoDBWriteIOThreads = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLInnoDBWriteIOThreads, db.EngineConfig.MySQL.InnoDBWriteIOThreads, preserveKnown)
-	m.EngineConfigMySQLInteractiveTimeout = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLInteractiveTimeout, db.EngineConfig.MySQL.InteractiveTimeout, preserveKnown)
-	m.EngineConfigMySQLInternalTmpMemStorageEngine = helper.KeepOrUpdateStringPointer(m.EngineConfigMySQLInternalTmpMemStorageEngine, db.EngineConfig.MySQL.InternalTmpMemStorageEngine, preserveKnown)
-	m.EngineConfigMySQLMaxAllowedPacket = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLMaxAllowedPacket, db.EngineConfig.MySQL.MaxAllowedPacket, preserveKnown)
-	m.EngineConfigMySQLMaxHeapTableSize = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLMaxHeapTableSize, db.EngineConfig.MySQL.MaxHeapTableSize, preserveKnown)
+	m.EngineConfigMySQLInnoDBLockWaitTimeout = helper.KeepOrUpdateIntPointer(
+		m.EngineConfigMySQLInnoDBLockWaitTimeout,
+		db.EngineConfig.MySQL.InnoDBLockWaitTimeout,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBLogBufferSize = helper.KeepOrUpdateIntPointer(
+		m.EngineConfigMySQLInnoDBLogBufferSize,
+		db.EngineConfig.MySQL.InnoDBLogBufferSize,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize = helper.KeepOrUpdateIntPointer(
+		m.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize,
+		db.EngineConfig.MySQL.InnoDBOnlineAlterLogMaxSize,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBReadIOThreads = helper.KeepOrUpdateIntPointer(
+		m.EngineConfigMySQLInnoDBReadIOThreads,
+		db.EngineConfig.MySQL.InnoDBReadIOThreads,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBRollbackOnTimeout = helper.KeepOrUpdateBoolPointer(
+		m.EngineConfigMySQLInnoDBRollbackOnTimeout,
+		db.EngineConfig.MySQL.InnoDBRollbackOnTimeout,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBThreadConcurrency = helper.KeepOrUpdateIntPointer(
+		m.EngineConfigMySQLInnoDBThreadConcurrency,
+		db.EngineConfig.MySQL.InnoDBThreadConcurrency,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBWriteIOThreads = helper.KeepOrUpdateIntPointer(
+		m.EngineConfigMySQLInnoDBWriteIOThreads,
+		db.EngineConfig.MySQL.InnoDBWriteIOThreads,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInteractiveTimeout = helper.KeepOrUpdateIntPointer(
+		m.EngineConfigMySQLInteractiveTimeout,
+		db.EngineConfig.MySQL.InteractiveTimeout,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInternalTmpMemStorageEngine = helper.KeepOrUpdateStringPointer(
+		m.EngineConfigMySQLInternalTmpMemStorageEngine,
+		db.EngineConfig.MySQL.InternalTmpMemStorageEngine,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLMaxAllowedPacket = helper.KeepOrUpdateIntPointer(
+		m.EngineConfigMySQLMaxAllowedPacket,
+		db.EngineConfig.MySQL.MaxAllowedPacket,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLMaxHeapTableSize = helper.KeepOrUpdateIntPointer(
+		m.EngineConfigMySQLMaxHeapTableSize,
+		db.EngineConfig.MySQL.MaxHeapTableSize,
+		preserveKnown,
+	)
 	m.EngineConfigMySQLNetBufferLength = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLNetBufferLength, db.EngineConfig.MySQL.NetBufferLength, preserveKnown)
 	m.EngineConfigMySQLNetReadTimeout = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLNetReadTimeout, db.EngineConfig.MySQL.NetReadTimeout, preserveKnown)
 	m.EngineConfigMySQLNetWriteTimeout = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLNetWriteTimeout, db.EngineConfig.MySQL.NetWriteTimeout, preserveKnown)
 	m.EngineConfigMySQLSortBufferSize = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLSortBufferSize, db.EngineConfig.MySQL.SortBufferSize, preserveKnown)
 	m.EngineConfigMySQLSQLMode = helper.KeepOrUpdateStringPointer(m.EngineConfigMySQLSQLMode, db.EngineConfig.MySQL.SQLMode, preserveKnown)
-	m.EngineConfigMySQLSQLRequirePrimaryKey = helper.KeepOrUpdateBoolPointer(m.EngineConfigMySQLSQLRequirePrimaryKey, db.EngineConfig.MySQL.SQLRequirePrimaryKey, preserveKnown)
+	m.EngineConfigMySQLSQLRequirePrimaryKey = helper.KeepOrUpdateBoolPointer(
+		m.EngineConfigMySQLSQLRequirePrimaryKey,
+		db.EngineConfig.MySQL.SQLRequirePrimaryKey,
+		preserveKnown,
+	)
 	m.EngineConfigMySQLTmpTableSize = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLTmpTableSize, db.EngineConfig.MySQL.TmpTableSize, preserveKnown)
 	m.EngineConfigMySQLWaitTimeout = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLWaitTimeout, db.EngineConfig.MySQL.WaitTimeout, preserveKnown)
 
@@ -375,21 +451,81 @@ func (m *Model) CopyFrom(other *Model, preserveKnown bool) {
 	m.EngineConfigBinlogRetentionPeriod = helper.KeepOrUpdateValue(m.EngineConfigBinlogRetentionPeriod, other.EngineConfigBinlogRetentionPeriod, preserveKnown)
 	m.EngineConfigMySQLConnectTimeout = helper.KeepOrUpdateValue(m.EngineConfigMySQLConnectTimeout, other.EngineConfigMySQLConnectTimeout, preserveKnown)
 	m.EngineConfigMySQLDefaultTimeZone = helper.KeepOrUpdateValue(m.EngineConfigMySQLDefaultTimeZone, other.EngineConfigMySQLDefaultTimeZone, preserveKnown)
-	m.EngineConfigMySQLGroupConcatMaxLen = helper.KeepOrUpdateValue(m.EngineConfigMySQLGroupConcatMaxLen, other.EngineConfigMySQLGroupConcatMaxLen, preserveKnown)
-	m.EngineConfigMySQLInformationSchemaStatsExpiry = helper.KeepOrUpdateValue(m.EngineConfigMySQLInformationSchemaStatsExpiry, other.EngineConfigMySQLInformationSchemaStatsExpiry, preserveKnown)
-	m.EngineConfigMySQLInnoDBChangeBufferMaxSize = helper.KeepOrUpdateValue(m.EngineConfigMySQLInnoDBChangeBufferMaxSize, other.EngineConfigMySQLInnoDBChangeBufferMaxSize, preserveKnown)
-	m.EngineConfigMySQLInnoDBFlushNeighbors = helper.KeepOrUpdateValue(m.EngineConfigMySQLInnoDBFlushNeighbors, other.EngineConfigMySQLInnoDBFlushNeighbors, preserveKnown)
-	m.EngineConfigMySQLInnoDBFTMinTokenSize = helper.KeepOrUpdateValue(m.EngineConfigMySQLInnoDBFTMinTokenSize, other.EngineConfigMySQLInnoDBFTMinTokenSize, preserveKnown)
-	m.EngineConfigMySQLInnoDBFTServerStopwordTable = helper.KeepOrUpdateValue(m.EngineConfigMySQLInnoDBFTServerStopwordTable, other.EngineConfigMySQLInnoDBFTServerStopwordTable, preserveKnown)
-	m.EngineConfigMySQLInnoDBLockWaitTimeout = helper.KeepOrUpdateValue(m.EngineConfigMySQLInnoDBLockWaitTimeout, other.EngineConfigMySQLInnoDBLockWaitTimeout, preserveKnown)
-	m.EngineConfigMySQLInnoDBLogBufferSize = helper.KeepOrUpdateValue(m.EngineConfigMySQLInnoDBLogBufferSize, other.EngineConfigMySQLInnoDBLogBufferSize, preserveKnown)
-	m.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize = helper.KeepOrUpdateValue(m.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize, other.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize, preserveKnown)
-	m.EngineConfigMySQLInnoDBReadIOThreads = helper.KeepOrUpdateValue(m.EngineConfigMySQLInnoDBReadIOThreads, other.EngineConfigMySQLInnoDBReadIOThreads, preserveKnown)
-	m.EngineConfigMySQLInnoDBRollbackOnTimeout = helper.KeepOrUpdateValue(m.EngineConfigMySQLInnoDBRollbackOnTimeout, other.EngineConfigMySQLInnoDBRollbackOnTimeout, preserveKnown)
-	m.EngineConfigMySQLInnoDBThreadConcurrency = helper.KeepOrUpdateValue(m.EngineConfigMySQLInnoDBThreadConcurrency, other.EngineConfigMySQLInnoDBThreadConcurrency, preserveKnown)
-	m.EngineConfigMySQLInnoDBWriteIOThreads = helper.KeepOrUpdateValue(m.EngineConfigMySQLInnoDBWriteIOThreads, other.EngineConfigMySQLInnoDBWriteIOThreads, preserveKnown)
-	m.EngineConfigMySQLInteractiveTimeout = helper.KeepOrUpdateValue(m.EngineConfigMySQLInteractiveTimeout, other.EngineConfigMySQLInteractiveTimeout, preserveKnown)
-	m.EngineConfigMySQLInternalTmpMemStorageEngine = helper.KeepOrUpdateValue(m.EngineConfigMySQLInternalTmpMemStorageEngine, other.EngineConfigMySQLInternalTmpMemStorageEngine, preserveKnown)
+	m.EngineConfigMySQLGroupConcatMaxLen = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLGroupConcatMaxLen,
+		other.EngineConfigMySQLGroupConcatMaxLen,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInformationSchemaStatsExpiry = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLInformationSchemaStatsExpiry,
+		other.EngineConfigMySQLInformationSchemaStatsExpiry,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBChangeBufferMaxSize = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLInnoDBChangeBufferMaxSize,
+		other.EngineConfigMySQLInnoDBChangeBufferMaxSize,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBFlushNeighbors = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLInnoDBFlushNeighbors,
+		other.EngineConfigMySQLInnoDBFlushNeighbors,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBFTMinTokenSize = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLInnoDBFTMinTokenSize,
+		other.EngineConfigMySQLInnoDBFTMinTokenSize,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBFTServerStopwordTable = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLInnoDBFTServerStopwordTable,
+		other.EngineConfigMySQLInnoDBFTServerStopwordTable,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBLockWaitTimeout = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLInnoDBLockWaitTimeout,
+		other.EngineConfigMySQLInnoDBLockWaitTimeout,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBLogBufferSize = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLInnoDBLogBufferSize,
+		other.EngineConfigMySQLInnoDBLogBufferSize,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize,
+		other.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBReadIOThreads = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLInnoDBReadIOThreads,
+		other.EngineConfigMySQLInnoDBReadIOThreads,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBRollbackOnTimeout = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLInnoDBRollbackOnTimeout,
+		other.EngineConfigMySQLInnoDBRollbackOnTimeout,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBThreadConcurrency = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLInnoDBThreadConcurrency,
+		other.EngineConfigMySQLInnoDBThreadConcurrency,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInnoDBWriteIOThreads = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLInnoDBWriteIOThreads,
+		other.EngineConfigMySQLInnoDBWriteIOThreads,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInteractiveTimeout = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLInteractiveTimeout,
+		other.EngineConfigMySQLInteractiveTimeout,
+		preserveKnown,
+	)
+	m.EngineConfigMySQLInternalTmpMemStorageEngine = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLInternalTmpMemStorageEngine,
+		other.EngineConfigMySQLInternalTmpMemStorageEngine,
+		preserveKnown,
+	)
 	m.EngineConfigMySQLMaxAllowedPacket = helper.KeepOrUpdateValue(m.EngineConfigMySQLMaxAllowedPacket, other.EngineConfigMySQLMaxAllowedPacket, preserveKnown)
 	m.EngineConfigMySQLMaxHeapTableSize = helper.KeepOrUpdateValue(m.EngineConfigMySQLMaxHeapTableSize, other.EngineConfigMySQLMaxHeapTableSize, preserveKnown)
 	m.EngineConfigMySQLNetBufferLength = helper.KeepOrUpdateValue(m.EngineConfigMySQLNetBufferLength, other.EngineConfigMySQLNetBufferLength, preserveKnown)
@@ -397,7 +533,11 @@ func (m *Model) CopyFrom(other *Model, preserveKnown bool) {
 	m.EngineConfigMySQLNetWriteTimeout = helper.KeepOrUpdateValue(m.EngineConfigMySQLNetWriteTimeout, other.EngineConfigMySQLNetWriteTimeout, preserveKnown)
 	m.EngineConfigMySQLSortBufferSize = helper.KeepOrUpdateValue(m.EngineConfigMySQLSortBufferSize, other.EngineConfigMySQLSortBufferSize, preserveKnown)
 	m.EngineConfigMySQLSQLMode = helper.KeepOrUpdateValue(m.EngineConfigMySQLSQLMode, other.EngineConfigMySQLSQLMode, preserveKnown)
-	m.EngineConfigMySQLSQLRequirePrimaryKey = helper.KeepOrUpdateValue(m.EngineConfigMySQLSQLRequirePrimaryKey, other.EngineConfigMySQLSQLRequirePrimaryKey, preserveKnown)
+	m.EngineConfigMySQLSQLRequirePrimaryKey = helper.KeepOrUpdateValue(
+		m.EngineConfigMySQLSQLRequirePrimaryKey,
+		other.EngineConfigMySQLSQLRequirePrimaryKey,
+		preserveKnown,
+	)
 	m.EngineConfigMySQLTmpTableSize = helper.KeepOrUpdateValue(m.EngineConfigMySQLTmpTableSize, other.EngineConfigMySQLTmpTableSize, preserveKnown)
 	m.EngineConfigMySQLWaitTimeout = helper.KeepOrUpdateValue(m.EngineConfigMySQLWaitTimeout, other.EngineConfigMySQLWaitTimeout, preserveKnown)
 }
@@ -490,11 +630,17 @@ func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.MySQLDatabaseEngin
 	}
 
 	if !m.EngineConfigMySQLInformationSchemaStatsExpiry.IsUnknown() {
-		engineConfigMySQL.InformationSchemaStatsExpiry = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigMySQLInformationSchemaStatsExpiry.ValueInt64Pointer(), &d)
+		engineConfigMySQL.InformationSchemaStatsExpiry = helper.FrameworkSafeInt64PointerToIntPointer(
+			m.EngineConfigMySQLInformationSchemaStatsExpiry.ValueInt64Pointer(),
+			&d,
+		)
 	}
 
 	if !m.EngineConfigMySQLInnoDBChangeBufferMaxSize.IsUnknown() {
-		engineConfigMySQL.InnoDBChangeBufferMaxSize = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigMySQLInnoDBChangeBufferMaxSize.ValueInt64Pointer(), &d)
+		engineConfigMySQL.InnoDBChangeBufferMaxSize = helper.FrameworkSafeInt64PointerToIntPointer(
+			m.EngineConfigMySQLInnoDBChangeBufferMaxSize.ValueInt64Pointer(),
+			&d,
+		)
 	}
 
 	if !m.EngineConfigMySQLInnoDBFlushNeighbors.IsUnknown() {
@@ -521,7 +667,10 @@ func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.MySQLDatabaseEngin
 	}
 
 	if !m.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize.IsUnknown() {
-		engineConfigMySQL.InnoDBOnlineAlterLogMaxSize = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize.ValueInt64Pointer(), &d)
+		engineConfigMySQL.InnoDBOnlineAlterLogMaxSize = helper.FrameworkSafeInt64PointerToIntPointer(
+			m.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize.ValueInt64Pointer(),
+			&d,
+		)
 	}
 
 	if !m.EngineConfigMySQLInnoDBReadIOThreads.IsUnknown() {
@@ -533,7 +682,10 @@ func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.MySQLDatabaseEngin
 	}
 
 	if !m.EngineConfigMySQLInnoDBThreadConcurrency.IsUnknown() {
-		engineConfigMySQL.InnoDBThreadConcurrency = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigMySQLInnoDBThreadConcurrency.ValueInt64Pointer(), &d)
+		engineConfigMySQL.InnoDBThreadConcurrency = helper.FrameworkSafeInt64PointerToIntPointer(
+			m.EngineConfigMySQLInnoDBThreadConcurrency.ValueInt64Pointer(),
+			&d,
+		)
 	}
 
 	if !m.EngineConfigMySQLInnoDBWriteIOThreads.IsUnknown() {

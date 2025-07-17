@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
 )

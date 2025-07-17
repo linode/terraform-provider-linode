@@ -75,7 +75,11 @@ func TestParsePostgresDatabaseSSL(t *testing.T) {
 	data := &DataSourceModel{}
 	data.parsePostgresDatabaseSSL(&mockSSL)
 
-	assert.Equal(t, types.StringValue("-----BEGIN CERTIFICATE-----\nMIIDdTCCAl2gAwIBAgIUT01...\n...u4QIDAQABo1MwUTAdBgNV...\n-----END CERTIFICATE-----"), data.CACert)
+	assert.Equal(
+		t,
+		types.StringValue("-----BEGIN CERTIFICATE-----\nMIIDdTCCAl2gAwIBAgIUT01...\n...u4QIDAQABo1MwUTAdBgNV...\n-----END CERTIFICATE-----"),
+		data.CACert,
+	)
 }
 
 func TestParsePostgresDatabaseCredentials(t *testing.T) {

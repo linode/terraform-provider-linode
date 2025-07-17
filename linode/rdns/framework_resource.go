@@ -76,11 +76,10 @@ func (r *Resource) Create(
 		return
 	}
 
-	defaultRdns := strings.Replace(
+	defaultRdns := strings.ReplaceAll(
 		plan.Address.ValueString(),
 		".",
 		"-",
-		-1,
 	) + ".ip.linodeusercontent.com"
 
 	if ip.RDNS != defaultRdns {
