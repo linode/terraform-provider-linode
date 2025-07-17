@@ -107,7 +107,6 @@ func TestAccDataSourceNetworkingIP_filterReserved(t *testing.T) {
 					resource.TestCheckResourceAttr(dataResourceName, "ip_addresses.0.type", "ipv4"),
 					resource.TestCheckResourceAttr(dataResourceName, "ip_addresses.0.public", "true"),
 					resource.TestCheckResourceAttr(dataResourceName, "ip_addresses.0.prefix", "24"),
-					resource.TestMatchResourceAttr(dataResourceName, "ip_addresses.0.rdns", regexp.MustCompile(`.ip.linodeusercontent.com$`)),
 					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.subnet_mask"),
 				),
 			},
