@@ -24,8 +24,8 @@ type ListFunc func(ctx context.Context, client *linodego.Client, filter string) 
 //
 //nolint:all
 type FilterModel struct {
-	Name    types.String   `tfsdk:"name" json:"name"`
-	Values  []types.String `tfsdk:"values" json:"values"`
+	Name    types.String   `tfsdk:"name"     json:"name"`
+	Values  []types.String `tfsdk:"values"   json:"values"`
 	MatchBy types.String   `tfsdk:"match_by" json:"match_by"`
 }
 

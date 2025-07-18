@@ -6,9 +6,8 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/linode/linodego"
-
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/linode/linodego"
 )
 
 func TypedSliceToAny[T any](obj []T) []any {

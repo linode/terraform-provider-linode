@@ -66,6 +66,7 @@ type FirewallModel struct {
 	OutboundPolicy types.String      `tfsdk:"outbound_policy"`
 	Linodes        []types.Int64     `tfsdk:"linodes"`
 	NodeBalancers  []types.Int64     `tfsdk:"nodebalancers"`
+	Interfaces     []types.Int64     `tfsdk:"interfaces"`
 	Status         types.String      `tfsdk:"status"`
 	Created        timetypes.RFC3339 `tfsdk:"created"`
 	Updated        timetypes.RFC3339 `tfsdk:"updated"`
@@ -91,6 +92,9 @@ func (data *FirewallModel) parseFirewall(
 	)
 	data.NodeBalancers = helper.IntSliceToFramework(
 		firewallresource.AggregateEntityIDs(devices, linodego.FirewallDeviceNodeBalancer),
+	)
+	data.Interfaces = helper.IntSliceToFramework(
+		firewallresource.AggregateEntityIDs(devices, linodego.FirewallDeviceInterface),
 	)
 	data.Status = types.StringValue(string(firewall.Status))
 

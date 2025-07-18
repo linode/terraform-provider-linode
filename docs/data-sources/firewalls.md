@@ -83,6 +83,10 @@ Each Linode firewall will be stored in the `firewalls` attribute and will export
 
 * `linodes` - The IDs of Linodes this firewall is applied to.
 
+* `nodebalancers` - The IDs of NodeBalancers this firewall is applied to.
+
+* `interfaces` - The IDs of Linode Interfaces this firewall is applied to.
+
 * `status` - The status of the firewall.
 
 * `created` - When this firewall was created.

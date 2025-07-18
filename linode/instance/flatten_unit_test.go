@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/linode/linodego"
-
 	"github.com/stretchr/testify/assert"
 )
 

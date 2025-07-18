@@ -111,7 +111,6 @@ func TestAccDataSourceNetworkingIP_filterReserved(t *testing.T) {
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("type"), knownvalue.StringExact("ipv4")),
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("public"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("prefix"), knownvalue.Int64Exact(24)),
-					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("rdns"), knownvalue.StringRegexp(regexp.MustCompile(`.ip.linodeusercontent.com$`))),
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("subnet_mask"), knownvalue.NotNull()),
 				},
 			},

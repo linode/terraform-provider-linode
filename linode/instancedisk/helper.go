@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -141,6 +140,21 @@ func runDiskOperation(
 	// Run the operation
 	resultDiag.Append(callOperation()...)
 	if resultDiag.HasError() {
+		return
+	}
+
+	// Check if instance has disks before booting
+	disks, err := client.ListInstanceDisks(ctx, linodeID, nil)
+	if err != nil {
+		resultDiag.AddError("Failed to list instance disks after operation", err.Error())
+		return
+	}
+
+	if len(disks) == 0 {
+		// Skip reboot if no disks are attached
+		tflog.Info(ctx, "Skipping reboot: instance has no disks attached", map[string]interface{}{
+			"linode_id": linodeID,
+		})
 		return
 	}
 

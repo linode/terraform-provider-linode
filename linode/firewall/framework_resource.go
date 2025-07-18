@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -197,7 +196,7 @@ func (r *Resource) Update(
 		}
 	}
 
-	if state.LinodesOrNodeBalancersHaveChanges(ctx, plan) {
+	if state.LinodesOrNodeBalancersOrInterfacesHaveChanges(ctx, plan) {
 		linodeIDs := helper.ExpandFwInt64Set(plan.Linodes, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
@@ -208,7 +207,12 @@ func (r *Resource) Update(
 			return
 		}
 
-		assignments := make([]firewallDeviceAssignment, 0, len(linodeIDs)+len(nodeBalancerIDs))
+		interfaceIDs := helper.ExpandFwInt64Set(plan.NodeBalancers, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		assignments := make([]firewallDeviceAssignment, 0, len(linodeIDs)+len(nodeBalancerIDs)+len(interfaceIDs))
 		for _, entityID := range linodeIDs {
 			assignments = append(assignments, firewallDeviceAssignment{
 				ID:   entityID,
@@ -220,6 +224,13 @@ func (r *Resource) Update(
 			assignments = append(assignments, firewallDeviceAssignment{
 				ID:   entityID,
 				Type: linodego.FirewallDeviceNodeBalancer,
+			})
+		}
+
+		for _, entityID := range interfaceIDs {
+			assignments = append(assignments, firewallDeviceAssignment{
+				ID:   entityID,
+				Type: linodego.FirewallDeviceInterface,
 			})
 		}
 
