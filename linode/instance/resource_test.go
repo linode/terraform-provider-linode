@@ -2289,10 +2289,19 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 					),
 				},
 				{
-					ResourceName:            resName,
-					ImportState:             true,
-					ImportStateVerify:       true,
-					ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type", "firewall_id", "capabilities.#", "capabilities.0", "capabilities.1"},
+					ResourceName:      resName,
+					ImportState:       true,
+					ImportStateVerify: true,
+					ImportStateVerifyIgnore: []string{
+						"image",
+						"interface",
+						"resize_disk",
+						"migration_type",
+						"firewall_id",
+						"capabilities.#",
+						"capabilities.0",
+						"capabilities.1",
+					},
 				},
 			},
 		})

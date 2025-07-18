@@ -1,0 +1,9 @@
+{{ define "lke_cluster_data_enterprise" }}
+
+{{ template "lke_cluster_enterprise" . }}
+
+data "linode_lke_cluster" "test" {
+    id = linode_lke_cluster.test.id
+}
+
+{{ end }}

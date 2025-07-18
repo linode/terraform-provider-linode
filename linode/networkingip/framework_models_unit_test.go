@@ -6,9 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
 )

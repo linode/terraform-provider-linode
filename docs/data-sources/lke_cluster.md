@@ -65,6 +65,10 @@ In addition to all arguments above, the following attributes are exported:
 
   * `tier` - The desired Kubernetes tier. (**Note: v4beta only and may not currently be available to all users.**)
 
+  * `k8s_version` - The k8s version of the nodes in this Node Pool. For LKE enterprise only and may not currently available to all users even under v4beta.
+
+  * `update_strategy` - The strategy for updating the Node Pool k8s version. For LKE enterprise only and may not currently available to all users even under v4beta.
+
   * `nodes` - The nodes in the Node Pool.
 
     * `id` - The ID of the node.
