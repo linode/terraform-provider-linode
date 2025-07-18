@@ -55,10 +55,38 @@ func TestAccDataSourceVPCSubnets_basic_smoke(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("ipv4"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("created"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("updated"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("linodes").AtSliceIndex(0).AtMapKey("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("linodes").AtSliceIndex(0).AtMapKey("interfaces").AtSliceIndex(0).AtMapKey("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("linodes").AtSliceIndex(0).AtMapKey("interfaces").AtSliceIndex(0).AtMapKey("active"), knownvalue.Bool(false)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("linodes").AtSliceIndex(0).AtMapKey("interfaces").AtSliceIndex(0).AtMapKey("config_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("linodes").AtSliceIndex(0).AtMapKey("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("linodes").AtSliceIndex(0).AtMapKey("interfaces").AtSliceIndex(0).AtMapKey("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").
+							AtSliceIndex(0).
+							AtMapKey("linodes").
+							AtSliceIndex(0).
+							AtMapKey("interfaces").
+							AtSliceIndex(0).
+							AtMapKey("active"),
+						knownvalue.Bool(false),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").
+							AtSliceIndex(0).
+							AtMapKey("linodes").
+							AtSliceIndex(0).
+							AtMapKey("interfaces").
+							AtSliceIndex(0).
+							AtMapKey("config_id"),
+						knownvalue.NotNull(),
+					),
 				},
 			},
 		},
@@ -85,7 +113,11 @@ func TestAccDataSourceVPCSubnets_filterByLabel(t *testing.T) {
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "vpc_subnets.#", 0),
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("label"), knownvalue.StringRegexp(regexp.MustCompile("tf-test"))),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("label"),
+						knownvalue.StringRegexp(regexp.MustCompile("tf-test")),
+					),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("ipv4"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("created"), knownvalue.NotNull()),

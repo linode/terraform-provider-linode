@@ -53,7 +53,11 @@ func TestAccDataSourceLinodeAccountSettings_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("network_helper"), knownvalue.Bool(settings.NetworkHelper)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("object_storage"), knownvalue.StringExact(objectStorageVal)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("longview_subscription"), knownvalue.StringExact(longviewVal)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("interfaces_for_new_linodes"), knownvalue.StringExact(string(settings.InterfacesForNewLinodes))),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("interfaces_for_new_linodes"),
+						knownvalue.StringExact(string(settings.InterfacesForNewLinodes)),
+					),
 				},
 			},
 		},

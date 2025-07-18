@@ -107,8 +107,16 @@ func TestAccDataSourceNetworkingIP_filterReserved(t *testing.T) {
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("linode_id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("interface_id"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("region"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("gateway"), knownvalue.StringRegexp(regexp.MustCompile(`\.1$`))),
-					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("type"), knownvalue.StringExact("ipv4")),
+					statecheck.ExpectKnownValue(
+						dataResourceName,
+						tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("gateway"),
+						knownvalue.StringRegexp(regexp.MustCompile(`\.1$`)),
+					),
+					statecheck.ExpectKnownValue(
+						dataResourceName,
+						tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("type"),
+						knownvalue.StringExact("ipv4"),
+					),
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("public"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("prefix"), knownvalue.Int64Exact(24)),
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("subnet_mask"), knownvalue.NotNull()),

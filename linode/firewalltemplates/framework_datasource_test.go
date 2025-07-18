@@ -35,11 +35,31 @@ func TestAccDataSourceFirewalls_basic(t *testing.T) {
 					Config: tmpl.DataFilter(t, testSlug),
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(testTemplatesDataName, tfjsonpath.New("id"), knownvalue.NotNull()),
-						statecheck.ExpectKnownValue(testTemplatesDataName, tfjsonpath.New("firewall_templates").AtSliceIndex(0).AtMapKey("slug"), knownvalue.StringExact(testSlug)),
-						statecheck.ExpectKnownValue(testTemplatesDataName, tfjsonpath.New("firewall_templates").AtSliceIndex(0).AtMapKey("inbound"), knownvalue.NotNull()),
-						statecheck.ExpectKnownValue(testTemplatesDataName, tfjsonpath.New("firewall_templates").AtSliceIndex(0).AtMapKey("inbound_policy"), knownvalue.NotNull()),
-						statecheck.ExpectKnownValue(testTemplatesDataName, tfjsonpath.New("firewall_templates").AtSliceIndex(0).AtMapKey("outbound"), knownvalue.NotNull()),
-						statecheck.ExpectKnownValue(testTemplatesDataName, tfjsonpath.New("firewall_templates").AtSliceIndex(0).AtMapKey("outbound_policy"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(
+							testTemplatesDataName,
+							tfjsonpath.New("firewall_templates").AtSliceIndex(0).AtMapKey("slug"),
+							knownvalue.StringExact(testSlug),
+						),
+						statecheck.ExpectKnownValue(
+							testTemplatesDataName,
+							tfjsonpath.New("firewall_templates").AtSliceIndex(0).AtMapKey("inbound"),
+							knownvalue.NotNull(),
+						),
+						statecheck.ExpectKnownValue(
+							testTemplatesDataName,
+							tfjsonpath.New("firewall_templates").AtSliceIndex(0).AtMapKey("inbound_policy"),
+							knownvalue.NotNull(),
+						),
+						statecheck.ExpectKnownValue(
+							testTemplatesDataName,
+							tfjsonpath.New("firewall_templates").AtSliceIndex(0).AtMapKey("outbound"),
+							knownvalue.NotNull(),
+						),
+						statecheck.ExpectKnownValue(
+							testTemplatesDataName,
+							tfjsonpath.New("firewall_templates").AtSliceIndex(0).AtMapKey("outbound_policy"),
+							knownvalue.NotNull(),
+						),
 					},
 				},
 			},
