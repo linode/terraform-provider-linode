@@ -13,16 +13,14 @@ import (
 	"strings"
 	"testing"
 
-	acceptanceTmpl "github.com/linode/terraform-provider-linode/v3/linode/acceptance/tmpl"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool/tmpl"
-
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	acceptanceTmpl "github.com/linode/terraform-provider-linode/v3/linode/acceptance/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool/tmpl"
 )
 
 var (

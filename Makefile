@@ -35,20 +35,19 @@ build: format
 clean:
 	rm -f terraform-provider-linode
 
-.PHONY: lint
-lint:
-	# remove two disabled linters when their errors are addressed
-	golangci-lint run \
-		--disable gosimple \
-		--disable staticcheck \
-		--timeout 15m0s
+.PHONY: tflint
+tflint:
 	tfproviderlint \
 		-AT001=false \
 		-AT004=false \
 		-S006=false \
 		-R018=false \
-		-R019=false \
 		./...
+
+.PHONY: lint
+lint:
+	# remove two disabled linters when their errors are addressed
+	golangci-lint run
 
 .PHONY: deps
 deps:
@@ -56,17 +55,11 @@ deps:
 
 .PHONY: format
 format:
-	gofumpt -l -w .
+	golangci-lint fmt
 
-.PHONY: fmt-check err-check imports-check vet
+.PHONY: fmt-check
 fmt-check:
-	golangci-lint run --disable-all --enable gofumpt ./...
-err-check:
-	golangci-lint run --disable-all -E errcheck ./...
-imports-check:
-	golangci-lint run --disable-all --enable goimports ./...
-vet:
-	golangci-lint run --disable-all --enable govet ./...
+	golangci-lint fmt --diff-colored
 
 .PHONY: test
 test: fmt-check test-unit test-smoke test-int

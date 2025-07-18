@@ -17,11 +17,11 @@ func (typeAgnosticComparer) CompareValues(values ...any) error {
 	for _, value := range values {
 		normalizedValue := ""
 
-		switch value.(type) {
+		switch value := value.(type) {
 		case string:
-			normalizedValue = value.(string)
+			normalizedValue = value
 		case json.Number:
-			normalizedValue = value.(json.Number).String()
+			normalizedValue = value.String()
 		default:
 			return fmt.Errorf("unsupported type for comparisons: %T", value)
 		}

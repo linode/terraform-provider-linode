@@ -123,7 +123,11 @@ func TestAccResource_basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resName, "pending_updates.#", "0"),
 
-					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sql_mode", "ANSI,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,STRICT_ALL_TABLES"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"engine_config_mysql_sql_mode",
+						"ANSI,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,STRICT_ALL_TABLES",
+					),
 					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sql_require_primary_key", "true"),
 				),
 			},
