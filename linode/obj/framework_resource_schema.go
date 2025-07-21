@@ -23,7 +23,11 @@ const (
 		"an equivalent region or from a region to an equivalent cluster"
 )
 
-func requireReplacementIfClusterOrRegionSemanticallyChanged(ctx context.Context, sr planmodifier.StringRequest, rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse) {
+func requireReplacementIfClusterOrRegionSemanticallyChanged(
+	ctx context.Context,
+	sr planmodifier.StringRequest,
+	rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse,
+) {
 	var regionPlan, clusterPlan, regionState, clusterState types.String
 	sr.Plan.GetAttribute(ctx, path.Root("cluster"), &clusterPlan)
 	sr.Plan.GetAttribute(ctx, path.Root("region"), &regionPlan)

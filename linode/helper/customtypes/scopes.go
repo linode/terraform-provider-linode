@@ -114,5 +114,5 @@ func (v LinodeScopesStringValue) StringSemanticEquals(
 		return false, diags
 	}
 
-	return helper.CompareScopes(v.StringValue.ValueString(), newValue.ValueString()), diags
+	return helper.CompareScopes(v.ValueString(), newValue.ValueString()), diags
 }

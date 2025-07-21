@@ -64,22 +64,22 @@ func (t *WrappedT) FailNow() {
 }
 
 func (t *WrappedT) Error(args ...any) {
-	t.TB.Log("ERROR:", fmt.Sprint(args...))
+	t.Log("ERROR:", fmt.Sprint(args...))
 	t.Fail()
 }
 
 func (t *WrappedT) Errorf(format string, args ...any) {
-	t.TB.Log("ERROR:", fmt.Sprintf(format, args...))
+	t.Log("ERROR:", fmt.Sprintf(format, args...))
 	t.Fail()
 }
 
 func (t *WrappedT) Fatal(args ...any) {
-	t.TB.Log("FATAL:", fmt.Sprint(args...))
+	t.Log("FATAL:", fmt.Sprint(args...))
 	t.FailNow()
 }
 
 func (t *WrappedT) Fatalf(format string, args ...any) {
-	t.TB.Log("FATAL:", fmt.Sprintf(format, args...))
+	t.Log("FATAL:", fmt.Sprintf(format, args...))
 	t.FailNow()
 }
 

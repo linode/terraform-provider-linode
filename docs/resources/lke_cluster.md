@@ -152,6 +152,10 @@ The following arguments are supported in the `pool` specification block:
 
 * [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
 
+* `k8s_version` - (Optional) The k8s version of the nodes in this Node Pool. For LKE enterprise only and may not currently available to all users even under v4beta.
+
+* `update_strategy` - (Optional) The strategy for updating the Node Pool k8s version. For LKE enterprise only and may not currently available to all users even under v4beta.
+
 ### autoscaler
 
 The following arguments are supported in the `autoscaler` specification block:

@@ -55,5 +55,5 @@ func (data *FirewallTemplateDataSourceModel) parseFirewallTemplate(
 	diags *diag.Diagnostics,
 ) {
 	data.ID = helper.KeepOrUpdateString(data.ID, template.Slug, false)
-	data.FirewallTemplateBaseModel.FlattenFirewallTemplate(ctx, template, diags, false)
+	data.FlattenFirewallTemplate(ctx, template, diags, false)
 }

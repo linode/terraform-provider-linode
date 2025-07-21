@@ -62,7 +62,9 @@ var (
 			PGStatMonitorEnable:     linodego.Pointer(true),
 			SharedBuffersPercentage: linodego.Pointer(20.5),
 			WorkMem:                 linodego.Pointer(1000),
-			PGLookout:               linodego.Pointer(linodego.PostgresDatabaseEngineConfigPGLookout{MaxFailoverReplicationTimeLag: linodego.Pointer(int64(10))}),
+			PGLookout: linodego.Pointer(
+				linodego.PostgresDatabaseEngineConfigPGLookout{MaxFailoverReplicationTimeLag: linodego.Pointer(int64(10))},
+			),
 			PG: &linodego.PostgresDatabaseEngineConfigPG{
 				BGWriterDelay: linodego.Pointer(30),
 				JIT:           linodego.Pointer(false),
