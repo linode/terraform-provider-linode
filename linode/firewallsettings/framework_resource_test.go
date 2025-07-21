@@ -64,7 +64,7 @@ func TestAccResourceFirewallSettings_basic(t *testing.T) {
 
 		if originalFirewallSettings != nil {
 			_, err = client.UpdateFirewallSettings(context.Background(), linodego.FirewallSettingsUpdateOptions{
-				DefaultFirewallIDs: linodego.DefaultFirewallIDsOptions{
+				DefaultFirewallIDs: &linodego.DefaultFirewallIDsOptions{
 					Linode:          linodego.Pointer(originalFirewallSettings.DefaultFirewallIDs.Linode),
 					NodeBalancer:    linodego.Pointer(originalFirewallSettings.DefaultFirewallIDs.NodeBalancer),
 					PublicInterface: linodego.Pointer(originalFirewallSettings.DefaultFirewallIDs.PublicInterface),
