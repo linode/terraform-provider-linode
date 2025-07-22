@@ -25,6 +25,7 @@ type NodePoolModel struct {
 	Labels         types.Map                 `tfsdk:"labels"`
 	K8sVersion     types.String              `tfsdk:"k8s_version"`
 	UpdateStrategy types.String              `tfsdk:"update_strategy"`
+	Label          types.String              `tfsdk:"label"`
 }
 
 type NodePoolAutoscalerModel struct {
@@ -99,6 +100,7 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 	pool.Count = helper.KeepOrUpdateInt64(pool.Count, int64(p.Count), preserveKnown)
 	pool.Type = helper.KeepOrUpdateString(pool.Type, p.Type, preserveKnown)
 	pool.DiskEncryption = helper.KeepOrUpdateString(pool.DiskEncryption, string(p.DiskEncryption), preserveKnown)
+	pool.Label = helper.KeepOrUpdateStringPointer(pool.Label, p.Label, preserveKnown)
 	pool.Tags = helper.KeepOrUpdateStringSet(pool.Tags, p.Tags, preserveKnown, diags)
 	if diags.HasError() {
 		return
@@ -144,6 +146,7 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 		diags,
 	)
 	p.Type = pool.Type.ValueString()
+	p.Label = linodego.Pointer(pool.Label.ValueString())
 
 	if !pool.Tags.IsNull() {
 		diags.Append(pool.Tags.ElementsAs(ctx, &p.Tags, false)...)
@@ -187,6 +190,11 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 
 	if !state.Count.Equal(pool.Count) {
 		p.Count = plannedCount
+		shouldUpdate = true
+	}
+
+	if !state.Label.Equal(pool.Label) {
+		p.Label = linodego.Pointer(pool.Label.ValueString())
 		shouldUpdate = true
 	}
 
@@ -332,6 +340,7 @@ func (data *NodePoolModel) CopyFrom(other NodePoolModel, preserveKnown bool) {
 	data.Labels = helper.KeepOrUpdateValue(data.Labels, other.Labels, preserveKnown)
 	data.K8sVersion = helper.KeepOrUpdateValue(data.K8sVersion, other.K8sVersion, preserveKnown)
 	data.UpdateStrategy = helper.KeepOrUpdateValue(data.UpdateStrategy, other.UpdateStrategy, preserveKnown)
+	data.Label = helper.KeepOrUpdateValue(data.Label, other.Label, preserveKnown)
 
 	if !preserveKnown {
 		data.Autoscaler = other.Autoscaler

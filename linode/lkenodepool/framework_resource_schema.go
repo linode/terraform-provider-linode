@@ -36,6 +36,13 @@ var resourceSchema = schema.Schema{
 				int64planmodifier.RequiresReplace(),
 			},
 		},
+		"label": schema.StringAttribute{
+			Description: "The label of the Node Pool.",
+			Optional:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
 		"node_count": schema.Int64Attribute{
 			Validators: []validator.Int64{
 				int64validator.AtLeast(1),
