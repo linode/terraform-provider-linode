@@ -109,6 +109,10 @@ func (fsds *FirewallSettingsModel) FlattenFirewallSettings(
 func (dfiam *DefaultFirewallIDsAttributeModel) FlattenFirewallSettings(settings linodego.FirewallSettings, preserveKnown bool) {
 	dfiam.Linode = helper.KeepOrUpdateInt64Pointer(dfiam.Linode, helper.IntPtrToInt64Ptr(settings.DefaultFirewallIDs.Linode), preserveKnown)
 	dfiam.NodeBalancer = helper.KeepOrUpdateInt64Pointer(dfiam.NodeBalancer, helper.IntPtrToInt64Ptr(settings.DefaultFirewallIDs.NodeBalancer), preserveKnown)
-	dfiam.PublicInterface = helper.KeepOrUpdateInt64Pointer(dfiam.PublicInterface, helper.IntPtrToInt64Ptr(settings.DefaultFirewallIDs.PublicInterface), preserveKnown)
+	dfiam.PublicInterface = helper.KeepOrUpdateInt64Pointer(
+		dfiam.PublicInterface,
+		helper.IntPtrToInt64Ptr(settings.DefaultFirewallIDs.PublicInterface),
+		preserveKnown,
+	)
 	dfiam.VPCInterface = helper.KeepOrUpdateInt64Pointer(dfiam.VPCInterface, helper.IntPtrToInt64Ptr(settings.DefaultFirewallIDs.VPCInterface), preserveKnown)
 }
