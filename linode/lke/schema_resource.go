@@ -200,8 +200,7 @@ var resourceSchema = map[string]*schema.Schema{
 							},
 						},
 					},
-					Computed: true,
-
+					Computed:    true,
 					Description: "The nodes in the node pool.",
 				},
 				"autoscaler": {

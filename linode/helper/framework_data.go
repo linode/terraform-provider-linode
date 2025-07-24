@@ -95,7 +95,8 @@ func KeepOrUpdateBoolPointer(original types.Bool, updated *bool, preserveKnown b
 	return KeepOrUpdateValue(original, types.BoolPointerValue(updated), preserveKnown)
 }
 
-// KeepOrUpdateValue is a generic function to keep the original value if it is known when preserveKnown is true, or
+// KeepOrUpdateValue is a generic function to keep the original value if it is known when preserveKnown is true,
+// or update it otherwise
 func KeepOrUpdateValue[T attr.Value](original T, updated T, preserveKnown bool) T {
 	if preserveKnown && !original.IsUnknown() {
 		return original
