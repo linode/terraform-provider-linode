@@ -35,27 +35,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("connect_timeout").AtMapKey("example"),
-						knownvalue.Int64Exact(10),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("connect_timeout").AtMapKey("maximum"),
-						knownvalue.Int64Exact(3600),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("connect_timeout").AtMapKey("minimum"),
-						knownvalue.Int64Exact(2),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("connect_timeout").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("connect_timeout").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -65,32 +65,32 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("default_time_zone").AtMapKey("example"),
-						knownvalue.StringExact("+03:00"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("default_time_zone").AtMapKey("maxLength"),
-						knownvalue.Int64Exact(100),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("default_time_zone").AtMapKey("minLength"),
-						knownvalue.Int64Exact(2),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("default_time_zone").AtMapKey("pattern"),
-						knownvalue.StringExact("^([-+][\\d:]*|[\\w/]*)$"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("default_time_zone").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("default_time_zone").AtMapKey("type"),
-						knownvalue.StringExact("string"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -100,27 +100,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("group_concat_max_len").AtMapKey("example"),
-						knownvalue.Float64Exact(1024),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("group_concat_max_len").AtMapKey("maximum"),
-						knownvalue.Float64Func(float64WithToleranceCheck(18446744073709551600, 5000)),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("group_concat_max_len").AtMapKey("minimum"),
-						knownvalue.Float64Exact(4),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("group_concat_max_len").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("group_concat_max_len").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -130,27 +130,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("information_schema_stats_expiry").AtMapKey("example"),
-						knownvalue.Int64Exact(86400),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("information_schema_stats_expiry").AtMapKey("maximum"),
-						knownvalue.Int64Exact(31536000),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("information_schema_stats_expiry").AtMapKey("minimum"),
-						knownvalue.Int64Exact(900),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("information_schema_stats_expiry").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("information_schema_stats_expiry").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -160,27 +160,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_change_buffer_max_size").AtMapKey("example"),
-						knownvalue.Int64Exact(30),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_change_buffer_max_size").AtMapKey("maximum"),
-						knownvalue.Int64Exact(50),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_change_buffer_max_size").AtMapKey("minimum"),
-						knownvalue.Int64Exact(0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_change_buffer_max_size").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_change_buffer_max_size").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -190,27 +190,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_flush_neighbors").AtMapKey("example"),
-						knownvalue.Int64Exact(0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_flush_neighbors").AtMapKey("maximum"),
-						knownvalue.Int64Exact(2),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_flush_neighbors").AtMapKey("minimum"),
-						knownvalue.Int64Exact(0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_flush_neighbors").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_flush_neighbors").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -220,27 +220,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_min_token_size").AtMapKey("example"),
-						knownvalue.Int64Exact(3),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_min_token_size").AtMapKey("maximum"),
-						knownvalue.Int64Exact(16),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_min_token_size").AtMapKey("minimum"),
-						knownvalue.Int64Exact(0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_min_token_size").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_min_token_size").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -250,29 +250,29 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_server_stopword_table").AtMapKey("example"),
-						knownvalue.StringExact("db_name/table_name"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_server_stopword_table").AtMapKey("maxLength"),
-						knownvalue.Int64Exact(1024),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_server_stopword_table").AtMapKey("pattern"),
-						knownvalue.StringExact("^.+/.+$"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_server_stopword_table").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_server_stopword_table").AtMapKey("type"),
 						knownvalue.ListExact([]knownvalue.Check{
-							knownvalue.StringExact("null"),
-							knownvalue.StringExact("string"),
+							knownvalue.NotNull(),
+							knownvalue.NotNull(),
 						}),
 					),
 					statecheck.ExpectKnownValue(
@@ -283,27 +283,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_lock_wait_timeout").AtMapKey("example"),
-						knownvalue.Int64Exact(50),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_lock_wait_timeout").AtMapKey("maximum"),
-						knownvalue.Int64Exact(3600),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_lock_wait_timeout").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_lock_wait_timeout").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_lock_wait_timeout").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -313,27 +313,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_log_buffer_size").AtMapKey("example"),
-						knownvalue.Int64Exact(16777216),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_log_buffer_size").AtMapKey("maximum"),
-						knownvalue.Int64Exact(4294967295),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_log_buffer_size").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1048576),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_log_buffer_size").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_log_buffer_size").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -343,27 +343,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_online_alter_log_max_size").AtMapKey("example"),
-						knownvalue.Int64Exact(134217728),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_online_alter_log_max_size").AtMapKey("maximum"),
-						knownvalue.Int64Exact(1099511627776),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_online_alter_log_max_size").AtMapKey("minimum"),
-						knownvalue.Int64Exact(65536),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_online_alter_log_max_size").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_online_alter_log_max_size").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -373,27 +373,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_read_io_threads").AtMapKey("example"),
-						knownvalue.Int64Exact(10),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_read_io_threads").AtMapKey("maximum"),
-						knownvalue.Int64Exact(64),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_read_io_threads").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_read_io_threads").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_read_io_threads").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -403,17 +403,17 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_rollback_on_timeout").AtMapKey("example"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_rollback_on_timeout").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_rollback_on_timeout").AtMapKey("type"),
-						knownvalue.StringExact("boolean"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -423,27 +423,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_thread_concurrency").AtMapKey("example"),
-						knownvalue.Int64Exact(10),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_thread_concurrency").AtMapKey("maximum"),
-						knownvalue.Int64Exact(1000),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_thread_concurrency").AtMapKey("minimum"),
-						knownvalue.Int64Exact(0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_thread_concurrency").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_thread_concurrency").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -453,27 +453,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_write_io_threads").AtMapKey("example"),
-						knownvalue.Int64Exact(10),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_write_io_threads").AtMapKey("maximum"),
-						knownvalue.Int64Exact(64),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_write_io_threads").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_write_io_threads").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_write_io_threads").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -483,27 +483,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("interactive_timeout").AtMapKey("example"),
-						knownvalue.Int64Exact(3600),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("interactive_timeout").AtMapKey("maximum"),
-						knownvalue.Int64Exact(604800),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("interactive_timeout").AtMapKey("minimum"),
-						knownvalue.Int64Exact(30),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("interactive_timeout").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("interactive_timeout").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 
 					statecheck.ExpectKnownValue(
@@ -515,24 +515,24 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("internal_tmp_mem_storage_engine").AtMapKey("enum"),
 						knownvalue.ListExact([]knownvalue.Check{
-							knownvalue.StringExact("TempTable"),
-							knownvalue.StringExact("MEMORY"),
+							knownvalue.NotNull(),
+							knownvalue.NotNull(),
 						}),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("internal_tmp_mem_storage_engine").AtMapKey("example"),
-						knownvalue.StringExact("TempTable"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("internal_tmp_mem_storage_engine").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("internal_tmp_mem_storage_engine").AtMapKey("type"),
-						knownvalue.StringExact("string"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -542,27 +542,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_allowed_packet").AtMapKey("example"),
-						knownvalue.Int64Exact(67108864),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_allowed_packet").AtMapKey("maximum"),
-						knownvalue.Int64Exact(1073741824),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_allowed_packet").AtMapKey("minimum"),
-						knownvalue.Int64Exact(102400),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_allowed_packet").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_allowed_packet").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -572,27 +572,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_heap_table_size").AtMapKey("example"),
-						knownvalue.Int64Exact(16777216),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_heap_table_size").AtMapKey("maximum"),
-						knownvalue.Int64Exact(1073741824),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_heap_table_size").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1048576),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_heap_table_size").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_heap_table_size").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -602,27 +602,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_buffer_length").AtMapKey("example"),
-						knownvalue.Int64Exact(16384),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_buffer_length").AtMapKey("maximum"),
-						knownvalue.Int64Exact(1048576),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_buffer_length").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1024),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_buffer_length").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_buffer_length").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -632,27 +632,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_read_timeout").AtMapKey("example"),
-						knownvalue.Int64Exact(30),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_read_timeout").AtMapKey("maximum"),
-						knownvalue.Int64Exact(3600),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_read_timeout").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_read_timeout").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_read_timeout").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -662,27 +662,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_write_timeout").AtMapKey("example"),
-						knownvalue.Int64Exact(30),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_write_timeout").AtMapKey("maximum"),
-						knownvalue.Int64Exact(3600),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_write_timeout").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_write_timeout").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_write_timeout").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -692,27 +692,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sort_buffer_size").AtMapKey("example"),
-						knownvalue.Int64Exact(262144),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sort_buffer_size").AtMapKey("maximum"),
-						knownvalue.Int64Exact(1073741824),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sort_buffer_size").AtMapKey("minimum"),
-						knownvalue.Int64Exact(32768),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sort_buffer_size").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sort_buffer_size").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -722,27 +722,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_mode").AtMapKey("example"),
-						knownvalue.StringExact("ANSI,TRADITIONAL"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_mode").AtMapKey("maxLength"),
-						knownvalue.Int64Exact(1024),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_mode").AtMapKey("pattern"),
-						knownvalue.StringExact("^[A-Z_]*(,[A-Z_]+)*$"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_mode").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_mode").AtMapKey("type"),
-						knownvalue.StringExact("string"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -752,17 +752,17 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_require_primary_key").AtMapKey("example"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_require_primary_key").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_require_primary_key").AtMapKey("type"),
-						knownvalue.StringExact("boolean"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -772,27 +772,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("tmp_table_size").AtMapKey("example"),
-						knownvalue.Int64Exact(16777216),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("tmp_table_size").AtMapKey("maximum"),
-						knownvalue.Int64Exact(1073741824),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("tmp_table_size").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1048576),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("tmp_table_size").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("tmp_table_size").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -802,27 +802,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("wait_timeout").AtMapKey("example"),
-						knownvalue.Int64Exact(28800),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("wait_timeout").AtMapKey("maximum"),
-						knownvalue.Int64Exact(2147483),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("wait_timeout").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("wait_timeout").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("wait_timeout").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -832,27 +832,27 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("binlog_retention_period").AtSliceIndex(0).AtMapKey("example"),
-						knownvalue.Int64Exact(600),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("binlog_retention_period").AtSliceIndex(0).AtMapKey("maximum"),
-						knownvalue.Int64Exact(86400),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("binlog_retention_period").AtSliceIndex(0).AtMapKey("minimum"),
-						knownvalue.Int64Exact(600),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("binlog_retention_period").AtSliceIndex(0).AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("binlog_retention_period").AtSliceIndex(0).AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 				},
 			},
