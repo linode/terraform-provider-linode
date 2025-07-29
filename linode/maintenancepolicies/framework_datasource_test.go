@@ -55,36 +55,6 @@ func TestAccDataSourceMaintenancePolicies_basic(t *testing.T) {
 						tfjsonpath.New("maintenance_policies").AtSliceIndex(0).AtMapKey("is_default"),
 						knownvalue.Bool(true),
 					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("maintenance_policies").AtSliceIndex(1).AtMapKey("slug"),
-						knownvalue.StringExact("linode/power_off_on"),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("maintenance_policies").AtSliceIndex(1).AtMapKey("label"),
-						knownvalue.StringExact("Power-off/on"),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("maintenance_policies").AtSliceIndex(1).AtMapKey("description"),
-						knownvalue.StringExact("Powers off the Linode at the start of the maintenance event and reboots it once the maintenance finishes. Recommended for maximizing performance."),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("maintenance_policies").AtSliceIndex(1).AtMapKey("type"),
-						knownvalue.StringExact("power_off_on"),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("maintenance_policies").AtSliceIndex(1).AtMapKey("notification_period_sec"),
-						knownvalue.Int64Exact(1800),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("maintenance_policies").AtSliceIndex(1).AtMapKey("is_default"),
-						knownvalue.Bool(false),
-					),
 				},
 			},
 		},

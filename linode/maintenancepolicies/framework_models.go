@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
 
 type MaintenancePolicyModel struct {
@@ -17,12 +18,13 @@ type MaintenancePolicyModel struct {
 	IsDefault             types.Bool   `tfsdk:"is_default"`
 }
 
-type DataSourceModel struct {
-	ID                  types.String             `tfsdk:"id"`
-	MaintenancePolicies []MaintenancePolicyModel `tfsdk:"maintenance_policies"`
+type MaintenancePolicyFilterModel struct {
+	ID                  types.String                     `tfsdk:"id"`
+	Filters             frameworkfilter.FiltersModelType `tfsdk:"filter"`
+	MaintenancePolicies []MaintenancePolicyModel         `tfsdk:"maintenance_policies"`
 }
 
-func (model *DataSourceModel) parseMaintenancePolicies(maintenancePolicies []linodego.MaintenancePolicy) diag.Diagnostics {
+func (model *MaintenancePolicyFilterModel) parseMaintenancePolicies(maintenancePolicies []linodego.MaintenancePolicy) diag.Diagnostics {
 	result := make([]MaintenancePolicyModel, len(maintenancePolicies))
 
 	for i := range maintenancePolicies {

@@ -4,7 +4,9 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
@@ -30,28 +32,47 @@ func (d *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data."+d.Config.Name)
 
-	client := d.Meta.Client
-
-	var data DataSourceModel
+	var data MaintenancePolicyFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	tflog.Trace(ctx, "client.ListMaintenancePolicies(...)")
-	policies, err := client.ListMaintenancePolicies(ctx, nil)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get Maintenance Policies", err.Error(),
-		)
+	id, diag := filterConfig.GenerateID(data.Filters)
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
+		return
+	}
+	data.ID = id
+
+	result, diag := filterConfig.GetAndFilter(
+		ctx, d.Meta.Client, data.Filters, listMaintenancePolicies,
+		types.StringNull(), types.StringNull())
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseMaintenancePolicies(policies)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	data.parseMaintenancePolicies(helper.AnySliceToTyped[linodego.MaintenancePolicy](result))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func listMaintenancePolicies(
+	ctx context.Context,
+	client *linodego.Client,
+	filter string,
+) ([]any, error) {
+	tflog.Trace(ctx, "client.ListMaintenancePolicies(...)", map[string]any{
+		"filter": filter,
+	})
+	policies, err := client.ListMaintenancePolicies(ctx, &linodego.ListOptions{
+		Filter: filter,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return helper.TypedSliceToAny(policies), nil
 }

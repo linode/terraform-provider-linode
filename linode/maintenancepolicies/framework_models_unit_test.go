@@ -38,7 +38,7 @@ func TestParseMaintenancePolicies(t *testing.T) {
 		},
 	}
 
-	data := &DataSourceModel{}
+	data := &MaintenancePolicyFilterModel{}
 	diags := data.parseMaintenancePolicies(mockPolicies)
 	assert.False(t, diags.HasError(), "Unexpected diagnostics error")
 

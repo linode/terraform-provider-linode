@@ -1,5 +1,10 @@
 {{ define "maintenance_policies_data_basic" }}
 
-data "linode_maintenance_policies" "foobar" {}
+data "linode_maintenance_policies" "foobar" {
+    filter {
+        name = "slug"
+        values = ["linode/migrate"]
+    }
+}
 
 {{ end }}
