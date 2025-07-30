@@ -25,8 +25,10 @@ func (fsds *FirewallSettingsModel) GetUpdateOptions(
 	ctx context.Context,
 	diags *diag.Diagnostics,
 ) (opts linodego.FirewallSettingsUpdateOptions) {
-	var defaultFirewallIDs DefaultFirewallIDsAttributeModel
-	diags.Append(fsds.DefaultFirewallIDs.As(ctx, &defaultFirewallIDs, basetypes.ObjectAsOptions{
+	var defaultFirewallIDsModel DefaultFirewallIDsAttributeModel
+	var defaultFirewallIDs linodego.DefaultFirewallIDsOptions
+
+	diags.Append(fsds.DefaultFirewallIDs.As(ctx, &defaultFirewallIDsModel, basetypes.ObjectAsOptions{
 		UnhandledNullAsEmpty:    false,
 		UnhandledUnknownAsEmpty: false,
 	})...)
@@ -35,28 +37,38 @@ func (fsds *FirewallSettingsModel) GetUpdateOptions(
 		return
 	}
 
-	if !defaultFirewallIDs.Linode.IsUnknown() {
-		opts.DefaultFirewallIDs.Linode = linodego.Pointer(
-			helper.FrameworkSafeInt64PointerToIntPointer(defaultFirewallIDs.Linode.ValueInt64Pointer(), diags),
+	shouldUpdateDefaultFirewallIDs := false
+
+	if !defaultFirewallIDsModel.Linode.IsUnknown() {
+		defaultFirewallIDs.Linode = linodego.Pointer(
+			helper.FrameworkSafeInt64PointerToIntPointer(defaultFirewallIDsModel.Linode.ValueInt64Pointer(), diags),
 		)
+		shouldUpdateDefaultFirewallIDs = true
 	}
 
-	if !defaultFirewallIDs.NodeBalancer.IsUnknown() {
-		opts.DefaultFirewallIDs.NodeBalancer = linodego.Pointer(
-			helper.FrameworkSafeInt64PointerToIntPointer(defaultFirewallIDs.NodeBalancer.ValueInt64Pointer(), diags),
+	if !defaultFirewallIDsModel.NodeBalancer.IsUnknown() {
+		defaultFirewallIDs.NodeBalancer = linodego.Pointer(
+			helper.FrameworkSafeInt64PointerToIntPointer(defaultFirewallIDsModel.NodeBalancer.ValueInt64Pointer(), diags),
 		)
+		shouldUpdateDefaultFirewallIDs = true
 	}
 
-	if !defaultFirewallIDs.PublicInterface.IsUnknown() {
-		opts.DefaultFirewallIDs.PublicInterface = linodego.Pointer(
-			helper.FrameworkSafeInt64PointerToIntPointer(defaultFirewallIDs.PublicInterface.ValueInt64Pointer(), diags),
+	if !defaultFirewallIDsModel.PublicInterface.IsUnknown() {
+		defaultFirewallIDs.PublicInterface = linodego.Pointer(
+			helper.FrameworkSafeInt64PointerToIntPointer(defaultFirewallIDsModel.PublicInterface.ValueInt64Pointer(), diags),
 		)
+		shouldUpdateDefaultFirewallIDs = true
 	}
 
-	if !defaultFirewallIDs.VPCInterface.IsUnknown() {
-		opts.DefaultFirewallIDs.VPCInterface = linodego.Pointer(
-			helper.FrameworkSafeInt64PointerToIntPointer(defaultFirewallIDs.VPCInterface.ValueInt64Pointer(), diags),
+	if !defaultFirewallIDsModel.VPCInterface.IsUnknown() {
+		defaultFirewallIDs.VPCInterface = linodego.Pointer(
+			helper.FrameworkSafeInt64PointerToIntPointer(defaultFirewallIDsModel.VPCInterface.ValueInt64Pointer(), diags),
 		)
+		shouldUpdateDefaultFirewallIDs = true
+	}
+
+	if shouldUpdateDefaultFirewallIDs {
+		opts.DefaultFirewallIDs = &defaultFirewallIDs
 	}
 
 	return
