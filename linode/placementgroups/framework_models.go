@@ -1,11 +1,10 @@
 package placementgroups
 
 import (
-	"github.com/linode/terraform-provider-linode/v3/linode/placementgroup"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v3/linode/placementgroup"
 )
 
 type PlacementGroupFilterModel struct {

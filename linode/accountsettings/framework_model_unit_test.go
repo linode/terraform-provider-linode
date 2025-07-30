@@ -5,9 +5,8 @@ package accountsettings
 import (
 	"testing"
 
-	"github.com/linode/linodego"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/linodego"
 )
 
 func TestFlattenAccountSettings(t *testing.T) {

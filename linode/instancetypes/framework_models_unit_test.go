@@ -90,7 +90,17 @@ func TestParseInstanceTypes(t *testing.T) {
 		assert.Contains(t, model.Types[i].Price.String(), strconv.FormatFloat(float64(mockType.Price.Monthly), 'f', -1, 32), "Monthly price doesn't match")
 
 		// Assertions for Addons
-		assert.Contains(t, model.Types[i].Addons.String(), strconv.FormatFloat(float64(mockType.Addons.Backups.Price.Hourly), 'f', -1, 32), "Backups hourly price doesn't match")
-		assert.Contains(t, model.Types[i].Addons.String(), strconv.FormatFloat(float64(mockType.Addons.Backups.Price.Monthly), 'f', -1, 32), "Backups monthly price doesn't match")
+		assert.Contains(
+			t,
+			model.Types[i].Addons.String(),
+			strconv.FormatFloat(float64(mockType.Addons.Backups.Price.Hourly), 'f', -1, 32),
+			"Backups hourly price doesn't match",
+		)
+		assert.Contains(
+			t,
+			model.Types[i].Addons.String(),
+			strconv.FormatFloat(float64(mockType.Addons.Backups.Price.Monthly), 'f', -1, 32),
+			"Backups monthly price doesn't match",
+		)
 	}
 }

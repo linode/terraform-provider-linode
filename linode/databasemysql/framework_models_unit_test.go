@@ -79,7 +79,11 @@ func TestParseMySQLDatabaseSSL(t *testing.T) {
 	data := &DataSourceModel{}
 	data.parseMySQLDatabaseSSL(mockDBSSL)
 
-	assert.Equal(t, types.StringValue("-----BEGIN CERTIFICATE-----\nMIIDdTCCAl2gAwIBAgIUT01...\n...u4QIDAQABo1MwUTAdBgNV...\n-----END CERTIFICATE-----"), data.CACert)
+	assert.Equal(
+		t,
+		types.StringValue("-----BEGIN CERTIFICATE-----\nMIIDdTCCAl2gAwIBAgIUT01...\n...u4QIDAQABo1MwUTAdBgNV...\n-----END CERTIFICATE-----"),
+		data.CACert,
+	)
 }
 
 func TestParseMySQLDatabaseCredentials(t *testing.T) {

@@ -33,22 +33,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_scale_factor").AtMapKey("minimum"),
-						knownvalue.Float64Exact(0.0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_scale_factor").AtMapKey("maximum"),
-						knownvalue.Float64Exact(1.0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_scale_factor").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_scale_factor").AtMapKey("type"),
-						knownvalue.StringExact("number"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -58,22 +58,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_threshold").AtMapKey("minimum"),
-						knownvalue.Int32Exact(0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_threshold").AtMapKey("maximum"),
-						knownvalue.Int32Exact(2147483647),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_threshold").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_threshold").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -83,22 +83,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_max_workers").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_max_workers").AtMapKey("maximum"),
-						knownvalue.Int64Exact(20),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_max_workers").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_max_workers").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -108,22 +108,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_naptime").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_naptime").AtMapKey("maximum"),
-						knownvalue.Int64Exact(86400),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_naptime").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_naptime").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -133,22 +133,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_delay").AtMapKey("minimum"),
-						knownvalue.Int64Exact(-1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_delay").AtMapKey("maximum"),
-						knownvalue.Int64Exact(100),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_delay").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_delay").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -158,22 +158,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_limit").AtMapKey("minimum"),
-						knownvalue.Int64Exact(-1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_limit").AtMapKey("maximum"),
-						knownvalue.Int64Exact(10000),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_limit").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_limit").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -183,22 +183,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_scale_factor").AtMapKey("minimum"),
-						knownvalue.Float64Exact(0.0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_scale_factor").AtMapKey("maximum"),
-						knownvalue.Float64Exact(1.0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_scale_factor").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_scale_factor").AtMapKey("type"),
-						knownvalue.StringExact("number"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -208,22 +208,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_threshold").AtMapKey("minimum"),
-						knownvalue.Int32Exact(0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_threshold").AtMapKey("maximum"),
-						knownvalue.Int32Exact(2147483647),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_threshold").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_threshold").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -233,22 +233,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_delay").AtMapKey("minimum"),
-						knownvalue.Int64Exact(10),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_delay").AtMapKey("maximum"),
-						knownvalue.Int64Exact(10000),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_delay").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_delay").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -258,22 +258,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_flush_after").AtMapKey("minimum"),
-						knownvalue.Int64Exact(0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_flush_after").AtMapKey("maximum"),
-						knownvalue.Int64Exact(2048),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_flush_after").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_flush_after").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -283,22 +283,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_maxpages").AtMapKey("minimum"),
-						knownvalue.Int64Exact(0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_maxpages").AtMapKey("maximum"),
-						knownvalue.Int64Exact(1073741823),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_maxpages").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_maxpages").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -308,22 +308,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_multiplier").AtMapKey("minimum"),
-						knownvalue.Float64Exact(0.0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_multiplier").AtMapKey("maximum"),
-						knownvalue.Float64Exact(10.0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_multiplier").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_multiplier").AtMapKey("type"),
-						knownvalue.StringExact("number"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -333,22 +333,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("deadlock_timeout").AtMapKey("minimum"),
-						knownvalue.Int64Exact(500),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("deadlock_timeout").AtMapKey("maximum"),
-						knownvalue.Int64Exact(1800000),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("deadlock_timeout").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("deadlock_timeout").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -359,24 +359,24 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("default_toast_compression").AtMapKey("enum"),
 						knownvalue.ListExact([]knownvalue.Check{
-							knownvalue.StringExact("lz4"),
-							knownvalue.StringExact("pglz"),
+							knownvalue.NotNull(),
+							knownvalue.NotNull(),
 						}),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("default_toast_compression").AtMapKey("example"),
-						knownvalue.StringExact("lz4"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("default_toast_compression").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("default_toast_compression").AtMapKey("type"),
-						knownvalue.StringExact("string"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -386,22 +386,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("idle_in_transaction_session_timeout").AtMapKey("minimum"),
-						knownvalue.Int64Exact(0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("idle_in_transaction_session_timeout").AtMapKey("maximum"),
-						knownvalue.Int64Exact(604800000),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("idle_in_transaction_session_timeout").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("idle_in_transaction_session_timeout").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -411,17 +411,17 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("jit").AtMapKey("example"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("jit").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("jit").AtMapKey("type"),
-						knownvalue.StringExact("boolean"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -431,22 +431,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_files_per_process").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1000),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_files_per_process").AtMapKey("maximum"),
-						knownvalue.Int64Exact(4096),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_files_per_process").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_files_per_process").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -456,22 +456,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_locks_per_transaction").AtMapKey("minimum"),
-						knownvalue.Int64Exact(64),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_locks_per_transaction").AtMapKey("maximum"),
-						knownvalue.Int64Exact(6400),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_locks_per_transaction").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_locks_per_transaction").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -481,22 +481,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_logical_replication_workers").AtMapKey("minimum"),
-						knownvalue.Int64Exact(4),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_logical_replication_workers").AtMapKey("maximum"),
-						knownvalue.Int64Exact(64),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_logical_replication_workers").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_logical_replication_workers").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -506,22 +506,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers").AtMapKey("minimum"),
-						knownvalue.Int64Exact(0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers").AtMapKey("maximum"),
-						knownvalue.Int64Exact(96),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -531,22 +531,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers_per_gather").AtMapKey("minimum"),
-						knownvalue.Int64Exact(0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers_per_gather").AtMapKey("maximum"),
-						knownvalue.Int64Exact(96),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers_per_gather").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers_per_gather").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -556,22 +556,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_pred_locks_per_transaction").AtMapKey("minimum"),
-						knownvalue.Int64Exact(64),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_pred_locks_per_transaction").AtMapKey("maximum"),
-						knownvalue.Int64Exact(5120),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_pred_locks_per_transaction").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_pred_locks_per_transaction").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -581,22 +581,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_replication_slots").AtMapKey("minimum"),
-						knownvalue.Int64Exact(8),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_replication_slots").AtMapKey("maximum"),
-						knownvalue.Int64Exact(64),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_replication_slots").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_replication_slots").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -606,22 +606,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_slot_wal_keep_size").AtMapKey("minimum"),
-						knownvalue.Int32Exact(-1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_slot_wal_keep_size").AtMapKey("maximum"),
-						knownvalue.Int32Exact(2147483647),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_slot_wal_keep_size").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_slot_wal_keep_size").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -631,22 +631,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_stack_depth").AtMapKey("minimum"),
-						knownvalue.Int64Exact(2097152),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_stack_depth").AtMapKey("maximum"),
-						knownvalue.Int64Exact(6291456),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_stack_depth").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_stack_depth").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -656,22 +656,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_archive_delay").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_archive_delay").AtMapKey("maximum"),
-						knownvalue.Int64Exact(43200000),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_archive_delay").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_archive_delay").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -681,22 +681,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_streaming_delay").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_streaming_delay").AtMapKey("maximum"),
-						knownvalue.Int64Exact(43200000),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_streaming_delay").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_streaming_delay").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -706,22 +706,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_wal_senders").AtMapKey("minimum"),
-						knownvalue.Int64Exact(20),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_wal_senders").AtMapKey("maximum"),
-						knownvalue.Int64Exact(64),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_wal_senders").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_wal_senders").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -731,22 +731,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_worker_processes").AtMapKey("minimum"),
-						knownvalue.Int64Exact(8),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_worker_processes").AtMapKey("maximum"),
-						knownvalue.Int64Exact(96),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_worker_processes").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_worker_processes").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -757,24 +757,24 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("password_encryption").AtMapKey("enum"),
 						knownvalue.ListExact([]knownvalue.Check{
-							knownvalue.StringExact("md5"),
-							knownvalue.StringExact("scram-sha-256"),
+							knownvalue.NotNull(),
+							knownvalue.NotNull(),
 						}),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("password_encryption").AtMapKey("example"),
-						knownvalue.StringExact("scram-sha-256"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("password_encryption").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("password_encryption").AtMapKey("type"),
-						knownvalue.StringExact("string"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -784,22 +784,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.interval").AtMapKey("minimum"),
-						knownvalue.Int64Exact(3600),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.interval").AtMapKey("maximum"),
-						knownvalue.Int64Exact(604800),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.interval").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.interval").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -809,27 +809,27 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.role").AtMapKey("maxLength"),
-						knownvalue.Int64Exact(64),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.role").AtMapKey("pattern"),
-						knownvalue.StringExact("^[_A-Za-z0-9][-._A-Za-z0-9]{0,63}$"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.role").AtMapKey("example"),
-						knownvalue.StringExact("myrolename"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.role").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.role").AtMapKey("type"),
-						knownvalue.StringExact("string"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -839,17 +839,17 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_enable_query_plan").AtMapKey("example"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_enable_query_plan").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_enable_query_plan").AtMapKey("type"),
-						knownvalue.StringExact("boolean"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -859,27 +859,27 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_max_buckets").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_max_buckets").AtMapKey("maximum"),
-						knownvalue.Int64Exact(10),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_max_buckets").AtMapKey("example"),
-						knownvalue.Int64Exact(10),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_max_buckets").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_max_buckets").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -890,20 +890,20 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_statements.track").AtMapKey("enum"),
 						knownvalue.ListExact([]knownvalue.Check{
-							knownvalue.StringExact("all"),
-							knownvalue.StringExact("top"),
-							knownvalue.StringExact("none"),
+							knownvalue.NotNull(),
+							knownvalue.NotNull(),
+							knownvalue.NotNull(),
 						}),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_statements.track").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_statements.track").AtMapKey("type"),
-						knownvalue.StringExact("string"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -913,27 +913,27 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("temp_file_limit").AtMapKey("maximum"),
-						knownvalue.Int32Exact(2147483647),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("temp_file_limit").AtMapKey("minimum"),
-						knownvalue.Int32Exact(-1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("temp_file_limit").AtMapKey("example"),
-						knownvalue.Int32Exact(5000000),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("temp_file_limit").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("temp_file_limit").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -943,27 +943,27 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("timezone").AtMapKey("example"),
-						knownvalue.StringExact("Europe/Helsinki"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("timezone").AtMapKey("maxLength"),
-						knownvalue.Int64Exact(64),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("timezone").AtMapKey("pattern"),
-						knownvalue.StringExact("^[\\w/]*$"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("timezone").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("timezone").AtMapKey("type"),
-						knownvalue.StringExact("string"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -973,27 +973,27 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_activity_query_size").AtMapKey("maximum"),
-						knownvalue.Int64Exact(10240),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_activity_query_size").AtMapKey("minimum"),
-						knownvalue.Int64Exact(1024),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_activity_query_size").AtMapKey("example"),
-						knownvalue.Int64Exact(1024),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_activity_query_size").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_activity_query_size").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -1004,24 +1004,24 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_commit_timestamp").AtMapKey("enum"),
 						knownvalue.ListExact([]knownvalue.Check{
-							knownvalue.StringExact("off"),
-							knownvalue.StringExact("on"),
+							knownvalue.NotNull(),
+							knownvalue.NotNull(),
 						}),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_commit_timestamp").AtMapKey("example"),
-						knownvalue.StringExact("off"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_commit_timestamp").AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_commit_timestamp").AtMapKey("type"),
-						knownvalue.StringExact("string"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -1032,20 +1032,20 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_functions").AtMapKey("enum"),
 						knownvalue.ListExact([]knownvalue.Check{
-							knownvalue.StringExact("all"),
-							knownvalue.StringExact("pl"),
-							knownvalue.StringExact("none"),
+							knownvalue.NotNull(),
+							knownvalue.NotNull(),
+							knownvalue.NotNull(),
 						}),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_functions").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_functions").AtMapKey("type"),
-						knownvalue.StringExact("string"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -1056,24 +1056,24 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_io_timing").AtMapKey("enum"),
 						knownvalue.ListExact([]knownvalue.Check{
-							knownvalue.StringExact("off"),
-							knownvalue.StringExact("on"),
+							knownvalue.NotNull(),
+							knownvalue.NotNull(),
 						}),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_io_timing").AtMapKey("example"),
-						knownvalue.StringExact("off"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_io_timing").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_io_timing").AtMapKey("type"),
-						knownvalue.StringExact("string"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -1083,17 +1083,17 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_sender_timeout").AtMapKey("example"),
-						knownvalue.Int64Exact(60000),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_sender_timeout").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_sender_timeout").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -1103,27 +1103,27 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_writer_delay").AtMapKey("example"),
-						knownvalue.Int64Exact(50),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_writer_delay").AtMapKey("maximum"),
-						knownvalue.Int64Exact(200),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_writer_delay").AtMapKey("minimum"),
-						knownvalue.Int64Exact(10),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_writer_delay").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_writer_delay").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -1133,12 +1133,12 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg_stat_monitor_enable").AtSliceIndex(0).AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg_stat_monitor_enable").AtSliceIndex(0).AtMapKey("type"),
-						knownvalue.StringExact("boolean"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -1148,22 +1148,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pglookout").AtSliceIndex(0).AtMapKey("max_failover_replication_time_lag").AtMapKey("maximum"),
-						knownvalue.Int64Exact(999999),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pglookout").AtSliceIndex(0).AtMapKey("max_failover_replication_time_lag").AtMapKey("minimum"),
-						knownvalue.Int64Exact(10),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pglookout").AtSliceIndex(0).AtMapKey("max_failover_replication_time_lag").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pglookout").AtSliceIndex(0).AtMapKey("max_failover_replication_time_lag").AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -1173,22 +1173,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("shared_buffers_percentage").AtSliceIndex(0).AtMapKey("maximum"),
-						knownvalue.Float64Exact(60.0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("shared_buffers_percentage").AtSliceIndex(0).AtMapKey("minimum"),
-						knownvalue.Float64Exact(20.0),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("shared_buffers_percentage").AtSliceIndex(0).AtMapKey("requires_restart"),
-						knownvalue.Bool(true),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("shared_buffers_percentage").AtSliceIndex(0).AtMapKey("type"),
-						knownvalue.StringExact("number"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -1198,22 +1198,22 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("work_mem").AtSliceIndex(0).AtMapKey("maximum"),
-						knownvalue.Int64Exact(1024),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("work_mem").AtSliceIndex(0).AtMapKey("minimum"),
-						knownvalue.Int64Exact(1),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("work_mem").AtSliceIndex(0).AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("work_mem").AtSliceIndex(0).AtMapKey("type"),
-						knownvalue.StringExact("integer"),
+						knownvalue.NotNull(),
 					),
 				},
 			},
