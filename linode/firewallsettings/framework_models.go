@@ -67,6 +67,10 @@ func (fsds *FirewallSettingsModel) GetUpdateOptions(
 		shouldUpdateDefaultFirewallIDs = true
 	}
 
+	if diags.HasError() {
+		return
+	}
+
 	if shouldUpdateDefaultFirewallIDs {
 		opts.DefaultFirewallIDs = &defaultFirewallIDs
 	}
@@ -80,45 +84,24 @@ func (fsds *FirewallSettingsModel) FlattenFirewallSettings(
 	preserveKnown bool,
 	diags *diag.Diagnostics,
 ) {
-	if preserveKnown && fsds.DefaultFirewallIDs.IsNull() {
-		return
-	}
-
-	var defaultFirewallIDs DefaultFirewallIDsAttributeModel
-
-	if !fsds.DefaultFirewallIDs.IsUnknown() && !fsds.DefaultFirewallIDs.IsNull() {
-		diags.Append(
-			fsds.DefaultFirewallIDs.As(ctx, &defaultFirewallIDs, basetypes.ObjectAsOptions{
-				UnhandledNullAsEmpty:    false,
-				UnhandledUnknownAsEmpty: false,
-			})...,
-		)
-
-		if diags.HasError() {
-			return
-		}
-	}
-
-	// When the DefaultFirewallIDs wrapper object is unknown,
-	// we need to override all nested known values (not to preserve them).
-	preserveKnown = preserveKnown && !fsds.DefaultFirewallIDs.IsUnknown()
-
-	defaultFirewallIDs.FlattenFirewallSettings(settings, preserveKnown)
-
-	defaultIDs, newDiags := types.ObjectValueFrom(
+	defaultFirewallIDs := helper.KeepOrUpdateNestedObject(
 		ctx,
-		fsds.DefaultFirewallIDs.AttributeTypes(ctx),
-		defaultFirewallIDs,
+		fsds.DefaultFirewallIDs,
+		preserveKnown,
+		diags,
+		func(defaultFirewallIDsAttrsModel *DefaultFirewallIDsAttributeModel, preserveKnown bool, _ *diag.Diagnostics) {
+			defaultFirewallIDsAttrsModel.FlattenDefaultFirewallIDs(settings, preserveKnown)
+		},
 	)
-	diags.Append(newDiags...)
+
 	if diags.HasError() {
 		return
 	}
 
-	fsds.DefaultFirewallIDs = defaultIDs
+	fsds.DefaultFirewallIDs = *defaultFirewallIDs
 }
 
-func (dfiam *DefaultFirewallIDsAttributeModel) FlattenFirewallSettings(settings linodego.FirewallSettings, preserveKnown bool) {
+func (dfiam *DefaultFirewallIDsAttributeModel) FlattenDefaultFirewallIDs(settings linodego.FirewallSettings, preserveKnown bool) {
 	dfiam.Linode = helper.KeepOrUpdateInt64Pointer(dfiam.Linode, helper.IntPtrToInt64Ptr(settings.DefaultFirewallIDs.Linode), preserveKnown)
 	dfiam.NodeBalancer = helper.KeepOrUpdateInt64Pointer(dfiam.NodeBalancer, helper.IntPtrToInt64Ptr(settings.DefaultFirewallIDs.NodeBalancer), preserveKnown)
 	dfiam.PublicInterface = helper.KeepOrUpdateInt64Pointer(

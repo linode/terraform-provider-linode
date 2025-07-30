@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 func KeepOrUpdateString(original types.String, updated string, preserveKnown bool) types.String {
@@ -102,4 +103,68 @@ func KeepOrUpdateValue[T attr.Value](original T, updated T, preserveKnown bool) 
 		return original
 	}
 	return updated
+}
+
+func KeepOrUpdateNestedObject[T any](
+	ctx context.Context,
+	original types.Object,
+	preserveKnown bool,
+	diags *diag.Diagnostics,
+	flatten func(*T, bool, *diag.Diagnostics),
+) *types.Object {
+	return KeepOrUpdateNestedObjectWithTypes(
+		ctx, original, original.AttributeTypes(ctx), preserveKnown, diags, flatten,
+	)
+}
+
+// This function is necessary when explicit attributes are needed for flatten the `original`
+// nested object.
+//
+// In some cases `original` won't contain the type of its attributes. For example, a
+// double nested object (nested object in another nested object) in a model; when the
+// parent nested object is null or unknown, `object.As` won't put the attributes into
+// the child nested object. Passing explicit attributeTypes will then be necessary.
+//
+// Checkout the corresponding unit tests for more details.
+func KeepOrUpdateNestedObjectWithTypes[T any](
+	ctx context.Context,
+	original types.Object,
+	attributeTypes map[string]attr.Type,
+	preserveKnown bool,
+	diags *diag.Diagnostics,
+	flatten func(*T, bool, *diag.Diagnostics),
+) *types.Object {
+	if preserveKnown && original.IsNull() {
+		return &original
+	}
+
+	var attrModel T
+
+	if !original.IsUnknown() && !original.IsNull() {
+		diags.Append(
+			original.As(ctx, &attrModel, basetypes.ObjectAsOptions{
+				UnhandledNullAsEmpty:    false,
+				UnhandledUnknownAsEmpty: false,
+			})...,
+		)
+		if diags.HasError() {
+			return nil
+		}
+	}
+
+	preserveKnown = preserveKnown && !original.IsUnknown()
+
+	flatten(&attrModel, preserveKnown, diags)
+
+	updated, newDiags := types.ObjectValueFrom(
+		ctx,
+		attributeTypes,
+		attrModel,
+	)
+	diags.Append(newDiags...)
+	if diags.HasError() {
+		return nil
+	}
+
+	return &updated
 }
