@@ -22,7 +22,11 @@ func NewDataSource() datasource.DataSource {
 	}
 }
 
-func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *DataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	var state FirewallSettingsModel
 
 	client := d.Meta.Client
@@ -38,7 +42,7 @@ func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 		return
 	}
 
-	state.ParseFirewallSettings(ctx, *firewallSettings, &resp.Diagnostics)
+	state.FlattenFirewallSettings(ctx, *firewallSettings, false, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}

@@ -252,6 +252,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		networkingipassignment.NewResource,
 		obj.NewResource,
 		databasemysqlv2.NewResource,
+		firewallsettings.NewResource,
 	}
 }
 

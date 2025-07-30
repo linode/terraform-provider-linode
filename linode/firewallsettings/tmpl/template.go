@@ -8,6 +8,15 @@ import (
 
 type TemplateData struct {
 	DataSourceName string
+	ResourceName   string
+	FirewallID     int
+}
+
+func Basic(t testing.TB, resourceName string, testFirewallID int) string {
+	return acceptance.ExecuteTemplate(t, "linode_firewall_settings_basic", TemplateData{
+		ResourceName: resourceName,
+		FirewallID:   testFirewallID,
+	})
 }
 
 func Data(t testing.TB, datasourceName string) string {
