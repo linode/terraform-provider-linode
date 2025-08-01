@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
@@ -35,6 +36,36 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
+		"ipv6": schema.SetNestedAttribute{
+			Description: "TODO",
+			Optional:    true,
+			Computed:    true,
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.UseStateForUnknown(),
+				setplanmodifier.RequiresReplace(),
+			},
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"range": schema.StringAttribute{
+						Description: "TODO",
+						Optional:    true,
+						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"allocation_class": schema.StringAttribute{
+						Description: "TODO",
+						Optional:    true,
+						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+				},
+			},
+		},
+
 		"created": schema.StringAttribute{
 			Description: "The date and time when the VPC was created.",
 			Computed:    true,

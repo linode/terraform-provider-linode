@@ -25,6 +25,7 @@ type VPCSubnetModel struct {
 	ID      types.Int64       `tfsdk:"id"`
 	Label   types.String      `tfsdk:"label"`
 	IPv4    types.String      `tfsdk:"ipv4"`
+	IPv6    types.Set         `tfsdk:"ipv6"`
 	Linodes types.List        `tfsdk:"linodes"`
 	Created timetypes.RFC3339 `tfsdk:"created"`
 	Updated timetypes.RFC3339 `tfsdk:"updated"`
@@ -40,6 +41,17 @@ func (model *VPCSubnetFilterModel) FlattenSubnets(
 		s.ID = helper.KeepOrUpdateInt64(s.ID, int64(subnet.ID), preserveKnown)
 		s.Label = helper.KeepOrUpdateString(s.Label, subnet.Label, preserveKnown)
 		s.IPv4 = helper.KeepOrUpdateString(s.IPv4, subnet.IPv4, preserveKnown)
+
+		ipv6AddressesSet, diags := types.SetValueFrom(ctx, vpcsubnet.VPCSubnetIPv6ModelObjectType, subnet.IPv6)
+		if diags.HasError() {
+			return s, diags
+		}
+
+		s.IPv6 = helper.KeepOrUpdateValue(
+			s.IPv6,
+			ipv6AddressesSet,
+			preserveKnown,
+		)
 
 		linodes := make([]types.Object, len(subnet.Linodes))
 

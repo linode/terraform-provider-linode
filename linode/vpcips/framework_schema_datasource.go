@@ -58,6 +58,27 @@ var VPCIPAttrs = map[string]schema.Attribute{
 		Description: "Returns true if the VPC interface is in use, meaning that the Linode was powered on using the config_id to which the interface belongs. Otherwise returns false",
 		Computed:    true,
 	},
+
+	"ipv6_range": schema.StringAttribute{
+		Description: "TODO",
+		Computed:    true,
+	},
+	"ipv6_is_public": schema.BoolAttribute{
+		Description: "TODO",
+		Computed:    true,
+	},
+	"ipv6_addresses": schema.SetNestedAttribute{
+		Description: "TODO",
+		Computed:    true,
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"slaac_address": schema.StringAttribute{
+					Description: "TODO",
+					Computed:    true,
+				},
+			},
+		},
+	},
 }
 
 var filterConfig = frameworkfilter.Config{

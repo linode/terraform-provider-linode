@@ -3,6 +3,7 @@ package vpcs
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
@@ -21,14 +22,17 @@ func (model *VPCFilterModel) FlattenVPCs(
 	ctx context.Context,
 	vpcs []linodego.VPC,
 	preserveKnown bool,
-) {
+) diag.Diagnostics {
 	vpcModels := make([]vpc.VPCModel, len(vpcs))
 
 	for i := range vpcs {
 		var vpc vpc.VPCModel
-		vpc.FlattenVPC(ctx, &vpcs[i], preserveKnown)
+		if d := vpc.FlattenVPC(ctx, &vpcs[i], preserveKnown); d.HasError() {
+			return d
+		}
 		vpcModels[i] = vpc
 	}
 
 	model.VPCs = vpcModels
+	return nil
 }

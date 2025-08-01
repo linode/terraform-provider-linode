@@ -56,6 +56,10 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.FlattenVPC(ctx, vpc, false)
+	resp.Diagnostics.Append(data.FlattenVPC(ctx, vpc, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
