@@ -13,26 +13,26 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
 )
 
-type VPCModel struct {
+type Model struct {
 	ID          types.String      `tfsdk:"id"`
 	Label       types.String      `tfsdk:"label"`
 	Description types.String      `tfsdk:"description"`
 	Region      types.String      `tfsdk:"region"`
-	IPv6        types.Set         `tfsdk:"ipv6"`
+	IPv6        types.List        `tfsdk:"ipv6"`
 	Created     timetypes.RFC3339 `tfsdk:"created"`
 	Updated     timetypes.RFC3339 `tfsdk:"updated"`
 }
 
-type VPCIPv6Model struct {
+type ResourceModelIPv6 struct {
 	Range           customtypes.LinodeAutoAllocRangeValue `tfsdk:"range"`
 	AllocationClass types.String                          `tfsdk:"allocation_class"`
 }
 
 var VPCIPv6ModelObjectType = helper.Must(
-	helper.FrameworkModelToObjectType[VPCIPv6Model](context.Background()),
+	helper.FrameworkModelToObjectType[ResourceModelIPv6](context.Background()),
 )
 
-func (m *VPCModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) diag.Diagnostics {
+func (m *Model) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) diag.Diagnostics {
 	m.ID = helper.KeepOrUpdateString(m.ID, strconv.Itoa(vpc.ID), preserveKnown)
 
 	m.Description = helper.KeepOrUpdateString(m.Description, vpc.Description, preserveKnown)
@@ -52,29 +52,29 @@ func (m *VPCModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKn
 	ipv6Models := slices.Collect(
 		helper.Map(
 			slices.Values(vpc.IPv6),
-			func(r linodego.VPCIPv6Range) VPCIPv6Model {
-				return VPCIPv6Model{
+			func(r linodego.VPCIPv6Range) ResourceModelIPv6 {
+				return ResourceModelIPv6{
 					Range: customtypes.LinodeAutoAllocRangeValue{StringValue: types.StringValue(r.Range)},
 				}
 			},
 		),
 	)
 
-	ipv6Set, diags := types.SetValueFrom(ctx, VPCIPv6ModelObjectType, ipv6Models)
+	ipv6List, diags := types.ListValueFrom(ctx, VPCIPv6ModelObjectType, ipv6Models)
 	if diags.HasError() {
 		return diags
 	}
 
 	m.IPv6 = helper.KeepOrUpdateValue(
 		m.IPv6,
-		ipv6Set,
+		ipv6List,
 		preserveKnown,
 	)
 
 	return nil
 }
 
-func (m *VPCModel) CopyFrom(ctx context.Context, other VPCModel, preserveKnown bool) {
+func (m *Model) CopyFrom(ctx context.Context, other Model, preserveKnown bool) {
 	m.ID = helper.KeepOrUpdateValue(m.ID, other.ID, preserveKnown)
 
 	m.Description = helper.KeepOrUpdateValue(m.Description, other.Description, preserveKnown)

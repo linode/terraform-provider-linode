@@ -3,11 +3,9 @@ package vpc
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
 )
 
@@ -39,21 +37,19 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"ipv6": schema.SetNestedAttribute{
+		"ipv6": schema.ListNestedAttribute{
 			Description: "The IPv6 configuration of this VPC.",
 			Optional:    true,
-			Computed:    true,
-			Default:     setdefault.StaticValue(types.SetNull(VPCIPv6ModelObjectType)),
-			PlanModifiers: []planmodifier.Set{
-				setplanmodifier.UseStateForUnknown(),
-				setplanmodifier.RequiresReplace(),
+			// Default:     listdefault.StaticValue(types.ListNull(VPCIPv6ModelObjectType)),
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+				listplanmodifier.RequiresReplace(),
 			},
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"range": schema.StringAttribute{
 						Description: "The IPv6 range assigned to this VPC.",
-						Optional:    true,
-						Computed:    true,
+						Required:    true,
 						CustomType:  customtypes.LinodeAutoAllocRangeType{},
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
@@ -63,6 +59,7 @@ var frameworkResourceSchema = schema.Schema{
 					"allocation_class": schema.StringAttribute{
 						Description: "The labeled IPv6 Inventory that the VPC Prefix should be allocated from.",
 						Optional:    true,
+						WriteOnly:   true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 							stringplanmodifier.RequiresReplace(),

@@ -36,7 +36,7 @@ func (r *Resource) Create(
 ) {
 	tflog.Debug(ctx, "Create "+r.Config.Name)
 
-	var data VPCModel
+	var data Model
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -52,7 +52,7 @@ func (r *Resource) Create(
 	}
 
 	if !data.IPv6.IsNull() {
-		modelIPv6s := make([]VPCIPv6Model, len(data.IPv6.Elements()))
+		modelIPv6s := make([]ResourceModelIPv6, len(data.IPv6.Elements()))
 
 		resp.Diagnostics.Append(data.IPv6.ElementsAs(ctx, &modelIPv6s, true)...)
 		if resp.Diagnostics.HasError() {
@@ -62,7 +62,7 @@ func (r *Resource) Create(
 		vpcCreateOpts.IPv6 = slices.Collect(
 			helper.Map(
 				slices.Values(modelIPv6s),
-				func(m VPCIPv6Model) linodego.VPCCreateOptionsIPv6 {
+				func(m ResourceModelIPv6) linodego.VPCCreateOptionsIPv6 {
 					return linodego.VPCCreateOptionsIPv6{
 						Range:           m.Range.ValueStringPointer(),
 						AllocationClass: m.AllocationClass.ValueStringPointer(),
@@ -103,7 +103,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read "+r.Config.Name)
 
-	var data VPCModel
+	var data Model
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -154,7 +154,7 @@ func (r *Resource) Update(
 	tflog.Debug(ctx, "Update "+r.Config.Name)
 
 	client := r.Meta.Client
-	var plan, state VPCModel
+	var plan, state Model
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -220,7 +220,7 @@ func (r *Resource) Delete(
 	tflog.Debug(ctx, "Delete "+r.Config.Name)
 
 	client := r.Meta.Client
-	var data VPCModel
+	var data Model
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -247,6 +247,6 @@ func (r *Resource) Delete(
 	}
 }
 
-func populateLogAttributes(ctx context.Context, data VPCModel) context.Context {
+func populateLogAttributes(ctx context.Context, data Model) context.Context {
 	return tflog.SetField(ctx, "id", data.ID)
 }

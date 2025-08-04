@@ -22,13 +22,17 @@ var VPCAttrs = map[string]schema.Attribute{
 		Description: "The region of the VPC.",
 		Computed:    true,
 	},
-	"ipv6": schema.SetNestedAttribute{
+	"ipv6": schema.ListNestedAttribute{
 		Description: "The IPv6 configuration of this VPC.",
 		Computed:    true,
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"range": schema.StringAttribute{
 					Description: "The IPv6 range assigned to this VPC.",
+					Computed:    true,
+				},
+				"allocation_class": schema.StringAttribute{
+					Description: "The labeled IPv6 Inventory that the VPC Prefix should be allocated from.",
 					Computed:    true,
 				},
 			},

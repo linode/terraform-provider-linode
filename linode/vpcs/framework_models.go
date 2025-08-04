@@ -15,7 +15,7 @@ import (
 type VPCFilterModel struct {
 	ID      types.String                     `tfsdk:"id"`
 	Filters frameworkfilter.FiltersModelType `tfsdk:"filter"`
-	VPCs    []vpc.VPCModel                   `tfsdk:"vpcs"`
+	VPCs    []vpc.Model                      `tfsdk:"vpcs"`
 }
 
 func (model *VPCFilterModel) FlattenVPCs(
@@ -23,10 +23,10 @@ func (model *VPCFilterModel) FlattenVPCs(
 	vpcs []linodego.VPC,
 	preserveKnown bool,
 ) diag.Diagnostics {
-	vpcModels := make([]vpc.VPCModel, len(vpcs))
+	vpcModels := make([]vpc.Model, len(vpcs))
 
 	for i := range vpcs {
-		var vpc vpc.VPCModel
+		var vpc vpc.Model
 		if d := vpc.FlattenVPC(ctx, &vpcs[i], preserveKnown); d.HasError() {
 			return d
 		}
