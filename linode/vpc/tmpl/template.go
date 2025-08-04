@@ -27,6 +27,14 @@ func Updates(t testing.TB, label, region string) string {
 		})
 }
 
+func DualStack(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_dual_stack", TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}
+
 func DataBasic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_data_basic", TemplateData{

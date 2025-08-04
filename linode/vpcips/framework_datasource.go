@@ -81,7 +81,7 @@ func (r *DataSource) Read(
 		return
 	}
 
-	data.FlattenVPCIPs(helper.AnySliceToTyped[linodego.VPCIP](result), false)
+	data.FlattenVPCIPs(ctx, helper.AnySliceToTyped[linodego.VPCIP](result), false)
 	if resp.Diagnostics.HasError() {
 		return
 	}

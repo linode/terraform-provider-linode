@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"slices"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
@@ -9,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
 )
 
 type VPCModel struct {
@@ -22,8 +24,8 @@ type VPCModel struct {
 }
 
 type VPCIPv6Model struct {
-	Range           types.String `tfsdk:"range"`
-	AllocationClass types.String `tfsdk:"allocation_class"`
+	Range           customtypes.LinodeAutoAllocRangeValue `tfsdk:"range"`
+	AllocationClass types.String                          `tfsdk:"allocation_class"`
 }
 
 var VPCIPv6ModelObjectType = helper.Must(
@@ -47,7 +49,18 @@ func (m *VPCModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKn
 	m.Label = helper.KeepOrUpdateString(m.Label, vpc.Label, preserveKnown)
 	m.Region = helper.KeepOrUpdateString(m.Region, vpc.Region, preserveKnown)
 
-	ipv6Set, diags := types.SetValueFrom(ctx, VPCIPv6ModelObjectType, vpc.IPv6)
+	ipv6Models := slices.Collect(
+		helper.Map(
+			slices.Values(vpc.IPv6),
+			func(r linodego.VPCIPv6Range) VPCIPv6Model {
+				return VPCIPv6Model{
+					Range: customtypes.LinodeAutoAllocRangeValue{StringValue: types.StringValue(r.Range)},
+				}
+			},
+		),
+	)
+
+	ipv6Set, diags := types.SetValueFrom(ctx, VPCIPv6ModelObjectType, ipv6Models)
 	if diags.HasError() {
 		return diags
 	}

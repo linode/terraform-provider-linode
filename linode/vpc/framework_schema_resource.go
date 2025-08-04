@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -37,7 +38,7 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"ipv6": schema.SetNestedAttribute{
-			Description: "TODO",
+			Description: "The IPv6 configuration of this VPC.",
 			Optional:    true,
 			Computed:    true,
 			PlanModifiers: []planmodifier.Set{
@@ -47,19 +48,21 @@ var frameworkResourceSchema = schema.Schema{
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"range": schema.StringAttribute{
-						Description: "TODO",
+						Description: "The IPv6 range assigned to this VPC.",
 						Optional:    true,
 						Computed:    true,
+						CustomType:  customtypes.LinodeAutoAllocRangeType{},
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
+							stringplanmodifier.RequiresReplace(),
 						},
 					},
 					"allocation_class": schema.StringAttribute{
-						Description: "TODO",
+						Description: "The labeled IPv6 Inventory that the VPC Prefix should be allocated from.",
 						Optional:    true,
-						Computed:    true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
+							stringplanmodifier.RequiresReplace(),
 						},
 					},
 				},

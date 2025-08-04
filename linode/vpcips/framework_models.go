@@ -31,7 +31,7 @@ type VPCIPModel struct {
 }
 
 type VPCIPv6AddressModel struct {
-	SLAACAddress string `tfsdk:"slaac_address"`
+	SLAACAddress types.String `tfsdk:"slaac_address"`
 }
 
 var VPCIPv6AddressModelObjectType = helper.Must(

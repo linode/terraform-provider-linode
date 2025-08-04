@@ -116,7 +116,7 @@ func TestAccResourceVPC_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", vpcLabel)),
-					resource.TestCheckResourceAttr(resName, "description", "some description"),
+					resource.TestCheckResourceAttr(resName, "description", ""),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 				),
@@ -126,6 +126,46 @@ func TestAccResourceVPC_update(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"updated"},
+			},
+		},
+	})
+}
+
+func TestAccResourceVPC_dualStack(t *testing.T) {
+	t.Parallel()
+	resName := "linode_vpc.foobar"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DualStack(t, vpcLabel, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkVPCExists,
+					resource.TestCheckResourceAttr(resName, "label", vpcLabel),
+					resource.TestCheckResourceAttrSet(resName, "ipv6.0.range"),
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+				),
+			},
+			{
+				Config: tmpl.DualStack(t, vpcLabel, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkVPCExists,
+					resource.TestCheckResourceAttr(resName, "label", vpcLabel),
+					resource.TestCheckResourceAttrSet(resName, "ipv6.0.range"),
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "ipv6.0.range"},
 			},
 		},
 	})

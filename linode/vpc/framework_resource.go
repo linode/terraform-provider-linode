@@ -3,6 +3,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -51,14 +52,24 @@ func (r *Resource) Create(
 	}
 
 	if !data.IPv6.IsNull() {
-		vpcCreateOpts.IPv6 = make([]linodego.VPCCreateOptionsIPv6, 0)
+		modelIPv6s := make([]VPCIPv6Model, len(data.IPv6.Elements()))
 
-		resp.Diagnostics.Append(
-			data.IPv6.ElementsAs(ctx, &vpcCreateOpts.IPv6, false)...,
-		)
+		resp.Diagnostics.Append(data.IPv6.ElementsAs(ctx, &modelIPv6s, true)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
+
+		vpcCreateOpts.IPv6 = slices.Collect(
+			helper.Map(
+				slices.Values(modelIPv6s),
+				func(m VPCIPv6Model) linodego.VPCCreateOptionsIPv6 {
+					return linodego.VPCCreateOptionsIPv6{
+						Range:           m.Range.ValueStringPointer(),
+						AllocationClass: m.AllocationClass.ValueStringPointer(),
+					}
+				},
+			),
+		)
 	}
 
 	tflog.Debug(ctx, "client.CreateVPC(...)", map[string]any{
