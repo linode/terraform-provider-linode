@@ -36,7 +36,7 @@ func (r *Resource) Create(
 ) {
 	tflog.Debug(ctx, "Create "+r.Config.Name)
 
-	var data Model
+	var data ResourceModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -103,7 +103,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read "+r.Config.Name)
 
-	var data Model
+	var data ResourceModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -111,7 +111,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, data)
+	ctx = resourcePopulateLogAttributes(ctx, data)
 
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
 		return
@@ -154,7 +154,7 @@ func (r *Resource) Update(
 	tflog.Debug(ctx, "Update "+r.Config.Name)
 
 	client := r.Meta.Client
-	var plan, state Model
+	var plan, state ResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -163,7 +163,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, state)
+	ctx = resourcePopulateLogAttributes(ctx, state)
 
 	var updateOpts linodego.VPCUpdateOptions
 	shouldUpdate := false
@@ -220,14 +220,14 @@ func (r *Resource) Delete(
 	tflog.Debug(ctx, "Delete "+r.Config.Name)
 
 	client := r.Meta.Client
-	var data Model
+	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, data)
+	ctx = resourcePopulateLogAttributes(ctx, data)
 
 	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -247,6 +247,6 @@ func (r *Resource) Delete(
 	}
 }
 
-func populateLogAttributes(ctx context.Context, data Model) context.Context {
+func resourcePopulateLogAttributes(ctx context.Context, data ResourceModel) context.Context {
 	return tflog.SetField(ctx, "id", data.ID)
 }

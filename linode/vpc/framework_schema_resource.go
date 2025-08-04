@@ -40,7 +40,7 @@ var frameworkResourceSchema = schema.Schema{
 		"ipv6": schema.ListNestedAttribute{
 			Description: "The IPv6 configuration of this VPC.",
 			Optional:    true,
-			// Default:     listdefault.StaticValue(types.ListNull(VPCIPv6ModelObjectType)),
+			// Default:     listdefault.StaticValue(types.ListNull(ResourceModelIPv6ObjectType)),
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.UseStateForUnknown(),
 				listplanmodifier.RequiresReplace(),

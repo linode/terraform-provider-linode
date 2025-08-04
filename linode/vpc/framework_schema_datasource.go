@@ -31,10 +31,6 @@ var VPCAttrs = map[string]schema.Attribute{
 					Description: "The IPv6 range assigned to this VPC.",
 					Computed:    true,
 				},
-				"allocation_class": schema.StringAttribute{
-					Description: "The labeled IPv6 Inventory that the VPC Prefix should be allocated from.",
-					Computed:    true,
-				},
 			},
 		},
 	},
