@@ -116,7 +116,7 @@ func TestAccResourceVPC_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", vpcLabel)),
-					resource.TestCheckResourceAttr(resName, "description", ""),
+					resource.TestCheckResourceAttr(resName, "description", "some description"),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 				),

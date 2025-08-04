@@ -4,8 +4,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
 )
 
@@ -41,6 +43,7 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The IPv6 configuration of this VPC.",
 			Optional:    true,
 			Computed:    true,
+			Default:     setdefault.StaticValue(types.SetNull(VPCIPv6ModelObjectType)),
 			PlanModifiers: []planmodifier.Set{
 				setplanmodifier.UseStateForUnknown(),
 				setplanmodifier.RequiresReplace(),
