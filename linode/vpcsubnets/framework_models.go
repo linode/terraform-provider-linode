@@ -42,7 +42,7 @@ func (model *VPCSubnetFilterModel) FlattenSubnets(
 		s.Label = helper.KeepOrUpdateString(s.Label, subnet.Label, preserveKnown)
 		s.IPv4 = helper.KeepOrUpdateString(s.IPv4, subnet.IPv4, preserveKnown)
 
-		ipv6AddressesSet, diags := types.SetValueFrom(ctx, vpcsubnet.VPCSubnetIPv6ModelObjectType, subnet.IPv6)
+		ipv6AddressesSet, diags := types.SetValueFrom(ctx, vpcsubnet.ModelIPv6ObjectType, subnet.IPv6)
 		if diags.HasError() {
 			return s, diags
 		}

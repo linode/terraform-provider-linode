@@ -13,7 +13,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
 )
 
-type VPCSubnetModel struct {
+type Model struct {
 	ID      types.String      `tfsdk:"id"`
 	VPCId   types.Int64       `tfsdk:"vpc_id"`
 	Label   types.String      `tfsdk:"label"`
@@ -24,12 +24,12 @@ type VPCSubnetModel struct {
 	Updated timetypes.RFC3339 `tfsdk:"updated"`
 }
 
-type VPCSubnetModelIPv6 struct {
+type ModelIPv6 struct {
 	Range customtypes.LinodeAutoAllocRangeValue `tfsdk:"range"`
 }
 
-var VPCSubnetIPv6ModelObjectType = helper.Must(
-	helper.FrameworkModelToObjectType[VPCSubnetModelIPv6](context.Background()),
+var ModelIPv6ObjectType = helper.Must(
+	helper.FrameworkModelToObjectType[ModelIPv6](context.Background()),
 )
 
 func FlattenSubnetLinodeInterface(iface linodego.VPCSubnetLinodeInterface) (types.Object, diag.Diagnostics) {
@@ -87,7 +87,7 @@ func FlattenSubnetLinodes(
 	return &linodesList, diags
 }
 
-func (d *VPCSubnetModel) FlattenSubnet(
+func (d *Model) FlattenSubnet(
 	ctx context.Context,
 	subnet *linodego.VPCSubnet,
 	preserveKnown bool,
@@ -116,14 +116,14 @@ func (d *VPCSubnetModel) FlattenSubnet(
 
 	ipv6AddressModels := helper.MapSlice(
 		subnet.IPv6,
-		func(subnet linodego.VPCIPv6Range) VPCSubnetModelIPv6 {
-			return VPCSubnetModelIPv6{
+		func(subnet linodego.VPCIPv6Range) ModelIPv6 {
+			return ModelIPv6{
 				Range: customtypes.LinodeAutoAllocRangeValue{StringValue: types.StringValue(subnet.Range)},
 			}
 		},
 	)
 
-	ipv6AddressesList, diags := types.ListValueFrom(ctx, VPCSubnetIPv6ModelObjectType, ipv6AddressModels)
+	ipv6AddressesList, diags := types.ListValueFrom(ctx, ModelIPv6ObjectType, ipv6AddressModels)
 	if diags.HasError() {
 		return diags
 	}

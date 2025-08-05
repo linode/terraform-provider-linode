@@ -42,7 +42,7 @@ func TestAccResourceVPCSubnet_basic(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, subnetLabel, "172.16.0.0/24", testRegion),
+				Config: tmpl.Basic(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
@@ -124,10 +124,11 @@ func TestAccResourceVPCSubnet_dualStack(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: resourceImportStateID,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       resourceImportStateID,
+				ImportStateVerifyIgnore: []string{"ipv6.0.range"},
 			},
 		},
 	})
@@ -192,7 +193,7 @@ func TestAccResourceVPCSubnet_attached(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Attached(t, subnetLabel, "172.16.0.0/24", testRegion),
+				Config: tmpl.Attached(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
@@ -202,7 +203,7 @@ func TestAccResourceVPCSubnet_attached(t *testing.T) {
 			},
 			{
 				// Refresh the configuration so the `linodes` field is updated
-				Config: tmpl.Attached(t, subnetLabel, "172.16.0.0/24", testRegion),
+				Config: tmpl.Attached(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "linodes.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "linodes.0.id"),

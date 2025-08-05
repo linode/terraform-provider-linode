@@ -17,7 +17,7 @@ resource "linode_vpc_subnet" "foobar" {
     ipv4 = "{{.IPv4}}"
     ipv6 = [
         {
-            range = "/64"
+            range = "auto"
         }
     ]
 }

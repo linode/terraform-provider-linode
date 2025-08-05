@@ -48,6 +48,15 @@ func DataBasic(t testing.TB, label, ipv4, region string) string {
 		})
 }
 
+func DataDualStack(t testing.TB, label, ipv4, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_subnet_data_dual_stack", TemplateData{
+			Label:  label,
+			IPv4:   ipv4,
+			Region: region,
+		})
+}
+
 func Attached(t testing.TB, label, ipv4, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_subnet_attached", TemplateData{
