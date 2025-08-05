@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
 )
 
 var LinodeInterfaceObjectType = types.ObjectType{
@@ -49,7 +50,7 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"ipv4": schema.StringAttribute{
 			Description: "The IPv4 range of this subnet in CIDR format.",
-			Required:    true,
+			Optional:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
 			},
@@ -67,7 +68,9 @@ var frameworkResourceSchema = schema.Schema{
 						Description: "An IPv6 range allocated to this subnet.",
 						Optional:    true,
 						Computed:    true,
+						CustomType:  customtypes.LinodeAutoAllocRangeType{},
 						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
 							stringplanmodifier.UseStateForUnknown(),
 						},
 					},

@@ -116,6 +116,10 @@ func (v LinodeAutoAllocRangeValue) StringSemanticEquals(
 		return false, diags
 	}
 
+	if v.ValueString() == "auto" || newValue.ValueString() == "auto" {
+		return true, diags
+	}
+
 	addr, prefix, err := parseRangeOptionalAddress(v.ValueString())
 	if err != nil {
 		diags.AddError(

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
 )
 
 type VPCSubnetModel struct {
@@ -17,18 +18,18 @@ type VPCSubnetModel struct {
 	VPCId   types.Int64       `tfsdk:"vpc_id"`
 	Label   types.String      `tfsdk:"label"`
 	IPv4    types.String      `tfsdk:"ipv4"`
-	IPv6    types.Set         `tfsdk:"ipv6"`
+	IPv6    types.List        `tfsdk:"ipv6"`
 	Linodes types.List        `tfsdk:"linodes"`
 	Created timetypes.RFC3339 `tfsdk:"created"`
 	Updated timetypes.RFC3339 `tfsdk:"updated"`
 }
 
-type VPCSubnetIPv6Model struct {
-	Range types.String `tfsdk:"range"`
+type VPCSubnetModelIPv6 struct {
+	Range customtypes.LinodeAutoAllocRangeValue `tfsdk:"range"`
 }
 
 var VPCSubnetIPv6ModelObjectType = helper.Must(
-	helper.FrameworkModelToObjectType[VPCSubnetIPv6Model](context.Background()),
+	helper.FrameworkModelToObjectType[VPCSubnetModelIPv6](context.Background()),
 )
 
 func FlattenSubnetLinodeInterface(iface linodego.VPCSubnetLinodeInterface) (types.Object, diag.Diagnostics) {
@@ -110,16 +111,26 @@ func (d *VPCSubnetModel) FlattenSubnet(
 		preserveKnown,
 	)
 	d.Label = helper.KeepOrUpdateString(d.Label, subnet.Label, preserveKnown)
+
 	d.IPv4 = helper.KeepOrUpdateString(d.IPv4, subnet.IPv4, preserveKnown)
 
-	ipv6AddressesSet, diags := types.SetValueFrom(ctx, VPCSubnetIPv6ModelObjectType, subnet.IPv6)
+	ipv6AddressModels := helper.MapSlice(
+		subnet.IPv6,
+		func(subnet linodego.VPCIPv6Range) VPCSubnetModelIPv6 {
+			return VPCSubnetModelIPv6{
+				Range: customtypes.LinodeAutoAllocRangeValue{StringValue: types.StringValue(subnet.Range)},
+			}
+		},
+	)
+
+	ipv6AddressesList, diags := types.ListValueFrom(ctx, VPCSubnetIPv6ModelObjectType, ipv6AddressModels)
 	if diags.HasError() {
 		return diags
 	}
 
 	d.IPv6 = helper.KeepOrUpdateValue(
 		d.IPv6,
-		ipv6AddressesSet,
+		ipv6AddressesList,
 		preserveKnown,
 	)
 
