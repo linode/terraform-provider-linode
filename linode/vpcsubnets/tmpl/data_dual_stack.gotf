@@ -4,6 +4,12 @@ resource "linode_vpc" "foobar" {
     label = "{{.Label}}"
     region = "{{.Region}}"
     description = "some description"
+
+    ipv6 = [
+        {
+            range = "/52"
+        }
+    ]
 }
 
 resource "linode_vpc_subnet" "foobar" {

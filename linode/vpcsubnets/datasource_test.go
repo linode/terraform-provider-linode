@@ -83,8 +83,8 @@ func TestAccDataSourceVPCSubnets_dualStack(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.updated"),
 
-					resource.TestCheckResourceAttr(resourceName, "ipv6.#", "1"),
-					resource.TestCheckResourceAttrSet(resourceName, "ipv6.0.range"),
+					resource.TestCheckResourceAttr(resourceName, "vpc_subnets.0.ipv6.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.ipv6.0.range"),
 				),
 			},
 		},

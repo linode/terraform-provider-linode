@@ -3,6 +3,7 @@ package vpcsubnets
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 	"github.com/linode/terraform-provider-linode/v3/linode/vpcsubnet"
 )
@@ -42,14 +43,15 @@ var frameworkDataSourceSchema = schema.Schema{
 						Description: "The IPv4 range of this subnet in CIDR format.",
 						Computed:    true,
 					},
-					"ipv6": schema.SetNestedAttribute{
+					"ipv6": schema.ListNestedAttribute{
 						Description: "The IPv6 ranges of this subnet.",
 						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"range": schema.StringAttribute{
-									Description: "TODO",
+									Description: "An IPv6 range allocated to this subnet.",
 									Computed:    true,
+									CustomType:  customtypes.LinodeAutoAllocRangeType{},
 								},
 							},
 						},
