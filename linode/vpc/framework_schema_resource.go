@@ -40,7 +40,6 @@ var frameworkResourceSchema = schema.Schema{
 		"ipv6": schema.ListNestedAttribute{
 			Description: "The IPv6 configuration of this VPC.",
 			Optional:    true,
-			// Default:     listdefault.StaticValue(types.ListNull(ResourceModelIPv6ObjectType)),
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.UseStateForUnknown(),
 				listplanmodifier.RequiresReplace(),
@@ -49,7 +48,8 @@ var frameworkResourceSchema = schema.Schema{
 				Attributes: map[string]schema.Attribute{
 					"range": schema.StringAttribute{
 						Description: "The IPv6 range assigned to this VPC.",
-						Required:    true,
+						Optional:    true,
+						Computed:    true,
 						CustomType:  customtypes.LinodeAutoAllocRangeType{},
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
