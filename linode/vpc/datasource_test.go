@@ -49,12 +49,13 @@ func TestAccDataSourceVPC_dualStack(t *testing.T) {
 				Config: tmpl.DataDualStack(t, vpcLabel, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "label", vpcLabel),
-					resource.TestCheckResourceAttr(resourceName, "ipv6.#", "1"),
-					resource.TestCheckResourceAttrSet(resourceName, "ipv6.0.range"),
 					resource.TestCheckResourceAttrSet(resourceName, "description"),
 					resource.TestCheckResourceAttrSet(resourceName, "region"),
 					resource.TestCheckResourceAttrSet(resourceName, "created"),
 					resource.TestCheckResourceAttrSet(resourceName, "updated"),
+
+					resource.TestCheckResourceAttr(resourceName, "ipv6.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "ipv6.0.range"),
 				),
 			},
 		},

@@ -41,6 +41,39 @@ func TestAccDataSourceVPCs_basic_smoke(t *testing.T) {
 	})
 }
 
+func TestAccDataSourceVPCs_dualStack(t *testing.T) {
+	t.Parallel()
+
+	resourceName := "data.linode_vpcs.foobar"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"}, "core")
+	if err != nil {
+		t.Error(fmt.Errorf("failed to get region with VPC capability: %w", err))
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataDualStack(t, vpcLabel, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckResourceAttrGreaterThan(resourceName, "vpcs.#", 0),
+					resource.TestCheckResourceAttrSet(resourceName, "vpcs.0.label"),
+					resource.TestCheckResourceAttrSet(resourceName, "vpcs.0.description"),
+					resource.TestCheckResourceAttrSet(resourceName, "vpcs.0.region"),
+					resource.TestCheckResourceAttrSet(resourceName, "vpcs.0.created"),
+					resource.TestCheckResourceAttrSet(resourceName, "vpcs.0.updated"),
+
+					resource.TestCheckResourceAttr(resourceName, "vpcs.0.ipv6.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "vpcs.0.ipv6.0.range"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccDataSourceVPCs_filterByLabel(t *testing.T) {
 	t.Parallel()
 

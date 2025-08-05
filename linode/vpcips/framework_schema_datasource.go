@@ -60,21 +60,22 @@ var VPCIPAttrs = map[string]schema.Attribute{
 	},
 
 	"ipv6_range": schema.StringAttribute{
-		Description: "TODO",
+		Description: "The /64 prefix, in CIDR notation, assigned to an interface.",
 		Computed:    true,
 	},
 	"ipv6_is_public": schema.BoolAttribute{
-		Description: "TODO",
+		Description: "The is_public setting for the interface associated with this address.",
 		Computed:    true,
 	},
 	"ipv6_addresses": schema.SetNestedAttribute{
-		Description: "TODO",
+		Description: "The specific address within the prefix that the interface is associated with.",
 		Computed:    true,
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"slaac_address": schema.StringAttribute{
-					Description: "TODO",
-					Computed:    true,
+					Description: "The specific address within the prefix that the " +
+						"interface is expected to autoconfigure through SLAAC",
+					Computed: true,
 				},
 			},
 		},
