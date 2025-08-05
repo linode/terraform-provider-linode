@@ -42,3 +42,11 @@ func DataBasic(t testing.TB, label, region string) string {
 			Region: region,
 		})
 }
+
+func DataDualStack(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_data_dual_stack", TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}
