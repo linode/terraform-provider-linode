@@ -9,6 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// FrameworkModelToObjectType converts a model struct to an arbitrary Framework ObjectType
+// using reflection. This considerably reduces the amount of redundant code necessary to
+// implement nested models.
 func FrameworkModelToObjectType[T any](ctx context.Context) (types.ObjectType, error) {
 	reflectedType := reflect.TypeFor[T]()
 
