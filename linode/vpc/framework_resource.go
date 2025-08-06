@@ -3,7 +3,6 @@ package vpc
 import (
 	"context"
 	"fmt"
-	"slices"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -59,16 +58,14 @@ func (r *Resource) Create(
 			return
 		}
 
-		vpcCreateOpts.IPv6 = slices.Collect(
-			helper.Map(
-				slices.Values(modelIPv6s),
-				func(m ResourceModelIPv6) linodego.VPCCreateOptionsIPv6 {
-					return linodego.VPCCreateOptionsIPv6{
-						Range:           m.Range.ValueStringPointer(),
-						AllocationClass: m.AllocationClass.ValueStringPointer(),
-					}
-				},
-			),
+		vpcCreateOpts.IPv6 = helper.MapSlice(
+			modelIPv6s,
+			func(m ResourceModelIPv6) linodego.VPCCreateOptionsIPv6 {
+				return linodego.VPCCreateOptionsIPv6{
+					Range:           m.Range.ValueStringPointer(),
+					AllocationClass: m.AllocationClass.ValueStringPointer(),
+				}
+			},
 		)
 	}
 

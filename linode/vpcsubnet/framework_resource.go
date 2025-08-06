@@ -3,7 +3,6 @@ package vpcsubnet
 import (
 	"context"
 	"fmt"
-	"slices"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -82,15 +81,13 @@ func (r *Resource) Create(
 			return
 		}
 
-		createOpts.IPv6 = slices.Collect(
-			helper.Map(
-				slices.Values(modelIPv6),
-				func(m ModelIPv6) linodego.VPCSubnetCreateOptionsIPv6 {
-					return linodego.VPCSubnetCreateOptionsIPv6{
-						Range: m.Range.ValueStringPointer(),
-					}
-				},
-			),
+		createOpts.IPv6 = helper.MapSlice(
+			modelIPv6,
+			func(m ModelIPv6) linodego.VPCSubnetCreateOptionsIPv6 {
+				return linodego.VPCSubnetCreateOptionsIPv6{
+					Range: m.Range.ValueStringPointer(),
+				}
+			},
 		)
 	}
 
