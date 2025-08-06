@@ -84,7 +84,7 @@ Each Linode VPC IP will be stored in the `vpc_ips` attribute and will export the
 
 * `ipv6_address` - A list of addresses within the prefix that the interface is associated with.
 
-    * `slaac_address` - A specific address within the prefix that the interface is expected to autoconfigure through SLAAC.
+  * `slaac_address` - A specific address within the prefix that the interface is expected to autoconfigure through SLAAC.
 
 * `linode_id` - The identifier for the Linode the VPC interface currently belongs to.
 
