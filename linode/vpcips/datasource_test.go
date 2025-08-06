@@ -82,6 +82,9 @@ func TestAccDataSourceVPCIPs_basic(t *testing.T) {
 }
 
 func TestAccDataSourceVPCIPs_dualStack(t *testing.T) {
+	// TODO (VPC Dual Stack): Finish test after interfaces readiness.
+	t.Skip("TODO (VPC Dual Stack): Finish test after interfaces readiness.")
+
 	t.Parallel()
 
 	const (
@@ -109,12 +112,12 @@ func TestAccDataSourceVPCIPs_dualStack(t *testing.T) {
 					// acceptance.CheckResourceAttrGreaterThan(resourceNameScoped, "vpc_ips.#", 0),
 
 					resource.TestCheckNoResourceAttr(resourceNameAll, "vpc_ips.0.address"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.gateway"),
+					resource.TestCheckResourceAttr(resourceNameAll, "vpc_ips.0.gateway", ""),
 					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.linode_id"),
 					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.prefix"),
 					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.region"),
-					resource.TestCheckNoResourceAttr(resourceNameAll, "vpc_ips.0.subnet_mask"),
-					resource.TestCheckNoResourceAttr(resourceNameAll, "vpc_ips.0.nat_1_1"),
+					resource.TestCheckResourceAttr(resourceNameAll, "vpc_ips.0.subnet_mask", ""),
+					resource.TestCheckResourceAttr(resourceNameAll, "vpc_ips.0.nat_1_1", ""),
 					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.subnet_id"),
 					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.config_id"),
 					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.interface_id"),
@@ -122,19 +125,19 @@ func TestAccDataSourceVPCIPs_dualStack(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.vpc_id"),
 					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.active"),
 
-					// resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.address"),
-					// resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.gateway"),
-					// resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.linode_id"),
-					// resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.prefix"),
-					// resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.region"),
-					// resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.subnet_mask"),
-					// resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.nat_1_1"),
-					// resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.subnet_id"),
-					// resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.config_id"),
-					// resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.interface_id"),
-					// resource.TestCheckNoResourceAttr(resourceNameScoped, "vpc_ips.0.address_range"),
-					// resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.vpc_id"),
-					// resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.active"),
+					// resource.TestCheckNoResourceAttr(resourceNameScoped, "vpc_ips.0.address"),
+					// resource.TestCheckResourceAttr(resourceNameScoped, "vpc_ips.0.gateway", ""),
+					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.linode_id"),
+					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.prefix"),
+					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.region"),
+					resource.TestCheckResourceAttr(resourceNameScoped, "vpc_ips.0.subnet_mask", ""),
+					resource.TestCheckResourceAttr(resourceNameScoped, "vpc_ips.0.nat_1_1", ""),
+					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.subnet_id"),
+					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.config_id"),
+					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.interface_id"),
+					resource.TestCheckNoResourceAttr(resourceNameScoped, "vpc_ips.0.address_range"),
+					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.vpc_id"),
+					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.active"),
 				),
 			},
 		},
