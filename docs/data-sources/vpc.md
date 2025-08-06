@@ -37,11 +37,19 @@ In addition to all arguments above, the following attributes are exported:
 
 * `description` - The user-defined description of this VPC.
 
+* `ipv6` - A list of IPv6 allocations under this VPC.
+
 * `region` - The region where the VPC is deployed.
 
 * `created` - The date and time when the VPC was created.
 
 * `updated` - The date and time when the VPC was last updated.
+
+## IPv6
+
+Contains information about a single IPv6 allocation under this VPC.
+
+* `range` - The allocated range in CIDR format.
 
 ### Subnets Reference
 

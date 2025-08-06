@@ -64,7 +64,7 @@ The following arguments are supported:
 
 The following arguments can be configured for each entry under the `ipv6` field:
 
-* `range` - (Optional) An IPv6 range allocated to this subnet in CIDR format.
+* `range` - (Optional) An existing IPv6 prefix owned by the current account or a forward slash (/) followed by a valid prefix length. If `auto`, a range with the default prefix will be allocated for this VPC.
 
 ## Attributes Reference
 
