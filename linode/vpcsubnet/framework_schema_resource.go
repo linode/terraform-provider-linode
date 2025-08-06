@@ -65,10 +65,13 @@ var frameworkResourceSchema = schema.Schema{
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"range": schema.StringAttribute{
-						Description: "An IPv6 range allocated to this subnet.",
-						Optional:    true,
-						Computed:    true,
-						CustomType:  customtypes.LinodeAutoAllocRangeType{},
+						Description: "An existing IPv6 prefix owned by the current account or a " +
+							"forward slash (/) followed by a valid prefix length. " +
+							"If unspecified, a range with the default prefix will be " +
+							"allocated for this VPC.",
+						Optional:   true,
+						Computed:   true,
+						CustomType: customtypes.LinodeAutoAllocRangeType{},
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
 							stringplanmodifier.UseStateForUnknown(),

@@ -32,7 +32,7 @@ func (r *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data."+r.Config.Name)
 
-	var data VPCIPFilterModel
+	var data Model
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -54,6 +54,19 @@ func (r *DataSource) Read(
 		return
 	}
 
+	var listFunc func(ctx context.Context, client *linodego.Client, filter string, vpcID int) ([]any, error)
+	var listAllFunc func(context.Context, *linodego.Client, string) ([]any, error)
+
+	// Ensure we're listing calling the correct endpoint for the
+	// user-specified IP type.
+	if data.IPv6.ValueBool() {
+		listFunc = listVPCIPv6s
+		listAllFunc = listAllVPCIPv6s
+	} else {
+		listFunc = listVPCIPv4s
+		listAllFunc = listAllVPCIPv4s
+	}
+
 	if !data.VPCID.IsNull() {
 		tflog.Debug(ctx, "Filtering IPs for specific VPC", map[string]interface{}{
 			"vpc_id": vpcID,
@@ -62,7 +75,7 @@ func (r *DataSource) Read(
 		result, d = filterConfig.GetAndFilter(
 			ctx, r.Meta.Client, data.Filters,
 			func(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
-				return ListVPCIPv4s(ctx, client, filter, vpcID)
+				return listFunc(ctx, client, filter, vpcID)
 			},
 			types.StringNull(), types.StringNull(),
 		)
@@ -71,7 +84,7 @@ func (r *DataSource) Read(
 
 		result, d = filterConfig.GetAndFilter(
 			ctx, r.Meta.Client, data.Filters,
-			ListAllVPCIPs,
+			listAllFunc,
 			types.StringNull(), types.StringNull(),
 		)
 	}
@@ -89,7 +102,7 @@ func (r *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func ListAllVPCIPs(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+func listAllVPCIPv4s(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
 	tflog.Trace(ctx, "client.ListAllVPCIPAddresses(...)", map[string]any{
 		"filter": filter,
 	})
@@ -103,7 +116,7 @@ func ListAllVPCIPs(ctx context.Context, client *linodego.Client, filter string) 
 	return helper.TypedSliceToAny(vpcIps), nil
 }
 
-func ListVPCIPv4s(ctx context.Context, client *linodego.Client, filter string, vpcID int) ([]any, error) {
+func listVPCIPv4s(ctx context.Context, client *linodego.Client, filter string, vpcID int) ([]any, error) {
 	tflog.Trace(ctx, "client.ListVPCIPAddresses(...)", map[string]any{
 		"filter": filter,
 	})
@@ -117,7 +130,21 @@ func ListVPCIPv4s(ctx context.Context, client *linodego.Client, filter string, v
 	return helper.TypedSliceToAny(vpcIps), nil
 }
 
-func ListVPCIPv6s(ctx context.Context, client *linodego.Client, filter string, vpcID int) ([]any, error) {
+func listAllVPCIPv6s(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+	tflog.Trace(ctx, "client.ListAllVPCIPv6Addresses(...)", map[string]any{
+		"filter": filter,
+	})
+	vpcIps, err := client.ListAllVPCIPv6Addresses(ctx, &linodego.ListOptions{
+		Filter: filter,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return helper.TypedSliceToAny(vpcIps), nil
+}
+
+func listVPCIPv6s(ctx context.Context, client *linodego.Client, filter string, vpcID int) ([]any, error) {
 	tflog.Trace(ctx, "client.ListVPCIPv6Addresses(...)", map[string]any{
 		"filter": filter,
 	})

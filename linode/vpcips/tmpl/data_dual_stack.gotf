@@ -1,4 +1,4 @@
-{{ define "vpc_ips_data_basic" }}
+{{ define "vpc_ips_data_dual_stack" }}
 
 {{ template "e2e_test_firewall" . }}
 
@@ -28,52 +28,25 @@ resource "linode_instance_config" "foobar" {
   interface {
     purpose = "vpc"
     subnet_id = linode_vpc_subnet.foobar.id
-    ipv4 {
-      nat_1_1 = "any"
-    }
   }
 }
 
-# Create a second test vpc with a subnet containing a linode instance
-resource "linode_vpc" "barfoo" {
-  label = "{{.Label}}-2"
-  region = "{{.Region}}"
-  description = "some description"
-}
+data "linode_vpc_ips" "scoped" {
+  depends_on = [linode_instance_config.foobar]
 
-resource "linode_vpc_subnet" "barfoo" {
-  vpc_id = linode_vpc.barfoo.id
-  label = "{{.Label}}-subnet-label-2"
-  ipv4 = "{{.IPv4_2}}"
-}
-
-resource "linode_instance" "barfoo" {
-  label = "{{.Label}}-2"
-  region = "{{.Region}}"
-  type = "g6-nanode-1"
-}
-
-resource "linode_instance_config" "barfoo" {
-  linode_id = linode_instance.barfoo.id
-  label = "test-config-2"
-
-  interface {
-    purpose = "vpc"
-    subnet_id = linode_vpc_subnet.barfoo.id
-  }
-}
-
-data "linode_vpc_ips" "foobar" {
-  depends_on = [linode_instance_config.foobar, linode_instance_config.barfoo]
-  filter {
-      name = "linode_id"
-      values = [linode_instance.foobar.id, linode_instance.barfoo.id]
-    }
-}
-
-data "linode_vpc_ips" "barfoo" {
-  depends_on = [linode_instance_config.foobar, linode_instance_config.barfoo]
   vpc_id = linode_vpc.foobar.id
+  ipv6 = true
+}
+
+data "linode_vpc_ips" "all" {
+  depends_on = [linode_instance_config.foobar]
+
+  ipv6 = true
+
+  filter {
+    name = "linode_id"
+    values = [linode_instance.foobar.id]
+  }
 }
 
 {{ end}}

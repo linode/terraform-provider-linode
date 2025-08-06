@@ -68,7 +68,7 @@ var VPCIPAttrs = map[string]schema.Attribute{
 		Computed:    true,
 	},
 	"ipv6_addresses": schema.SetNestedAttribute{
-		Description: "The specific address within the prefix that the interface is associated with.",
+		Description: "The addresses within the prefix that the interface is associated with.",
 		Computed:    true,
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
@@ -98,6 +98,10 @@ var frameworkDataSourceSchema = schema.Schema{
 		},
 		"vpc_id": schema.Int64Attribute{
 			Description: "The ID of the VPC that the list of IP addresses is associated with.",
+			Optional:    true,
+		},
+		"ipv6": schema.BoolAttribute{
+			Description: "If true, only IPv6 addresses will be returned by this data source.",
 			Optional:    true,
 		},
 	},

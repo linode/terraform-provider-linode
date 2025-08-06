@@ -2,7 +2,6 @@ package vpc
 
 import (
 	"context"
-	"slices"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
@@ -82,15 +81,12 @@ func (m *BaseModel) CopyFrom(ctx context.Context, other BaseModel, preserveKnown
 func (m *ResourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) diag.Diagnostics {
 	m.BaseModel.FlattenVPC(ctx, vpc, preserveKnown)
 
-	ipv6Models := slices.Collect(
-		helper.Map(
-			slices.Values(vpc.IPv6),
-			func(r linodego.VPCIPv6Range) ResourceModelIPv6 {
-				return ResourceModelIPv6{
-					Range: customtypes.LinodeAutoAllocRangeValue{StringValue: types.StringValue(r.Range)},
-				}
-			},
-		),
+	ipv6Models := helper.MapSlice(vpc.IPv6,
+		func(r linodego.VPCIPv6Range) ResourceModelIPv6 {
+			return ResourceModelIPv6{
+				Range: customtypes.LinodeAutoAllocRangeValue{StringValue: types.StringValue(r.Range)},
+			}
+		},
 	)
 
 	ipv6List, diags := types.ListValueFrom(ctx, ResourceModelIPv6ObjectType, ipv6Models)
@@ -115,15 +111,13 @@ func (m *ResourceModel) CopyFrom(ctx context.Context, other ResourceModel, prese
 func (m *DataSourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) diag.Diagnostics {
 	m.BaseModel.FlattenVPC(ctx, vpc, preserveKnown)
 
-	ipv6Models := slices.Collect(
-		helper.Map(
-			slices.Values(vpc.IPv6),
-			func(r linodego.VPCIPv6Range) DataSourceModelIPv6 {
-				return DataSourceModelIPv6{
-					Range: customtypes.LinodeAutoAllocRangeValue{StringValue: types.StringValue(r.Range)},
-				}
-			},
-		),
+	ipv6Models := helper.MapSlice(
+		vpc.IPv6,
+		func(r linodego.VPCIPv6Range) DataSourceModelIPv6 {
+			return DataSourceModelIPv6{
+				Range: customtypes.LinodeAutoAllocRangeValue{StringValue: types.StringValue(r.Range)},
+			}
+		},
 	)
 
 	ipv6List, diags := types.ListValueFrom(ctx, DataSourceModelIPv6ObjectType, ipv6Models)
