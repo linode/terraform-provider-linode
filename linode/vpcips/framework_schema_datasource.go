@@ -83,11 +83,13 @@ var VPCIPAttrs = map[string]schema.Attribute{
 }
 
 var filterConfig = frameworkfilter.Config{
-	"active":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
-	"config_id": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
-	"linode_id": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
-	"region":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"vpc_id":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"active":         {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
+	"config_id":      {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"linode_id":      {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"region":         {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"vpc_id":         {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"ipv6_range":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"ipv6_is_public": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
 }
 
 var frameworkDataSourceSchema = schema.Schema{
