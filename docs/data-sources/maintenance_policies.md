@@ -7,7 +7,7 @@ description: |-
 # linode\_maintenance\_policies
 
 Provides details about the Maintenance Policies available to apply to Accounts and Instances.
-For more information, see the [Linode APIv4 docs](TODO).
+For more information, see the [Linode APIv4 docs](TODO). (**Note: v4beta only.**)
 
 ## Example Usage
 
