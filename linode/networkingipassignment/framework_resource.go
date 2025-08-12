@@ -80,7 +80,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 	for i, assignment := range state.Assignments {
 		ip, err := client.GetIPAddress(ctx, assignment.Address.ValueString())
 		if err != nil {
-			if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			if linodego.IsNotFound(err) {
 				// IP not found, remove it from state
 				state.Assignments = append(state.Assignments[:i], state.Assignments[i+1:]...)
 				continue

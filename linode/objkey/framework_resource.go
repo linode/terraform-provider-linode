@@ -106,7 +106,7 @@ func (r *Resource) Read(
 
 	key, err := client.GetObjectStorageKey(ctx, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"Object Storage Key",
 				fmt.Sprintf(

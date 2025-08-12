@@ -99,7 +99,7 @@ func (r *Resource) Read(
 
 	key, err := client.GetSSHKey(ctx, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"SSH Key",
 				fmt.Sprintf(
