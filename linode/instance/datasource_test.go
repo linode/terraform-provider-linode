@@ -17,6 +17,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 	resName := "data.linode_instances.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	rootPass := acctest.RandString(64)
+	maintenancePolicy := "linode/migrate"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -25,7 +26,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, instanceName, testRegion, rootPass),
+				Config: tmpl.DataBasic(t, instanceName, testRegion, rootPass, maintenancePolicy),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.id"),
@@ -33,6 +34,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "instances.0.tags.#", "2"),
 					resource.TestCheckResourceAttr(resName, "instances.0.image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "instances.0.region", testRegion),
+					resource.TestCheckResourceAttr(resName, "instances.0.maintenance_policy", maintenancePolicy),
 					resource.TestCheckResourceAttr(resName, "instances.0.group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "instances.0.swap_size", "256"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.disk_encryption"),

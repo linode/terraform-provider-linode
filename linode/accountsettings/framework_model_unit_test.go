@@ -18,6 +18,7 @@ func TestFlattenAccountSettings(t *testing.T) {
 	backupsEnabledValue := true
 	managedValue := true
 	networkHelperValue := false
+	maintenancePolicy := "linode/migrate"
 
 	mockSettings := &linodego.AccountSettings{
 		BackupsEnabled:       backupsEnabledValue,
@@ -25,6 +26,7 @@ func TestFlattenAccountSettings(t *testing.T) {
 		NetworkHelper:        networkHelperValue,
 		LongviewSubscription: &longviewSubscriptionValue,
 		ObjectStorage:        &objectStorageValue,
+		MaintenancePolicy:    maintenancePolicy,
 	}
 
 	// Create a mock AccountSettingsModel instance
@@ -56,5 +58,9 @@ func TestFlattenAccountSettings(t *testing.T) {
 
 	if model.NetworkHelper != types.BoolValue(false) {
 		t.Errorf("Expected NetworkHelper to be %v, but got %v", false, model.NetworkHelper)
+	}
+
+	if model.MaintenancePolicy != types.StringValue("linode/migrate") {
+		t.Errorf("Expected MaintenancePolicy to be %s, but got %s", "linode/migrate", model.MaintenancePolicy)
 	}
 }

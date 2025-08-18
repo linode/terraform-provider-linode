@@ -3,6 +3,8 @@ package linode
 import (
 	"context"
 
+	"github.com/linode/terraform-provider-linode/v3/linode/maintenancepolicies"
+
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkeversion"
@@ -316,6 +318,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		lke.NewDataSource,
 		lkeclusters.NewDataSource,
 		lketypes.NewDataSource,
+		maintenancepolicies.NewDataSource,
 		placementgroup.NewDataSource,
 		placementgroups.NewDataSource,
 		childaccount.NewDataSource,
