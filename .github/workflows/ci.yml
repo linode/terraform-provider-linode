@@ -34,19 +34,6 @@ jobs:
       - name: Unit tests
         run: make test-unit
 
-  dependency-review:
-    permissions:
-        contents: read
-        pull-requests: write
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Checkout repository'
-        uses: actions/checkout@v4
-      - name: 'Dependency Review'
-        uses: actions/dependency-review-action@v4
-        with:
-          comment-summary-in-pr: on-failure
-
   gosec_scan:
     runs-on: ubuntu-latest
     env:

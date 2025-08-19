@@ -1,8 +1,6 @@
 package lkenodepool
 
 import (
-	"context"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -97,19 +95,6 @@ var resourceSchema = schema.Schema{
 			Computed: true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
-				stringplanmodifier.RequiresReplaceIf(
-					func(
-						ctx context.Context,
-						sr planmodifier.StringRequest,
-						rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse,
-					) {
-						var strategy string
-						sr.Plan.GetAttribute(ctx, path.Root("update_strategy"), &strategy)
-						rrifr.RequiresReplace = strategy == "rolling_update"
-					},
-					"Triggers replacement when `k8s_version` is changed and `update_strategy` is rolling_update",
-					"Changing `k8s_version` with a Rolling Update strategy forces a new resource.",
-				),
 			},
 		},
 		"update_strategy": schema.StringAttribute{
