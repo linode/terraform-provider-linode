@@ -14,6 +14,15 @@ import (
 func TestAccDataSourceInstances_basic(t *testing.T) {
 	t.Parallel()
 
+	// Resolve a region with support for Maintenance Policy
+	region, err := acceptance.GetRandomRegionWithCaps(
+		[]string{"Linodes", "Maintenance Policy"},
+		"core",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	resName := "data.linode_instances.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	rootPass := acctest.RandString(64)
@@ -26,7 +35,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, instanceName, testRegion, rootPass, maintenancePolicy),
+				Config: tmpl.DataBasic(t, instanceName, region, rootPass, maintenancePolicy),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.id"),

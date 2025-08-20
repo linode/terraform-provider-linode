@@ -899,7 +899,7 @@ func TestAccResourceInstance_updateMaintenancePolicy(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Maintenance Policy"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Linodes", "Maintenance Policy"}, "core")
 	require.NoError(t, err)
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
