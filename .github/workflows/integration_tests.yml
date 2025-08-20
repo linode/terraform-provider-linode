@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -97,7 +97,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -156,7 +156,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -170,7 +170,7 @@ jobs:
         run: pip3 install requests wheel boto3==1.35.99
 
       - name: Download test report
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
 
       - name: Get .xml reports from separate Artifacts into root folder
         run: rsync -av test-report-USER_*/* .
