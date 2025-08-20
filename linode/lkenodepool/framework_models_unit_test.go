@@ -14,10 +14,11 @@ import (
 )
 
 func TestParseNodePool(t *testing.T) {
+	poolLabelName := "test-pool"
 	lkeNodePool := linodego.LKENodePool{
 		ID:             123,
 		Count:          3,
-		Label:          "test-pool",
+		Label:          &poolLabelName,
 		Type:           "g6-standard-2",
 		DiskEncryption: linodego.InstanceDiskEncryptionEnabled,
 		Disks: []linodego.LKENodePoolDisk{
@@ -73,7 +74,7 @@ func TestSetNodePoolCreateOptions(t *testing.T) {
 	assert.False(t, diags.HasError())
 	assert.Equal(t, 3, createOpts.Count)
 	assert.Equal(t, "g6-standard-2", createOpts.Type)
-	assert.Equal(t, "test-pool", createOpts.Label)
+	assert.Equal(t, "test-pool", *createOpts.Label)
 	assert.Contains(t, createOpts.Tags, "production")
 	assert.Contains(t, createOpts.Tags, "web-server")
 
@@ -97,7 +98,7 @@ func TestSetNodePoolUpdateOptions(t *testing.T) {
 	assert.False(t, diags.HasError())
 	assert.True(t, shouldUpdate)
 	assert.Equal(t, 3, updateOpts.Count)
-	assert.Equal(t, "test-pool", updateOpts.Label)
+	assert.Equal(t, "test-pool", *updateOpts.Label)
 	assert.Contains(t, *updateOpts.Tags, "production")
 	assert.Contains(t, *updateOpts.Tags, "web-server")
 
@@ -120,7 +121,7 @@ func createNodePoolModel() *NodePoolModel {
 	nodePoolModel := NodePoolModel{
 		ClusterID: types.Int64Value(1),
 		Count:     types.Int64Value(3),
-		Label:     "test-pool",
+		Label:     types.StringValue("test-pool"),
 		Type:      types.StringValue("g6-standard-2"),
 		Nodes:     *nodes,
 		Tags:      tags,
