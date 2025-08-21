@@ -42,7 +42,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "instances.0.type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "instances.0.tags.#", "2"),
 					resource.TestCheckResourceAttr(resName, "instances.0.image", acceptance.TestImageLatest),
-					resource.TestCheckResourceAttr(resName, "instances.0.region", testRegion),
+					resource.TestCheckResourceAttr(resName, "instances.0.region", region),
 					resource.TestCheckResourceAttr(resName, "instances.0.maintenance_policy", maintenancePolicy),
 					resource.TestCheckResourceAttr(resName, "instances.0.group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "instances.0.swap_size", "256"),
