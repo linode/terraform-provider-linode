@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -897,6 +899,10 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 func TestAccResourceInstance_updateMaintenancePolicy(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Linodes", "Maintenance Policy"}, "core")
+	require.NoError(t, err)
+
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 	rootPass := acctest.RandString(64)
@@ -910,7 +916,7 @@ func TestAccResourceInstance_updateMaintenancePolicy(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.MaintenancePolicy(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass, maintenancePolicyMigrate),
+				Config: tmpl.MaintenancePolicy(t, instanceName, acceptance.PublicKeyMaterial, region, rootPass, maintenancePolicyMigrate),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -918,7 +924,7 @@ func TestAccResourceInstance_updateMaintenancePolicy(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.MaintenancePolicy(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass, maintenancePolicyPowerOnOff),
+				Config: tmpl.MaintenancePolicy(t, instanceName, acceptance.PublicKeyMaterial, region, rootPass, maintenancePolicyPowerOnOff),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),

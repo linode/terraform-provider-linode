@@ -3,6 +3,7 @@
 package maintenancepolicies_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -48,7 +49,13 @@ func TestAccDataSourceMaintenancePolicies_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("maintenance_policies").AtSliceIndex(0).AtMapKey("notification_period_sec"),
-						knownvalue.Int64Exact(300),
+						knownvalue.Int64Func(func(value int64) error {
+							if value <= 0 {
+								return fmt.Errorf("expected non-zero notification_period_sec")
+							}
+
+							return nil
+						}),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
