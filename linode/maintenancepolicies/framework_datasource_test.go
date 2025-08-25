@@ -39,7 +39,9 @@ func TestAccDataSourceMaintenancePolicies_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("maintenance_policies").AtSliceIndex(0).AtMapKey("description"),
-						knownvalue.StringExact("Migrates the Linode to a new host while it remains fully operational. Recommended for maximizing availability."),
+						knownvalue.StringExact(
+							"Migrates the Linode to a new host while it remains fully operational. Recommended for maximizing availability.",
+						),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
