@@ -3,13 +3,12 @@ package instancetype
 import (
 	"context"
 
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 type DataSourceModel struct {

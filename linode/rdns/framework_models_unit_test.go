@@ -5,10 +5,9 @@ package rdns
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
 	"github.com/stretchr/testify/assert"
 )
 
