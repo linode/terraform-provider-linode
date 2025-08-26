@@ -50,6 +50,11 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 			"opening a support ticket.",
 		Computed: true,
 	},
+	"maintenance_policy": {
+		Type:        schema.TypeString,
+		Description: "This is the maintenance type of the Linode instance.",
+		Computed:    true,
+	},
 	"type": {
 		Type:        schema.TypeString,
 		Description: "The type of instance to be deployed, determining the price and size.",

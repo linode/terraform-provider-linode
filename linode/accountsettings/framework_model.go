@@ -15,6 +15,7 @@ type AccountSettingsModel struct {
 	BackupsEnabled       types.Bool   `tfsdk:"backups_enabled"`
 	Managed              types.Bool   `tfsdk:"managed"`
 	NetworkHelper        types.Bool   `tfsdk:"network_helper"`
+	MaintenancePolicy    types.String `tfsdk:"maintenance_policy"`
 }
 
 func (data *AccountSettingsModel) FlattenAccountSettings(
@@ -44,6 +45,8 @@ func (data *AccountSettingsModel) FlattenAccountSettings(
 	data.NetworkHelper = helper.KeepOrUpdateBool(
 		data.NetworkHelper, settings.NetworkHelper, preserveKnown,
 	)
+	data.MaintenancePolicy = helper.KeepOrUpdateString(
+		data.MaintenancePolicy, settings.MaintenancePolicy, preserveKnown)
 }
 
 func (data *AccountSettingsModel) CopyFrom(other AccountSettingsModel, preserveKnown bool) {
@@ -61,4 +64,6 @@ func (data *AccountSettingsModel) CopyFrom(other AccountSettingsModel, preserveK
 	data.NetworkHelper = helper.KeepOrUpdateValue(
 		data.NetworkHelper, other.NetworkHelper, preserveKnown,
 	)
+	data.MaintenancePolicy = helper.KeepOrUpdateValue(
+		data.MaintenancePolicy, other.MaintenancePolicy, preserveKnown)
 }
