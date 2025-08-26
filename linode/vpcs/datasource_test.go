@@ -47,17 +47,15 @@ func TestAccDataSourceVPCs_dualStack(t *testing.T) {
 	resourceName := "data.linode_vpcs.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"}, "core")
-	if err != nil {
-		t.Error(fmt.Errorf("failed to get region with VPC capability: %w", err))
-	}
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataDualStack(t, vpcLabel, testRegion),
+				Config: tmpl.DataDualStack(t, vpcLabel, targetRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "vpcs.#", 0),
 					resource.TestCheckResourceAttrSet(resourceName, "vpcs.0.label"),

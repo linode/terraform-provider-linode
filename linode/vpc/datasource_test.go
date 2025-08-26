@@ -46,7 +46,8 @@ func TestAccDataSourceVPC_dualStack(t *testing.T) {
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataDualStack(t, vpcLabel, testRegion),
+				// TODO (VPC Dual Stack): Remove region hardcoding
+				Config: tmpl.DataDualStack(t, vpcLabel, "no-osl-1"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "label", vpcLabel),
 					resource.TestCheckResourceAttrSet(resourceName, "description"),

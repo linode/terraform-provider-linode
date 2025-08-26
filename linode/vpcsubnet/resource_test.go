@@ -106,13 +106,16 @@ func TestAccResourceVPCSubnet_dualStack(t *testing.T) {
 	resName := "linode_vpc_subnet.foobar"
 	subnetLabel := acctest.RandomWithPrefix("tf-test")
 
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DualStack(t, subnetLabel, "10.0.0.0/24", testRegion),
+				Config: tmpl.DualStack(t, subnetLabel, "10.0.0.0/24", targetRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),

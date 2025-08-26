@@ -136,13 +136,16 @@ func TestAccResourceVPC_dualStack(t *testing.T) {
 	resName := "linode_vpc.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkVPCDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DualStack(t, vpcLabel, testRegion),
+				Config: tmpl.DualStack(t, vpcLabel, targetRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCExists,
 					resource.TestCheckResourceAttr(resName, "label", vpcLabel),
@@ -152,7 +155,7 @@ func TestAccResourceVPC_dualStack(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.DualStack(t, vpcLabel, testRegion),
+				Config: tmpl.DualStack(t, vpcLabel, targetRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCExists,
 					resource.TestCheckResourceAttr(resName, "label", vpcLabel),
