@@ -9,6 +9,7 @@ resource "linode_instance" "foobar" {
     type = "g6-nanode-1"
     image = "{{.Image}}"
     region = "{{ .Region }}"
+    maintenance_policy = "{{ .MaintenancePolicy }}"
     root_pass = "{{ .RootPass }}"
     swap_size = 256
     private_ip = true
