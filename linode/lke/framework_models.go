@@ -67,6 +67,7 @@ type LKENodePool struct {
 	Taints         []lkenodepool.NodePoolTaintModel `tfsdk:"taints"`
 	K8sVersion     types.String                     `tfsdk:"k8s_version"`
 	UpdateStrategy types.String                     `tfsdk:"update_strategy"`
+	Label          types.String                     `tfsdk:"label"`
 }
 
 type LKENodePoolDisk struct {
@@ -127,6 +128,7 @@ func (data *LKEDataModel) parseLKEAttributes(
 			pool.Type = types.StringValue(p.Type)
 			pool.DiskEncryption = types.StringValue(string(p.DiskEncryption))
 			pool.K8sVersion = types.StringPointerValue(p.K8sVersion)
+			pool.Label = types.StringPointerValue(p.Label)
 			if p.UpdateStrategy != nil {
 				pool.UpdateStrategy = types.StringValue(string(*p.UpdateStrategy))
 			}

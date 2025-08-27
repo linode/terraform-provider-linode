@@ -17,6 +17,7 @@ import (
 
 type NodePoolSpec struct {
 	ID                int
+	Label             string
 	Tags              []string
 	Type              string
 	Count             int
@@ -60,6 +61,10 @@ func ReconcileLKENodePoolSpecs(
 			UpdateStrategy: updateStrategy,
 		}
 
+		if spec.Label != "" {
+			createOpts.Label = linodego.Pointer(spec.Label)
+		}
+
 		if spec.Taints != nil {
 			createOpts.Taints = expandNodePoolTaints(spec.Taints)
 		}
@@ -100,6 +105,7 @@ func ReconcileLKENodePoolSpecs(
 	// we can assume new ones have been created
 	if len(newSpecs) > len(oldSpecs) {
 		for _, v := range newSpecs[len(oldSpecs):] {
+			fmt.Println(newSpecs)
 			if err := createPool(v); err != nil {
 				return result, err
 			}
@@ -132,6 +138,10 @@ func ReconcileLKENodePoolSpecs(
 		updateOpts := linodego.LKENodePoolUpdateOptions{
 			Count: newSpec.Count,
 			Tags:  &newSpecs[i].Tags,
+		}
+
+		if newSpec.Label != oldSpec.Label {
+			updateOpts.Label = linodego.Pointer(newSpec.Label)
 		}
 
 		if enterprise {
@@ -413,6 +423,12 @@ func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, dec
 				}
 			}
 
+			if declaredLabel, ok := declaredPool["label"].(string); ok && declaredLabel != "" {
+				if apiPool.Label == nil || declaredLabel != *apiPool.Label {
+					continue
+				}
+			}
+
 			// Pair the API pool with the declared pool
 			result[i] = apiPool
 			delete(apiPools, apiPool.ID)
@@ -474,6 +490,7 @@ func expandLinodeLKENodePoolSpecs(pool []interface{}, preserveNoTarget bool) (po
 
 		poolSpecs = append(poolSpecs, NodePoolSpec{
 			ID:                specMap["id"].(int),
+			Label:             specMap["label"].(string),
 			Type:              specMap["type"].(string),
 			Tags:              helper.ExpandStringSet(specMap["tags"].(*schema.Set)),
 			Taints:            helper.ExpandObjectSet(specMap["taint"].(*schema.Set)),
@@ -513,8 +530,14 @@ func flattenLKENodePools(pools []linodego.LKENodePool) []map[string]interface{} 
 			}
 		}
 
+		var nodePoolLabel string
+		if pool.Label != nil {
+			nodePoolLabel = *pool.Label
+		}
+
 		flattened[i] = map[string]interface{}{
 			"id":              pool.ID,
+			"label":           nodePoolLabel,
 			"count":           pool.Count,
 			"type":            pool.Type,
 			"tags":            pool.Tags,
