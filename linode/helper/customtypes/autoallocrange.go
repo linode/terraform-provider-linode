@@ -14,8 +14,7 @@ import (
 )
 
 // Ensure the implementation satisfies the expected interfaces
-var (
-	_ basetypes.StringTypable                    = LinodeScopesStringType{}
+	_ basetypes.StringTypable                    = LinodeAutoAllocRangeType{}
 	_ basetypes.StringValuableWithSemanticEquals = LinodeAutoAllocRangeValue{}
 )
 
