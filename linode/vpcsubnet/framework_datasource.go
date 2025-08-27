@@ -32,7 +32,7 @@ func (d *DataSource) Read(
 	tflog.Trace(ctx, "Read data."+d.Config.Name)
 	client := d.Meta.Client
 
-	var data VPCSubnetModel
+	var data Model
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {

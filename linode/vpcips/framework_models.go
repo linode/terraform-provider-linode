@@ -1,13 +1,16 @@
 package vpcips
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
 
-type VPCIPModel struct {
+type ModelVPCIP struct {
 	Address      types.String `tfsdk:"address"`
 	AddressRange types.String `tfsdk:"address_range"`
 	Gateway      types.String `tfsdk:"gateway"`
@@ -21,9 +24,23 @@ type VPCIPModel struct {
 	SubnetID     types.Int64  `tfsdk:"subnet_id"`
 	ConfigID     types.Int64  `tfsdk:"config_id"`
 	InterfaceID  types.Int64  `tfsdk:"interface_id"`
+
+	IPv6Range     types.String `tfsdk:"ipv6_range"`
+	IPv6IsPublic  types.Bool   `tfsdk:"ipv6_is_public"`
+	IPv6Addresses types.Set    `tfsdk:"ipv6_addresses"`
 }
 
-func (m *VPCIPModel) FlattenVPCIP(vpcIp *linodego.VPCIP, preserveKnown bool) {
+type ModelIPv6Address struct {
+	SLAACAddress types.String `tfsdk:"slaac_address"`
+}
+
+var ModelIPv6AddressObjectType = helper.Must(
+	helper.FrameworkModelToObjectType[ModelIPv6Address](context.Background()),
+)
+
+func (m *ModelVPCIP) FlattenVPCIP(ctx context.Context, vpcIp *linodego.VPCIP, preserveKnown bool) diag.Diagnostics {
+	var rd diag.Diagnostics
+
 	m.Address = helper.KeepOrUpdateStringPointer(m.Address, vpcIp.Address, preserveKnown)
 	m.AddressRange = helper.KeepOrUpdateStringPointer(m.AddressRange, vpcIp.AddressRange, preserveKnown)
 	m.Gateway = helper.KeepOrUpdateString(m.Gateway, vpcIp.Gateway, preserveKnown)
@@ -37,26 +54,54 @@ func (m *VPCIPModel) FlattenVPCIP(vpcIp *linodego.VPCIP, preserveKnown bool) {
 	m.SubnetID = helper.KeepOrUpdateInt64(m.SubnetID, int64(vpcIp.SubnetID), preserveKnown)
 	m.ConfigID = helper.KeepOrUpdateInt64(m.ConfigID, int64(vpcIp.ConfigID), preserveKnown)
 	m.InterfaceID = helper.KeepOrUpdateInt64(m.InterfaceID, int64(vpcIp.InterfaceID), preserveKnown)
+
+	m.IPv6Range = helper.KeepOrUpdateStringPointer(m.IPv6Range, vpcIp.IPv6Range, preserveKnown)
+	m.IPv6IsPublic = helper.KeepOrUpdateBoolPointer(m.IPv6IsPublic, vpcIp.IPv6IsPublic, preserveKnown)
+
+	ipv6AddressModels := helper.MapSlice(vpcIp.IPv6Addresses,
+		func(address linodego.VPCIPIPv6Address) ModelIPv6Address {
+			return ModelIPv6Address{
+				SLAACAddress: types.StringValue(address.SLAACAddress),
+			}
+		},
+	)
+
+	ipv6AddressSet, diags := types.SetValueFrom(ctx, ModelIPv6AddressObjectType, ipv6AddressModels)
+	if diags.HasError() {
+		return diags
+	}
+
+	m.IPv6Addresses = helper.KeepOrUpdateValue(
+		m.IPv6Addresses,
+		ipv6AddressSet,
+		preserveKnown,
+	)
+
+	return rd
 }
 
-type VPCIPFilterModel struct {
+type Model struct {
 	ID      types.String                     `tfsdk:"id"`
 	VPCID   types.Int64                      `tfsdk:"vpc_id"`
+	IPv6    types.Bool                       `tfsdk:"ipv6"`
 	Filters frameworkfilter.FiltersModelType `tfsdk:"filter"`
-	VPCIPs  []VPCIPModel                     `tfsdk:"vpc_ips"`
+	VPCIPs  []ModelVPCIP                     `tfsdk:"vpc_ips"`
 }
 
-func (model *VPCIPFilterModel) FlattenVPCIPs(
+func (model *Model) FlattenVPCIPs(
+	ctx context.Context,
 	vpcIps []linodego.VPCIP,
 	preserveKnown bool,
-) {
-	vpcipModels := make([]VPCIPModel, len(vpcIps))
+) diag.Diagnostics {
+	var rd diag.Diagnostics
+	vpcipModels := make([]ModelVPCIP, len(vpcIps))
 
 	for i := range vpcIps {
-		var vpcIp VPCIPModel
-		vpcIp.FlattenVPCIP(&vpcIps[i], preserveKnown)
+		var vpcIp ModelVPCIP
+		rd.Append(vpcIp.FlattenVPCIP(ctx, &vpcIps[i], preserveKnown)...)
 		vpcipModels[i] = vpcIp
 	}
 
 	model.VPCIPs = vpcipModels
+	return rd
 }

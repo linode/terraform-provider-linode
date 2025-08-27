@@ -46,15 +46,23 @@ Each Linode VPC will be stored in the `vpcs` attribute and will export the follo
 
 * `id` - The unique id of this VPC.
 
-* `label` - The label of the VPC.
+* `created` - The date and time when the VPC was created.
 
 * `description` - The user-defined description of this VPC.
 
+* `ipv6` - A list of IPv6 allocations under this VPC.
+
+* `label` - The label of the VPC.
+
 * `region` - The region where the VPC is deployed.
 
-* `created` - The date and time when the VPC was created.
-
 * `updated` - The date and time when the VPC was last updated.
+
+## IPv6
+
+Contains information about a single IPv6 allocation under a VPC.
+
+* `range` - The allocated range in CIDR format.
 
 ## Filterable Fields
 

@@ -19,6 +19,14 @@ func DataBasic(t testing.TB, label, region string) string {
 		})
 }
 
+func DataDualStack(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpcs_data_dual_stack", TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}
+
 func DataFilterLabel(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpcs_data_filter_label", TemplateData{

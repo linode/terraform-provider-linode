@@ -23,6 +23,18 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The IPv4 range of this subnet in CIDR format.",
 			Computed:    true,
 		},
+		"ipv6": schema.ListNestedAttribute{
+			Description: "The IPv6 ranges of this subnet.",
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"range": schema.StringAttribute{
+						Description: "An IPv6 range allocated to this subnet.",
+						Computed:    true,
+					},
+				},
+			},
+		},
 		"created": schema.StringAttribute{
 			Description: "The date and time when the VPC Subnet was created.",
 			Computed:    true,

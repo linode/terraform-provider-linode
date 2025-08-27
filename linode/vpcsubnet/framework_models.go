@@ -10,17 +10,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
 )
 
-type VPCSubnetModel struct {
+type Model struct {
 	ID      types.String      `tfsdk:"id"`
 	VPCId   types.Int64       `tfsdk:"vpc_id"`
 	Label   types.String      `tfsdk:"label"`
 	IPv4    types.String      `tfsdk:"ipv4"`
+	IPv6    types.List        `tfsdk:"ipv6"`
 	Linodes types.List        `tfsdk:"linodes"`
 	Created timetypes.RFC3339 `tfsdk:"created"`
 	Updated timetypes.RFC3339 `tfsdk:"updated"`
 }
+
+type ModelIPv6 struct {
+	Range customtypes.LinodeAutoAllocRangeValue `tfsdk:"range"`
+}
+
+var ModelIPv6ObjectType = helper.Must(
+	helper.FrameworkModelToObjectType[ModelIPv6](context.Background()),
+)
 
 func FlattenSubnetLinodeInterface(iface linodego.VPCSubnetLinodeInterface) (types.Object, diag.Diagnostics) {
 	return types.ObjectValue(LinodeInterfaceObjectType.AttrTypes, map[string]attr.Value{
@@ -77,7 +87,7 @@ func FlattenSubnetLinodes(
 	return &linodesList, diags
 }
 
-func (d *VPCSubnetModel) FlattenSubnet(
+func (d *Model) FlattenSubnet(
 	ctx context.Context,
 	subnet *linodego.VPCSubnet,
 	preserveKnown bool,
@@ -101,7 +111,28 @@ func (d *VPCSubnetModel) FlattenSubnet(
 		preserveKnown,
 	)
 	d.Label = helper.KeepOrUpdateString(d.Label, subnet.Label, preserveKnown)
+
 	d.IPv4 = helper.KeepOrUpdateString(d.IPv4, subnet.IPv4, preserveKnown)
+
+	ipv6AddressModels := helper.MapSlice(
+		subnet.IPv6,
+		func(subnet linodego.VPCIPv6Range) ModelIPv6 {
+			return ModelIPv6{
+				Range: customtypes.LinodeAutoAllocRangeValue{StringValue: types.StringValue(subnet.Range)},
+			}
+		},
+	)
+
+	ipv6AddressesList, diags := types.ListValueFrom(ctx, ModelIPv6ObjectType, ipv6AddressModels)
+	if diags.HasError() {
+		return diags
+	}
+
+	d.IPv6 = helper.KeepOrUpdateValue(
+		d.IPv6,
+		ipv6AddressesList,
+		preserveKnown,
+	)
 
 	return nil
 }

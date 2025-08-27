@@ -1,0 +1,10 @@
+{{ define "vpc_subnet_data_dual_stack" }}
+
+{{ template "vpc_subnet_dual_stack" . }}
+
+data "linode_vpc_subnet" "foo" {
+    vpc_id = linode_vpc_subnet.foobar.vpc_id
+    id = linode_vpc_subnet.foobar.id
+}
+
+{{ end }}
