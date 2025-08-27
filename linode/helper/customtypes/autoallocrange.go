@@ -13,7 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
-// Ensure the implementation satisfies the expected interfaces
+var (
+	// Ensure the implementation satisfies the expected interfaces
 	_ basetypes.StringTypable                    = LinodeAutoAllocRangeType{}
 	_ basetypes.StringValuableWithSemanticEquals = LinodeAutoAllocRangeValue{}
 )
