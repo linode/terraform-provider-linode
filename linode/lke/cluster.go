@@ -17,7 +17,6 @@ import (
 
 type NodePoolSpec struct {
 	ID                int
-	Label             string
 	Tags              []string
 	Type              string
 	Count             int
@@ -28,6 +27,7 @@ type NodePoolSpec struct {
 	AutoScalerMax     int
 	K8sVersion        *string
 	UpdateStrategy    *string
+	Label             *string
 }
 
 type NodePoolUpdates struct {
@@ -61,8 +61,8 @@ func ReconcileLKENodePoolSpecs(
 			UpdateStrategy: updateStrategy,
 		}
 
-		if spec.Label != "" {
-			createOpts.Label = linodego.Pointer(spec.Label)
+		if spec.Label != nil && *spec.Label != "" {
+			createOpts.Label = spec.Label
 		}
 
 		if spec.Taints != nil {
@@ -105,7 +105,6 @@ func ReconcileLKENodePoolSpecs(
 	// we can assume new ones have been created
 	if len(newSpecs) > len(oldSpecs) {
 		for _, v := range newSpecs[len(oldSpecs):] {
-			fmt.Println(newSpecs)
 			if err := createPool(v); err != nil {
 				return result, err
 			}
@@ -140,8 +139,9 @@ func ReconcileLKENodePoolSpecs(
 			Tags:  &newSpecs[i].Tags,
 		}
 
-		if newSpec.Label != oldSpec.Label {
-			updateOpts.Label = linodego.Pointer(newSpec.Label)
+		if (newSpec.Label != nil && oldSpec.Label != nil && *newSpec.Label != *oldSpec.Label) ||
+			(newSpec.Label != nil && oldSpec.Label == nil) || (newSpec.Label == nil && oldSpec.Label != nil) {
+			updateOpts.Label = newSpec.Label
 		}
 
 		if enterprise {
@@ -488,9 +488,14 @@ func expandLinodeLKENodePoolSpecs(pool []interface{}, preserveNoTarget bool) (po
 			updateStrategyPtr = &v
 		}
 
+		var labelPtr *string
+		if v, ok := specMap["label"].(string); ok && v != "" {
+			labelPtr = &v
+		}
+
 		poolSpecs = append(poolSpecs, NodePoolSpec{
 			ID:                specMap["id"].(int),
-			Label:             specMap["label"].(string),
+			Label:             labelPtr,
 			Type:              specMap["type"].(string),
 			Tags:              helper.ExpandStringSet(specMap["tags"].(*schema.Set)),
 			Taints:            helper.ExpandObjectSet(specMap["taint"].(*schema.Set)),
@@ -530,14 +535,9 @@ func flattenLKENodePools(pools []linodego.LKENodePool) []map[string]interface{} 
 			}
 		}
 
-		var nodePoolLabel string
-		if pool.Label != nil {
-			nodePoolLabel = *pool.Label
-		}
-
 		flattened[i] = map[string]interface{}{
 			"id":              pool.ID,
-			"label":           nodePoolLabel,
+			"label":           pool.Label,
 			"count":           pool.Count,
 			"type":            pool.Type,
 			"tags":            pool.Tags,

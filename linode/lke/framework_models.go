@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
@@ -128,7 +129,13 @@ func (data *LKEDataModel) parseLKEAttributes(
 			pool.Type = types.StringValue(p.Type)
 			pool.DiskEncryption = types.StringValue(string(p.DiskEncryption))
 			pool.K8sVersion = types.StringPointerValue(p.K8sVersion)
-			pool.Label = types.StringPointerValue(p.Label)
+
+			var label basetypes.StringValue
+			if p.Label != nil {
+				label = types.StringPointerValue(p.Label)
+			}
+			pool.Label = label
+
 			if p.UpdateStrategy != nil {
 				pool.UpdateStrategy = types.StringValue(string(*p.UpdateStrategy))
 			}

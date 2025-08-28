@@ -90,8 +90,8 @@ var resourceSchema = map[string]*schema.Schema{
 				"label": {
 					Type:        schema.TypeString,
 					Description: "The label of the Node Pool.",
-					Computed:    true,
 					Optional:    true,
+					Default:     "",
 				},
 				"count": {
 					Type:         schema.TypeInt,
