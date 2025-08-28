@@ -21,7 +21,6 @@ var frameworkDataSourceSchema = schema.Schema{
 			Required:    true,
 		},
 		"label": schema.StringAttribute{
-			Optional:    true,
 			Computed:    true,
 			Description: "The unique label for the cluster.",
 		},
@@ -129,7 +128,7 @@ var frameworkDataSourceSchema = schema.Schema{
 					},
 					"label": schema.StringAttribute{
 						Description: "The label of the Node Pool.",
-						Computed:    true,
+						Optional:    true,
 					},
 					"count": schema.Int64Attribute{
 						Computed:    true,

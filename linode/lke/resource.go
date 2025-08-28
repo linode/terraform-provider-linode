@@ -195,8 +195,13 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			count = autoscaler.Min
 		}
 
+		label := ""
+		if poolSpec["label"] != "" {
+			label = poolSpec["label"].(string)
+		}
+
 		createOpts.NodePools = append(createOpts.NodePools, linodego.LKENodePoolCreateOptions{
-			Label:      poolSpec["label"].(*string),
+			Label:      &label,
 			Type:       poolSpec["type"].(string),
 			Tags:       helper.ExpandStringSet(poolSpec["tags"].(*schema.Set)),
 			Taints:     expandNodePoolTaints(helper.ExpandObjectSet(poolSpec["taint"].(*schema.Set))),

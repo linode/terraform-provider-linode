@@ -140,8 +140,11 @@ func ReconcileLKENodePoolSpecs(
 		}
 
 		if (newSpec.Label != nil && oldSpec.Label != nil && *newSpec.Label != *oldSpec.Label) ||
-			(newSpec.Label != nil && oldSpec.Label == nil) || (newSpec.Label == nil && oldSpec.Label != nil) {
+			(newSpec.Label != nil && oldSpec.Label == nil) {
 			updateOpts.Label = newSpec.Label
+		} else if newSpec.Label == nil && oldSpec.Label != nil {
+			empty := ""
+			updateOpts.Label = &empty
 		}
 
 		if enterprise {
