@@ -66,8 +66,11 @@ func init() {
 
 	testRegions = helper.FilterSlice(regions, func(region string) bool {
 		isDisallowed, ok := disallowedImageRegions[region]
+		fmt.Println(region, isDisallowed, ok)
 		return !ok || !isDisallowed
 	})
+
+	fmt.Println(testRegions)
 
 	testRegion = testRegions[1]
 }

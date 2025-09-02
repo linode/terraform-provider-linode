@@ -62,5 +62,5 @@ func Filter[T any](seq iter.Seq[T], isValid func(T) bool) iter.Seq[T] {
 
 // FilterSlice returns a new slice yielding only values that meet the condition defined by isValid.
 func FilterSlice[T any](value []T, isValid func(T) bool) []T {
-	return slices.Collect(slices.Values(value))
+	return slices.Collect(Filter(slices.Values(value), isValid))
 }
