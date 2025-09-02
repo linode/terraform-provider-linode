@@ -69,8 +69,6 @@ func init() {
 		return !ok || !isDisallowed
 	})
 
-	fmt.Println(testRegions)
-
 	testRegion = testRegions[1]
 }
 
