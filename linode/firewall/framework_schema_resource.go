@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	linodeplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/planmodifiers"
+	linodeplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/stringplanmodifiers"
 )
 
 var ruleNestedObject = schema.NestedBlockObject{

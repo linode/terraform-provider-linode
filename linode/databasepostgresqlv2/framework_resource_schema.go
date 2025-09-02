@@ -24,6 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/stringplanmodifiers"
 )
 
 var (
@@ -92,7 +93,7 @@ var frameworkResourceSchema = schema.Schema{
 			Description:   "The base64-encoded SSL CA certificate for the Managed Database.",
 			Computed:      true,
 			Sensitive:     true,
-			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			PlanModifiers: []planmodifier.String{stringplanmodifiers.UseStateForUnknownIfNotNull()},
 		},
 		"cluster_size": schema.Int64Attribute{
 			Optional:    true,
@@ -211,13 +212,13 @@ var frameworkResourceSchema = schema.Schema{
 			Description:   "The randomly generated root password for the Managed Database instance.",
 			Computed:      true,
 			Sensitive:     true,
-			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			PlanModifiers: []planmodifier.String{stringplanmodifiers.UseStateForUnknownIfNotNull()},
 		},
 		"root_username": schema.StringAttribute{
 			Description:   "The root username for the Managed Database instance.",
 			Computed:      true,
 			Sensitive:     true,
-			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			PlanModifiers: []planmodifier.String{stringplanmodifiers.UseStateForUnknownIfNotNull()},
 		},
 		"ssl_connection": schema.BoolAttribute{
 			Computed:    true,
