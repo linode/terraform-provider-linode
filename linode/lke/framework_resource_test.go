@@ -712,16 +712,20 @@ func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 func TestAccResourceLKECluster_enterprise(t *testing.T) {
 	t.Parallel()
 
+	k8sVersionEnterprise = "v1.31.9+lke5" // currently on this version works with BYO VPC
+
 	if k8sVersionEnterprise == "" {
 		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
 	}
 
-	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise"}, "core")
-	if err != nil {
-		log.Fatal(err)
-	}
+	enterpriseRegion := "no-osl-1" // currently only oslo region works with BYO VPC
+	//enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
-		clusterName := acctest.RandomWithPrefix("tf_test")
+		clusterName := acctest.RandomWithPrefix("tf-test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
@@ -742,6 +746,9 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.k8s_version", k8sVersionEnterprise),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.update_strategy", "on_recycle"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "vpc_id"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "stack_type"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "control_plane.audit_logs_enabled"),
 					),
 				},
 				{

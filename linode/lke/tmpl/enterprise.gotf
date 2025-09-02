@@ -1,11 +1,19 @@
 {{ define "lke_cluster_enterprise" }}
 
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+    description = "some description"
+}
+
 resource "linode_lke_cluster" "test" {
     label       = "{{.Label}}"
     region      = "{{ .Region }}"
     k8s_version = "{{.K8sVersion}}"
     tags        = ["test"]
     tier = "enterprise"
+    vpc_id = linode_vpc.foobar.id
+    stack_type = "ipv4"
 
     pool {
         type  = "g6-standard-1"

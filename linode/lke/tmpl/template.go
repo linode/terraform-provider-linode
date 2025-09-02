@@ -23,6 +23,7 @@ type TemplateData struct {
 	IPv6             string
 	Taints           []TaintData
 	Labels           map[string]string
+	AuditLogsEnabled bool
 }
 
 func Basic(t testing.TB, name, version, region string) string {

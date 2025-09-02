@@ -73,6 +73,18 @@ var frameworkDataSourceSchema = schema.Schema{
 			Computed:    true,
 			Description: "The desired Kubernetes tier.",
 		},
+		"subnet_id": schema.Int64Attribute{
+			Computed:    true,
+			Description: "The ID of the VPC subnet to use for the Kubernetes cluster. This subnet must be dual stack (IPv4 and IPv6 should both be enabled). ",
+		},
+		"vpc_id": schema.Int64Attribute{
+			Computed:    true,
+			Description: "The ID of the VPC to use for the Kubernetes cluster.",
+		},
+		"stack_type": schema.StringAttribute{
+			Computed:    true,
+			Description: "The networking stack type of the Kubernetes cluster.",
+		},
 	},
 	Blocks: map[string]schema.Block{
 		"control_plane": schema.ListNestedBlock{
@@ -81,6 +93,10 @@ var frameworkDataSourceSchema = schema.Schema{
 				Attributes: map[string]schema.Attribute{
 					"high_availability": schema.BoolAttribute{
 						Description: "Defines whether High Availability is enabled for the Control Plane Components of the cluster.",
+						Computed:    true,
+					},
+					"audit_logs_enabled": schema.BoolAttribute{
+						Description: "Enables audit logs on the cluster's control plane.",
 						Computed:    true,
 					},
 				},

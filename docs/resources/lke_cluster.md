@@ -27,6 +27,23 @@ resource "linode_lke_cluster" "my-cluster" {
 }
 ```
 
+Creating an enterprise LKE cluster:
+```terraform
+resource "linode_lke_cluster" "test" {
+    label       = "lke-e-cluster"
+    region      = "us-lax"
+    k8s_version = "v1.31.8+lke5"
+    tags        = ["test"]
+    tier = "enterprise"
+
+    pool {
+      type  = "g7-premium-2"
+      count = 3
+      tags  = ["test"]
+    }
+}
+```
+
 Creating an LKE cluster with autoscaler:
 
 ```terraform
@@ -126,6 +143,12 @@ The following arguments are supported:
 
 * `tier` - (Optional) The desired Kubernetes tier. (**Note: v4beta only and may not currently be available to all users.**)
 
+* `subnet_id` - (Optional) The ID of the VPC subnet to use for the Kubernetes cluster. This subnet must be dual stack (IPv4 and IPv6 should both be enabled). (**Note: v4beta only and may not currently be available to all users.**)
+
+* `vpc_id` - (Optional) The ID of the VPC to use for the Kubernetes cluster.
+
+* `stack_type` - (Optional) The networking stack type of the Kubernetes cluster.
+
 ### pool
 
 ~> **Notice** Due to limitations in Terraform, the order of pools in the `linode_lke_cluster` resource is treated as significant.
@@ -179,6 +202,8 @@ The following arguments are supported in the `acl` specification block:
 * `enabled` - (Optional) Defines default policy. A value of true results in a default policy of DENY. A value of false results in default policy of ALLOW, and has the same effect as delete the ACL configuration.
 
 * [`addresses`](#addresses) - (Optional) A list of ip addresses to allow.
+
+* `audit_logs_enabled` - (Optional) Enables audit logs on the cluster's control plane.
 
 ### addresses
 

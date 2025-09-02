@@ -78,6 +78,30 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "The desired Kubernetes tier.",
 		ForceNew:    true,
 	},
+	"subnet_id": {
+		Type:        schema.TypeInt,
+		Optional:    true,
+		Computed:    true,
+		Description: "The ID of the VPC subnet to use for the Kubernetes cluster. This subnet must be dual stack (IPv4 and IPv6 should both be enabled). ",
+	},
+	"vpc_id": {
+		Type:        schema.TypeInt,
+		Optional:    true,
+		Computed:    true,
+		Description: "The ID of the VPC to use for the Kubernetes cluster.",
+	},
+	"stack_type": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Computed:    true,
+		Description: "The networking stack type of the Kubernetes cluster.",
+		ValidateDiagFunc: validation.ToDiagFunc(
+			validation.StringInSlice([]string{
+				string(linodego.LKEClusterStackIPv4),
+				string(linodego.LKEClusterDualStack),
+			}, false),
+		),
+	},
 	"pool": {
 		Type: schema.TypeList,
 		Elem: &schema.Resource{
@@ -259,6 +283,12 @@ var resourceSchema = map[string]*schema.Schema{
 				"high_availability": {
 					Type:        schema.TypeBool,
 					Description: "Defines whether High Availability is enabled for the Control Plane Components of the cluster.",
+					Optional:    true,
+					Computed:    true,
+				},
+				"audit_logs_enabled": {
+					Type:        schema.TypeBool,
+					Description: "Enables audit logs on the cluster's control plane.",
 					Optional:    true,
 					Computed:    true,
 				},
