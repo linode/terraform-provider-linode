@@ -9,37 +9,33 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
     ignore:
       - dependency-name: "github.com/linode/terraform-provider-linode/linode"
   - package-ecosystem: "gomod"
     directory: "/tools"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
 
   # extended-support/v2
   - package-ecosystem: "gomod"
     target-branch: extended-support/v2
     directory: "/"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
     ignore:
       - dependency-name: "github.com/linode/terraform-provider-linode/linode"
   - package-ecosystem: "gomod"
     target-branch: extended-support/v2
     directory: "/tools"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
   - package-ecosystem: "github-actions"
     target-branch: extended-support/v2
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
