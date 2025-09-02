@@ -44,3 +44,23 @@ func MapMap[IK, OK comparable, IV, OV any](values map[IK]IV, transform func(IK, 
 		),
 	)
 }
+
+// Filter returns a new iterator yielding only values that meet the condition defined by isValid.
+func Filter[T any](seq iter.Seq[T], isValid func(T) bool) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for value := range seq {
+			if !isValid(value) {
+				continue
+			}
+
+			if !yield(value) {
+				return
+			}
+		}
+	}
+}
+
+// FilterSlice returns a new slice yielding only values that meet the condition defined by isValid.
+func FilterSlice[T any](value []T, isValid func(T) bool) []T {
+	return slices.Collect(slices.Values(value))
+}
