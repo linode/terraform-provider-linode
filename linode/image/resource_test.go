@@ -37,6 +37,18 @@ var testImageBytesNew = []byte{
 }
 
 var (
+	// This is necessary because the API does not currently expose
+	// a capability for regions that allow custom image uploads.
+	//
+	// In the future, we should remove this if the API exposes a custom images capability or
+	//	if all Object Storage regions support custom images.
+	disallowedImageRegions = map[string]bool{
+		"gb-lon":   true,
+		"au-mel":   true,
+		"sg-sin-2": true,
+		"jp-tyo-3": true,
+	}
+
 	testRegion  string
 	testRegions []string
 )
@@ -52,8 +64,12 @@ func init() {
 		log.Fatal(err)
 	}
 
-	testRegion = regions[1]
-	testRegions = regions
+	testRegions = helper.FilterSlice(regions, func(region string) bool {
+		isDisallowed, ok := disallowedImageRegions[region]
+		return !ok || !isDisallowed
+	})
+
+	testRegion = testRegions[1]
 }
 
 func sweep(prefix string) error {
