@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	linodeplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/stringplanmodifiers"
+	linodesetplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/setplanmodifiers"
 )
 
 var resourceSchema = schema.Schema{
@@ -64,7 +64,7 @@ var resourceSchema = schema.Schema{
 			Computed:    true,
 			Default:     helper.EmptySetDefault(types.StringType),
 			PlanModifiers: []planmodifier.Set{
-				linodeplanmodifiers.CaseInsensitiveSet(),
+				linodesetplanmodifiers.CaseInsensitiveSet(),
 			},
 			Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 		},

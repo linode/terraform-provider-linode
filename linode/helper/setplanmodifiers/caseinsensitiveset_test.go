@@ -1,6 +1,6 @@
 //go:build unit
 
-package stringplanmodifiers
+package setplanmodifiers_test
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/setplanmodifiers"
 )
 
 func TestCaseInsensitiveSet(t *testing.T) {
@@ -44,7 +45,7 @@ func TestCaseInsensitiveSet(t *testing.T) {
 
 	var diags diag.Diagnostics
 
-	testPlanModifier := CaseInsensitiveSet()
+	testPlanModifier := setplanmodifiers.CaseInsensitiveSet()
 
 	for i, testCase := range testCases {
 		stateValue, d := types.SetValueFrom(
