@@ -68,7 +68,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	cluster, err := client.GetLKECluster(ctx, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			log.Printf("[WARN] removing LKE Cluster ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
@@ -331,7 +331,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	cluster, err := client.GetLKECluster(ctx, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			log.Printf("[WARN] removing LKE Cluster ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
@@ -447,7 +447,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err != nil {
 		// If we're getting a 404, it's safe to say the cluster has been
 		// deleted.
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			return nil
 		}
 

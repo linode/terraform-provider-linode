@@ -158,7 +158,7 @@ func (r *Resource) Read(
 
 	ip, err := client.GetIPAddress(ctx, address)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"Reserved IP No Longer Exists",
 				fmt.Sprintf("Removing reserved IP %s from state because it no longer exists", state.ID.ValueString()),

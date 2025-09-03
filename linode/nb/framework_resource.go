@@ -148,7 +148,7 @@ func (r *Resource) Read(
 
 	nodeBalancer, err := client.GetNodeBalancer(ctx, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"NodeBalancer No Longer Exists",
 				fmt.Sprintf("Removing Linode NodeBalancer ID %v from state because it no longer exists", id),
@@ -299,7 +299,7 @@ func (r *Resource) Delete(
 
 	err := client.DeleteNodeBalancer(ctx, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"NodeBalancer No Longer Exists",
 				fmt.Sprintf("NodeBalancer %v does not exist, removing it from state.", id),
