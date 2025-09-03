@@ -126,3 +126,6 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+// TODO: remove once linodego released
+replace github.com/linode/linodego => github.com/linode/linodego v1.56.1-0.20250902193007-86c76ebec979
