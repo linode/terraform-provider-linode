@@ -27,6 +27,17 @@ resource "linode_lke_node_pool" "my-pool" {
 }
 ```
 
+Creating a basic LKE Node with label:
+
+```terraform
+resource "linode_lke_node_pool" "my-pool" {
+    cluster_id  = 150003
+    type  = "g6-standard-2"
+    node_count = 3
+    label = "app-pool"
+}
+```
+
 Creating an LKE Node Pool with autoscaler:
 
 ```terraform
@@ -90,6 +101,8 @@ The following arguments are supported:
 * `node_count` - (Required; Optional with `autoscaler`) The number of nodes in the Node Pool. If undefined with an autoscaler the initial node count will equal the autoscaler minimum.
 
 * `tags` - (Optional) An array of tags applied to the Node Pool. Tags can be used to flag node pools as externally managed, see [Externally Managed Node Pools](lke_cluster.md#externally-managed-node-pools) for more details.
+
+* `label` - (Optional) A label for the Node Pool. If not provided, it defaults to empty string.
 
 * `labels` - (Optional) A map attribute containing key-value pairs to be added as labels to nodes in the node pool. Labels help classify your nodes and to easily select subsets of objects. To learn more, review [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools).
 

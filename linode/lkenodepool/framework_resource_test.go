@@ -442,9 +442,11 @@ func TestAccResourceNodePoolEnterprise_basic(t *testing.T) {
 	templateData.PoolTag = poolTag
 	templateData.K8sVersion = enterpriseK8sVersion
 	templateData.Region = region
+	templateData.Label = "foobar-pool"
 	templateData.UpdateStrategy = "on_recycle"
 	createConfig := createEnterpriseResourceConfig(t, &templateData)
 	templateData.UpdateStrategy = "rolling_update"
+	templateData.Label = ""
 	updateConfig := createEnterpriseResourceConfig(t, &templateData)
 
 	resource.Test(t, resource.TestCase{
@@ -458,6 +460,7 @@ func TestAccResourceNodePoolEnterprise_basic(t *testing.T) {
 					checkNodePoolExists,
 					resource.TestCheckResourceAttr(resName, "k8s_version", enterpriseK8sVersion),
 					resource.TestCheckResourceAttr(resName, "update_strategy", "on_recycle"),
+					resource.TestCheckResourceAttr(resName, "label", "foobar-pool"),
 				),
 			},
 			{
@@ -472,6 +475,7 @@ func TestAccResourceNodePoolEnterprise_basic(t *testing.T) {
 					checkNodePoolExists,
 					resource.TestCheckResourceAttr(resName, "k8s_version", enterpriseK8sVersion),
 					resource.TestCheckResourceAttr(resName, "update_strategy", "rolling_update"),
+					resource.TestCheckResourceAttr(resName, "label", ""),
 				),
 			},
 		},
