@@ -23,6 +23,7 @@ resource "linode_lke_node_pool" "foobar" {
     cluster_id = linode_lke_cluster.nodepool_test_cluster.id
 {{ end }}
 
+    label = "{{.Label}}"
     node_count = 2
     type  = "{{ .PoolNodeType }}"
     k8s_version = "{{.K8sVersion}}"

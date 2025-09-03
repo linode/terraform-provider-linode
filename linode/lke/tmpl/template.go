@@ -21,6 +21,7 @@ type TemplateData struct {
 	ACLEnabled       bool
 	IPv4             string
 	IPv6             string
+	PoolLabel        string
 	Taints           []TaintData
 	Labels           map[string]string
 }
@@ -47,6 +48,11 @@ func ManyPools(t testing.TB, name, k8sVersion, region string) string {
 func ComplexPools(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_complex_pools", TemplateData{Label: name, K8sVersion: version, Region: region})
+}
+
+func LabelledPools(t testing.TB, name, version, region, poolLabel string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_labelled_pools", TemplateData{Label: name, K8sVersion: version, Region: region, PoolLabel: poolLabel})
 }
 
 func Autoscaler(t testing.TB, name, version, region string) string {

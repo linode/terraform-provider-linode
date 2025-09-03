@@ -126,6 +126,10 @@ var frameworkDataSourceSchema = schema.Schema{
 						Computed:    true,
 						Description: "The ID of the Node Pool.",
 					},
+					"label": schema.StringAttribute{
+						Description: "The label of the Node Pool.",
+						Optional:    true,
+					},
 					"count": schema.Int64Attribute{
 						Computed:    true,
 						Description: "The number of nodes in the Node Pool.",
