@@ -194,7 +194,7 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 	}
 
 	if !state.Label.Equal(pool.Label) {
-		p.Label = linodego.Pointer(pool.Label.ValueString())
+		p.Label = pool.Label.ValueStringPointer()
 		shouldUpdate = true
 	}
 
