@@ -1,6 +1,6 @@
 //go:build unit
 
-package stringplanmodifiers
+package setplanmodifiers
 
 import (
 	"context"

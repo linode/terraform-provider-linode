@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	linodeplanmodifier "github.com/linode/terraform-provider-linode/v3/linode/helper/stringplanmodifiers"
+	linodeplanmodifier "github.com/linode/terraform-provider-linode/v3/linode/helper/setplanmodifiers"
 )
 
 const (

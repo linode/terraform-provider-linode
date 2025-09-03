@@ -1,4 +1,4 @@
-package stringplanmodifiers
+package setplanmodifiers
 
 import (
 	"context"
