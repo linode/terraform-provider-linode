@@ -100,7 +100,7 @@ resource "linode_lke_cluster" "my-cluster" {
 }
 ```
 
-Creating an LKE cluster with node pool labels::
+Creating an LKE cluster with node pool labels:
 
 ```terraform
 resource "linode_lke_cluster" "my-cluster" {
