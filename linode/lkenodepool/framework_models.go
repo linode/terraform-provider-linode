@@ -146,7 +146,7 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 		diags,
 	)
 	p.Type = pool.Type.ValueString()
-	p.Label = linodego.Pointer(pool.Label.ValueString())
+	p.Label = pool.Label.ValueStringPointer()
 
 	if !pool.Tags.IsNull() {
 		diags.Append(pool.Tags.ElementsAs(ctx, &p.Tags, false)...)
