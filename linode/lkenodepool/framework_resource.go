@@ -60,7 +60,7 @@ func (r *Resource) Read(
 
 	nodePool, err := client.GetLKENodePool(ctx, clusterID, poolID)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"Error reading Linode Node Pool",
 				fmt.Sprintf("Removing Linode Node Pool %d in cluster %d, from state because it no longer exists", poolID, clusterID),
@@ -258,7 +258,7 @@ func (r *Resource) Delete(
 	})
 	err := client.DeleteLKENodePool(ctx, clusterID, poolID)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"Node Pool does not exist.",
 				fmt.Sprintf("Node Pool %v does not exist in cluster %v, removing from state.", poolID, clusterID),

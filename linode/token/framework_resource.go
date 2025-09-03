@@ -111,7 +111,7 @@ func (r *Resource) Read(
 
 	token, err := client.GetToken(ctx, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"Token No Longer Exists",
 				fmt.Sprintf(
