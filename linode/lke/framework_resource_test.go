@@ -719,6 +719,8 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 	}
 
 	enterpriseRegion := "no-osl-1" // currently only oslo region works with BYO VPC
+
+	// TODO: revert to dynamic selection once more regions available
 	//enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
 	//if err != nil {
 	//	log.Fatal(err)
