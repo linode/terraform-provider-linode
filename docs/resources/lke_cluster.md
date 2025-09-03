@@ -194,6 +194,8 @@ The following arguments are supported in the `control_plane` specification block
 
 * `high_availability` - (Optional) Defines whether High Availability is enabled for the cluster Control Plane. This is an **irreversible** change.
 
+* `audit_logs_enabled` - (Optional) Enables audit logs on the cluster's control plane.
+
 * [`acl`](#acl) - (Optional) Defines the ACL configuration for an LKE cluster's control plane.
 
 ### acl
@@ -203,8 +205,6 @@ The following arguments are supported in the `acl` specification block:
 * `enabled` - (Optional) Defines default policy. A value of true results in a default policy of DENY. A value of false results in default policy of ALLOW, and has the same effect as delete the ACL configuration.
 
 * [`addresses`](#addresses) - (Optional) A list of ip addresses to allow.
-
-* `audit_logs_enabled` - (Optional) Enables audit logs on the cluster's control plane.
 
 ### addresses
 
