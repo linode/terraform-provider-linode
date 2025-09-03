@@ -7,7 +7,7 @@ description: |-
 # linode\_maintenance\_policies
 
 Provides details about the Maintenance Policies available to apply to Accounts and Instances.
-For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-policies). (**Note: v4beta only.**)
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-maintenance-policies). (**Note: v4beta only.**)
 
 ## Example Usage
 
