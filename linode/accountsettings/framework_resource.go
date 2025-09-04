@@ -172,8 +172,9 @@ func (r *Resource) updateAccountSettings(
 	}
 
 	updateOpts := linodego.AccountSettingsUpdateOptions{
-		BackupsEnabled: plan.BackupsEnabled.ValueBoolPointer(),
-		NetworkHelper:  plan.NetworkHelper.ValueBoolPointer(),
+		BackupsEnabled:    plan.BackupsEnabled.ValueBoolPointer(),
+		NetworkHelper:     plan.NetworkHelper.ValueBoolPointer(),
+		MaintenancePolicy: plan.MaintenancePolicy.ValueStringPointer(),
 	}
 
 	tflog.Debug(ctx, "client.UpdateAccountSettings(...)", map[string]any{

@@ -336,7 +336,7 @@ func (r *Resource) Read(
 
 	volume, err := client.GetVolume(ctx, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"Volume Not Found",
 				fmt.Sprintf("removing Volume ID %d from state because it no longer exists", id),

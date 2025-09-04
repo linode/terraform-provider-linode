@@ -122,7 +122,7 @@ func (r *Resource) Read(
 
 	device, err := client.GetFirewallDevice(ctx, firewallID, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"Firewall Device No Longer Exists",
 				fmt.Sprintf(
@@ -213,7 +213,7 @@ func (r *Resource) Delete(
 
 	err := client.DeleteFirewallDevice(ctx, firewallID, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				fmt.Sprintf(
 					"Attempted to Delete Firewall Device %d But Resource Not Found",

@@ -132,7 +132,7 @@ func (r *Resource) Read(
 
 	ip, err := client.GetIPAddress(ctx, data.ID.ValueString())
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"RDNS No Longer Exists",
 				fmt.Sprintf(
@@ -236,7 +236,7 @@ func (r *Resource) Delete(
 	})
 	_, err := client.UpdateIPAddress(ctx, data.Address.ValueString(), updateOpts)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"Target IP for RDNS resetting no longer exists.",
 				fmt.Sprintf(

@@ -64,7 +64,7 @@ func readResource(
 
 	bucket, err := client.GetObjectStorageBucket(ctx, regionOrCluster, label)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			tflog.Warn(
 				ctx,
 				fmt.Sprintf(
