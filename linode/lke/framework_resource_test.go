@@ -719,7 +719,7 @@ func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 func TestAccResourceLKECluster_enterprise(t *testing.T) {
 	t.Parallel()
 
-	k8sVersionEnterprise = "v1.31.9+lke5" // currently on this version works with BYO VPC
+	k8sVersionEnterprise = "v1.31.9+lke5" // currently only this version works with BYO VPC
 
 	if k8sVersionEnterprise == "" {
 		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
@@ -756,8 +756,9 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.update_strategy", "on_recycle"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "vpc_id"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "subnet_id"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "stack_type"),
-						resource.TestCheckResourceAttrSet(resourceClusterName, "control_plane.audit_logs_enabled"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "control_plane.0.audit_logs_enabled"),
 					),
 				},
 				{

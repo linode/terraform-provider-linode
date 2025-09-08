@@ -6,6 +6,12 @@ resource "linode_vpc" "foobar" {
     description = "some description"
 }
 
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = linode_vpc.foobar.id
+    label = "{{.Label}}-subnet"
+    ipv4 = "172.16.0.0/14"
+}
+
 resource "linode_lke_cluster" "test" {
     label       = "{{.Label}}"
     region      = "{{ .Region }}"
@@ -13,6 +19,7 @@ resource "linode_lke_cluster" "test" {
     tags        = ["test"]
     tier = "enterprise"
     vpc_id = linode_vpc.foobar.id
+    subnet_id = linode_vpc_subnet.foobar.id
     stack_type = "ipv4"
 
     pool {
@@ -21,6 +28,13 @@ resource "linode_lke_cluster" "test" {
         tags  = ["test"]
         k8s_version = "{{.K8sVersion}}"
         update_strategy = "{{.UpdateStrategy}}"
+    }
+
+    control_plane {
+      acl {
+        enabled = true
+      }
+      audit_logs_enabled = true
     }
 }
 
