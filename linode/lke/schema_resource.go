@@ -111,6 +111,12 @@ var resourceSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "The ID of the Node Pool.",
 				},
+				"label": {
+					Type:        schema.TypeString,
+					Description: "The label of the Node Pool.",
+					Optional:    true,
+					Default:     "",
+				},
 				"count": {
 					Type:         schema.TypeInt,
 					ValidateFunc: validation.IntAtLeast(1),

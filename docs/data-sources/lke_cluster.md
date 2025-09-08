@@ -59,6 +59,8 @@ In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the Node Pool.
 
+  * `label` - The label of the Node Pool.
+
   * `type` - The linode type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
 
   * `count` - The number of nodes in the Node Pool.

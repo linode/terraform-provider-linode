@@ -51,6 +51,7 @@ func TestAccDataSourceLinodeAccountSettings_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "network_helper", strconv.FormatBool(settings.NetworkHelper)),
 					resource.TestCheckResourceAttr(resourceName, "object_storage", objectStorageVal),
 					resource.TestCheckResourceAttr(resourceName, "longview_subscription", longviewVal),
+					resource.TestCheckResourceAttr(resourceName, "maintenance_policy", settings.MaintenancePolicy),
 				),
 			},
 		},

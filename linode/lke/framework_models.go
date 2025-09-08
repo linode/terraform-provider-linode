@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
@@ -71,6 +72,7 @@ type LKENodePool struct {
 	Taints         []lkenodepool.NodePoolTaintModel `tfsdk:"taints"`
 	K8sVersion     types.String                     `tfsdk:"k8s_version"`
 	UpdateStrategy types.String                     `tfsdk:"update_strategy"`
+	Label          types.String                     `tfsdk:"label"`
 }
 
 type LKENodePoolDisk struct {
@@ -134,6 +136,13 @@ func (data *LKEDataModel) parseLKEAttributes(
 			pool.Type = types.StringValue(p.Type)
 			pool.DiskEncryption = types.StringValue(string(p.DiskEncryption))
 			pool.K8sVersion = types.StringPointerValue(p.K8sVersion)
+
+			var label basetypes.StringValue
+			if p.Label != nil {
+				label = types.StringPointerValue(p.Label)
+			}
+			pool.Label = label
+
 			if p.UpdateStrategy != nil {
 				pool.UpdateStrategy = types.StringValue(string(*p.UpdateStrategy))
 			}

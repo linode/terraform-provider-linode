@@ -73,7 +73,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	user, err := client.GetUser(ctx, username)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			log.Printf("[WARN] removing Linode User %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil

@@ -221,6 +221,7 @@ func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.id"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "dashboard_url"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.label", "test"),
 
 						// Ensure the lke_cluster_id field is populated on a sample
 						// node from the new cluster.
@@ -380,6 +381,12 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+					),
+				},
+				{
+					Config: tmpl.LabelledPools(t, clusterName, k8sVersionLatest, testRegion, "test"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.label", "test"),
 					),
 				},
 			},

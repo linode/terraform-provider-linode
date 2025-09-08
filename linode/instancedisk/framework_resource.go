@@ -189,7 +189,7 @@ func (r *Resource) Read(
 
 	disk, err := client.GetInstanceDisk(ctx, linodeID, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"Disk Not Found",
 				fmt.Sprintf(

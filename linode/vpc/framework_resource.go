@@ -99,7 +99,7 @@ func (r *Resource) Read(
 
 	vpc, err := client.GetVPC(ctx, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"VPC no longer exists.",
 				fmt.Sprintf(
