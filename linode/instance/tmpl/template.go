@@ -32,7 +32,7 @@ type TemplateData struct {
 
 	InterfaceGeneration linodego.InterfaceGeneration
 	NetworkHelper       *bool
-	MaintenancePolicy string
+	MaintenancePolicy   string
 }
 
 func Basic(t testing.TB, label, pubKey, region string, rootPass string) string {

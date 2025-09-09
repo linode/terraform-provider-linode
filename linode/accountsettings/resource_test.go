@@ -4,7 +4,6 @@ package accountsettings_test
 
 import (
 	"context"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -84,7 +83,14 @@ func TestAccResourceAccountSettings_update(t *testing.T) {
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Updates(t, updatedLongviewPlan, updatedInterfacesForNewLinodes, updatedBackupsEnabled, updatedNetworkHelper, updatedMaintenancePolicy),
+				Config: tmpl.Updates(
+					t,
+					updatedLongviewPlan,
+					updatedInterfacesForNewLinodes,
+					updatedBackupsEnabled,
+					updatedNetworkHelper,
+					updatedMaintenancePolicy,
+				),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("longview_subscription"), knownvalue.StringExact(updatedLongviewPlan)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("maintenance_policy"), knownvalue.StringExact(updatedMaintenancePolicy)),
