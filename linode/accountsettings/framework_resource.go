@@ -191,6 +191,10 @@ func (r *Resource) createOrUpdateAccountSettings(
 		updateOpts.InterfacesForNewLinodes = (*linodego.InterfacesForNewLinodes)(plan.InterfacesForNewLinodes.ValueStringPointer())
 	}
 
+	if !plan.MaintenancePolicy.IsUnknown() {
+		updateOpts.MaintenancePolicy = plan.MaintenancePolicy.ValueBoolPointer()
+	}
+
 	tflog.Debug(ctx, "client.UpdateAccountSettings(...)", map[string]any{
 		"options": updateOpts,
 	})

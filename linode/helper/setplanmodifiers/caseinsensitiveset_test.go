@@ -1,6 +1,6 @@
 //go:build unit
 
-package planmodifiers
+package setplanmodifiers
 
 import (
 	"context"

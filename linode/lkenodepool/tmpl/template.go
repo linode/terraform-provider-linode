@@ -25,6 +25,7 @@ type TemplateData struct {
 	AutoscalerMax     int
 	Taints            []TaintData
 	Labels            map[string]string
+	Label             string
 	UpdateStrategy    string
 }
 

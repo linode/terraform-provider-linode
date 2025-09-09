@@ -57,10 +57,12 @@ func TestAccResourceAccountSettings_update(t *testing.T) {
 	currBackupsEnabled := accountSettings.BackupsEnabled
 	currNetworkHelper := accountSettings.NetworkHelper
 	currInterfacesForNewLinodes := accountSettings.InterfacesForNewLinodes
+	currMaintenancePolicy := accountSettings.MaintenancePolicy
 
 	updatedLongviewPlan := "longview-10"
 	updatedBackupsEnabled := !currBackupsEnabled
 	updatedNetworkHelper := !currNetworkHelper
+	updatedMaintenancePolicy := "linode/power_off_on"
 
 	var updatedInterfacesForNewLinodes string
 	if currInterfacesForNewLinodes == linodego.LegacyConfigDefaultButLinodeAllowed {
@@ -73,14 +75,19 @@ func TestAccResourceAccountSettings_update(t *testing.T) {
 		updatedLongviewPlan = "longview-3"
 	}
 
+	if currMaintenancePolicy == "" || currMaintenancePolicy == "linode/power_off_on" {
+		updatedLongviewPlan = "linode/migrate"
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Updates(t, updatedLongviewPlan, updatedInterfacesForNewLinodes, updatedBackupsEnabled, updatedNetworkHelper),
+				Config: tmpl.Updates(t, updatedLongviewPlan, updatedInterfacesForNewLinodes, updatedBackupsEnabled, updatedNetworkHelper, updatedMaintenancePolicy),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("longview_subscription"), knownvalue.StringExact(updatedLongviewPlan)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("maintenance_policy"), knownvalue.StringExact(updatedMaintenancePolicy)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("backups_enabled"), knownvalue.Bool(updatedBackupsEnabled)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("network_helper"), knownvalue.Bool(updatedNetworkHelper)),
 					statecheck.ExpectKnownValue(
@@ -89,14 +96,10 @@ func TestAccResourceAccountSettings_update(t *testing.T) {
 				},
 			},
 			{
-				Config: tmpl.Updates(t, currLongviewPlan, string(currInterfacesForNewLinodes), currBackupsEnabled, currNetworkHelper),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "longview_subscription", currLongviewPlan),
-					resource.TestCheckResourceAttr(resourceName, "backups_enabled", strconv.FormatBool(currBackupsEnabled)),
-					resource.TestCheckResourceAttr(resourceName, "network_helper", strconv.FormatBool(currNetworkHelper)),
-				),
+				Config: tmpl.Updates(t, currLongviewPlan, string(currInterfacesForNewLinodes), currBackupsEnabled, currNetworkHelper, currMaintenancePolicy),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("longview_subscription"), knownvalue.StringExact(currLongviewPlan)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("maintenance_policy"), knownvalue.StringExact(currMaintenancePolicy)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("backups_enabled"), knownvalue.Bool(currBackupsEnabled)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("network_helper"), knownvalue.Bool(currNetworkHelper)),
 					statecheck.ExpectKnownValue(

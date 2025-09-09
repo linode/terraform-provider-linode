@@ -75,6 +75,8 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `tags` - A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
+* `maintenance_policy` - The maintenance policy of this Linode instance. (**Note: v4beta only.**)
+
 * `capabilities` - A list of capabilities of this Linode instance.
 
 * `private_ip` - If true, the Linode has private networking enabled, allowing use of the 192.168.128.0/17 network within the Linode's region.

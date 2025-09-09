@@ -55,6 +55,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/lketypes"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkeversion"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkeversions"
+	"github.com/linode/terraform-provider-linode/v3/linode/maintenancepolicies"
 	"github.com/linode/terraform-provider-linode/v3/linode/nb"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbconfigs"
@@ -318,6 +319,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		lke.NewDataSource,
 		lkeclusters.NewDataSource,
 		lketypes.NewDataSource,
+		maintenancepolicies.NewDataSource,
 		placementgroup.NewDataSource,
 		placementgroups.NewDataSource,
 		childaccount.NewDataSource,

@@ -43,6 +43,7 @@ func flattenInstance(
 	result["status"] = instance.Status
 	result["type"] = instance.Type
 	result["region"] = instance.Region
+	result["maintenance_policy"] = instance.MaintenancePolicy
 	result["watchdog_enabled"] = instance.WatchdogEnabled
 	result["group"] = instance.Group
 	result["tags"] = instance.Tags
@@ -216,6 +217,7 @@ func flattenInstanceSimple(instance *linodego.Instance) (map[string]interface{},
 	result["status"] = instance.Status
 	result["type"] = instance.Type
 	result["region"] = instance.Region
+	result["maintenance_policy"] = instance.MaintenancePolicy
 	result["watchdog_enabled"] = instance.WatchdogEnabled
 	result["group"] = instance.Group
 	result["tags"] = instance.Tags
