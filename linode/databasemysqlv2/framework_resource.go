@@ -227,7 +227,7 @@ func (r *Resource) Read(
 
 	db, err := client.GetMySQLDatabase(ctx, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"Database no longer exists",
 				fmt.Sprintf(

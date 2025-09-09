@@ -32,6 +32,8 @@ The following arguments are supported:
 
 * `interfaces_for_new_linodes` - (Optional) Type of interfaces for new Linode instances. Available values are `"legacy_config_only"`, `"legacy_config_default_but_linode_allowed"`, `"linode_default_but_legacy_config_allowed"`, and `"linode_only"`.
 
+* `maintenance_policy` - (Optional) The default maintenance policy for this account. Examples are `"linode/migrate"` and `"linode/power_off_on"`. Defaults to `"linode/migrate"`. (**Note: v4beta only.**)
+
 ## Additional Results
 
 * `managed` - Enables monitoring for connectivity, response, and total request time.

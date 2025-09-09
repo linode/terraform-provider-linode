@@ -68,7 +68,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	cluster, err := client.GetLKECluster(ctx, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			log.Printf("[WARN] removing LKE Cluster ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
@@ -195,7 +195,13 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			count = autoscaler.Min
 		}
 
+		var label *string
+		if poolSpec["label"] != "" {
+			label = linodego.Pointer(poolSpec["label"].(string))
+		}
+
 		createOpts.NodePools = append(createOpts.NodePools, linodego.LKENodePoolCreateOptions{
+			Label:      label,
 			Type:       poolSpec["type"].(string),
 			Tags:       helper.ExpandStringSet(poolSpec["tags"].(*schema.Set)),
 			Taints:     expandNodePoolTaints(helper.ExpandObjectSet(poolSpec["taint"].(*schema.Set))),
@@ -325,7 +331,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	cluster, err := client.GetLKECluster(ctx, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			log.Printf("[WARN] removing LKE Cluster ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
@@ -441,7 +447,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err != nil {
 		// If we're getting a 404, it's safe to say the cluster has been
 		// deleted.
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			return nil
 		}
 

@@ -34,5 +34,9 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "Type of interfaces for new Linode instances.",
 			Computed:    true,
 		},
+		"maintenance_policy": schema.StringAttribute{
+			Description: "The default Maintenance Policy for this account.",
+			Computed:    true,
+		},
 	},
 }

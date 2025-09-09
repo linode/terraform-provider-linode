@@ -11,6 +11,7 @@ type TemplateData struct {
 	BackupsEnabled          bool
 	NetworkHelper           bool
 	InterfacesForNewLinodes string
+	MaintenancePolicy       string
 }
 
 func Basic(t testing.TB) string {
@@ -23,12 +24,13 @@ func DataBasic(t testing.TB) string {
 		"account_settings_data_basic", nil)
 }
 
-func Updates(t testing.TB, longviewSubscription, interfacesForNewLinodes string, backupsEnabled, networkHelper bool) string {
+func Updates(t testing.TB, longviewSubscription, interfacesForNewLinodes string, backupsEnabled, networkHelper bool, maintenancePolicy string) string {
 	return acceptance.ExecuteTemplate(t,
 		"account_settings_updates", TemplateData{
 			LongviewSubscription:    longviewSubscription,
 			BackupsEnabled:          backupsEnabled,
 			NetworkHelper:           networkHelper,
 			InterfacesForNewLinodes: interfacesForNewLinodes,
+			MaintenancePolicy:       maintenancePolicy,
 		})
 }

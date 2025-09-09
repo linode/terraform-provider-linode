@@ -32,6 +32,7 @@ type TemplateData struct {
 
 	InterfaceGeneration linodego.InterfaceGeneration
 	NetworkHelper       *bool
+	MaintenancePolicy   string
 }
 
 func Basic(t testing.TB, label, pubKey, region string, rootPass string) string {
@@ -127,6 +128,18 @@ func MultipleConfigs(t testing.TB, label, region string) string {
 			Label:  label,
 			Image:  acceptance.TestImageLatest,
 			Region: region,
+		})
+}
+
+func MaintenancePolicy(t testing.TB, label, pubKey, region, rootPass, maintenancePolicy string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_maintenance_policy", TemplateData{
+			Label:             label,
+			PubKey:            pubKey,
+			Image:             acceptance.TestImageLatest,
+			Region:            region,
+			RootPass:          rootPass,
+			MaintenancePolicy: maintenancePolicy,
 		})
 }
 
@@ -647,13 +660,14 @@ func DiskEncryption(
 		})
 }
 
-func DataBasic(t testing.TB, label, region string, rootPass string) string {
+func DataBasic(t testing.TB, label, region string, rootPass, maintenancePolicy string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_basic", TemplateData{
-			Label:    label,
-			Image:    acceptance.TestImageLatest,
-			Region:   region,
-			RootPass: rootPass,
+			Label:             label,
+			Image:             acceptance.TestImageLatest,
+			Region:            region,
+			RootPass:          rootPass,
+			MaintenancePolicy: maintenancePolicy,
 		})
 }
 

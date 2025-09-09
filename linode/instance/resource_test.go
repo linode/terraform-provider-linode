@@ -23,6 +23,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/instance/tmpl"
+	"github.com/stretchr/testify/require"
 )
 
 var testRegion string
@@ -891,6 +892,45 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_updateMaintenancePolicy(t *testing.T) {
+	t.Parallel()
+	var instance linodego.Instance
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Linodes", "Maintenance Policy"}, "core")
+	require.NoError(t, err)
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+	rootPass := acctest.RandString(64)
+	maintenancePolicyMigrate := "linode/migrate"
+	maintenancePolicyPowerOnOff := "linode/power_off_on"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.MaintenancePolicy(t, instanceName, acceptance.PublicKeyMaterial, region, rootPass, maintenancePolicyMigrate),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "maintenance_policy", maintenancePolicyMigrate),
+				),
+			},
+			{
+				Config: tmpl.MaintenancePolicy(t, instanceName, acceptance.PublicKeyMaterial, region, rootPass, maintenancePolicyPowerOnOff),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "maintenance_policy", maintenancePolicyPowerOnOff),
 				),
 			},
 		},
