@@ -32,10 +32,14 @@ type LKEClusterModel struct {
 	ControlPlane LKEControlPlaneModel `tfsdk:"control_plane"`
 	Tier         types.String         `tfsdk:"tier"`
 	APLEnabled   types.Bool           `tfsdk:"apl_enabled"`
+	SubnetID     types.Int64          `tfsdk:"subnet_id"`
+	VpcID        types.Int64          `tfsdk:"vpc_id"`
+	StackType    types.String         `tfsdk:"stack_type"`
 }
 
 type LKEControlPlaneModel struct {
 	HighAvailability types.Bool `tfsdk:"high_availability"`
+	AuditLogsEnabled types.Bool `tfsdk:"audit_logs_enabled"`
 }
 
 func (data *LKEClusterFilterModel) parseLKEClusters(
@@ -68,6 +72,9 @@ func (data *LKEClusterModel) parseLKECluster(
 	data.Status = types.StringValue(string(cluster.Status))
 	data.K8sVersion = types.StringValue(cluster.K8sVersion)
 	data.Tier = types.StringValue(cluster.Tier)
+	data.SubnetID = types.Int64Value(int64(cluster.SubnetID))
+	data.VpcID = types.Int64Value(int64(cluster.VpcID))
+	data.StackType = types.StringValue(string(cluster.StackType))
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, cluster.Tags)
 	if diags != nil {
@@ -78,6 +85,7 @@ func (data *LKEClusterModel) parseLKECluster(
 	parseControlPlane := func() LKEControlPlaneModel {
 		var cp LKEControlPlaneModel
 		cp.HighAvailability = types.BoolValue(cluster.ControlPlane.HighAvailability)
+		cp.AuditLogsEnabled = types.BoolValue(cluster.ControlPlane.AuditLogsEnabled)
 
 		return cp
 	}
