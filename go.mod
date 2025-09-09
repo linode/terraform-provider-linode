@@ -34,8 +34,6 @@ require (
 	golang.org/x/sync v0.16.0
 )
 
-replace github.com/linode/linodego => github.com/linode/linodego v1.54.1-0.20250807181544-40095f46858e
-
 require (
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
