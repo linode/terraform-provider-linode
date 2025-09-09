@@ -192,7 +192,7 @@ func (r *Resource) createOrUpdateAccountSettings(
 	}
 
 	if !plan.MaintenancePolicy.IsUnknown() {
-		updateOpts.MaintenancePolicy = plan.MaintenancePolicy.ValueBoolPointer()
+		updateOpts.MaintenancePolicy = plan.MaintenancePolicy.ValueStringPointer()
 	}
 
 	tflog.Debug(ctx, "client.UpdateAccountSettings(...)", map[string]any{
