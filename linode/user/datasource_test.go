@@ -60,7 +60,6 @@ func TestAccDataSourceUser_grants(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "linode_grant.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "longview_grant.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancer_grant.#"),
-					resource.TestCheckResourceAttrSet(resourceName, "placement_group_grant.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "stackscript_grant.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "volume_grant.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "vpc_grant.#"),

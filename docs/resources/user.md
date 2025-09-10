@@ -66,8 +66,6 @@ The following arguments are sets of [entity grants](#entity-grants):
 
 * `nodebalancer_grant` - (optional) The NodeBalancers the user has permissions access to.
 
-* `placement_group_grant` - (optional) The Placement Groups the user has permissions access to.
-
 * `stackscript_grant` - (optional) The StackScripts the user has permissions access to.
 
 * `volume_grant` - (optional) The volumes the user has permissions access to.
@@ -101,8 +99,6 @@ In addition to all the arguments above, the following attributes are exported.
 * `add_longview` - (optional) If true, this User may create Longview clients and view the current plan.
 
 * `add_nodebalancers` - (optional) If true, this User may add NodeBalancers.
-
-* `add_placement_groups` - (optional) If true, this User may add Placement Groups.
 
 * `add_stackscripts` - (optional) If true, this User may add StackScripts.
 

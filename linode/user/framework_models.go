@@ -25,7 +25,6 @@ type DataSourceModel struct {
 	LinodeGrant         types.Set    `tfsdk:"linode_grant"`
 	LongviewGrant       types.Set    `tfsdk:"longview_grant"`
 	NodebalancerGrant   types.Set    `tfsdk:"nodebalancer_grant"`
-	PlacementGroupGrant types.Set    `tfsdk:"placement_group_grant"`
 	StackscriptGrant    types.Set    `tfsdk:"stackscript_grant"`
 	VolumeGrant         types.Set    `tfsdk:"volume_grant"`
 	VPCGrant            types.Set    `tfsdk:"vpc_grant"`
@@ -114,13 +113,6 @@ func (data *DataSourceModel) ParseUserGrants(
 	}
 	data.NodebalancerGrant = *nodebalancerGrants
 
-	// PlacementGroup
-	placementGroupGrants, diags := flattenGrantEntities(userGrants.PlacementGroup)
-	if diags.HasError() {
-		return diags
-	}
-	data.PlacementGroupGrant = *placementGroupGrants
-
 	// Stackscript
 	stackscriptGrants, diags := flattenGrantEntities(userGrants.StackScript)
 	if diags.HasError() {
@@ -169,7 +161,6 @@ func (data *DataSourceModel) ParseNonUserGrants() {
 	data.LinodeGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 	data.LongviewGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 	data.NodebalancerGrant = types.SetNull(linodeUserGrantsEntityObjectType)
-	data.PlacementGroupGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 	data.StackscriptGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 	data.VPCGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 	data.VolumeGrant = types.SetNull(linodeUserGrantsEntityObjectType)
@@ -193,7 +184,6 @@ func flattenGlobalGrants(grants linodego.GlobalUserGrants) (
 	result["add_linodes"] = types.BoolValue(grants.AddLinodes)
 	result["add_longview"] = types.BoolValue(grants.AddLongview)
 	result["add_nodebalancers"] = types.BoolValue(grants.AddNodeBalancers)
-	result["add_placement_groups"] = types.BoolValue(grants.AddPlacementGroups)
 	result["add_stackscripts"] = types.BoolValue(grants.AddStackScripts)
 	result["add_volumes"] = types.BoolValue(grants.AddVolumes)
 	result["add_vpcs"] = types.BoolValue(grants.AddVPCs)
