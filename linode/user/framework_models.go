@@ -193,7 +193,6 @@ func flattenGlobalGrants(grants linodego.GlobalUserGrants) (
 	result["add_linodes"] = types.BoolValue(grants.AddLinodes)
 	result["add_longview"] = types.BoolValue(grants.AddLongview)
 	result["add_nodebalancers"] = types.BoolValue(grants.AddNodeBalancers)
-	result["add_placement_groups"] = types.BoolValue(grants.AddPlacementGroups)
 	result["add_stackscripts"] = types.BoolValue(grants.AddStackScripts)
 	result["add_volumes"] = types.BoolValue(grants.AddVolumes)
 	result["add_vpcs"] = types.BoolValue(grants.AddVPCs)

@@ -16,7 +16,6 @@ var linodeUserGrantsGlobalObjectType = types.ObjectType{
 		"add_linodes":           types.BoolType,
 		"add_longview":          types.BoolType,
 		"add_nodebalancers":     types.BoolType,
-		"add_placement_groups":  types.BoolType,
 		"add_stackscripts":      types.BoolType,
 		"add_volumes":           types.BoolType,
 		"add_vpcs":              types.BoolType,

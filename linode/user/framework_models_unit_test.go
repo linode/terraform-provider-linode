@@ -164,7 +164,6 @@ func TestParseUserGrants(t *testing.T) {
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_linodes\":true")
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_longview\":true")
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_nodebalancers\":true")
-	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_placement_groups\":true")
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_stackscripts\":true")
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_volumes\":true")
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_vpcs\":true")

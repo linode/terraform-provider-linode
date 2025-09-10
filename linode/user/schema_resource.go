@@ -107,12 +107,6 @@ func resourceLinodeUserGrantsGlobal() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
-			"add_placement_groups": {
-				Type:        schema.TypeBool,
-				Description: "If true, this User may add Placement Groups.",
-				Optional:    true,
-				Default:     false,
-			},
 			"add_stackscripts": {
 				Type:        schema.TypeBool,
 				Description: "If true, this User may add StackScripts.",
