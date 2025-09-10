@@ -59,7 +59,10 @@ type DataUnitTestExpandedObject struct {
 	SomeNestedObject   DataUnitTestExpandedNestedObject
 }
 
-func TestFlattenFirewallSettings(t *testing.T) {
+func TestKeepOrUpdateSingleNestedAttribute(t *testing.T) {
+	// This test covers both the general behavior of KeepOrUpdateSingleNestedAttribute
+	// and the specific isNull boolean parameter behavior. The isNull parameter allows
+	// the flatten function to indicate that the target should be a Terraform null value.
 	ctx := context.Background()
 	objectType := testSchema.GetType().(types.ObjectType).AttrTypes
 	nestedObjectType := testNestedAttrsSchema.GetType().(types.ObjectType).AttrTypes
@@ -90,49 +93,28 @@ func TestFlattenFirewallSettings(t *testing.T) {
 		},
 	)
 
-	flatten := func(model *DataUnitTestAttrsModel, preserveKnown bool, diags *diag.Diagnostics) {
-		model.SomeNumber = helper.KeepOrUpdateInt64(model.SomeNumber, int64(expanded.SomeNumber), preserveKnown)
-		model.SomeString = helper.KeepOrUpdateString(model.SomeString, expanded.SomeString, preserveKnown)
-		model.SomeNullableString = helper.KeepOrUpdateStringPointer(model.SomeNullableString, expanded.SomeNullableString, preserveKnown)
-		model.SomeBool = helper.KeepOrUpdateBool(model.SomeBool, expanded.SomeBool, preserveKnown)
-
-		flattenNestedObject := helper.KeepOrUpdateNestedObjectWithTypes(
-			ctx,
-			model.SomeNestedAttrsObject,
-			nestedObjectType,
-			preserveKnown,
-			diags,
-			func(nestedModel *DataUnitTestNestedAttrsModel, preserveKnown bool, _ *diag.Diagnostics) {
-				nestedModel.AnotherNumber = helper.KeepOrUpdateInt64(nestedModel.AnotherNumber, int64(expanded.SomeNestedObject.AnotherNumber), preserveKnown)
-			},
-		)
-
-		if diags.HasError() {
-			return
-		}
-
-		model.SomeNestedAttrsObject = *flattenNestedObject
-	}
-
 	tests := map[string]struct {
 		input         types.Object
 		data          DataUnitTestExpandedObject
 		expected      types.Object
 		preserveKnown bool
+		setIsNull     bool
 	}{
-		"unknown default firewall IDs with preserving known": {
+		"unknown object with preserving known": {
 			input:         types.ObjectUnknown(objectType),
 			data:          expanded,
 			expected:      expectedWhenOverrideAll,
 			preserveKnown: true,
+			setIsNull:     false,
 		},
-		"null default firewall IDs with preserving known": {
+		"null object with preserving known": {
 			input:         types.ObjectNull(objectType),
 			data:          expanded,
 			expected:      types.ObjectNull(objectType),
 			preserveKnown: true,
+			setIsNull:     false,
 		},
-		"partially known default firewall IDs with preserving known": {
+		"partially known object with preserving known": {
 			input: types.ObjectValueMust(
 				objectType,
 				map[string]attr.Value{
@@ -165,6 +147,7 @@ func TestFlattenFirewallSettings(t *testing.T) {
 				},
 			),
 			preserveKnown: true,
+			setIsNull:     false,
 		},
 		"null nested object with preserving known": {
 			input: types.ObjectValueMust(
@@ -189,6 +172,7 @@ func TestFlattenFirewallSettings(t *testing.T) {
 				},
 			),
 			preserveKnown: true,
+			setIsNull:     false,
 		},
 		"unknown nested object with preserving known": {
 			input: types.ObjectValueMust(
@@ -218,6 +202,7 @@ func TestFlattenFirewallSettings(t *testing.T) {
 				},
 			),
 			preserveKnown: true,
+			setIsNull:     false,
 		},
 		"all known with preserving known": {
 			input: types.ObjectValueMust(
@@ -252,21 +237,24 @@ func TestFlattenFirewallSettings(t *testing.T) {
 				},
 			),
 			preserveKnown: true,
+			setIsNull:     false,
 		},
 
-		"unknown default firewall IDs without preserving known": {
+		"unknown object without preserving known": {
 			input:         types.ObjectUnknown(objectType),
 			data:          expanded,
 			expected:      expectedWhenOverrideAll,
 			preserveKnown: false,
+			setIsNull:     false,
 		},
-		"null default firewall IDs without preserving known": {
+		"null object without preserving known": {
 			input:         types.ObjectNull(objectType),
 			data:          expanded,
 			expected:      expectedWhenOverrideAll,
 			preserveKnown: false,
+			setIsNull:     false,
 		},
-		"partially known default firewall IDs without preserving known": {
+		"partially known object without preserving known": {
 			input: types.ObjectValueMust(
 				objectType,
 				map[string]attr.Value{
@@ -285,6 +273,7 @@ func TestFlattenFirewallSettings(t *testing.T) {
 			data:          expanded,
 			expected:      expectedWhenOverrideAll,
 			preserveKnown: false,
+			setIsNull:     false,
 		},
 		"null nested object without preserving known": {
 			input: types.ObjectValueMust(
@@ -300,6 +289,7 @@ func TestFlattenFirewallSettings(t *testing.T) {
 			data:          expanded,
 			expected:      expectedWhenOverrideAll,
 			preserveKnown: false,
+			setIsNull:     false,
 		},
 		"unknown nested object without preserving known": {
 			input: types.ObjectValueMust(
@@ -315,6 +305,7 @@ func TestFlattenFirewallSettings(t *testing.T) {
 			data:          expanded,
 			expected:      expectedWhenOverrideAll,
 			preserveKnown: false,
+			setIsNull:     false,
 		},
 		"all known without preserving known": {
 			input: types.ObjectValueMust(
@@ -335,13 +326,113 @@ func TestFlattenFirewallSettings(t *testing.T) {
 			data:          expanded,
 			expected:      expectedWhenOverrideAll,
 			preserveKnown: false,
+			setIsNull:     false,
+		},
+
+		// isNull behavior tests
+		"isNull=true without preserving known should return null object": {
+			input: types.ObjectValueMust(
+				objectType,
+				map[string]attr.Value{
+					"some_number":          types.Int64Value(999),
+					"some_string":          types.StringValue("Existing value"),
+					"some_nullable_string": types.StringValue("Keep me"),
+					"some_bool":            types.BoolValue(false),
+					"some_nested_attrs_object": types.ObjectValueMust(
+						nestedObjectType,
+						map[string]attr.Value{
+							"another_number": types.Int64Value(888),
+						},
+					),
+				},
+			),
+			data:          expanded,
+			expected:      types.ObjectNull(objectType),
+			preserveKnown: false,
+			setIsNull:     true,
+		},
+		"isNull=true with preserving known should ignore isNull and preserve original": {
+			input: types.ObjectValueMust(
+				objectType,
+				map[string]attr.Value{
+					"some_number":          types.Int64Value(999),
+					"some_string":          types.StringValue("Existing value"),
+					"some_nullable_string": types.StringValue("Keep me"),
+					"some_bool":            types.BoolValue(false),
+					"some_nested_attrs_object": types.ObjectValueMust(
+						nestedObjectType,
+						map[string]attr.Value{
+							"another_number": types.Int64Value(888),
+						},
+					),
+				},
+			),
+			data: expanded,
+			expected: types.ObjectValueMust(
+				objectType,
+				map[string]attr.Value{
+					"some_number":          types.Int64Value(999),
+					"some_string":          types.StringValue("Existing value"),
+					"some_nullable_string": types.StringValue("Keep me"),
+					"some_bool":            types.BoolValue(false),
+					"some_nested_attrs_object": types.ObjectValueMust(
+						nestedObjectType,
+						map[string]attr.Value{
+							"another_number": types.Int64Value(888),
+						},
+					),
+				},
+			),
+			preserveKnown: true,
+			setIsNull:     true,
+		},
+		"isNull=true with preserving known on null input should return null": {
+			input:         types.ObjectNull(objectType),
+			data:          expanded,
+			expected:      types.ObjectNull(objectType),
+			preserveKnown: true,
+			setIsNull:     true,
 		},
 	}
 
 	for name, tt := range tests {
-		var diags diag.Diagnostics
 		t.Run(name, func(t *testing.T) {
-			out := helper.KeepOrUpdateNestedObject(ctx, tt.input, tt.preserveKnown, &diags, flatten)
+			var diags diag.Diagnostics
+
+			flatten := func(model *DataUnitTestAttrsModel, isNull *bool, preserveKnown bool, diags *diag.Diagnostics) {
+				*isNull = tt.setIsNull
+
+				if !*isNull {
+					// Only populate the model if we're not setting it to null
+					model.SomeNumber = helper.KeepOrUpdateInt64(model.SomeNumber, int64(tt.data.SomeNumber), preserveKnown)
+					model.SomeString = helper.KeepOrUpdateString(model.SomeString, tt.data.SomeString, preserveKnown)
+					model.SomeNullableString = helper.KeepOrUpdateStringPointer(model.SomeNullableString, tt.data.SomeNullableString, preserveKnown)
+					model.SomeBool = helper.KeepOrUpdateBool(model.SomeBool, tt.data.SomeBool, preserveKnown)
+
+					flattenNestedObject := helper.KeepOrUpdateSingleNestedAttributeWithTypes(
+						ctx,
+						model.SomeNestedAttrsObject,
+						nestedObjectType,
+						preserveKnown,
+						diags,
+						func(nestedModel *DataUnitTestNestedAttrsModel, _ *bool, preserveKnown bool, _ *diag.Diagnostics) {
+							nestedModel.AnotherNumber = helper.KeepOrUpdateInt64(
+								nestedModel.AnotherNumber,
+								int64(tt.data.SomeNestedObject.AnotherNumber),
+								preserveKnown,
+							)
+						},
+					)
+
+					if diags.HasError() {
+						return
+					}
+
+					model.SomeNestedAttrsObject = *flattenNestedObject
+				}
+			}
+
+			out := helper.KeepOrUpdateSingleNestedAttribute(ctx, tt.input, tt.preserveKnown, &diags, flatten)
 			if diags.HasError() {
 				t.Fatalf("unexpected error: %v", diags)
 			}
