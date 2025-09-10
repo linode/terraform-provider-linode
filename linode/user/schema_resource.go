@@ -50,7 +50,6 @@ var resourceSchema = map[string]*schema.Schema{
 	"linode_grant":          resourceLinodeUserGrantsEntitySet(),
 	"longview_grant":        resourceLinodeUserGrantsEntitySet(),
 	"nodebalancer_grant":    resourceLinodeUserGrantsEntitySet(),
-	"placement_group_grant": resourceLinodeUserGrantsEntitySet(),
 	"stackscript_grant":     resourceLinodeUserGrantsEntitySet(),
 	"volume_grant":          resourceLinodeUserGrantsEntitySet(),
 	"vpc_grant":             resourceLinodeUserGrantsEntitySet(),

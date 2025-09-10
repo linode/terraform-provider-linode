@@ -25,7 +25,6 @@ type DataSourceModel struct {
 	LinodeGrant         types.Set    `tfsdk:"linode_grant"`
 	LongviewGrant       types.Set    `tfsdk:"longview_grant"`
 	NodebalancerGrant   types.Set    `tfsdk:"nodebalancer_grant"`
-	PlacementGroupGrant types.Set    `tfsdk:"placement_group_grant"`
 	StackscriptGrant    types.Set    `tfsdk:"stackscript_grant"`
 	VolumeGrant         types.Set    `tfsdk:"volume_grant"`
 	VPCGrant            types.Set    `tfsdk:"vpc_grant"`

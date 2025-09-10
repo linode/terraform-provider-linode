@@ -70,8 +70,6 @@ Each Linode user will be stored in the `users` attribute and will export the fol
 
 * [`nodebalancer_grant`](#grant) - The grants this User has pertaining to NodeBalancers on this Account.
 
-* [`placement_group_grant`](#grant) - The grants this User has pertaining to Placement Groups on this Account.
-
 * [`stackscript_grant`](#grant) - The grants this User has pertaining to StackScripts on this Account.
 
 * [`volume_grant`](#grant) - The grants this User has pertaining to Volumes on this Account.

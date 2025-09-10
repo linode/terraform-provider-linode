@@ -77,7 +77,6 @@ var UserAttributes = map[string]schema.Attribute{
 	"linode_grant":          linodeUserGrantsEntitySet,
 	"longview_grant":        linodeUserGrantsEntitySet,
 	"nodebalancer_grant":    linodeUserGrantsEntitySet,
-	"placement_group_grant": linodeUserGrantsEntitySet,
 	"stackscript_grant":     linodeUserGrantsEntitySet,
 	"volume_grant":          linodeUserGrantsEntitySet,
 	"vpc_grant":             linodeUserGrantsEntitySet,
