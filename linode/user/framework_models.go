@@ -113,13 +113,6 @@ func (data *DataSourceModel) ParseUserGrants(
 	}
 	data.NodebalancerGrant = *nodebalancerGrants
 
-	// PlacementGroup
-	placementGroupGrants, diags := flattenGrantEntities(userGrants.PlacementGroup)
-	if diags.HasError() {
-		return diags
-	}
-	data.PlacementGroupGrant = *placementGroupGrants
-
 	// Stackscript
 	stackscriptGrants, diags := flattenGrantEntities(userGrants.StackScript)
 	if diags.HasError() {
@@ -168,7 +161,6 @@ func (data *DataSourceModel) ParseNonUserGrants() {
 	data.LinodeGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 	data.LongviewGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 	data.NodebalancerGrant = types.SetNull(linodeUserGrantsEntityObjectType)
-	data.PlacementGroupGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 	data.StackscriptGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 	data.VPCGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 	data.VolumeGrant = types.SetNull(linodeUserGrantsEntityObjectType)
