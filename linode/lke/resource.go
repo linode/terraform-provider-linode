@@ -130,6 +130,9 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("kubeconfig", kubeconfig.KubeConfig)
 	d.Set("api_endpoints", flattenLKEClusterAPIEndpoints(endpoints))
 	d.Set("apl_enabled", cluster.APLEnabled)
+	d.Set("subnet_id", cluster.SubnetID)
+	d.Set("vpc_id", cluster.VpcID)
+	d.Set("stack_type", cluster.StackType)
 
 	matchedPools, err := matchPoolsWithSchema(ctx, pools, declaredPools)
 	if err != nil {
@@ -164,6 +167,18 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	if aplEnabled, ok := d.GetOk("apl_enabled"); ok {
 		createOpts.APLEnabled = aplEnabled.(bool)
+	}
+
+	if subnet_id, ok := d.GetOk("subnet_id"); ok {
+		createOpts.SubnetID = linodego.Pointer(subnet_id.(int))
+	}
+
+	if vpc_id, ok := d.GetOk("vpc_id"); ok {
+		createOpts.VpcID = linodego.Pointer(vpc_id.(int))
+	}
+
+	if stack_type, ok := d.GetOk("stack_type"); ok {
+		createOpts.StackType = linodego.Pointer(linodego.LKEClusterStackType(stack_type.(string)))
 	}
 
 	if len(controlPlane) > 0 {

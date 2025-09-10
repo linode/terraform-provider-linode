@@ -3,8 +3,6 @@
 package lke_test
 
 import (
-	"context"
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -161,31 +159,34 @@ func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 	t.Parallel()
 
-	if k8sVersionEnterprise == "" {
-		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
-	}
+	enterpriseRegion := "no-osl-1" // currently only oslo region works with BYO VPC
 
-	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise"}, "core")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	client, err := acceptance.GetTestClient()
-
-	enterpriseVersions, err := client.ListLKETierVersions(context.Background(), "enterprise", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// TODO: revert to dynamic selection once more regions available
+	//enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
 	var k8sVersionEnterprise string
-	if len(enterpriseVersions) < 1 {
-		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
-	} else {
-		k8sVersionEnterprise = enterpriseVersions[0].ID
-	}
+
+	k8sVersionEnterprise = "v1.31.9+lke5" // currently only this version works with BYO VPC
+
+	// TODO: revert to select versions from the k8s versions list once more versions available
+	//client, err := acceptance.GetTestClient()
+	//
+	//enterpriseVersions, err := client.ListLKETierVersions(context.Background(), "enterprise", nil)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//if len(enterpriseVersions) < 1 {
+	//	t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
+	//} else {
+	//	k8sVersionEnterprise = enterpriseVersions[0].ID
+	//}
 
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
-		clusterName := acctest.RandomWithPrefix("tf_test")
+		clusterName := acctest.RandomWithPrefix("tf-test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
@@ -206,6 +207,10 @@ func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.k8s_version", k8sVersionEnterprise),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.update_strategy", "on_recycle"),
 						resource.TestCheckResourceAttrSet(dataSourceClusterName, "kubeconfig"),
+						resource.TestCheckResourceAttrSet(dataSourceClusterName, "vpc_id"),
+						resource.TestCheckResourceAttrSet(dataSourceClusterName, "subnet_id"),
+						resource.TestCheckResourceAttrSet(dataSourceClusterName, "stack_type"),
+						resource.TestCheckResourceAttrSet(dataSourceClusterName, "control_plane.0.audit_logs_enabled"),
 					),
 				},
 			},
