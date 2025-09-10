@@ -155,7 +155,7 @@ func (r *Resource) Read(
 	}
 	ip, err := client.GetInstanceIPAddress(ctx, linodeID, address)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"Instance IP No Longer Exists",
 				fmt.Sprintf(

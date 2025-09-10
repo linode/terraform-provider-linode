@@ -36,7 +36,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	allowList, err := getDBAllowListByEngine(ctx, client, dbType, dbID)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			log.Printf("[WARN] allow_list %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil

@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	linodeplanmodifier "github.com/linode/terraform-provider-linode/v3/linode/helper/planmodifiers"
+	linodesetplanmodifier "github.com/linode/terraform-provider-linode/v3/linode/helper/setplanmodifiers"
 )
 
 const (
@@ -122,7 +122,7 @@ var frameworkResourceSchema = schema.Schema{
 			Default:     helper.EmptySetDefault(types.StringType),
 			Computed:    true,
 			PlanModifiers: []planmodifier.Set{
-				linodeplanmodifier.CaseInsensitiveSet(),
+				linodesetplanmodifier.CaseInsensitiveSet(),
 			},
 			Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 		},

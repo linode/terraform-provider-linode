@@ -221,6 +221,7 @@ func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.id"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "dashboard_url"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.label", "test"),
 
 						// Ensure the lke_cluster_id field is populated on a sample
 						// node from the new cluster.
@@ -380,6 +381,12 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+					),
+				},
+				{
+					Config: tmpl.LabelledPools(t, clusterName, k8sVersionLatest, testRegion, "test"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.label", "test"),
 					),
 				},
 			},
@@ -712,16 +719,22 @@ func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 func TestAccResourceLKECluster_enterprise(t *testing.T) {
 	t.Parallel()
 
+	k8sVersionEnterprise = "v1.31.9+lke5" // currently only this version works with BYO VPC
+
 	if k8sVersionEnterprise == "" {
 		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
 	}
 
-	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise"}, "core")
-	if err != nil {
-		log.Fatal(err)
-	}
+	enterpriseRegion := "no-osl-1" // currently only oslo region works with BYO VPC
+
+	// TODO: revert to dynamic selection once more regions available
+	//enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
-		clusterName := acctest.RandomWithPrefix("tf_test")
+		clusterName := acctest.RandomWithPrefix("tf-test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
@@ -742,6 +755,10 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.k8s_version", k8sVersionEnterprise),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.update_strategy", "on_recycle"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "vpc_id"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "subnet_id"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "stack_type"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "control_plane.0.audit_logs_enabled"),
 					),
 				},
 				{

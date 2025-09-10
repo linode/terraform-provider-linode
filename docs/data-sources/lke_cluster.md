@@ -49,9 +49,17 @@ In addition to all arguments above, the following attributes are exported:
 
 * `apl_enabled` - Enables the App Platform Layer
 
+* `subnet_id` - The ID of the VPC subnet to use for the Kubernetes cluster. This subnet must be dual stack (IPv4 and IPv6 should both be enabled).
+
+* `vpc_id` - The ID of the VPC to use for the Kubernetes cluster.
+
+* `stack_type` - The networking stack type of the Kubernetes cluster.
+
 * `pools` - Node pools associated with this cluster.
 
   * `id` - The ID of the Node Pool.
+
+  * `label` - The label of the Node Pool.
 
   * `type` - The linode type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
 
@@ -99,6 +107,8 @@ In addition to all arguments above, the following attributes are exported:
 
   * `high_availability` - Whether High Availability is enabled for the cluster Control Plane.
   
+  * `audit_logs_enabled` - Enables audit logs on the cluster's control plane.
+
   * `acl` - The ACL configuration for an LKE cluster's control plane.
 
     * `enabled` - The default policy. A value of true means a default policy of DENY. A value of false means a default policy of ALLOW.

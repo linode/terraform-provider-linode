@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
@@ -24,6 +25,9 @@ type LKEDataModel struct {
 	APLEnabled   types.Bool        `tfsdk:"apl_enabled"`
 	Tags         types.Set         `tfsdk:"tags"`
 	Tier         types.String      `tfsdk:"tier"`
+	SubnetID     types.Int64       `tfsdk:"subnet_id"`
+	VpcID        types.Int64       `tfsdk:"vpc_id"`
+	StackType    types.String      `tfsdk:"stack_type"`
 	ControlPlane []LKEControlPlane `tfsdk:"control_plane"`
 
 	// LKE Node Pools
@@ -41,6 +45,7 @@ type LKEDataModel struct {
 
 type LKEControlPlane struct {
 	HighAvailability types.Bool           `tfsdk:"high_availability"`
+	AuditLogsEnabled types.Bool           `tfsdk:"audit_logs_enabled"`
 	ACL              []LKEControlPlaneACL `tfsdk:"acl"`
 }
 
@@ -67,6 +72,7 @@ type LKENodePool struct {
 	Taints         []lkenodepool.NodePoolTaintModel `tfsdk:"taints"`
 	K8sVersion     types.String                     `tfsdk:"k8s_version"`
 	UpdateStrategy types.String                     `tfsdk:"update_strategy"`
+	Label          types.String                     `tfsdk:"label"`
 }
 
 type LKENodePoolDisk struct {
@@ -103,6 +109,9 @@ func (data *LKEDataModel) parseLKEAttributes(
 	data.K8sVersion = types.StringValue(cluster.K8sVersion)
 	data.APLEnabled = types.BoolValue(cluster.APLEnabled)
 	data.Tier = types.StringValue(cluster.Tier)
+	data.SubnetID = types.Int64Value(int64(cluster.SubnetID))
+	data.VpcID = types.Int64Value(int64(cluster.VpcID))
+	data.StackType = types.StringValue(string(cluster.StackType))
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, cluster.Tags)
 	if diags != nil {
@@ -127,6 +136,13 @@ func (data *LKEDataModel) parseLKEAttributes(
 			pool.Type = types.StringValue(p.Type)
 			pool.DiskEncryption = types.StringValue(string(p.DiskEncryption))
 			pool.K8sVersion = types.StringPointerValue(p.K8sVersion)
+
+			var label basetypes.StringValue
+			if p.Label != nil {
+				label = types.StringPointerValue(p.Label)
+			}
+			pool.Label = label
+
 			if p.UpdateStrategy != nil {
 				pool.UpdateStrategy = types.StringValue(string(*p.UpdateStrategy))
 			}
@@ -247,6 +263,7 @@ func parseControlPlane(
 	}
 
 	cp.HighAvailability = types.BoolValue(controlPlane.HighAvailability)
+	cp.AuditLogsEnabled = types.BoolValue(controlPlane.AuditLogsEnabled)
 
 	return cp, nil
 }

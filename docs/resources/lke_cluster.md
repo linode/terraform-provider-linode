@@ -27,6 +27,24 @@ resource "linode_lke_cluster" "my-cluster" {
 }
 ```
 
+Creating an enterprise LKE cluster:
+
+```terraform
+resource "linode_lke_cluster" "test" {
+    label       = "lke-e-cluster"
+    region      = "us-lax"
+    k8s_version = "v1.31.8+lke5"
+    tags        = ["test"]
+    tier = "enterprise"
+
+    pool {
+      type  = "g7-premium-2"
+      count = 3
+      tags  = ["test"]
+    }
+}
+```
+
 Creating an LKE cluster with autoscaler:
 
 ```terraform
@@ -77,7 +95,30 @@ resource "linode_lke_cluster" "test" {
 }
 ```
 
-Creating an LKE cluster with labeled node pools:
+Creating an LKE cluster with labeled node pool:
+
+```terraform
+resource "linode_lke_cluster" "my-cluster" {
+    label       = "my-cluster"
+    k8s_version = "1.32"
+    region      = "us-central"
+    tags        = ["prod"]
+
+    pool {
+        type  = "g6-standard-2"
+        count = 2
+        label = "db-pool"
+    }
+
+    pool {
+        type  = "g6-standard-1"
+        count = 3
+        label = "app-pool"
+    }
+}
+```
+
+Creating an LKE cluster with node pool labels:
 
 ```terraform
 resource "linode_lke_cluster" "my-cluster" {
@@ -126,6 +167,12 @@ The following arguments are supported:
 
 * `tier` - (Optional) The desired Kubernetes tier. (**Note: v4beta only and may not currently be available to all users.**)
 
+* `subnet_id` - (Optional) The ID of the VPC subnet to use for the Kubernetes cluster. This subnet must be dual stack (IPv4 and IPv6 should both be enabled). (**Note: v4beta only and may not currently be available to all users.**)
+
+* `vpc_id` - (Optional) The ID of the VPC to use for the Kubernetes cluster.
+
+* `stack_type` - (Optional) The networking stack type of the Kubernetes cluster.
+
 ### pool
 
 ~> **Notice** Due to limitations in Terraform, the order of pools in the `linode_lke_cluster` resource is treated as significant.
@@ -137,6 +184,8 @@ The following arguments are supported in the `pool` specification block:
 * `type` - (Required) A Linode Type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
 
 * `count` - (Required; Optional with `autoscaler`) The number of nodes in the Node Pool. If undefined with an autoscaler the initial node count will equal the autoscaler minimum.
+
+* `label` - (Optional) A label for the Node Pool. If not provided, it defaults to empty string.
 
 * `labels` - (Optional) A map of key/value pairs to apply to all nodes in the pool. Labels are used to identify and organize Kubernetes resources within your cluster.
 
@@ -169,6 +218,8 @@ The following arguments are supported in the `autoscaler` specification block:
 The following arguments are supported in the `control_plane` specification block:
 
 * `high_availability` - (Optional) Defines whether High Availability is enabled for the cluster Control Plane. This is an **irreversible** change.
+
+* `audit_logs_enabled` - (Optional) Enables audit logs on the cluster's control plane.
 
 * [`acl`](#acl) - (Optional) Defines the ACL configuration for an LKE cluster's control plane.
 

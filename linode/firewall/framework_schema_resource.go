@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	linodeplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/planmodifiers"
+	linodesetplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/setplanmodifiers"
 )
 
 var ruleNestedObject = schema.NestedBlockObject{
@@ -115,7 +115,7 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:    true,
 			Computed:    true,
 			PlanModifiers: []planmodifier.Set{
-				linodeplanmodifiers.CaseInsensitiveSet(),
+				linodesetplanmodifiers.CaseInsensitiveSet(),
 			},
 			Default: helper.EmptySetDefault(types.StringType),
 		},

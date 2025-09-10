@@ -9,12 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	linodeplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/planmodifiers"
+	linodesetplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/setplanmodifiers"
 )
 
 var resourceSchema = schema.Schema{
@@ -33,6 +34,12 @@ var resourceSchema = schema.Schema{
 			PlanModifiers: []planmodifier.Int64{
 				int64planmodifier.RequiresReplace(),
 			},
+		},
+		"label": schema.StringAttribute{
+			Description: "The label of the Node Pool.",
+			Optional:    true,
+			Default:     stringdefault.StaticString(""),
+			Computed:    true,
 		},
 		"node_count": schema.Int64Attribute{
 			Validators: []validator.Int64{
@@ -64,7 +71,7 @@ var resourceSchema = schema.Schema{
 			Computed:    true,
 			Default:     helper.EmptySetDefault(types.StringType),
 			PlanModifiers: []planmodifier.Set{
-				linodeplanmodifiers.CaseInsensitiveSet(),
+				linodesetplanmodifiers.CaseInsensitiveSet(),
 			},
 			Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 		},
