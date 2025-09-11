@@ -66,7 +66,15 @@ Each LKE Cluster will be stored in the `lke_clusters` attribute and will export 
 
 * `tier` - The desired Kubernetes tier. (**Note: v4beta only and may not currently be available to all users.**)
 
+* `subnet_id` - The ID of the VPC subnet to use for the Kubernetes cluster. This subnet must be dual stack (IPv4 and IPv6 should both be enabled).
+
+* `vpc_id` - The ID of the VPC to use for the Kubernetes cluster.
+
+* `stack_type` - The networking stack type of the Kubernetes cluster.
+
 * `control_plane.high_availability` - Whether High Availability is enabled for the cluster Control Plane.
+
+* `control_plane.audit_logs_enabled` - Enables audit logs on the cluster's control plane.
 
 To get more information about a cluster, i.e. node pools, please refer to the [linode_lke_cluster](lke_cluster.html.markdown) data source.
 
