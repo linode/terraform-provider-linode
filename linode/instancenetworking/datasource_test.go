@@ -111,3 +111,5 @@ func TestAccDataSourceInstanceNetworking_basicwithReseved(t *testing.T) {
 		},
 	})
 }
+
+// TODO (Linode Interfaces): Add test for new interface_id field.

@@ -23,6 +23,8 @@ data "linode_account_settings" "example" {}
 
 * `longview_subscription` - The Longview Pro tier you are currently subscribed to.
 
+* `interfaces_for_new_linodes` - Type of interfaces for new Linode instances.
+
 * `managed` - Enables monitoring for connectivity, response, and total request time.
 
 * `network_helper` - Enables network helper across all users by default for new Linodes and Linode Configs.

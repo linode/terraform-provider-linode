@@ -16,16 +16,17 @@ var VPCNAT1To1Type = types.ObjectType{
 
 var networkObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
-		"address":     types.StringType,
-		"gateway":     types.StringType,
-		"prefix":      types.Int64Type,
-		"rdns":        types.StringType,
-		"region":      types.StringType,
-		"subnet_mask": types.StringType,
-		"type":        types.StringType,
-		"public":      types.BoolType,
-		"linode_id":   types.Int64Type,
-		"vpc_nat_1_1": VPCNAT1To1Type,
+		"address":      types.StringType,
+		"gateway":      types.StringType,
+		"prefix":       types.Int64Type,
+		"rdns":         types.StringType,
+		"region":       types.StringType,
+		"subnet_mask":  types.StringType,
+		"type":         types.StringType,
+		"public":       types.BoolType,
+		"linode_id":    types.Int64Type,
+		"interface_id": types.Int64Type,
+		"vpc_nat_1_1":  VPCNAT1To1Type,
 	},
 }
 

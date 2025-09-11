@@ -90,6 +90,8 @@ The following arguments are supported:
 
 * `nodebalancers` - (Optional) A list of IDs of NodeBalancers this Firewall should govern network traffic for.
 
+* `interfaces` - (Optional) A list of IDs of Linode Interfaces this Firewall should govern network traffic for.
+
 * `tags` - (Optional) A list of tags applied to the Kubernetes cluster. Tags are case-insensitive and are for organizational purposes only.
 
 ### inbound and outbound

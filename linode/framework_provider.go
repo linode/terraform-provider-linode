@@ -32,6 +32,9 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalldevice"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalls"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewallsettings"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewalltemplate"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewalltemplates"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/image"
 	"github.com/linode/terraform-provider-linode/v3/linode/images"
@@ -250,6 +253,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		networkingipassignment.NewResource,
 		obj.NewResource,
 		databasemysqlv2.NewResource,
+		firewallsettings.NewResource,
 	}
 }
 
@@ -328,5 +332,8 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		objendpoints.NewDataSource,
 		objquota.NewDataSource,
 		objquotas.NewDataSource,
+		firewalltemplate.NewDataSource,
+		firewalltemplates.NewDataSource,
+		firewallsettings.NewDataSource,
 	}
 }

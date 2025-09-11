@@ -45,6 +45,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `nodebalancers` - The IDs of NodeBalancers assigned to this Firewall.
 
+* `interfaces` - The IDs of Linode interfaces assigned to this Firewall.
+
 * `status` - The status of the firewall. (`enabled`, `disabled`, `deleted`)
 
 * `created` - When this firewall was created.

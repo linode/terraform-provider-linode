@@ -20,12 +20,13 @@ func TestFlattenAccountSettings(t *testing.T) {
 	maintenancePolicy := "linode/migrate"
 
 	mockSettings := &linodego.AccountSettings{
-		BackupsEnabled:       backupsEnabledValue,
-		Managed:              managedValue,
-		NetworkHelper:        networkHelperValue,
-		LongviewSubscription: &longviewSubscriptionValue,
-		ObjectStorage:        &objectStorageValue,
-		MaintenancePolicy:    maintenancePolicy,
+		BackupsEnabled:          backupsEnabledValue,
+		Managed:                 managedValue,
+		NetworkHelper:           networkHelperValue,
+		LongviewSubscription:    &longviewSubscriptionValue,
+		ObjectStorage:           &objectStorageValue,
+		InterfacesForNewLinodes: linodego.LinodeDefaultButLegacyConfigAllowed,
+		MaintenancePolicy:       maintenancePolicy,
 	}
 
 	// Create a mock AccountSettingsModel instance
@@ -45,6 +46,10 @@ func TestFlattenAccountSettings(t *testing.T) {
 
 	if model.ObjectStorage != types.StringValue("active") {
 		t.Errorf("Expected ObjectStorage to be %s, but got %s", "active", model.ObjectStorage)
+	}
+
+	if model.InterfacesForNewLinodes != types.StringValue(string(linodego.LinodeDefaultButLegacyConfigAllowed)) {
+		t.Errorf("Expected InterfacesForNewLinodes to be %s, but got %s", string(linodego.LinodeDefaultButLegacyConfigAllowed), model.InterfacesForNewLinodes)
 	}
 
 	if model.BackupsEnabled != types.BoolValue(true) {

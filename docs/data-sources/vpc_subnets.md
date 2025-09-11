@@ -53,7 +53,12 @@ Each Linode VPC subnet will be stored in the `vpc_subnets` attribute and will ex
 
 * `ipv4` - The IPv4 range of this subnet in CIDR format.
 
-* `linodes` - A list of Linode IDs that added to this subnet.
+* `linodes` - A list of Linode that added to this subnet.
+  * `id` - ID of the Linode
+  * `interfaces` - A list of networking interfaces objects.
+    * `id` - ID of the interface.
+    * `config_id` - ID of Linode Config that the interface is associated with. `null` for a Linode Interface.
+    * `active` - Whether the Interface is actively in use.
 
 * `created` - The date and time when the VPC Subnet was created.
 

@@ -35,8 +35,15 @@ func (m *VPCIPModel) FlattenVPCIP(vpcIp *linodego.VPCIP, preserveKnown bool) {
 	m.NAT1To1 = helper.KeepOrUpdateStringPointer(m.NAT1To1, vpcIp.NAT1To1, preserveKnown)
 	m.VPCID = helper.KeepOrUpdateInt64(m.VPCID, int64(vpcIp.VPCID), preserveKnown)
 	m.SubnetID = helper.KeepOrUpdateInt64(m.SubnetID, int64(vpcIp.SubnetID), preserveKnown)
-	m.ConfigID = helper.KeepOrUpdateInt64(m.ConfigID, int64(vpcIp.ConfigID), preserveKnown)
 	m.InterfaceID = helper.KeepOrUpdateInt64(m.InterfaceID, int64(vpcIp.InterfaceID), preserveKnown)
+
+	var newConfigID types.Int64
+	if vpcIp.ConfigID == 0 {
+		newConfigID = types.Int64Null()
+	} else {
+		newConfigID = types.Int64Value(int64(vpcIp.ConfigID))
+	}
+	m.ConfigID = helper.KeepOrUpdateValue(m.ConfigID, newConfigID, preserveKnown)
 }
 
 type VPCIPFilterModel struct {

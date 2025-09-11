@@ -32,6 +32,7 @@ func TestAccDataSourceVPCIPs_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t, vpcLabel, testRegion, "10.0.0.0/24", "10.0.1.0/24"),
 				Check: resource.ComposeTestCheckFunc(
+					// TODO: Remove these checkers if the API issue persists when project branch merged.
 					resource.TestCheckResourceAttr(resourceName_all_ips, "vpc_ips.#", "2"),
 					resource.TestCheckResourceAttr(resourceName_vpc_ips, "vpc_ips.#", "1"),
 

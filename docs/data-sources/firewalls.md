@@ -61,7 +61,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-Each Linode image will be stored in the `firewalls` attribute and will export the following attributes:
+Each Linode firewall will be stored in the `firewalls` attribute and will export the following attributes:
 
 * `id` - The unique ID assigned to this Firewall.
 
@@ -82,6 +82,10 @@ Each Linode image will be stored in the `firewalls` attribute and will export th
 * `outbound_policy` - The default behavior for outbound traffic.
 
 * `linodes` - The IDs of Linodes this firewall is applied to.
+
+* `nodebalancers` - The IDs of NodeBalancers this firewall is applied to.
+
+* `interfaces` - The IDs of Linode Interfaces this firewall is applied to.
 
 * `status` - The status of the firewall.
 

@@ -1,0 +1,12 @@
+{{ define "linode_firewall_settings_basic" }}
+
+resource "linode_firewall_settings" "{{ .ResourceName }}" {
+  default_firewall_ids = {
+    linode           = {{ .FirewallID }}
+    nodebalancer     = {{ .FirewallID }}
+    public_interface = {{ .FirewallID }}
+    vpc_interface    = {{ .FirewallID }}
+  }
+}
+
+{{ end }}
