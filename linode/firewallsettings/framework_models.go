@@ -89,7 +89,7 @@ func (fsds *FirewallSettingsModel) FlattenFirewallSettings(
 		fsds.DefaultFirewallIDs,
 		preserveKnown,
 		diags,
-		func(defaultFirewallIDsAttrsModel *DefaultFirewallIDsAttributeModel, isNull *bool, preserveKnown bool, _ *diag.Diagnostics) {
+		func(defaultFirewallIDsAttrsModel *DefaultFirewallIDsAttributeModel, _ *bool, preserveKnown bool, _ *diag.Diagnostics) {
 			defaultFirewallIDsAttrsModel.FlattenDefaultFirewallIDs(settings, preserveKnown)
 		},
 	)

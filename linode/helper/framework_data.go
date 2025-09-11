@@ -174,8 +174,8 @@ func KeepOrUpdateSingleNestedAttributeWithTypes[T any](
 	var updated types.Object
 
 	// Only setting it to null when not preserving known.
-	// When known is preserved, it's the flatten function's
-	// responsibility to handle the values of nested attributes
+	// When known values are preserved, it's the flatten function's
+	// responsibility to handle the values of the nested attributes
 	if isNull && !preserveKnown {
 		updated = types.ObjectNull(attributeTypes)
 	} else {
