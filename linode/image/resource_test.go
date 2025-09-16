@@ -47,6 +47,7 @@ var (
 		"au-mel":   true,
 		"sg-sin-2": true,
 		"jp-tyo-3": true,
+		"no-osl-1": true,
 	}
 
 	testRegion  string
@@ -59,7 +60,7 @@ func init() {
 		F:    sweep,
 	})
 
-	regions, err := acceptance.GetRegionsWithCaps([]string{"Object Storage"}, "core")
+	regions, err := acceptance.GetRegionsWithCaps([]string{"Object Storage", "Linodes"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
