@@ -15,7 +15,7 @@ import (
 var resourceLinodeUserGrantFields = []string{
 	"global_grants", "domain_grant", "firewall_grant", "image_grant",
 	"linode_grant", "longview_grant", "nodebalancer_grant", "stackscript_grant",
-	"vpc_grant", "placement_group_grant", "volume_grant",
+	"vpc_grant", "volume_grant",
 }
 
 func Resource() *schema.Resource {
@@ -95,7 +95,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		d.Set("linode_grant", flattenGrantsEntities(grants.Linode))
 		d.Set("longview_grant", flattenGrantsEntities(grants.Longview))
 		d.Set("nodebalancer_grant", flattenGrantsEntities(grants.NodeBalancer))
-		d.Set("placement_group_grant", flattenGrantsEntities(grants.PlacementGroup))
 		d.Set("stackscript_grant", flattenGrantsEntities(grants.StackScript))
 		d.Set("volume_grant", flattenGrantsEntities(grants.Volume))
 		d.Set("vpc_grant", flattenGrantsEntities(grants.VPC))
@@ -184,7 +183,6 @@ func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interfac
 	updateOpts.Longview = expandGrantsEntities(d.Get("longview_grant").(*schema.Set).List())
 	updateOpts.NodeBalancer = expandGrantsEntities(d.Get("nodebalancer_grant").(*schema.Set).List())
 	updateOpts.StackScript = expandGrantsEntities(d.Get("stackscript_grant").(*schema.Set).List())
-	updateOpts.PlacementGroup = expandGrantsEntities(d.Get("placement_group_grant").(*schema.Set).List())
 	updateOpts.VPC = expandGrantsEntities(d.Get("vpc_grant").(*schema.Set).List())
 	updateOpts.Volume = expandGrantsEntities(d.Get("volume_grant").(*schema.Set).List())
 
@@ -239,7 +237,6 @@ func expandGrantsGlobal(global map[string]interface{}) linodego.GlobalUserGrants
 	result.AddLinodes = global["add_linodes"].(bool)
 	result.AddLongview = global["add_longview"].(bool)
 	result.AddNodeBalancers = global["add_nodebalancers"].(bool)
-	result.AddPlacementGroups = global["add_placement_groups"].(bool)
 	result.AddStackScripts = global["add_stackscripts"].(bool)
 	result.AddVolumes = global["add_volumes"].(bool)
 	result.AddVPCs = global["add_vpcs"].(bool)
