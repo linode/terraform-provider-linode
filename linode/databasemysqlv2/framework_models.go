@@ -23,7 +23,7 @@ type ModelPrivateNetwork struct {
 func (m ModelPrivateNetwork) ToLinodego(d diag.Diagnostics) *linodego.DatabasePrivateNetwork {
 	return &linodego.DatabasePrivateNetwork{
 		VPCID:        helper.FrameworkSafeInt64ToInt(m.VPCID.ValueInt64(), &d),
-		SubnetID:     helper.FrameworkSafeInt64ToInt(m.VPCID.ValueInt64(), &d),
+		SubnetID:     helper.FrameworkSafeInt64ToInt(m.SubnetID.ValueInt64(), &d),
 		PublicAccess: m.PublicAccess.ValueBool(),
 	}
 }

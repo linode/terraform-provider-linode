@@ -28,6 +28,12 @@ import (
 )
 
 var (
+	privateNetworkAttributes = map[string]attr.Type{
+		"vpc_id":        types.Int64Type,
+		"subnet_id":     types.Int64Type,
+		"public_access": types.BoolType,
+	}
+
 	updatesAttributes = map[string]attr.Type{
 		"day_of_week": types.Int64Type,
 		"duration":    types.Int64Type,

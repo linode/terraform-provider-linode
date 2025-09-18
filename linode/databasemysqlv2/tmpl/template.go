@@ -175,3 +175,16 @@ func DataEngineConfig(
 		data,
 	)
 }
+
+func DataVPC(t testing.TB, label, region, engine, nodeType string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"database_mysql_v2_data_vpc",
+		TemplateData{
+			Label:    label,
+			Region:   region,
+			EngineID: engine,
+			Type:     nodeType,
+		},
+	)
+}

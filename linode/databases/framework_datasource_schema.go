@@ -1,6 +1,7 @@
 package databases
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
@@ -23,6 +24,12 @@ var filterConfig = frameworkfilter.Config{
 	"id":             {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 	"instance_uri":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"updated":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+}
+
+var privateNetworkAttributes = map[string]attr.Type{
+	"vpc_id":        types.Int64Type,
+	"subnet_id":     types.Int64Type,
+	"public_access": types.BoolType,
 }
 
 var frameworkDataSourceSchema = schema.Schema{
@@ -81,6 +88,28 @@ var frameworkDataSourceSchema = schema.Schema{
 					"label": schema.StringAttribute{
 						Description: "A unique, user-defined string referring to the Managed Database.",
 						Computed:    true,
+					},
+					"private_network": schema.SingleNestedAttribute{
+						Description: "Restricts access to this database using a virtual private cloud (VPC) " +
+							"that you've configured in the region where the database will live.",
+						Computed: true,
+						Attributes: map[string]schema.Attribute{
+							"vpc_id": schema.Int64Attribute{
+								Description: "The unique identifier of the VPC to " +
+									"enable private access to the Managed Database.",
+								Computed: true,
+							},
+							"subnet_id": schema.Int64Attribute{
+								Description: "If the `vpc_id` is comprised of subnets, " +
+									"you can include the specific one you want to use to limit access to the database",
+								Computed: true,
+							},
+							"public_access": schema.BoolAttribute{
+								Description: "If true, clients outside of the VPC can " +
+									"connect to the database using a public IP address.",
+								Computed: true,
+							},
+						},
 					},
 					"region": schema.StringAttribute{
 						Description: "The Region ID for the Managed Database.",

@@ -1,6 +1,6 @@
-{{ define "database_mysql_v2_vpc_1" }}
+{{ define "database_postgresql_v2_vpc_1" }}
 
-resource "linode_database_mysql_v2" "foobar" {
+resource "linode_database_postgresql_v2" "foobar" {
     label = "{{ .Label }}"
     region = "{{ .Region }}"
     type = "g6-nanode-1"
