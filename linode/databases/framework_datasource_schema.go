@@ -95,14 +95,13 @@ var frameworkDataSourceSchema = schema.Schema{
 						Computed: true,
 						Attributes: map[string]schema.Attribute{
 							"vpc_id": schema.Int64Attribute{
-								Description: "The unique identifier of the VPC to " +
-									"enable private access to the Managed Database.",
+								Description: "The ID of the virtual private cloud (VPC) " +
+									"to restrict access to this database using.",
 								Computed: true,
 							},
 							"subnet_id": schema.Int64Attribute{
-								Description: "If the `vpc_id` is comprised of subnets, " +
-									"you can include the specific one you want to use to limit access to the database",
-								Computed: true,
+								Description: "The ID of the VPC subnet to restrict access to this database using.",
+								Computed:    true,
 							},
 							"public_access": schema.BoolAttribute{
 								Description: "If true, clients outside of the VPC can " +

@@ -78,6 +78,8 @@ Each engine will be stored in the `databases` attribute and will export the foll
 
 * `label` - A unique, user-defined string referring to the Managed Database.
 
+* [`private_network`](#private_network) - Restricts access to this database using a virtual private cloud (VPC).
+
 * `region` - The region to use for the Managed Database.
 
 * `replication_type` - The replication method used for the Managed Database.
@@ -91,3 +93,13 @@ Each engine will be stored in the `databases` attribute and will export the foll
 * `updated` - When this Managed Database was last updated.
 
 * `version` - The Managed Database engine version.
+
+## private_network
+
+The following arguments exposed by the `private_network` attribute:
+
+* `vpc_id` - The ID of the virtual private cloud (VPC) to restrict access to this database using.
+
+* `subnet_id` - The ID of the VPC subnet to restrict access to this database using.
+
+* `public_access` - If true, clients outside the VPC can connect to the database using a public IP address.
