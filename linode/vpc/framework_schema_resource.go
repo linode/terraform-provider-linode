@@ -49,12 +49,15 @@ var frameworkResourceSchema = schema.Schema{
 					"range": schema.StringAttribute{
 						Description: "The IPv6 range assigned to this VPC.",
 						Optional:    true,
-						Computed:    true,
 						CustomType:  customtypes.LinodeAutoAllocRangeType{},
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 							stringplanmodifier.RequiresReplace(),
 						},
+					},
+					"allocated_range": schema.StringAttribute{
+						Description: "The IPv6 range assigned to this VPC.",
+						Computed:    true,
 					},
 					"allocation_class": schema.StringAttribute{
 						Description: "The labeled IPv6 Inventory that the VPC Prefix should be allocated from.",

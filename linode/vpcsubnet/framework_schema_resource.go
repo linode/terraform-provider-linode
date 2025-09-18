@@ -77,6 +77,10 @@ var frameworkResourceSchema = schema.Schema{
 							stringplanmodifier.UseStateForUnknown(),
 						},
 					},
+					"allocated_range": schema.StringAttribute{
+						Description: "The IPv6 range assigned to this subnet.",
+						Computed:    true,
+					},
 				},
 			},
 		},

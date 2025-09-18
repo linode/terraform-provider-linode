@@ -58,6 +58,8 @@ Configures a single IPv6 range under this VPC.
 
 * `allocation_class` - (Optional) Indicates the labeled IPv6 Inventory that the VPC Prefix should be allocated from.
 
+* `allocated_range` - (Read-Only) The value of range computed by the API. This is necessary when needing to access the range for an implicit allocation.
+
 ## Attributes Reference
 
 In addition to all the arguments above, the following attributes are exported.

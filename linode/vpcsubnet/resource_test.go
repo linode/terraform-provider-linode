@@ -124,6 +124,7 @@ func TestAccResourceVPCSubnet_dualStack(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resName, "ipv6.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "ipv6.0.range"),
+					resource.TestCheckResourceAttrSet(resName, "ipv6.0.allocated_range"),
 				),
 			},
 			{

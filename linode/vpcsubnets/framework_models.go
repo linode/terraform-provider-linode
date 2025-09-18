@@ -50,14 +50,14 @@ func (model *Model) FlattenSubnets(
 
 			ipv6AddressModels := helper.MapSlice(
 				subnet.IPv6,
-				func(subnet linodego.VPCIPv6Range) vpcsubnet.ModelIPv6 {
-					return vpcsubnet.ModelIPv6{
+				func(subnet linodego.VPCIPv6Range) vpcsubnet.ResourceModelIPv6 {
+					return vpcsubnet.ResourceModelIPv6{
 						Range: customtypes.LinodeAutoAllocRangeValue{StringValue: types.StringValue(subnet.Range)},
 					}
 				},
 			)
 
-			ipv6AddressesList, d := types.ListValueFrom(ctx, vpcsubnet.ModelIPv6ObjectType, ipv6AddressModels)
+			ipv6AddressesList, d := types.ListValueFrom(ctx, vpcsubnet.ResourceModelIPv6ObjectType, ipv6AddressModels)
 			diags.Append(d...)
 			if diags.HasError() {
 				return s
