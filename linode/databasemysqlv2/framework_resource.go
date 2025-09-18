@@ -68,6 +68,11 @@ func (r *Resource) Create(
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
+	privateNetwork := data.GetPrivateNetwork(ctx, resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	createOpts := linodego.MySQLCreateOptions{
 		Label:        data.Label.ValueString(),
 		Region:       data.Region.ValueString(),
@@ -77,6 +82,10 @@ func (r *Resource) Create(
 		Fork:         data.GetFork(resp.Diagnostics),
 		AllowList:    data.GetAllowList(ctx, resp.Diagnostics),
 		EngineConfig: data.GetEngineConfig(resp.Diagnostics),
+	}
+
+	if privateNetwork != nil {
+		createOpts.PrivateNetwork = privateNetwork.ToLinodego(resp.Diagnostics)
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -330,6 +339,20 @@ func (r *Resource) Update(
 	if !state.Type.Equal(plan.Type) {
 		shouldResize = true
 		updateOpts.Type = plan.Type.ValueString()
+	}
+
+	if !state.PrivateNetwork.Equal(plan.PrivateNetwork) {
+		shouldUpdate = true
+
+		privateNetwork := plan.GetPrivateNetwork(ctx, resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		updateOpts.PrivateNetwork = privateNetwork.ToLinodego(resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	// `updates` field updates

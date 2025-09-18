@@ -128,6 +128,32 @@ func Suspension(
 	)
 }
 
+func VPC0(t testing.TB, label, region, engine, nodeType string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"database_mysql_v2_vpc_0",
+		TemplateData{
+			Label:    label,
+			Region:   region,
+			EngineID: engine,
+			Type:     nodeType,
+		},
+	)
+}
+
+func VPC1(t testing.TB, label, region, engine, nodeType string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"database_mysql_v2_vpc_1",
+		TemplateData{
+			Label:    label,
+			Region:   region,
+			EngineID: engine,
+			Type:     nodeType,
+		},
+	)
+}
+
 func Data(
 	t testing.TB,
 	data TemplateData,
