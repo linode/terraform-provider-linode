@@ -349,9 +349,13 @@ func (r *Resource) Update(
 			return
 		}
 
-		updateOpts.PrivateNetwork = linodego.Pointer(privateNetwork.ToLinodego(resp.Diagnostics))
-		if resp.Diagnostics.HasError() {
-			return
+		if privateNetwork != nil {
+			updateOpts.PrivateNetwork = linodego.Pointer(privateNetwork.ToLinodego(resp.Diagnostics))
+			if resp.Diagnostics.HasError() {
+				return
+			}
+		} else {
+			updateOpts.PrivateNetwork = linodego.DoublePointerNull[linodego.DatabasePrivateNetwork]()
 		}
 	}
 
