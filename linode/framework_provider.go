@@ -49,6 +49,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/ipv6ranges"
 	"github.com/linode/terraform-provider-linode/v3/linode/kernel"
 	"github.com/linode/terraform-provider-linode/v3/linode/kernels"
+	"github.com/linode/terraform-provider-linode/v3/linode/linodeinterface"
 	"github.com/linode/terraform-provider-linode/v3/linode/lke"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkeclusters"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
@@ -62,6 +63,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbs"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbtypes"
+	"github.com/linode/terraform-provider-linode/v3/linode/nestedsettest"
 	"github.com/linode/terraform-provider-linode/v3/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/v3/linode/networkingipassignment"
 	"github.com/linode/terraform-provider-linode/v3/linode/networkingips"
@@ -254,6 +256,8 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		obj.NewResource,
 		databasemysqlv2.NewResource,
 		firewallsettings.NewResource,
+		linodeinterface.NewResource,
+		nestedsettest.NewResource,
 	}
 }
 

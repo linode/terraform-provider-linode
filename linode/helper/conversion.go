@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 )
 
@@ -108,6 +109,38 @@ func FrameworkSafeInt64PointerToIntPointer(number *int64, diags *diag.Diagnostic
 	}
 
 	return linodego.Pointer(result)
+}
+
+func FrameworkSafeInt64ValueToIntDoublePointerWithUnknownToNil(v types.Int64, diags *diag.Diagnostics) **int {
+	if v.IsUnknown() {
+		return linodego.DoublePointerNull[int]()
+	}
+
+	return linodego.Pointer(FrameworkSafeInt64PointerToIntPointer(v.ValueInt64Pointer(), diags))
+}
+
+func FrameworkSafeInt64ValueToIntPointerWithUnknownToNil(v types.Int64, diags *diag.Diagnostics) *int {
+	if v.IsUnknown() {
+		return nil
+	}
+
+	return linodego.Pointer(FrameworkSafeInt64ToInt(v.ValueInt64(), diags))
+}
+
+func ValueBoolPointerWithUnknownToNil(v types.Bool) *bool {
+	if v.IsUnknown() {
+		return nil
+	}
+
+	return v.ValueBoolPointer()
+}
+
+func ValueStringPointerWithUnknownToNil(v types.String) *string {
+	if v.IsUnknown() {
+		return nil
+	}
+
+	return v.ValueStringPointer()
 }
 
 func FrameworkSafeFloat64ToInt(number float64, diags *diag.Diagnostics) int {

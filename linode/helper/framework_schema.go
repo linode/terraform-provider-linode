@@ -3,6 +3,7 @@ package helper
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/defaults"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -11,6 +12,15 @@ import (
 func EmptySetDefault(elemType attr.Type) defaults.Set {
 	return setdefault.StaticValue(
 		types.SetValueMust(
+			elemType,
+			[]attr.Value{},
+		),
+	)
+}
+
+func EmptyListDefault(elemType attr.Type) defaults.List {
+	return listdefault.StaticValue(
+		types.ListValueMust(
 			elemType,
 			[]attr.Value{},
 		),
