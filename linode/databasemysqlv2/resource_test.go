@@ -30,7 +30,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases", "VPCs"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

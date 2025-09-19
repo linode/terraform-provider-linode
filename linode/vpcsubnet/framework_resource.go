@@ -249,6 +249,18 @@ func (r *Resource) Delete(
 		return
 	}
 
+	if err := waitForDatabaseDetachmentsPropagated(ctx, client, vpcId, id); err != nil {
+		if linodego.IsNotFound(err) {
+			// This subnet is already gone - nothing to do here
+			return
+		}
+
+		resp.Diagnostics.AddError(
+			"Failed to wait for database deletion propagation",
+			err.Error(),
+		)
+	}
+
 	tflog.Debug(ctx, "client.DeleteVPCSubnet(...)")
 	err := client.DeleteVPCSubnet(ctx, vpcId, id)
 	if err != nil {

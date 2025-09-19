@@ -4,7 +4,7 @@ go 1.24.0
 
 toolchain go1.24.1
 
-replace github.com/linode/linodego => github.com/linode/linodego v1.58.1-0.20250918203935-5c816a603bca
+replace github.com/linode/linodego => github.com/lgarber-akamai/linodego v1.9.4-0.20250919191520-2e0b0343cc89
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.38.3

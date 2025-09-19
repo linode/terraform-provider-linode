@@ -640,7 +640,7 @@ func (m *Model) GetUpdates(ctx context.Context, d diag.Diagnostics) *ModelUpdate
 
 // GetPrivateNetwork returns the ModelPrivateNetwork for this model if specified, else nil.
 func (m *Model) GetPrivateNetwork(ctx context.Context, d diag.Diagnostics) *ModelPrivateNetwork {
-	if m.Updates.IsUnknown() || m.Updates.IsNull() {
+	if m.PrivateNetwork.IsUnknown() || m.PrivateNetwork.IsNull() {
 		return nil
 	}
 
