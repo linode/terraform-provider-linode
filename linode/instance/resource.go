@@ -284,7 +284,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 		createOpts.Image = d.Get("image").(string)
 
-		if !bootedNull { {
+		if !bootedNull {
 			createOpts.Booted = &booted
 		}
 
