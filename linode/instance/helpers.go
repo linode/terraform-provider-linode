@@ -21,7 +21,6 @@ import (
 
 var (
 	boolFalse = false
-	boolTrue  = true
 )
 
 type diskSpec map[string]interface{}
