@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -73,7 +72,7 @@ func (r *Resource) Create(
 		IPv4:  data.IPv4.ValueString(),
 	}
 
-	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
+	vpcID := helper.FrameworkSafeInt64ToInt(data.VPCID.ValueInt64(), &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -82,7 +81,7 @@ func (r *Resource) Create(
 	tflog.Debug(ctx, "client.CreateVPCSubnet(...)", map[string]any{
 		"options": createOpts,
 	})
-	subnet, err := client.CreateVPCSubnet(ctx, createOpts, vpcId)
+	subnet, err := client.CreateVPCSubnet(ctx, createOpts, vpcID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create VPC subnet.",
@@ -123,14 +122,14 @@ func (r *Resource) Read(
 		return
 	}
 
-	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
+	vpcID := helper.FrameworkSafeInt64ToInt(data.VPCID.ValueInt64(), &resp.Diagnostics)
 	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	subnet, err := client.GetVPCSubnet(ctx, vpcId, id)
+	subnet, err := client.GetVPCSubnet(ctx, vpcID, id)
 	if err != nil {
 		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
@@ -186,8 +185,8 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
-		vpcId := helper.FrameworkSafeInt64ToInt(
-			plan.VPCId.ValueInt64(),
+		vpcID := helper.FrameworkSafeInt64ToInt(
+			plan.VPCID.ValueInt64(),
 			&resp.Diagnostics,
 		)
 		id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), &resp.Diagnostics)
@@ -199,7 +198,7 @@ func (r *Resource) Update(
 		tflog.Debug(ctx, "client.UpdateVPCSubnet(...)", map[string]any{
 			"options": updateOpts,
 		})
-		subnet, err := client.UpdateVPCSubnet(ctx, vpcId, id, updateOpts)
+		subnet, err := client.UpdateVPCSubnet(ctx, vpcID, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to update VPC subnet (%d).", id),
@@ -211,9 +210,9 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-	} else {
-		req.State.GetAttribute(ctx, path.Root("updated"), &plan.Updated)
 	}
+
+	plan.CopyFrom(state, true)
 
 	// Workaround for Crossplane issue where ID is not
 	// properly populated in plan
@@ -242,7 +241,7 @@ func (r *Resource) Delete(
 
 	ctx = populateLogAttributes(ctx, data)
 
-	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
+	vpcID := helper.FrameworkSafeInt64ToInt(data.VPCID.ValueInt64(), &resp.Diagnostics)
 	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
@@ -250,7 +249,7 @@ func (r *Resource) Delete(
 	}
 
 	tflog.Debug(ctx, "client.DeleteVPCSubnet(...)")
-	err := client.DeleteVPCSubnet(ctx, vpcId, id)
+	err := client.DeleteVPCSubnet(ctx, vpcID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
@@ -264,7 +263,7 @@ func (r *Resource) Delete(
 
 func populateLogAttributes(ctx context.Context, data VPCSubnetModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"vpc_id": data.VPCId.ValueInt64(),
+		"vpc_id": data.VPCID.ValueInt64(),
 		"id":     data.ID.ValueString(),
 	})
 }

@@ -41,14 +41,14 @@ func (d *DataSource) Read(
 
 	ctx = populateLogAttributes(ctx, data)
 
-	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
+	vpcID := helper.FrameworkSafeInt64ToInt(data.VPCID.ValueInt64(), &resp.Diagnostics)
 	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	vpcSubnet, err := client.GetVPCSubnet(ctx, vpcId, id)
+	vpcSubnet, err := client.GetVPCSubnet(ctx, vpcID, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to read VPC Subnet %v", data.ID.ValueString()),
