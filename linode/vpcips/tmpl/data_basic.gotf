@@ -66,9 +66,9 @@ resource "linode_instance_config" "barfoo" {
 data "linode_vpc_ips" "foobar" {
   depends_on = [linode_instance_config.foobar, linode_instance_config.barfoo]
   filter {
-      name = "linode_id"
-      values = [linode_instance.foobar.id, linode_instance.barfoo.id]
-    }
+    name = "linode_id"
+    values = [linode_instance.foobar.id, linode_instance.barfoo.id]
+  }
 }
 
 data "linode_vpc_ips" "barfoo" {

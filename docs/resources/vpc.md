@@ -23,6 +23,21 @@ resource "linode_vpc" "test" {
 }
 ```
 
+Create a VPC with a `/52` IPv6 range allocation:
+
+```terraform
+resource "linode_vpc" "test" {
+    label = "test-vpc"
+    region = "us-iad"
+    
+    ipv6 = [
+      {
+        range = "/52"
+      }
+    ]
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -32,6 +47,18 @@ The following arguments are supported:
 * `region` - (Required) The region of the VPC.
 
 * `description` - (Optional) The user-defined description of this VPC.
+
+* [`ipv6`](#ipv6) - (Optional) A list of IPv6 allocations under this VPC.
+
+## IPv6
+
+Configures a single IPv6 range under this VPC.
+
+* `range` - (Optional) An existing IPv6 prefix owned by the current account or a forward slash (/) followed by a valid prefix length. If unspecified, a range with the default prefix will be allocated for this VPC.
+
+* `allocation_class` - (Optional) Indicates the labeled IPv6 Inventory that the VPC Prefix should be allocated from.
+
+* `allocated_range` - (Read-Only) The value of range computed by the API. This is necessary when needing to access the range for an implicit allocation.
 
 ## Attributes Reference
 

@@ -34,3 +34,31 @@ func TestAccDataSourceVPC_basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccDataSourceVPC_dualStack(t *testing.T) {
+	t.Parallel()
+
+	resourceName := "data.linode_vpc.foo"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				// TODO (VPC Dual Stack): Remove region hardcoding
+				Config: tmpl.DataDualStack(t, vpcLabel, "no-osl-1"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "label", vpcLabel),
+					resource.TestCheckResourceAttrSet(resourceName, "description"),
+					resource.TestCheckResourceAttrSet(resourceName, "region"),
+					resource.TestCheckResourceAttrSet(resourceName, "created"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated"),
+
+					resource.TestCheckResourceAttr(resourceName, "ipv6.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "ipv6.0.range"),
+				),
+			},
+		},
+	})
+}

@@ -21,15 +21,52 @@ resource "linode_vpc_subnet" "test" {
 }
 ```
 
+Create a VPC subnet with an implicitly determined IPv6 range:
+
+```terraform
+resource "linode_vpc_subnet" "test" {
+    vpc_id = linode_vpc.test.id
+    label = "test-subnet"
+    ipv4 = "10.0.0.0/24"
+  
+    ipv6 = [
+      {
+        range = "auto"
+      }
+    ]
+}
+
+resource "linode_vpc" "test" {
+  label = "test-vpc"
+  region = "us-mia"
+  
+  ipv6 = [
+    {
+      range = "/52"
+    }
+  ]
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
-* `vpc_id` - (Required) The id of the parent VPC for this VPC Subnet.
+* `vpc_id` - (Required) The id of the parent VPC for this VPC subnet.
 
 * `label` - (Required) The label of the VPC. Only contains ASCII letters, digits and dashes.
 
 * `ipv4` - (Required) The IPv4 range of this subnet in CIDR format.
+
+* [`ipv6`](#ipv6) - (Optional) A list of IPv6 ranges under this VPC subnet.
+
+## IPv6
+
+The following arguments can be configured for each entry under the `ipv6` field:
+
+* `range` - (Optional) An existing IPv6 prefix owned by the current account or a forward slash (/) followed by a valid prefix length. If `auto`, a range with the default prefix will be allocated for this VPC.
+
+* `allocated_range` - (Read-Only) The value of range computed by the API. This is necessary when needing to access the range for an implicit allocation.
 
 ## Attributes Reference
 

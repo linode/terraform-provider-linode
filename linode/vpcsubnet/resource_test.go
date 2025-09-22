@@ -42,7 +42,7 @@ func TestAccResourceVPCSubnet_basic(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, subnetLabel, "172.16.0.0/24", testRegion),
+				Config: tmpl.Basic(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
@@ -95,6 +95,44 @@ func TestAccResourceVPCSubnet_update(t *testing.T) {
 				ImportStateIdFunc: resourceImportStateID,
 				// TODO:: remove when API response for updated timestamp is consistent
 				ImportStateVerifyIgnore: []string{"updated"},
+			},
+		},
+	})
+}
+
+func TestAccResourceVPCSubnet_dualStack(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc_subnet.foobar"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DualStack(t, subnetLabel, "10.0.0.0/24", targetRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkVPCSubnetExists,
+					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+
+					resource.TestCheckResourceAttr(resName, "ipv6.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "ipv6.0.range"),
+					resource.TestCheckResourceAttrSet(resName, "ipv6.0.allocated_range"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       resourceImportStateID,
+				ImportStateVerifyIgnore: []string{"ipv6.0.range"},
 			},
 		},
 	})
@@ -159,7 +197,7 @@ func TestAccResourceVPCSubnet_attached(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Attached(t, subnetLabel, "172.16.0.0/24", testRegion),
+				Config: tmpl.Attached(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
@@ -169,7 +207,7 @@ func TestAccResourceVPCSubnet_attached(t *testing.T) {
 			},
 			{
 				// Refresh the configuration so the `linodes` field is updated
-				Config: tmpl.Attached(t, subnetLabel, "172.16.0.0/24", testRegion),
+				Config: tmpl.Attached(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "linodes.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "linodes.0.id"),
