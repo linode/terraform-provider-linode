@@ -568,33 +568,6 @@ func (r *Resource) Delete(
 		}
 		return
 	}
-
-	// We typically don't need to wait for resources to be absent after the
-	// DELETE request is made, but we need to here to avoid failures on the deletion
-	// of attached resource (e.g. VPC). This is because database deletions often
-	// take a while to propagate.
-	err := helper.WaitForCondition(
-		ctx,
-		time.Second*2,
-		func(ctx context.Context) (bool, error) {
-			if _, err := client.GetMySQLDatabase(ctx, id); err != nil {
-				if linodego.IsNotFound(err) {
-					return true, nil
-				}
-
-				return false, err
-			}
-
-			return false, nil
-		},
-	)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to wait for database absent",
-			err.Error(),
-		)
-		return
-	}
 }
 
 func populateLogAttributes(ctx context.Context, data ResourceModel) context.Context {
