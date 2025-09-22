@@ -486,7 +486,7 @@ func expandLinodeLKENodePoolSpecs(pool []interface{}, preserveNoTarget bool) (po
 			UpdateStrategy:    updateStrategyPtr,
 		})
 	}
-	return
+	return poolSpecs
 }
 
 func flattenLKENodePools(pools []linodego.LKENodePool) []map[string]interface{} {
@@ -586,12 +586,12 @@ func expandControlPlaneOptions(controlPlane map[string]interface{}) (
 		if len(v) > 0 {
 			result.ACL, diags = expandACLOptions(v[0].(map[string]interface{}))
 			if diags.HasError() {
-				return
+				return result, diags
 			}
 		}
 	}
 
-	return
+	return result, diags
 }
 
 func expandACLOptions(aclOptions map[string]interface{}) (*linodego.LKEClusterControlPlaneACLOptions, diag.Diagnostics) {

@@ -121,7 +121,7 @@ func flattenInstanceDisks(instanceDisks []linodego.InstanceDisk) (disks []map[st
 			"filesystem": string(disk.Filesystem),
 		})
 	}
-	return
+	return disks, swapSize
 }
 
 func flattenInstanceConfigDevice(
@@ -186,7 +186,7 @@ func flattenInstanceConfigs(
 
 		configs = append(configs, c)
 	}
-	return
+	return configs
 }
 
 func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {

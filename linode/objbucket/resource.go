@@ -493,7 +493,7 @@ func DecodeBucketID(ctx context.Context, id string, d *schema.ResourceData) (reg
 	if len(parts) == 2 && parts[0] != "" && parts[1] != "" {
 		regionOrCluster = parts[0]
 		label = parts[1]
-		return
+		return regionOrCluster, label, err
 	}
 	tflog.Warn(ctx, "Corrupted bucket ID detected, trying to recover it from cluster and label attributes.")
 
@@ -517,7 +517,7 @@ func DecodeBucketID(ctx context.Context, id string, d *schema.ResourceData) (reg
 		)
 	}
 
-	return
+	return regionOrCluster, label, err
 }
 
 func flattenLifecycleRules(ctx context.Context, rules []s3types.LifecycleRule) []map[string]any {
