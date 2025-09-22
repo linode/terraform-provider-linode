@@ -135,7 +135,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("has_user_data", instance.HasUserData)
 	d.Set("lke_cluster_id", instance.LKEClusterID)
 	d.Set("disk_encryption", instance.DiskEncryption)
-	d.Set("interface_generation", instance.InterfaceGeneration)
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
@@ -239,14 +238,6 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		for i, ni := range interfaces {
 			createOpts.Interfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
 		}
-	}
-
-	if interfaceGeneration, interfaceGenerationOk := d.GetOk("interface_generation"); interfaceGenerationOk {
-		createOpts.InterfaceGeneration = linodego.InterfaceGeneration(interfaceGeneration.(string))
-	}
-
-	if networkHelper, networkHelperOk := d.GetOk("network_helper"); networkHelperOk {
-		createOpts.NetworkHelper = linodego.Pointer(networkHelper.(bool))
 	}
 
 	if _, metadataOk := d.GetOk("metadata.0"); metadataOk {
