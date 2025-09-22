@@ -104,10 +104,10 @@ func (model *Model) FlattenSubnets(
 		},
 	)
 	if diags.HasError() {
-		return
+		return diags
 	}
 
 	model.VPCSubnets = result
 
-	return
+	return diags
 }
