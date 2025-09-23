@@ -67,5 +67,5 @@ func (data *FilterModel) parseIPAddresses(
 
 	data.IPAddresses = result
 
-	return
+	return d
 }
