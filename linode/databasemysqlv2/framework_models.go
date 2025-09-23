@@ -125,7 +125,7 @@ func (m *Model) Refresh(
 	db, err := client.GetMySQLDatabase(ctx, dbID)
 	if err != nil {
 		d.AddError("Failed to refresh MySQL database", err.Error())
-		return
+		return d
 	}
 
 	var ssl *linodego.MySQLDatabaseSSL
@@ -138,19 +138,19 @@ func (m *Model) Refresh(
 		ssl, err = client.GetMySQLDatabaseSSL(ctx, dbID)
 		if err != nil {
 			d.AddError("Failed to refresh MySQL database SSL", err.Error())
-			return
+			return d
 		}
 
 		tflog.Debug(ctx, "client.GetMySQLDatabaseCredentials(...)")
 		creds, err = client.GetMySQLDatabaseCredentials(ctx, dbID)
 		if err != nil {
 			d.AddError("Failed to refresh MySQL database credentials", err.Error())
-			return
+			return d
 		}
 	}
 
 	m.Flatten(ctx, db, ssl, creds, preserveKnown)
-	return
+	return d
 }
 
 func (m *Model) Flatten(
@@ -214,7 +214,7 @@ func (m *Model) Flatten(
 		&d,
 	)
 	if d.HasError() {
-		return
+		return d
 	}
 
 	membersCasted := helper.MapMap(
@@ -226,7 +226,7 @@ func (m *Model) Flatten(
 
 	m.Members = helper.KeepOrUpdateStringMap(ctx, m.Members, membersCasted, preserveKnown, &d)
 	if d.HasError() {
-		return
+		return d
 	}
 
 	if db.Fork != nil {
