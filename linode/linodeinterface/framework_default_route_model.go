@@ -22,7 +22,7 @@ func (plan *DefaultRouteAttrModel) GetCreateOrUpdateOptions(state *DefaultRouteA
 		shouldUpdate = true
 	}
 
-	return
+	return opts, shouldUpdate
 }
 
 func (data *DefaultRouteAttrModel) FlattenInterfaceDefaultRoute(

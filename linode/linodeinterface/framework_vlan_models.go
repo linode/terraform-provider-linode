@@ -24,7 +24,7 @@ func (plan *VLANAttrModel) GetCreateOptions() (vlan linodego.VLANInterface) {
 	if !plan.VLANLabel.IsUnknown() {
 		vlan.VLANLabel = plan.VLANLabel.ValueString()
 	}
-	return
+	return vlan
 }
 
 func (data *VLANAttrModel) FlattenVLANInterface(

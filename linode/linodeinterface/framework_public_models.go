@@ -70,7 +70,7 @@ func (plan *PublicAttrModel) GetCreateOrUpdateOptions(
 		shouldUpdate = true
 	}
 
-	return
+	return opts, shouldUpdate
 }
 
 func (plan *PublicIPv4AttrModel) GetCreateOptions(ctx context.Context) (opts linodego.PublicInterfaceIPv4CreateOptions) {
@@ -90,7 +90,7 @@ func (plan *PublicIPv4AttrModel) GetCreateOptions(ctx context.Context) (opts lin
 		opts.Addresses = linodego.Pointer(addressesOpts)
 	}
 
-	return
+	return opts
 }
 
 func (data *PublicIPv4AttrModel) FlattenPublicIPv4(ctx context.Context, ipv4 linodego.PublicInterfaceIPv4, preserveKnown bool, diags *diag.Diagnostics) {
@@ -215,18 +215,18 @@ func (plan *PublicIPv6AttrModel) GetCreateOptions(ctx context.Context) (opts lin
 		opts.Ranges = linodego.Pointer(rangesOpts)
 	}
 
-	return
+	return opts
 }
 
 func (plan *PublicIPv4AddressAttrModel) GetCreateOptions() (opts linodego.PublicInterfaceIPv4AddressCreateOptions) {
 	opts.Address = helper.ValueStringPointerWithUnknownToNil(plan.Address)
 	opts.Primary = helper.ValueBoolPointerWithUnknownToNil(plan.Primary)
-	return
+	return opts
 }
 
 func (plan *PublicIPv6RangeAttrModel) GetCreateOptions() (opts linodego.PublicInterfaceIPv6RangeCreateOptions) {
 	opts.Range = plan.Range.ValueString()
-	return
+	return opts
 }
 
 func (data *PublicAttrModel) FlattenPublicInterface(

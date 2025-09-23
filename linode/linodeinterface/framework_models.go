@@ -46,7 +46,7 @@ func (state *LinodeInterfaceModel) GetIDs(diags *diag.Diagnostics) (linodeID int
 		)
 	}
 	linodeID = helper.FrameworkSafeInt64ToInt(state.LinodeID.ValueInt64(), diags)
-	return
+	return linodeID, id
 }
 
 func (plan *LinodeInterfaceModel) GetCreateOptions(ctx context.Context, diags *diag.Diagnostics) (opts linodego.LinodeInterfaceCreateOptions, linodeID int) {
@@ -60,7 +60,7 @@ func (plan *LinodeInterfaceModel) GetCreateOptions(ctx context.Context, diags *d
 	if !plan.FirewallID.IsUnknown() {
 		opts.FirewallID = helper.FrameworkSafeInt64ValueToIntDoublePointerWithUnknownToNil(plan.FirewallID, diags)
 		if diags.HasError() {
-			return
+			return opts, linodeID
 		}
 	}
 
@@ -81,7 +81,7 @@ func (plan *LinodeInterfaceModel) GetCreateOptions(ctx context.Context, diags *d
 	}
 
 	linodeID = helper.FrameworkSafeInt64ToInt(plan.LinodeID.ValueInt64(), diags)
-	return
+	return opts, linodeID
 }
 
 func (plan *LinodeInterfaceModel) GetUpdateOptions(
@@ -136,7 +136,7 @@ func (plan *LinodeInterfaceModel) GetUpdateOptions(
 
 	// VLAN interface can't be updated, so no need to check it here
 
-	return
+	return opts
 }
 
 func (data *LinodeInterfaceModel) FlattenInterface(

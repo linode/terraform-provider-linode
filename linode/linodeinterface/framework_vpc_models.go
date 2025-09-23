@@ -46,7 +46,7 @@ func (plan *VPCAttrModel) GetCreateOptions(ctx context.Context, diags *diag.Diag
 		opts.IPv4 = &ipv4Opts
 	}
 
-	return
+	return opts
 }
 
 func (plan *VPCAttrModel) GetUpdateOptions(
@@ -71,7 +71,7 @@ func (plan *VPCAttrModel) GetUpdateOptions(
 		}
 	}
 
-	return
+	return opts, shouldUpdate
 }
 
 func (plan *VPCIPv4AttrModel) GetCreateOrUpdateOptions(
@@ -104,7 +104,7 @@ func (plan *VPCIPv4AttrModel) GetCreateOrUpdateOptions(
 		shouldUpdate = true
 	}
 
-	return
+	return opts, shouldUpdate
 }
 
 func (plan *VPCIPv4AddressAttrModel) GetCreateOptions() linodego.VPCInterfaceIPv4AddressCreateOptions {
