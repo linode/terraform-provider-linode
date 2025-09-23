@@ -351,7 +351,7 @@ func (r *Resource) Delete(
 			)
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to initialize event poller", err.Error())
-				return
+				return resultDiag
 			}
 
 			tflog.Debug(ctx, "client.DeleteInstanceDisk(...)")
@@ -359,17 +359,17 @@ func (r *Resource) Delete(
 				resp.Diagnostics.AddError(
 					fmt.Sprintf("Failed to delete Linode instance disk %d", id), err.Error(),
 				)
-				return
+				return resultDiag
 			}
 
 			if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
 				resp.Diagnostics.AddError(
 					"Failed to wait for Linode instance disk deletion to finish", err.Error(),
 				)
-				return
+				return resultDiag
 			}
 
-			return
+			return resultDiag
 		},
 	)
 	resp.Diagnostics.Append(d...)

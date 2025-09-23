@@ -51,7 +51,7 @@ func (plan ResourceModel) GetUpdateOptions(
 		plan.Regions.ElementsAs(ctx, &opts.Regions, false)
 		shouldUpdate = true
 	}
-	return
+	return opts, shouldUpdate
 }
 
 func (plan ResourceModel) GetCreateOptions(ctx context.Context) (opts linodego.ObjectStorageKeyCreateOptions) {
@@ -72,7 +72,7 @@ func (plan ResourceModel) GetCreateOptions(ctx context.Context) (opts linodego.O
 
 	plan.Regions.ElementsAs(ctx, &opts.Regions, false)
 
-	return
+	return opts
 }
 
 func getObjectStorageKeyRegionIDsSet(regions []linodego.ObjectStorageKeyRegion) []string {
@@ -135,7 +135,7 @@ func FlattenRegionDetail(region linodego.ObjectStorageKeyRegion) (regionDetail R
 	regionDetail.ID = types.StringValue(region.ID)
 	regionDetail.S3Endpoint = types.StringValue(region.S3Endpoint)
 	regionDetail.EndpointType = types.StringValue(string(region.EndpointType))
-	return
+	return regionDetail
 }
 
 func FlattenBucketAccessEntries(
@@ -170,7 +170,7 @@ func FlattenBucketAccessEntries(
 		resultEntries[i].FlattenBucketAccess(&entries[i], preserveKnown)
 	}
 
-	return
+	return resultEntries
 }
 
 func (rm *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {

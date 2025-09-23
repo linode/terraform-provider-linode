@@ -144,7 +144,7 @@ func (m *Model) Refresh(
 	db, err := client.GetPostgresDatabase(ctx, dbID)
 	if err != nil {
 		d.AddError("Failed to refresh PostgreSQL database", err.Error())
-		return
+		return d
 	}
 
 	var ssl *linodego.PostgresDatabaseSSL
@@ -157,19 +157,19 @@ func (m *Model) Refresh(
 		ssl, err = client.GetPostgresDatabaseSSL(ctx, dbID)
 		if err != nil {
 			d.AddError("Failed to refresh PostgreSQL database SSL", err.Error())
-			return
+			return d
 		}
 
 		tflog.Debug(ctx, "client.GetPostgresDatabaseCredentials(...)")
 		creds, err = client.GetPostgresDatabaseCredentials(ctx, dbID)
 		if err != nil {
 			d.AddError("Failed to refresh PostgreSQL database credentials", err.Error())
-			return
+			return d
 		}
 	}
 
 	m.Flatten(ctx, db, ssl, creds, preserveKnown)
-	return
+	return d
 }
 
 func (m *Model) Flatten(
@@ -233,7 +233,7 @@ func (m *Model) Flatten(
 		&d,
 	)
 	if d.HasError() {
-		return
+		return d
 	}
 
 	membersCasted := helper.MapMap(
@@ -245,7 +245,7 @@ func (m *Model) Flatten(
 
 	m.Members = helper.KeepOrUpdateStringMap(ctx, m.Members, membersCasted, preserveKnown, &d)
 	if d.HasError() {
-		return
+		return d
 	}
 
 	if db.Fork != nil {

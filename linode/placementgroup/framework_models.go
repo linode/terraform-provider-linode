@@ -126,11 +126,11 @@ func (m *PlacementGroupResourceModel) FlattenPlacementGroup(
 	membersSet, diags := types.SetValueFrom(ctx, pgMemberObjectType, members)
 	resultDiags.Append(diags...)
 	if resultDiags.HasError() {
-		return
+		return resultDiags
 	}
 
 	m.Members = membersSet
-	return
+	return resultDiags
 }
 
 func (m *PlacementGroupResourceModel) CopyFrom(other PlacementGroupResourceModel, preserveKnown bool) {

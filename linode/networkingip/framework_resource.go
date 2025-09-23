@@ -273,7 +273,7 @@ func reconcileIPAssignments(
 ) (d diag.Diagnostics) {
 	if plan.LinodeID.IsUnknown() || plan.LinodeID.Equal(state.LinodeID) {
 		// Nothing to do here
-		return
+		return d
 	}
 
 	if !state.LinodeID.IsNull() {
@@ -282,7 +282,7 @@ func reconcileIPAssignments(
 		// being reassigned to a new Linode.
 		stateLinodeID := helper.FrameworkSafeInt64ToInt(state.LinodeID.ValueInt64(), &d)
 		if d.HasError() {
-			return
+			return d
 		}
 
 		if err := client.DeleteInstanceIPAddress(ctx, stateLinodeID, state.Address.ValueString()); err != nil {
@@ -290,7 +290,7 @@ func reconcileIPAssignments(
 				"Failed to unassign reserved IP from Linode",
 				err.Error(),
 			)
-			return
+			return d
 		}
 
 		state.LinodeID = types.Int64Null()
@@ -300,7 +300,7 @@ func reconcileIPAssignments(
 		// Asign the IP to a new Linode if necessary
 		planLinodeID := helper.FrameworkSafeInt64ToInt(plan.LinodeID.ValueInt64(), &d)
 		if d.HasError() {
-			return
+			return d
 		}
 
 		ip, err := client.AssignInstanceReservedIP(
@@ -317,11 +317,11 @@ func reconcileIPAssignments(
 				"Failed to assign reserved IP to Linode",
 				err.Error(),
 			)
-			return
+			return d
 		}
 
 		state.LinodeID = types.Int64Value(int64(ip.LinodeID))
 	}
 
-	return
+	return d
 }

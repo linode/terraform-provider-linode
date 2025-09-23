@@ -77,16 +77,16 @@ func (data *RuleModel) Expands(ctx context.Context, diags *diag.Diagnostics) (ru
 	newDiags := data.IPv4.ElementsAs(ctx, &rule.Addresses.IPv4, false)
 	diags.Append(newDiags...)
 	if diags.HasError() {
-		return
+		return rule
 	}
 
 	newDiags = data.IPv6.ElementsAs(ctx, &rule.Addresses.IPv6, false)
 	diags.Append(newDiags...)
 	if diags.HasError() {
-		return
+		return rule
 	}
 
-	return
+	return rule
 }
 
 func ExpandFirewallRules(ctx context.Context, rulesList []RuleModel, diags *diag.Diagnostics) []linodego.FirewallRule {
@@ -107,17 +107,17 @@ func (data *FirewallResourceModel) ExpandFirewallRuleSet(
 ) (rules linodego.FirewallRuleSet) {
 	rules.Inbound = ExpandFirewallRules(ctx, data.Inbound, diags)
 	if diags.HasError() {
-		return
+		return rules
 	}
 
 	rules.Outbound = ExpandFirewallRules(ctx, data.Outbound, diags)
 	if diags.HasError() {
-		return
+		return rules
 	}
 
 	rules.InboundPolicy = data.InboundPolicy.ValueString()
 	rules.OutboundPolicy = data.OutboundPolicy.ValueString()
-	return
+	return rules
 }
 
 func (data *FirewallResourceModel) getCreateOptions(
@@ -128,28 +128,28 @@ func (data *FirewallResourceModel) getCreateOptions(
 	newDiags := data.Tags.ElementsAs(ctx, &createOpts.Tags, false)
 	diags.Append(newDiags...)
 	if diags.HasError() {
-		return
+		return createOpts
 	}
 
 	createOpts.Devices.Linodes = helper.ExpandFwInt64Set(data.Linodes, diags)
 	if diags.HasError() {
-		return
+		return createOpts
 	}
 
 	createOpts.Devices.NodeBalancers = helper.ExpandFwInt64Set(data.NodeBalancers, diags)
 	if diags.HasError() {
-		return
+		return createOpts
 	}
 
 	createOpts.Rules = data.ExpandFirewallRuleSet(ctx, diags)
 	if diags.HasError() {
-		return
+		return createOpts
 	}
 
 	createOpts.Rules.InboundPolicy = data.InboundPolicy.ValueString()
 	createOpts.Rules.OutboundPolicy = data.OutboundPolicy.ValueString()
 
-	return
+	return createOpts
 }
 
 func (plan *FirewallResourceModel) getUpdateOptions(
@@ -163,7 +163,7 @@ func (plan *FirewallResourceModel) getUpdateOptions(
 		newDiags := plan.Tags.ElementsAs(ctx, &updateOpts.Tags, false)
 		diags.Append(newDiags...)
 		if diags.HasError() {
-			return
+			return updateOpts, shouldUpdate
 		}
 		shouldUpdate = true
 	}
@@ -171,7 +171,7 @@ func (plan *FirewallResourceModel) getUpdateOptions(
 		updateOpts.Status = expandFirewallStatus(plan.Disabled.ValueBool())
 		shouldUpdate = true
 	}
-	return
+	return updateOpts, shouldUpdate
 }
 
 func (data *FirewallResourceModel) flattenDevices(

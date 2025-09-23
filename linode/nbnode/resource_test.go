@@ -169,7 +169,7 @@ func checkNodeBalancerNodeExists(s *terraform.State) (err error) {
 	if nodePort != expectedNodePort {
 		return fmt.Errorf("expected node to have port '%s'; got '%s'", expectedNodePort, nodePort)
 	}
-	return
+	return err
 }
 
 func checkNodeBalancerNodeDestroy(s *terraform.State) error {

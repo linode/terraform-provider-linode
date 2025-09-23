@@ -53,7 +53,7 @@ func (data ResourceModel) getObjectBody(diags *diag.Diagnostics) (body *s3manage
 		file, err := os.Open(filepath.Clean(sourcePath))
 		if err != nil {
 			diags.AddError(fmt.Sprintf("Failed to Open the File at %q", sourcePath), err.Error())
-			return
+			return body
 		}
 
 		return s3manager.ReadSeekCloser(file)

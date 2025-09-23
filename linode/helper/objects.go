@@ -24,7 +24,7 @@ func GetRegionOrCluster(d *schema.ResourceData) (regionOrCluster string) {
 	} else {
 		regionOrCluster = d.Get("cluster").(string)
 	}
-	return
+	return regionOrCluster
 }
 
 func FwS3Connection(ctx context.Context, endpoint, accessKey, secretKey string, diags *diag.Diagnostics) *s3.Client {

@@ -40,7 +40,7 @@ func (m *PGAssignmentModel) CopyFrom(
 func (m *PGAssignmentModel) GetIDComponents(diags *diag.Diagnostics) (pgID int, linodeID int) {
 	pgID = helper.FrameworkSafeInt64ToInt(m.PlacementGroupID.ValueInt64(), diags)
 	linodeID = helper.FrameworkSafeInt64ToInt(m.LinodeID.ValueInt64(), diags)
-	return
+	return pgID, linodeID
 }
 
 func buildID(pgID, linodeID int, diags *diag.Diagnostics) string {
