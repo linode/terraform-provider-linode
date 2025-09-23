@@ -92,7 +92,7 @@ func (plan *ResourceModel) GetUpdateOptions(
 	if !plan.Weight.Equal(state.Weight) {
 		weight := helper.FrameworkSafeInt64ToInt(plan.Weight.ValueInt64(), diags)
 		if diags.HasError() {
-			return
+			return result
 		}
 		result.Weight = weight
 	}
@@ -101,7 +101,7 @@ func (plan *ResourceModel) GetUpdateOptions(
 		result.Mode = linodego.NodeMode(plan.Mode.ValueString())
 	}
 
-	return
+	return result
 }
 
 func (plan *ResourceModel) CopyFrom(state ResourceModel, preserveKnown bool) {

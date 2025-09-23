@@ -21,5 +21,5 @@ func getS3Endpoint(ctx context.Context, bucket linodego.ObjectStorageBucket) (en
 	} else {
 		endpoint = helper.ComputeS3EndpointFromBucket(ctx, bucket)
 	}
-	return
+	return endpoint
 }
