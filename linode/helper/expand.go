@@ -61,12 +61,12 @@ func ExpandFwInt64Set(set types.Set, diags *diag.Diagnostics) (result []int) {
 				"Value Conversion Failed",
 				fmt.Sprintf("Failed to convert %v to int", v),
 			)
-			return
+			return result
 		}
 		result[i] = FrameworkSafeInt64ToInt(num.ValueInt64(), diags)
 		if diags.HasError() {
-			return
+			return result
 		}
 	}
-	return
+	return result
 }
