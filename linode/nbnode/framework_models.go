@@ -19,6 +19,7 @@ type BaseModel struct {
 	Address        types.String `tfsdk:"address"`
 	Status         types.String `tfsdk:"status"`
 	SubnetID       types.Int64  `tfsdk:"subnet_id"`
+	VPCConfigID    types.Int64  `tfsdk:"vpc_config_id"`
 }
 
 type DataSourceModel struct {
@@ -39,8 +40,10 @@ func (data *DataSourceModel) FlattenAndRefresh(
 		}
 
 		data.SubnetID = types.Int64Value(int64(vpcConfig.SubnetID))
+		data.VPCConfigID = types.Int64Value(int64(vpcConfig.ID))
 	} else {
 		data.SubnetID = types.Int64Null()
+		data.VPCConfigID = types.Int64Null()
 	}
 
 	data.ID = types.Int64Value(int64(node.ID))
@@ -75,8 +78,10 @@ func (data *ResourceModel) FlattenAndRefresh(
 		}
 
 		data.SubnetID = types.Int64Value(int64(vpcConfig.SubnetID))
+		data.VPCConfigID = types.Int64Value(int64(vpcConfig.ID))
 	} else {
 		data.SubnetID = types.Int64Null()
+		data.VPCConfigID = types.Int64Null()
 	}
 
 	data.ID = helper.KeepOrUpdateString(data.ID, strconv.Itoa(node.ID), preserveKnown)
@@ -107,11 +112,14 @@ func (data *ResourceModel) GetCreateParameters(diags *diag.Diagnostics) (int, in
 
 func (plan *ResourceModel) GetCreateOptions(diags *diag.Diagnostics) linodego.NodeBalancerNodeCreateOptions {
 	weight := helper.FrameworkSafeInt64ToInt(plan.Weight.ValueInt64(), diags)
+	subnetID := helper.FrameworkSafeInt64ToInt(plan.SubnetID.ValueInt64(), diags)
+
 	return linodego.NodeBalancerNodeCreateOptions{
-		Address: plan.Address.ValueString(),
-		Label:   plan.Label.ValueString(),
-		Weight:  weight,
-		Mode:    linodego.NodeMode(plan.Mode.ValueString()),
+		Address:  plan.Address.ValueString(),
+		Label:    plan.Label.ValueString(),
+		Weight:   weight,
+		Mode:     linodego.NodeMode(plan.Mode.ValueString()),
+		SubnetID: subnetID,
 	}
 }
 
@@ -151,4 +159,5 @@ func (plan *ResourceModel) CopyFrom(state ResourceModel, preserveKnown bool) {
 	plan.Address = helper.KeepOrUpdateValue(plan.Address, state.Address, preserveKnown)
 	plan.Status = helper.KeepOrUpdateValue(plan.Status, state.Status, preserveKnown)
 	plan.SubnetID = helper.KeepOrUpdateValue(plan.SubnetID, state.SubnetID, preserveKnown)
+	plan.VPCConfigID = helper.KeepOrUpdateValue(plan.VPCConfigID, state.VPCConfigID, preserveKnown)
 }
