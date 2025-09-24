@@ -2,14 +2,13 @@ package nb
 
 import (
 	"context"
-	"maps"
-	"slices"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalls"
@@ -33,7 +32,7 @@ type NodeBalancerModel struct {
 	Transfer              types.List        `tfsdk:"transfer"`
 	Tags                  types.Set         `tfsdk:"tags"`
 	Firewalls             types.List        `tfsdk:"firewalls"`
-	VPCs                  types.Set         `tfsdk:"vpcs"`
+	VPCs                  types.List        `tfsdk:"vpcs"`
 }
 
 type FirewallModel struct {
@@ -116,7 +115,7 @@ func (data *NodeBalancerModel) FlattenAndRefresh(
 
 	data.Firewalls = helper.KeepOrUpdateValue(data.Firewalls, *fws, preserveKnown)
 
-	vpcs, diags := fetchVPCs(ctx, client, nodebalancer)
+	vpcs, diags := fetchAndMergeVPCs(ctx, client, nodebalancer, data.VPCs)
 	if diags.HasError() {
 		return diags
 	}
@@ -248,7 +247,7 @@ type NodeBalancerDataSourceModel struct {
 	Transfer              types.List        `tfsdk:"transfer"`
 	Tags                  types.Set         `tfsdk:"tags"`
 	Firewalls             []NBFirewallModel `tfsdk:"firewalls"`
-	VPCs                  types.Set         `tfsdk:"vpcs"`
+	VPCs                  types.List        `tfsdk:"vpcs"`
 }
 
 type NBFirewallModel struct {
@@ -307,7 +306,7 @@ func (data *NodeBalancerDataSourceModel) flattenNodeBalancer(
 
 	data.Firewalls = nbFirewalls
 
-	vpcs, diags := fetchVPCs(ctx, client, nodebalancer)
+	vpcs, diags := fetchAndMergeVPCs(ctx, client, nodebalancer, data.VPCs)
 	if diags.HasError() {
 		return diags
 	}
@@ -362,7 +361,7 @@ func (m *VPCModel) ToLinodego() (*linodego.NodeBalancerVPCOptions, diag.Diagnost
 
 func vpcsToLinodego(
 	ctx context.Context,
-	vpcs types.Set,
+	vpcs types.List,
 ) ([]linodego.NodeBalancerVPCOptions, diag.Diagnostics) {
 	var d diag.Diagnostics
 
@@ -383,11 +382,12 @@ func vpcsToLinodego(
 	), d
 }
 
-func fetchVPCs(
+func fetchAndMergeVPCs(
 	ctx context.Context,
 	client *linodego.Client,
 	nodeBalancer *linodego.NodeBalancer,
-) (*types.Set, diag.Diagnostics) {
+	mergeInto types.List,
+) (*types.List, diag.Diagnostics) {
 	var d diag.Diagnostics
 
 	vpcConfigs, err := client.ListNodeBalancerVPCConfigs(ctx, nodeBalancer.ID, nil)
@@ -399,16 +399,37 @@ func fetchVPCs(
 		return nil, d
 	}
 
-	vpcConfigMap := make(map[int]VPCModel, len(vpcConfigs))
-	for _, vpcConfig := range vpcConfigs {
-		vpcConfigMap[vpcConfig.ID] = VPCModel{
-			SubnetID:            types.Int64Value(int64(vpcConfig.SubnetID)),
-			IPv4Range:           types.StringValue(vpcConfig.IPv4Range),
-			IPv4RangeAutoAssign: types.BoolValue(true), // TODO
+	var mergeIntoSlice []VPCModel
+	if !mergeInto.IsNull() {
+		d.Append(mergeInto.ElementsAs(ctx, &mergeIntoSlice, false)...)
+		if d.HasError() {
+			return nil, d
 		}
 	}
 
-	result, diags := types.SetValueFrom(ctx, vpcObjType, slices.Collect(maps.Values(vpcConfigMap)))
+	for i, vpcConfig := range vpcConfigs {
+		if i >= len(mergeIntoSlice) {
+			mergeIntoSlice = append(mergeIntoSlice, VPCModel{
+				SubnetID:            types.Int64Value(int64(vpcConfig.SubnetID)),
+				IPv4Range:           types.StringValue(vpcConfig.IPv4Range),
+				IPv4RangeAutoAssign: types.BoolNull(),
+			})
+			continue
+		}
+
+		mergeIntoSlice[i].SubnetID = types.Int64Value(int64(vpcConfig.SubnetID))
+		mergeIntoSlice[i].IPv4Range = types.StringValue(vpcConfig.IPv4Range)
+	}
+
+	tflog.Debug(ctx, "MERGEINTOSLICE", map[string]any{
+		"mergeIntoSlice":                        mergeIntoSlice,
+		"mergeIntoSlice[0]":                     mergeIntoSlice[0],
+		"mergeIntoSlice[0].SubnetID":            mergeIntoSlice[0].SubnetID.ValueInt64(),
+		"mergeIntoSlice[0].IPv4Range":           mergeIntoSlice[0].IPv4Range.ValueString(),
+		"mergeIntoSlice[0].IPv4RangeAutoAssign": mergeIntoSlice[0].IPv4RangeAutoAssign.ValueBool(),
+	})
+
+	result, diags := types.ListValueFrom(ctx, vpcObjType, mergeIntoSlice)
 	if diags.HasError() {
 		return nil, diags
 	}

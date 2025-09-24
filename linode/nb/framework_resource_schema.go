@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -152,12 +151,12 @@ var frameworkResourceSchema = schema.Schema{
 				listplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"vpcs": schema.SetNestedAttribute{
+		"vpcs": schema.ListNestedAttribute{
 			Description: "A list of VPCs assigned to this NodeBalancer.",
 			Optional:    true,
-			PlanModifiers: []planmodifier.Set{
-				setplanmodifier.RequiresReplace(),
-				setplanmodifier.UseStateForUnknown(),
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.RequiresReplace(),
+				listplanmodifier.UseStateForUnknown(),
 			},
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
@@ -177,7 +176,6 @@ var frameworkResourceSchema = schema.Schema{
 						Computed: true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
-							stringplanmodifier.UseStateForUnknown(),
 						},
 					},
 					"ipv4_range_auto_assign": schema.BoolAttribute{
@@ -185,7 +183,6 @@ var frameworkResourceSchema = schema.Schema{
 							"within the same VPC by allocating smaller /30 subnets for " +
 							"each NodeBalancer's backends.",
 						Optional: true,
-						Computed: true,
 						PlanModifiers: []planmodifier.Bool{
 							boolplanmodifier.RequiresReplace(),
 							boolplanmodifier.UseStateForUnknown(),
