@@ -60,6 +60,10 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.FlattenAndRefresh(ctx, client, node)
+	resp.Diagnostics.Append(data.FlattenAndRefresh(ctx, client, node)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
