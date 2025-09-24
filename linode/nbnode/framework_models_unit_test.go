@@ -24,7 +24,7 @@ func TestParseNodeBalancerNode(t *testing.T) {
 
 	data := &DataSourceModel{}
 
-	data.ParseNodeBalancerNode(mockNode)
+	data.FlattenAndRefresh(t.Context(), nil, mockNode)
 
 	assert.Equal(t, types.Int64Value(54321), data.ID)
 	assert.Equal(t, types.Int64Value(12345), data.NodeBalancerID)

@@ -70,7 +70,7 @@ func (r *Resource) Create(
 
 	ctx = tflog.SetField(ctx, "node_id", node.ID)
 
-	plan.FlattenNodeBalancerNode(node, true)
+	plan.FlattenAndRefresh(ctx, client, node, true)
 
 	// IDs should always be overridden during creation (see #1085)
 	// TODO: Remove when Crossplane empty string ID issue is resolved
@@ -129,7 +129,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	state.FlattenNodeBalancerNode(node, false)
+	state.FlattenAndRefresh(ctx, client, node, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -176,7 +176,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	plan.FlattenNodeBalancerNode(node, true)
+	plan.FlattenAndRefresh(ctx, client, node, true)
 
 	plan.CopyFrom(state, true)
 

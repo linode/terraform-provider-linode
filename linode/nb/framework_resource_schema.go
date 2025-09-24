@@ -142,6 +142,27 @@ var frameworkResourceSchema = schema.Schema{
 				listplanmodifier.UseStateForUnknown(),
 			},
 		},
+		//"vpcs": schema.SetNestedAttribute{
+		//	Description: "A list of VPCs assigned to this NodeBalancer.",
+		//	Optional:    true,
+		//	PlanModifiers: []planmodifier.Set{
+		//		setplanmodifier.RequiresReplace(),
+		//		setplanmodifier.UseStateForUnknown(),
+		//	},
+		//	NestedObject: schema.NestedAttributeObject{
+		//		Attributes: map[string]schema.Attribute{
+		//			"subnet_id": schema.Int64Attribute{
+		//				Description: "The ID of a subnet to assign to this NodeBalancer.",
+		//				Required: true,
+		//				PlanModifiers: []planmodifier.Int64{
+		//					int64planmodifier.RequiresReplace(),
+		//					int64planmodifier.UseStateForUnknown(),
+		//				},
+		//			},
+		//			"ipv4_range"
+		//		},
+		//	},
+		//},
 	},
 }
 

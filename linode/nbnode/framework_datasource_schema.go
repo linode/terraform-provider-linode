@@ -40,6 +40,10 @@ var frameworkDatasourceSchema = schema.Schema{
 				"This must be a private IP address.",
 			Computed: true,
 		},
+		"subnet_id": schema.Int64Attribute{
+			Description: "The ID of the VPC subnet for this node.",
+			Computed:    true,
+		},
 		"status": schema.StringAttribute{
 			Description: "The current status of this node, based on the configured checks of its NodeBalancer Config. " +
 				"(unknown, UP, DOWN)",

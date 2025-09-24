@@ -1,6 +1,7 @@
 package nbnode
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -17,6 +18,7 @@ type BaseModel struct {
 	Mode           types.String `tfsdk:"mode"`
 	Address        types.String `tfsdk:"address"`
 	Status         types.String `tfsdk:"status"`
+	SubnetID       types.Int64  `tfsdk:"subnet_id"`
 }
 
 type DataSourceModel struct {
@@ -24,15 +26,33 @@ type DataSourceModel struct {
 	BaseModel
 }
 
-func (data *DataSourceModel) ParseNodeBalancerNode(nbnode *linodego.NodeBalancerNode) {
-	data.ID = types.Int64Value(int64(nbnode.ID))
-	data.NodeBalancerID = types.Int64Value(int64(nbnode.NodeBalancerID))
-	data.ConfigID = types.Int64Value(int64(nbnode.ConfigID))
-	data.Label = types.StringValue(nbnode.Label)
-	data.Weight = types.Int64Value(int64(nbnode.Weight))
-	data.Mode = types.StringValue(string(nbnode.Mode))
-	data.Address = types.StringValue(nbnode.Address)
-	data.Status = types.StringValue(nbnode.Status)
+func (data *DataSourceModel) FlattenAndRefresh(
+	ctx context.Context,
+	client *linodego.Client,
+	node *linodego.NodeBalancerNode,
+) (diags diag.Diagnostics) {
+	if node.VPCConfigID != 0 {
+		vpcConfig, err := client.GetNodeBalancerVPCConfig(ctx, node.NodeBalancerID, node.VPCConfigID)
+		if err != nil {
+			diags.AddError("Failed to get NodeBalancer VPC Config", err.Error())
+			return diags
+		}
+
+		data.SubnetID = types.Int64Value(int64(vpcConfig.SubnetID))
+	} else {
+		data.SubnetID = types.Int64Null()
+	}
+
+	data.ID = types.Int64Value(int64(node.ID))
+	data.NodeBalancerID = types.Int64Value(int64(node.NodeBalancerID))
+	data.ConfigID = types.Int64Value(int64(node.ConfigID))
+	data.Label = types.StringValue(node.Label)
+	data.Weight = types.Int64Value(int64(node.Weight))
+	data.Mode = types.StringValue(string(node.Mode))
+	data.Address = types.StringValue(node.Address)
+	data.Status = types.StringValue(node.Status)
+
+	return diags
 }
 
 // TODO: consider merging two models when resource's ID change to int type
@@ -41,17 +61,34 @@ type ResourceModel struct {
 	BaseModel
 }
 
-func (data *ResourceModel) FlattenNodeBalancerNode(
-	nbnode *linodego.NodeBalancerNode, preserveKnown bool,
-) {
-	data.ID = helper.KeepOrUpdateString(data.ID, strconv.Itoa(nbnode.ID), preserveKnown)
-	data.NodeBalancerID = helper.KeepOrUpdateInt64(data.NodeBalancerID, int64(nbnode.NodeBalancerID), preserveKnown)
-	data.ConfigID = helper.KeepOrUpdateInt64(data.ConfigID, int64(nbnode.ConfigID), preserveKnown)
-	data.Label = helper.KeepOrUpdateString(data.Label, nbnode.Label, preserveKnown)
-	data.Weight = helper.KeepOrUpdateInt64(data.Weight, int64(nbnode.Weight), preserveKnown)
-	data.Mode = helper.KeepOrUpdateString(data.Mode, string(nbnode.Mode), preserveKnown)
-	data.Address = helper.KeepOrUpdateString(data.Address, nbnode.Address, preserveKnown)
-	data.Status = helper.KeepOrUpdateString(data.Status, nbnode.Status, preserveKnown)
+func (data *ResourceModel) FlattenAndRefresh(
+	ctx context.Context,
+	client *linodego.Client,
+	node *linodego.NodeBalancerNode,
+	preserveKnown bool,
+) (diags diag.Diagnostics) {
+	if node.VPCConfigID != 0 {
+		vpcConfig, err := client.GetNodeBalancerVPCConfig(ctx, node.NodeBalancerID, node.VPCConfigID)
+		if err != nil {
+			diags.AddError("Failed to get NodeBalancer VPC Config", err.Error())
+			return diags
+		}
+
+		data.SubnetID = types.Int64Value(int64(vpcConfig.SubnetID))
+	} else {
+		data.SubnetID = types.Int64Null()
+	}
+
+	data.ID = helper.KeepOrUpdateString(data.ID, strconv.Itoa(node.ID), preserveKnown)
+	data.NodeBalancerID = helper.KeepOrUpdateInt64(data.NodeBalancerID, int64(node.NodeBalancerID), preserveKnown)
+	data.ConfigID = helper.KeepOrUpdateInt64(data.ConfigID, int64(node.ConfigID), preserveKnown)
+	data.Label = helper.KeepOrUpdateString(data.Label, node.Label, preserveKnown)
+	data.Weight = helper.KeepOrUpdateInt64(data.Weight, int64(node.Weight), preserveKnown)
+	data.Mode = helper.KeepOrUpdateString(data.Mode, string(node.Mode), preserveKnown)
+	data.Address = helper.KeepOrUpdateString(data.Address, node.Address, preserveKnown)
+	data.Status = helper.KeepOrUpdateString(data.Status, node.Status, preserveKnown)
+
+	return diags
 }
 
 func (data *ResourceModel) GetIDs(diags *diag.Diagnostics) (int, int, int) {
@@ -113,4 +150,5 @@ func (plan *ResourceModel) CopyFrom(state ResourceModel, preserveKnown bool) {
 	plan.Mode = helper.KeepOrUpdateValue(plan.Mode, state.Mode, preserveKnown)
 	plan.Address = helper.KeepOrUpdateValue(plan.Address, state.Address, preserveKnown)
 	plan.Status = helper.KeepOrUpdateValue(plan.Status, state.Status, preserveKnown)
+	plan.SubnetID = helper.KeepOrUpdateValue(plan.SubnetID, state.SubnetID, preserveKnown)
 }

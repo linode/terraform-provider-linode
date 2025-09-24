@@ -60,6 +60,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.ParseNodeBalancerNode(node)
+	data.FlattenAndRefresh(ctx, client, node)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
