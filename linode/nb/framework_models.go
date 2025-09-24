@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalls"
@@ -115,12 +114,13 @@ func (data *NodeBalancerModel) FlattenAndRefresh(
 
 	data.Firewalls = helper.KeepOrUpdateValue(data.Firewalls, *fws, preserveKnown)
 
-	vpcs, diags := fetchAndMergeVPCs(ctx, client, nodebalancer, data.VPCs)
+	vpcs, diags := fetchAndMergeVPCs(ctx, client, nodebalancer, data.VPCs, preserveKnown)
 	if diags.HasError() {
 		return diags
 	}
 
-	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, *vpcs, preserveKnown)
+	// The preserveKnown is handled in fetchAndMergeVPCs(...)
+	data.VPCs = *vpcs
 
 	return nil
 }
@@ -306,12 +306,13 @@ func (data *NodeBalancerDataSourceModel) flattenNodeBalancer(
 
 	data.Firewalls = nbFirewalls
 
-	vpcs, diags := fetchAndMergeVPCs(ctx, client, nodebalancer, data.VPCs)
+	// The preserveKnown is handled in fetchAndMergeVPCs(...)
+	vpcs, diags := fetchAndMergeVPCs(ctx, client, nodebalancer, data.VPCs, false)
 	if diags.HasError() {
 		return diags
 	}
 
-	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, *vpcs, false)
+	data.VPCs = *vpcs
 
 	return nil
 }
@@ -387,9 +388,12 @@ func fetchAndMergeVPCs(
 	client *linodego.Client,
 	nodeBalancer *linodego.NodeBalancer,
 	mergeInto types.List,
+	preserveKnown bool,
 ) (*types.List, diag.Diagnostics) {
 	var d diag.Diagnostics
 
+	// TODO: Make this future-proof to support multiple configs
+	// 		 with arbitrary ordering in the future
 	vpcConfigs, err := client.ListNodeBalancerVPCConfigs(ctx, nodeBalancer.ID, nil)
 	if err != nil {
 		d.AddError(
@@ -417,17 +421,9 @@ func fetchAndMergeVPCs(
 			continue
 		}
 
-		mergeIntoSlice[i].SubnetID = types.Int64Value(int64(vpcConfig.SubnetID))
-		mergeIntoSlice[i].IPv4Range = types.StringValue(vpcConfig.IPv4Range)
+		mergeIntoSlice[i].SubnetID = helper.KeepOrUpdateValue(mergeIntoSlice[i].SubnetID, types.Int64Value(int64(vpcConfig.SubnetID)), preserveKnown)
+		mergeIntoSlice[i].IPv4Range = helper.KeepOrUpdateValue(mergeIntoSlice[i].IPv4Range, types.StringValue(vpcConfig.IPv4Range), preserveKnown)
 	}
-
-	tflog.Debug(ctx, "MERGEINTOSLICE", map[string]any{
-		"mergeIntoSlice":                        mergeIntoSlice,
-		"mergeIntoSlice[0]":                     mergeIntoSlice[0],
-		"mergeIntoSlice[0].SubnetID":            mergeIntoSlice[0].SubnetID.ValueInt64(),
-		"mergeIntoSlice[0].IPv4Range":           mergeIntoSlice[0].IPv4Range.ValueString(),
-		"mergeIntoSlice[0].IPv4RangeAutoAssign": mergeIntoSlice[0].IPv4RangeAutoAssign.ValueBool(),
-	})
 
 	result, diags := types.ListValueFrom(ctx, vpcObjType, mergeIntoSlice)
 	if diags.HasError() {

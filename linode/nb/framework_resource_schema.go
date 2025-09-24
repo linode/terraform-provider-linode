@@ -176,6 +176,7 @@ var frameworkResourceSchema = schema.Schema{
 						Computed: true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
+							stringplanmodifier.UseStateForUnknown(),
 						},
 					},
 					"ipv4_range_auto_assign": schema.BoolAttribute{
@@ -183,6 +184,7 @@ var frameworkResourceSchema = schema.Schema{
 							"within the same VPC by allocating smaller /30 subnets for " +
 							"each NodeBalancer's backends.",
 						Optional: true,
+						Computed: true,
 						PlanModifiers: []planmodifier.Bool{
 							boolplanmodifier.RequiresReplace(),
 							boolplanmodifier.UseStateForUnknown(),
