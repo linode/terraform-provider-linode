@@ -79,6 +79,16 @@ func (r *Resource) Create(
 		}
 	}
 
+	if !data.VPCs.IsNull() {
+		vpcs, d := vpcsToLinodego(ctx, data.VPCs)
+		resp.Diagnostics.Append(d...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		createOpts.VPCs = vpcs
+	}
+
 	if !data.Tags.IsNull() {
 		resp.Diagnostics.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
 		if resp.Diagnostics.HasError() {
@@ -108,7 +118,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.FlattenNodeBalancer(ctx, nodebalancer, firewalls, true)...)
+	resp.Diagnostics.Append(data.FlattenAndRefresh(ctx, client, nodebalancer, firewalls, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -174,7 +184,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.FlattenNodeBalancer(ctx, nodeBalancer, firewalls, false)...)
+	resp.Diagnostics.Append(data.FlattenAndRefresh(ctx, client, nodeBalancer, firewalls, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -259,7 +269,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		resp.Diagnostics.Append(plan.FlattenNodeBalancer(ctx, nodeBalancer, firewalls, true)...)
+		resp.Diagnostics.Append(plan.FlattenAndRefresh(ctx, client, nodeBalancer, firewalls, true)...)
 	}
 
 	plan.CopyFrom(state, true)

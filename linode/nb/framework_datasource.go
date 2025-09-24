@@ -69,7 +69,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.flattenNodeBalancer(ctx, nodeBalancer, firewalls)...)
+	resp.Diagnostics.Append(data.flattenNodeBalancer(ctx, client, nodeBalancer, firewalls)...)
 
 	if resp.Diagnostics.HasError() {
 		return

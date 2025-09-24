@@ -69,6 +69,30 @@ var NodeBalancerAttributes = map[string]schema.Attribute{
 		Computed:    true,
 		Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 	},
+	"vpcs": schema.SetNestedAttribute{
+		Description: "A list of VPCs assigned to this NodeBalancer.",
+		Computed:    true,
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"subnet_id": schema.Int64Attribute{
+					Description: "The ID of a subnet to assign to this NodeBalancer.",
+					Computed:    true,
+				},
+				"ipv4_range": schema.StringAttribute{
+					Description: "A CIDR range for the VPC's IPv4 addresses. " +
+						"The NodeBalancer sources IP addresses from this range " +
+						"when routing traffic to the backend VPC nodes.",
+					Computed: true,
+				},
+				"ipv4_range_auto_assign": schema.BoolAttribute{
+					Description: "Enables the use of a larger ipv4_range subnet for multiple NodeBalancers " +
+						"within the same VPC by allocating smaller /30 subnets for " +
+						"each NodeBalancer's backends.",
+					Computed: true,
+				},
+			},
+		},
+	},
 }
 
 var frameworkDatasourceSchema = schema.Schema{

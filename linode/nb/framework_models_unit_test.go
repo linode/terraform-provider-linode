@@ -26,7 +26,7 @@ func TestFlattenNodeBalancerPreserveKnown(t *testing.T) {
 		Label: types.StringValue("another" + label),
 	}
 
-	diags := nodeBalancerModel.FlattenNodeBalancer(context.Background(), nodeBalancer, nil, true)
+	diags := nodeBalancerModel.FlattenAndRefresh(context.Background(), nodeBalancer, nil, true)
 
 	assert.False(t, diags.HasError(), "Errors should be returned due to custom context error")
 	assert.False(t, types.StringValue(label).Equal(nodeBalancerModel.Label))
@@ -67,7 +67,7 @@ func TestFlattenNodeBalancer(t *testing.T) {
 
 	nodeBalancerModel := &NodeBalancerModel{}
 
-	diags := nodeBalancerModel.FlattenNodeBalancer(context.Background(), nodeBalancer, nil, false)
+	diags := nodeBalancerModel.FlattenAndRefresh(context.Background(), nodeBalancer, nil, false)
 
 	assert.False(t, diags.HasError())
 

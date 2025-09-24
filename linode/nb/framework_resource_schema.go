@@ -6,10 +6,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -36,6 +38,14 @@ var firewallObjType = types.ObjectType{
 		"updated":         types.StringType,
 		"inbound":         types.ListType{ElemType: firewall.RuleObjectType},
 		"outbound":        types.ListType{ElemType: firewall.RuleObjectType},
+	},
+}
+
+var vpcObjType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"subnet_id":              types.Int64Type,
+		"ipv4_range":             types.StringType,
+		"ipv4_range_auto_assign": types.BoolType,
 	},
 }
 
@@ -142,27 +152,48 @@ var frameworkResourceSchema = schema.Schema{
 				listplanmodifier.UseStateForUnknown(),
 			},
 		},
-		//"vpcs": schema.SetNestedAttribute{
-		//	Description: "A list of VPCs assigned to this NodeBalancer.",
-		//	Optional:    true,
-		//	PlanModifiers: []planmodifier.Set{
-		//		setplanmodifier.RequiresReplace(),
-		//		setplanmodifier.UseStateForUnknown(),
-		//	},
-		//	NestedObject: schema.NestedAttributeObject{
-		//		Attributes: map[string]schema.Attribute{
-		//			"subnet_id": schema.Int64Attribute{
-		//				Description: "The ID of a subnet to assign to this NodeBalancer.",
-		//				Required: true,
-		//				PlanModifiers: []planmodifier.Int64{
-		//					int64planmodifier.RequiresReplace(),
-		//					int64planmodifier.UseStateForUnknown(),
-		//				},
-		//			},
-		//			"ipv4_range"
-		//		},
-		//	},
-		//},
+		"vpcs": schema.SetNestedAttribute{
+			Description: "A list of VPCs assigned to this NodeBalancer.",
+			Optional:    true,
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.RequiresReplace(),
+				setplanmodifier.UseStateForUnknown(),
+			},
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"subnet_id": schema.Int64Attribute{
+						Description: "The ID of a subnet to assign to this NodeBalancer.",
+						Required:    true,
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.RequiresReplace(),
+							int64planmodifier.UseStateForUnknown(),
+						},
+					},
+					"ipv4_range": schema.StringAttribute{
+						Description: "A CIDR range for the VPC's IPv4 addresses. " +
+							"The NodeBalancer sources IP addresses from this range " +
+							"when routing traffic to the backend VPC nodes.",
+						Optional: true,
+						Computed: true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"ipv4_range_auto_assign": schema.BoolAttribute{
+						Description: "Enables the use of a larger ipv4_range subnet for multiple NodeBalancers " +
+							"within the same VPC by allocating smaller /30 subnets for " +
+							"each NodeBalancer's backends.",
+						Optional: true,
+						Computed: true,
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.RequiresReplace(),
+							boolplanmodifier.UseStateForUnknown(),
+						},
+					},
+				},
+			},
+		},
 	},
 }
 
