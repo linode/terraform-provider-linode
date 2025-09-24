@@ -47,6 +47,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ## IPv6
 
+-> **Limited Availability** IPv6 VPCs may not currently be available to all users.
+
 Contains information about a single IPv6 allocation under this VPC.
 
 * `range` - The allocated range in CIDR format.

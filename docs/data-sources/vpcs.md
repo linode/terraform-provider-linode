@@ -60,6 +60,8 @@ Each Linode VPC will be stored in the `vpcs` attribute and will export the follo
 
 ## IPv6
 
+-> **Limited Availability** IPv6 VPCs may not currently be available to all users.
+
 Contains information about a single IPv6 allocation under a VPC.
 
 * `range` - The allocated range in CIDR format.

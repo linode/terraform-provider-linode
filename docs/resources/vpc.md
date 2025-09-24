@@ -23,9 +23,10 @@ resource "linode_vpc" "test" {
 }
 ```
 
-Create a VPC with a `/52` IPv6 range allocation:
+Create a VPC with a `/52` IPv6 range prefix:
 
 ```terraform
+# NOTE: IPv6 VPCs may not currently be available to all users.
 resource "linode_vpc" "test" {
     label = "test-vpc"
     region = "us-iad"
@@ -51,6 +52,8 @@ The following arguments are supported:
 * [`ipv6`](#ipv6) - (Optional) A list of IPv6 allocations under this VPC.
 
 ## IPv6
+
+-> **Limited Availability** IPv6 VPCs may not currently be available to all users.
 
 Configures a single IPv6 range under this VPC.
 

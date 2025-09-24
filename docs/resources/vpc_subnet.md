@@ -24,6 +24,7 @@ resource "linode_vpc_subnet" "test" {
 Create a VPC subnet with an implicitly determined IPv6 range:
 
 ```terraform
+# NOTE: IPv6 VPCs may not currently be available to all users.
 resource "linode_vpc_subnet" "test" {
     vpc_id = linode_vpc.test.id
     label = "test-subnet"
@@ -58,9 +59,11 @@ The following arguments are supported:
 
 * `ipv4` - (Required) The IPv4 range of this subnet in CIDR format.
 
-* [`ipv6`](#ipv6) - (Optional) A list of IPv6 ranges under this VPC subnet.
+* [`ipv6`](#ipv6) - (Optional) A list of IPv6 ranges under this VPC subnet. NOTE: IPv6 VPCs may not currently be available to all users.
 
 ## IPv6
+
+-> **Limited Availability** IPv6 VPCs may not currently be available to all users.
 
 The following arguments can be configured for each entry under the `ipv6` field:
 

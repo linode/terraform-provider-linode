@@ -78,14 +78,6 @@ Each Linode VPC IP will be stored in the `vpc_ips` attribute and will export the
 
 * `interface_id` - The globally general API entity identifier for the Linode interface.
 
-* `ipv6_range` - The /64 prefix, in CIDR notation, assigned to an interface.
-
-* `ipv6_is_public` - The is_public setting for the interface associated with this address.
-
-* `ipv6_address` - A list of addresses within the prefix that the interface is associated with.
-
-  * `slaac_address` - A specific address within the prefix that the interface is expected to autoconfigure through SLAAC.
-
 * `linode_id` - The identifier for the Linode the VPC interface currently belongs to.
 
 * `nat_1_1` - The public IP address used for NAT 1:1 with the VPC. This is empty if NAT 1:1 isn't used.
@@ -99,6 +91,20 @@ Each Linode VPC IP will be stored in the `vpc_ips` attribute and will export the
 * `subnet_mask` - The mask that separates host bits from network bits for the address or address_range.
 
 * `vpc_id` - The unique globally general API entity identifier for the VPC.
+
+### IPv6-specific Attributes
+
+-> **Limited Availability** IPv6 VPCs may not currently be available to all users.
+
+The following attributes are only exposed for IPv6 addresses:
+
+* `ipv6_range` - The /64 prefix, in CIDR notation, assigned to an interface.
+
+* `ipv6_is_public` - The is_public setting for the interface associated with this address.
+
+* `ipv6_address` - A list of addresses within the prefix that the interface is associated with.
+
+    * `slaac_address` - A specific address within the prefix that the interface is expected to autoconfigure through SLAAC.
 
 ## Filterable Fields
 
