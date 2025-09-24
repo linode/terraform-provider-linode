@@ -1,0 +1,16 @@
+{{ define "nodebalancer_node_data_vpc" }}
+
+provider "linode" {
+    skip_instance_ready_poll = true
+    skip_instance_delete_poll = true
+}
+
+{{ template "nodebalancer_node_vpc_base" . }}
+
+data "linode_nodebalancer_node" "test" {
+    nodebalancer_id = linode_nodebalancer.test.id
+    config_id = linode_nodebalancer_config.test.id
+    id = linode_nodebalancer_node.test.id
+}
+
+{{ end }}

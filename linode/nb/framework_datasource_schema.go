@@ -16,6 +16,13 @@ var TransferObjectType = types.ObjectType{
 	},
 }
 
+var dataSourceVPCObjType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"subnet_id":  types.Int64Type,
+		"ipv4_range": types.StringType,
+	},
+}
+
 var NodeBalancerAttributes = map[string]schema.Attribute{
 	"id": schema.Int64Attribute{
 		Description: "The unique ID of the Linode NodeBalancer.",
@@ -68,6 +75,24 @@ var NodeBalancerAttributes = map[string]schema.Attribute{
 		ElementType: types.StringType,
 		Computed:    true,
 		Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
+	},
+	"vpcs": schema.ListNestedAttribute{
+		Description: "A list of VPCs assigned to this NodeBalancer.",
+		Computed:    true,
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"subnet_id": schema.Int64Attribute{
+					Description: "The ID of a subnet to assign to this NodeBalancer.",
+					Computed:    true,
+				},
+				"ipv4_range": schema.StringAttribute{
+					Description: "A CIDR range for the VPC's IPv4 addresses. " +
+						"The NodeBalancer sources IP addresses from this range " +
+						"when routing traffic to the backend VPC nodes.",
+					Computed: true,
+				},
+			},
+		},
 	},
 }
 

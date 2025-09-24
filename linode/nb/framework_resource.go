@@ -79,6 +79,16 @@ func (r *Resource) Create(
 		}
 	}
 
+	if !data.VPCs.IsNull() {
+		vpcs, d := vpcModelsToLinodego(ctx, data.VPCs)
+		resp.Diagnostics.Append(d...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		createOpts.VPCs = vpcs
+	}
+
 	if !data.Tags.IsNull() {
 		resp.Diagnostics.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
 		if resp.Diagnostics.HasError() {
@@ -108,7 +118,16 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.FlattenNodeBalancer(ctx, nodebalancer, firewalls, true)...)
+	vpcConfigs, err := client.ListNodeBalancerVPCConfigs(ctx, nodebalancer.ID, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", nodebalancer.ID),
+			err.Error(),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(data.Flatten(ctx, nodebalancer, firewalls, vpcConfigs, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -174,7 +193,16 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.FlattenNodeBalancer(ctx, nodeBalancer, firewalls, false)...)
+	vpcConfigs, err := client.ListNodeBalancerVPCConfigs(ctx, nodeBalancer.ID, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", nodeBalancer.ID),
+			err.Error(),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(data.Flatten(ctx, nodeBalancer, firewalls, vpcConfigs, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -258,8 +286,16 @@ func (r *Resource) Update(
 			)
 			return
 		}
+		vpcConfigs, err := client.ListNodeBalancerVPCConfigs(ctx, nodeBalancer.ID, nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", nodeBalancer.ID),
+				err.Error(),
+			)
+			return
+		}
 
-		resp.Diagnostics.Append(plan.FlattenNodeBalancer(ctx, nodeBalancer, firewalls, true)...)
+		resp.Diagnostics.Append(plan.Flatten(ctx, nodeBalancer, firewalls, vpcConfigs, true)...)
 	}
 
 	plan.CopyFrom(state, true)

@@ -1,0 +1,9 @@
+{{ define "nodebalancer_data_vpc" }}
+
+{{ template "nodebalancer_vpc" . }}
+
+data "linode_nodebalancer" "test" {
+    id = linode_nodebalancer.test.id
+}
+
+{{ end }}

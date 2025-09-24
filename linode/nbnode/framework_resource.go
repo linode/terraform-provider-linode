@@ -70,7 +70,16 @@ func (r *Resource) Create(
 
 	ctx = tflog.SetField(ctx, "node_id", node.ID)
 
-	plan.FlattenNodeBalancerNode(node, true)
+	vpcConfig, d := safeFetchVPCConfig(ctx, client, nodeBalancerID, node.VPCConfigID)
+	resp.Diagnostics.Append(d...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(plan.Flatten(node, vpcConfig, true)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// IDs should always be overridden during creation (see #1085)
 	// TODO: Remove when Crossplane empty string ID issue is resolved
@@ -129,7 +138,17 @@ func (r *Resource) Read(
 		return
 	}
 
-	state.FlattenNodeBalancerNode(node, false)
+	vpcConfig, d := safeFetchVPCConfig(ctx, client, nodeBalancerID, node.VPCConfigID)
+	resp.Diagnostics.Append(d...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(state.Flatten(node, vpcConfig, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -176,7 +195,16 @@ func (r *Resource) Update(
 		return
 	}
 
-	plan.FlattenNodeBalancerNode(node, true)
+	vpcConfig, d := safeFetchVPCConfig(ctx, client, nodeBalancerID, node.VPCConfigID)
+	resp.Diagnostics.Append(d...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(plan.Flatten(node, vpcConfig, true)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	plan.CopyFrom(state, true)
 

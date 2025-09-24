@@ -58,3 +58,19 @@ func FirewallUpdate(t testing.TB, nodebalancer, region string) string {
 			Region: region,
 		})
 }
+
+func VPC(t testing.TB, nodebalancer, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_vpc", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
+}
+
+func DataVPC(t testing.TB, nodebalancer, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_data_vpc", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
+}

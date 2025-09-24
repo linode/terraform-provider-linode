@@ -59,6 +59,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbs"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbtypes"
+	"github.com/linode/terraform-provider-linode/v3/linode/nbvpc"
+	"github.com/linode/terraform-provider-linode/v3/linode/nbvpcs"
 	"github.com/linode/terraform-provider-linode/v3/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/v3/linode/networkingipassignment"
 	"github.com/linode/terraform-provider-linode/v3/linode/networkingips"
@@ -298,6 +300,8 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		users.NewDataSource,
 		nbnode.NewDataSource,
 		nbs.NewDataSource,
+		nbvpc.NewDataSource,
+		nbvpcs.NewDataSource,
 		accountsettings.NewDataSource,
 		firewalls.NewDataSource,
 		kernels.NewDataSource,
