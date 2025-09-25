@@ -104,7 +104,7 @@ The following attributes are only exposed for IPv6 addresses:
 
 * `ipv6_address` - A list of addresses within the prefix that the interface is associated with.
 
-    * `slaac_address` - A specific address within the prefix that the interface is expected to autoconfigure through SLAAC.
+  * `slaac_address` - A specific address within the prefix that the interface is expected to autoconfigure through SLAAC.
 
 ## Filterable Fields
 
