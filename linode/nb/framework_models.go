@@ -264,7 +264,7 @@ type NBFirewallModel struct {
 	Outbound       []firewalls.FirewallRuleModel `tfsdk:"outbound"`
 }
 
-func (data *NodeBalancerDataSourceModel) FlattenAndRefresh(
+func (data *NodeBalancerDataSourceModel) Flatten(
 	ctx context.Context,
 	nodebalancer *linodego.NodeBalancer,
 	firewalls []linodego.Firewall,

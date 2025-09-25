@@ -18,7 +18,7 @@ func NewDataSource() datasource.DataSource {
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
 				Name:   "linode_nodebalancer",
-				Schema: &frameworkDatasourceSchema,
+				Schema: dataSourceSchema(),
 			},
 		),
 	}
@@ -78,7 +78,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.FlattenAndRefresh(ctx, nodeBalancer, firewalls, vpcConfigs)...)
+	resp.Diagnostics.Append(data.Flatten(ctx, nodeBalancer, firewalls, vpcConfigs)...)
 
 	if resp.Diagnostics.HasError() {
 		return
