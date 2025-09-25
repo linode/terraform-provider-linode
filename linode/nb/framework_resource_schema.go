@@ -152,7 +152,7 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"vpcs": schema.ListNestedAttribute{
-			Description: "A list of VPCs assigned to this NodeBalancer.",
+			Description: "A list of VPCs to be assigned to this NodeBalancer.",
 			Optional:    true,
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.RequiresReplace(),
@@ -183,7 +183,8 @@ var frameworkResourceSchema = schema.Schema{
 						Description: "Enables the use of a larger ipv4_range subnet for multiple NodeBalancers " +
 							"within the same VPC by allocating smaller /30 subnets for " +
 							"each NodeBalancer's backends.",
-						Optional: true,
+						Optional:  true,
+						WriteOnly: true,
 						PlanModifiers: []planmodifier.Bool{
 							boolplanmodifier.RequiresReplace(),
 							boolplanmodifier.UseStateForUnknown(),
