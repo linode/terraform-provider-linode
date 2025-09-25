@@ -184,7 +184,6 @@ var frameworkResourceSchema = schema.Schema{
 							"within the same VPC by allocating smaller /30 subnets for " +
 							"each NodeBalancer's backends.",
 						Optional: true,
-						Computed: true,
 						PlanModifiers: []planmodifier.Bool{
 							boolplanmodifier.RequiresReplace(),
 							boolplanmodifier.UseStateForUnknown(),
