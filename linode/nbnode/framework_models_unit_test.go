@@ -20,11 +20,20 @@ func TestParseNodeBalancerNode(t *testing.T) {
 		Mode:           "accept",
 		ConfigID:       4567,
 		NodeBalancerID: 12345,
+		VPCConfigID:    123,
+	}
+
+	mockVPCConfig := &linodego.NodeBalancerVPCConfig{
+		ID:             123,
+		NodeBalancerID: 456,
+		SubnetID:       789,
+		VPCID:          321,
+		IPv4Range:      "10.0.0.4/30",
 	}
 
 	data := &DataSourceModel{}
 
-	data.FlattenAndRefresh(t.Context(), nil, mockNode)
+	data.Flatten(mockNode, mockVPCConfig)
 
 	assert.Equal(t, types.Int64Value(54321), data.ID)
 	assert.Equal(t, types.Int64Value(12345), data.NodeBalancerID)
@@ -34,4 +43,6 @@ func TestParseNodeBalancerNode(t *testing.T) {
 	assert.Equal(t, types.StringValue("accept"), data.Mode)
 	assert.Equal(t, types.StringValue("192.168.210.120:80"), data.Address)
 	assert.Equal(t, types.StringValue("UP"), data.Status)
+	assert.Equal(t, types.Int64Value(789), data.SubnetID)
+	assert.Equal(t, types.Int64Value(123), data.VPCConfigID)
 }

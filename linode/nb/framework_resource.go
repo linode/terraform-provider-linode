@@ -127,7 +127,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.FlattenAndRefresh(ctx, nodebalancer, firewalls, vpcConfigs, true)...)
+	resp.Diagnostics.Append(data.Flatten(ctx, nodebalancer, firewalls, vpcConfigs, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -202,7 +202,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.FlattenAndRefresh(ctx, nodeBalancer, firewalls, vpcConfigs, false)...)
+	resp.Diagnostics.Append(data.Flatten(ctx, nodeBalancer, firewalls, vpcConfigs, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -295,7 +295,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		resp.Diagnostics.Append(plan.FlattenAndRefresh(ctx, nodeBalancer, firewalls, vpcConfigs, true)...)
+		resp.Diagnostics.Append(plan.Flatten(ctx, nodeBalancer, firewalls, vpcConfigs, true)...)
 	}
 
 	plan.CopyFrom(state, true)

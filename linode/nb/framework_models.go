@@ -61,7 +61,7 @@ type nbModelV0 struct {
 	Transfer           types.Map    `tfsdk:"transfer"`
 }
 
-func (data *NodeBalancerModel) FlattenAndRefresh(
+func (data *NodeBalancerModel) Flatten(
 	ctx context.Context,
 	nodebalancer *linodego.NodeBalancer,
 	firewalls []linodego.Firewall,

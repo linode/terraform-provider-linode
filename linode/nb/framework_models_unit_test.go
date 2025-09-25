@@ -26,9 +26,10 @@ func TestFlattenNodeBalancerPreserveKnown(t *testing.T) {
 		Label: types.StringValue("another" + label),
 	}
 
-	diags := nodeBalancerModel.FlattenAndRefresh(
+	diags := nodeBalancerModel.Flatten(
 		context.Background(),
 		nodeBalancer,
+		nil,
 		nil,
 		true,
 	)
@@ -72,7 +73,23 @@ func TestFlattenNodeBalancer(t *testing.T) {
 
 	nodeBalancerModel := &NodeBalancerModel{}
 
-	diags := nodeBalancerModel.FlattenAndRefresh(context.Background(), nodeBalancer, nil, false)
+	vpcConfigs := []linodego.NodeBalancerVPCConfig{
+		{
+			ID:             123,
+			NodeBalancerID: 456,
+			SubnetID:       789,
+			VPCID:          321,
+			IPv4Range:      "10.0.0.4/30",
+		},
+	}
+
+	diags := nodeBalancerModel.Flatten(
+		context.Background(),
+		nodeBalancer,
+		nil,
+		vpcConfigs,
+		false,
+	)
 
 	assert.False(t, diags.HasError())
 
@@ -90,6 +107,15 @@ func TestFlattenNodeBalancer(t *testing.T) {
 	assert.Contains(t, nodeBalancerModel.Transfer.String(), "100.0")
 	assert.Contains(t, nodeBalancerModel.Transfer.String(), "200.0")
 	assert.Contains(t, nodeBalancerModel.Transfer.String(), "300.0")
+
+	var vpcConfigModel []ResourceVPCModel
+	d := nodeBalancerModel.VPCs.ElementsAs(t.Context(), &vpcConfigModel, false)
+	if d.HasError() {
+		t.Fatal(d.Errors())
+	}
+
+	assert.Equal(t, types.Int64Value(789), vpcConfigModel[0].SubnetID)
+	assert.Equal(t, types.StringValue("10.0.0.4/30"), vpcConfigModel[0].IPv4Range)
 
 	assert.True(t, types.StringValue(label).Equal(nodeBalancerModel.Label))
 }

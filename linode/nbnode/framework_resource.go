@@ -70,7 +70,13 @@ func (r *Resource) Create(
 
 	ctx = tflog.SetField(ctx, "node_id", node.ID)
 
-	resp.Diagnostics.Append(plan.FlattenAndRefresh(ctx, client, node, true)...)
+	vpcConfig, d := safeFetchVPCConfig(ctx, client, nodeBalancerID, node.VPCConfigID)
+	resp.Diagnostics.Append(d...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(plan.Flatten(node, vpcConfig, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -132,7 +138,13 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(state.FlattenAndRefresh(ctx, client, node, false)...)
+	vpcConfig, d := safeFetchVPCConfig(ctx, client, nodeBalancerID, node.VPCConfigID)
+	resp.Diagnostics.Append(d...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(state.Flatten(node, vpcConfig, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -183,7 +195,13 @@ func (r *Resource) Update(
 		return
 	}
 
-	resp.Diagnostics.Append(plan.FlattenAndRefresh(ctx, client, node, true)...)
+	vpcConfig, d := safeFetchVPCConfig(ctx, client, nodeBalancerID, node.VPCConfigID)
+	resp.Diagnostics.Append(d...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(plan.Flatten(node, vpcConfig, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
