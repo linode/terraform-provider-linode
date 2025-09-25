@@ -69,7 +69,7 @@ var NodeBalancerAttributes = map[string]schema.Attribute{
 		Computed:    true,
 		Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 	},
-	"vpcs": schema.SetNestedAttribute{
+	"vpcs": schema.ListNestedAttribute{
 		Description: "A list of VPCs assigned to this NodeBalancer.",
 		Computed:    true,
 		NestedObject: schema.NestedAttributeObject{

@@ -1,0 +1,30 @@
+{{ define "nodebalancer_vpc" }}
+
+{{ template "e2e_test_firewall" . }}
+
+resource "linode_nodebalancer" "test" {
+    label = "{{ .Label }}"
+    region = "{{ .Region }}"
+    firewall_id = linode_firewall.e2e_test_firewall.id
+
+    vpcs = [
+        {
+            subnet_id = linode_vpc_subnet.test.id
+            ipv4_range = "10.0.0.4/30"
+            ipv4_range_auto_assign = true
+        }
+    ]
+}
+
+resource "linode_vpc" "test" {
+    label = "{{ .Label }}"
+    region = "{{ .Region }}"
+}
+
+resource "linode_vpc_subnet" "test" {
+    vpc_id = linode_vpc.test.id
+    label = "tf-test"
+    ipv4 = "10.0.0.0/24"
+}
+
+{{ end }}

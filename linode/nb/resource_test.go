@@ -14,7 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -226,6 +229,53 @@ func TestAccResourceNodeBalancer_firewall(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "tags.1", "tf_test_2"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccResourceNodeBalancer_vpc(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_nodebalancer.test"
+	nodebalancerName := acctest.RandomWithPrefix("tf-test")
+
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{"NodeBalancers", "VPCs"}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkNodeBalancerDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPC(t, nodebalancerName, targetRegion),
+				Check:  checkNodeBalancerExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv4_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv4_range_auto_assign"),
+						knownvalue.Bool(true),
+					),
+				},
 			},
 		},
 	})
