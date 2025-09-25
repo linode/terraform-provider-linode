@@ -16,6 +16,13 @@ var TransferObjectType = types.ObjectType{
 	},
 }
 
+var dataSourceVPCObjType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"subnet_id":  types.Int64Type,
+		"ipv4_range": types.StringType,
+	},
+}
+
 var NodeBalancerAttributes = map[string]schema.Attribute{
 	"id": schema.Int64Attribute{
 		Description: "The unique ID of the Linode NodeBalancer.",
@@ -82,12 +89,6 @@ var NodeBalancerAttributes = map[string]schema.Attribute{
 					Description: "A CIDR range for the VPC's IPv4 addresses. " +
 						"The NodeBalancer sources IP addresses from this range " +
 						"when routing traffic to the backend VPC nodes.",
-					Computed: true,
-				},
-				"ipv4_range_auto_assign": schema.BoolAttribute{
-					Description: "Enables the use of a larger ipv4_range subnet for multiple NodeBalancers " +
-						"within the same VPC by allocating smaller /30 subnets for " +
-						"each NodeBalancer's backends.",
 					Computed: true,
 				},
 			},

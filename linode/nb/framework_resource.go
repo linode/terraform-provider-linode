@@ -80,7 +80,7 @@ func (r *Resource) Create(
 	}
 
 	if !data.VPCs.IsNull() {
-		vpcs, d := vpcsToLinodego(ctx, data.VPCs)
+		vpcs, d := vpcModelsToLinodego(ctx, data.VPCs)
 		resp.Diagnostics.Append(d...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -118,7 +118,16 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.FlattenAndRefresh(ctx, client, nodebalancer, firewalls, true)...)
+	vpcConfigs, err := client.ListNodeBalancerVPCConfigs(ctx, nodebalancer.ID, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", nodebalancer.ID),
+			err.Error(),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(data.FlattenAndRefresh(ctx, nodebalancer, firewalls, vpcConfigs, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -184,7 +193,16 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.FlattenAndRefresh(ctx, client, nodeBalancer, firewalls, false)...)
+	vpcConfigs, err := client.ListNodeBalancerVPCConfigs(ctx, nodeBalancer.ID, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", nodeBalancer.ID),
+			err.Error(),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(data.FlattenAndRefresh(ctx, nodeBalancer, firewalls, vpcConfigs, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -268,8 +286,16 @@ func (r *Resource) Update(
 			)
 			return
 		}
+		vpcConfigs, err := client.ListNodeBalancerVPCConfigs(ctx, nodeBalancer.ID, nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", nodeBalancer.ID),
+				err.Error(),
+			)
+			return
+		}
 
-		resp.Diagnostics.Append(plan.FlattenAndRefresh(ctx, client, nodeBalancer, firewalls, true)...)
+		resp.Diagnostics.Append(plan.FlattenAndRefresh(ctx, nodeBalancer, firewalls, vpcConfigs, true)...)
 	}
 
 	plan.CopyFrom(state, true)

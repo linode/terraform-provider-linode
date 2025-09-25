@@ -40,7 +40,7 @@ var firewallObjType = types.ObjectType{
 	},
 }
 
-var vpcObjType = types.ObjectType{
+var resourceVPCObjType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"subnet_id":              types.Int64Type,
 		"ipv4_range":             types.StringType,
