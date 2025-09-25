@@ -23,11 +23,11 @@ var DataSourceSchema = schema.Schema{
 		},
 
 		"subnet_id": schema.Int64Attribute{
-			Description: "The VPC's subnet. Run the List VPCs operation to retrieve VPCs and their subnets.",
+			Description: "The ID of this configuration's VPC subnet.",
 			Computed:    true,
 		},
 		"vpc_id": schema.Int64Attribute{
-			Description: "The `id` of the VPC configured for this NodeBalancer.",
+			Description: "The ID of this configuration's VPC.",
 			Computed:    true,
 		},
 	},
