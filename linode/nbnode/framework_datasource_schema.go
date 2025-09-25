@@ -44,6 +44,10 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The ID of the VPC subnet for this node.",
 			Computed:    true,
 		},
+		"vpc_config_id": schema.Int64Attribute{
+			Description: "The ID of the NB-VPC config for this node.",
+			Computed:    true,
+		},
 		"status": schema.StringAttribute{
 			Description: "The current status of this node, based on the configured checks of its NodeBalancer Config. " +
 				"(unknown, UP, DOWN)",
