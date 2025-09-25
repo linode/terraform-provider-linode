@@ -7,6 +7,8 @@ description: |-
 
 # linode_nodebalancer_vpcs
 
+-> **Limited Availability** VPC-attached NodeBalancers may not currently be available to all users.
+
 Provides information about Linode NodeBalancers VPC configurations that match a set of filters.
 For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-node-balancers).
 
@@ -57,7 +59,7 @@ The following arguments are supported:
 
 Each VPC configuration will be stored in the `vpc_configs` attribute and will export the following attributes:
 
-* `nodebalancer_id` - The ID of the parent NodeBalancer for this VPC configuration. 
+* `nodebalancer_id` - The ID of the parent NodeBalancer for this VPC configuration.
 
 * `id` - The ID of the VPC configuration.
 
