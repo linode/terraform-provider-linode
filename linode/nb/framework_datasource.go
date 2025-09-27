@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
@@ -61,29 +60,25 @@ func (d *DataSource) Read(
 
 	tflog.Trace(ctx, "client.ListNodeBalancerFirewalls(...)")
 
-	firewalls, err := helper.NotFoundDefaultSlice(
-		func() ([]linodego.Firewall, error) {
-			return client.ListNodeBalancerFirewalls(ctx, nodeBalancerID, nil)
-		},
+	firewalls := safeListFirewalls(
+		ctx,
+		client,
+		nodeBalancerID,
+		nil,
+		resp.Diagnostics,
 	)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", nodeBalancerID),
-			err.Error(),
-		)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	vpcConfigs, err := helper.NotFoundDefaultSlice(
-		func() ([]linodego.NodeBalancerVPCConfig, error) {
-			return client.ListNodeBalancerVPCConfigs(ctx, nodeBalancerID, nil)
-		},
+	vpcConfigs := safeListVPCConfigs(
+		ctx,
+		client,
+		nodeBalancerID,
+		nil,
+		resp.Diagnostics,
 	)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to list VPC configurations for NodeBalancer %d", nodeBalancerID),
-			err.Error(),
-		)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
