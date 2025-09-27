@@ -121,6 +121,8 @@ func (r *Resource) Read(
 		return
 	}
 
+	tflog.Debug(ctx, "client.GetNodeBalancerNode(...)")
+
 	node, err := client.GetNodeBalancerNode(ctx, nodeBalancerID, configID, id)
 	if err != nil {
 		if linodego.IsNotFound(err) {

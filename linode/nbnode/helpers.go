@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -15,6 +16,8 @@ func safeGetVPCConfig(
 	vpcConfigID int,
 	diagnostics diag.Diagnostics,
 ) *linodego.NodeBalancerVPCConfig {
+	tflog.Debug(ctx, "client.GetNodeBalancerVPCConfig(...)")
+
 	result, err := helper.NotFoundDefault(
 		func() (*linodego.NodeBalancerVPCConfig, error) {
 			return client.GetNodeBalancerVPCConfig(

@@ -58,8 +58,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.ListNodeBalancerFirewalls(...)")
-
 	firewalls := safeListFirewalls(
 		ctx,
 		client,

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -15,6 +16,8 @@ func safeListVPCConfigs(
 	listOptions *linodego.ListOptions,
 	diagnostics diag.Diagnostics,
 ) []linodego.NodeBalancerVPCConfig {
+	tflog.Trace(ctx, "client.ListNodeBalancerVPCConfigs(...)")
+
 	result, err := helper.NotFoundDefault(
 		func() ([]linodego.NodeBalancerVPCConfig, error) {
 			return client.ListNodeBalancerVPCConfigs(
@@ -42,6 +45,8 @@ func safeListFirewalls(
 	listOptions *linodego.ListOptions,
 	diagnostics diag.Diagnostics,
 ) []linodego.Firewall {
+	tflog.Trace(ctx, "client.ListNodeBalancerFirewalls(...)")
+
 	result, err := helper.NotFoundDefault(
 		func() ([]linodego.Firewall, error) {
 			return client.ListNodeBalancerFirewalls(

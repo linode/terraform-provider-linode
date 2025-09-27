@@ -186,8 +186,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.ListNodeBalancerFirewalls(...)")
-
 	firewalls := safeListFirewalls(
 		ctx,
 		client,
@@ -283,8 +281,6 @@ func (r *Resource) Update(
 			)
 			return
 		}
-
-		tflog.Trace(ctx, "client.ListNodeBalancerFirewalls(...)")
 
 		firewalls := safeListFirewalls(
 			ctx,

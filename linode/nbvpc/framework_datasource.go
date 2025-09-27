@@ -55,6 +55,8 @@ func (d *DataSource) Read(
 		"nodebalancer_id": nodeBalancerID,
 	})
 
+	tflog.Debug(ctx, "client.GetNodeBalancerVPCConfig(...)")
+
 	vpcConfig, err := client.GetNodeBalancerVPCConfig(ctx, nodeBalancerID, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
