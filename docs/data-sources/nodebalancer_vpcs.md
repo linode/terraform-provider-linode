@@ -7,7 +7,7 @@ description: |-
 
 # linode_nodebalancer_vpcs
 
--> **Limited Availability** VPC-attached NodeBalancers may not currently be available to all users.
+-> **Limited Availability** VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
 Provides information about Linode NodeBalancers VPC configurations that match a set of filters.
 For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-node-balancers).

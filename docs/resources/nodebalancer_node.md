@@ -81,7 +81,7 @@ The following arguments are supported:
 
 * `weight` - (Optional) Used when picking a backend to serve a request and is not pinned to a single backend yet. Nodes with a higher weight will receive more traffic. (1-255).
 
-* `subnet_id` - (Optional) The ID of the related VPC subnet. This is only set for VPC nodes. NOTE: VPC-attached NodeBalancers may not currently be available to all users.
+* `subnet_id` - (Optional) The ID of the related VPC subnet. This is only set for VPC nodes. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
 ## Attributes Reference
 
@@ -93,7 +93,7 @@ This resource exports the following attributes:
 
 * `nodebalancer_id` - The ID of the NodeBalancer this NodeBalancerNode is attached to.
 
-* `vpc_config_id` - The ID of the related NodeBalancer-VPC configuration. This is only set for VPC nodes. VPC-attached NodeBalancers may not currently be available to all users.
+* `vpc_config_id` - The ID of the related NodeBalancer-VPC configuration. This is only set for VPC nodes. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
 ## Import
 

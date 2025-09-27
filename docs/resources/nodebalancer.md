@@ -77,7 +77,7 @@ This resource exports the following attributes:
 
 * [`firewalls`](#firewalls) - A list of Firewalls assigned to this NodeBalancer.
 
-* [`vpcs`](#vpcs) - A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users.
+* [`vpcs`](#vpcs) - A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
 ### transfer
 
@@ -131,7 +131,7 @@ The following arguments are supported in the inbound and outbound rule blocks:
 
 #### vpcs
 
--> **Limited Availability** VPC-attached NodeBalancers may not currently be available to all users.
+-> **Limited Availability** VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
 The following arguments are supported under each entry of the `vpcs` attribute:
 

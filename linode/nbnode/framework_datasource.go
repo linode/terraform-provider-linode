@@ -60,8 +60,13 @@ func (d *DataSource) Read(
 		return
 	}
 
-	vpcConfig, diags := safeFetchVPCConfig(ctx, client, nodeBalancerID, node.VPCConfigID)
-	resp.Diagnostics.Append(diags...)
+	vpcConfig := safeGetVPCConfig(
+		ctx,
+		client,
+		nodeBalancerID,
+		node.VPCConfigID,
+		resp.Diagnostics,
+	)
 	if resp.Diagnostics.HasError() {
 		return
 	}

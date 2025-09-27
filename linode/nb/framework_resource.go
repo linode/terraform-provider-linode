@@ -109,21 +109,25 @@ func (r *Resource) Create(
 		return
 	}
 
-	firewalls, err := client.ListNodeBalancerFirewalls(ctx, nodebalancer.ID, nil)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", nodebalancer.ID),
-			err.Error(),
-		)
+	firewalls := safeListFirewalls(
+		ctx,
+		client,
+		nodebalancer.ID,
+		nil,
+		resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	vpcConfigs, err := client.ListNodeBalancerVPCConfigs(ctx, nodebalancer.ID, nil)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", nodebalancer.ID),
-			err.Error(),
-		)
+	vpcConfigs := safeListVPCConfigs(
+		ctx,
+		client,
+		nodebalancer.ID,
+		nil,
+		resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -184,21 +188,25 @@ func (r *Resource) Read(
 
 	tflog.Trace(ctx, "client.ListNodeBalancerFirewalls(...)")
 
-	firewalls, err := client.ListNodeBalancerFirewalls(ctx, id, nil)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", id),
-			err.Error(),
-		)
+	firewalls := safeListFirewalls(
+		ctx,
+		client,
+		id,
+		nil,
+		resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	vpcConfigs, err := client.ListNodeBalancerVPCConfigs(ctx, nodeBalancer.ID, nil)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", nodeBalancer.ID),
-			err.Error(),
-		)
+	vpcConfigs := safeListVPCConfigs(
+		ctx,
+		client,
+		id,
+		nil,
+		resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -278,20 +286,25 @@ func (r *Resource) Update(
 
 		tflog.Trace(ctx, "client.ListNodeBalancerFirewalls(...)")
 
-		firewalls, err := client.ListNodeBalancerFirewalls(ctx, id, nil)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", id),
-				err.Error(),
-			)
+		firewalls := safeListFirewalls(
+			ctx,
+			client,
+			id,
+			nil,
+			resp.Diagnostics,
+		)
+		if resp.Diagnostics.HasError() {
 			return
 		}
-		vpcConfigs, err := client.ListNodeBalancerVPCConfigs(ctx, nodeBalancer.ID, nil)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", nodeBalancer.ID),
-				err.Error(),
-			)
+
+		vpcConfigs := safeListVPCConfigs(
+			ctx,
+			client,
+			id,
+			nil,
+			resp.Diagnostics,
+		)
+		if resp.Diagnostics.HasError() {
 			return
 		}
 
@@ -343,6 +356,7 @@ func (r *Resource) Delete(
 			resp.State.RemoveResource(ctx)
 			return
 		}
+
 		resp.Diagnostics.AddError(
 			"Failed to Delete NodeBalancer",
 			err.Error(),
