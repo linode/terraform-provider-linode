@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
 )
 
 var LinodeInterfaceObjectType = types.ObjectType{
@@ -49,11 +50,41 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"ipv4": schema.StringAttribute{
 			Description: "The IPv4 range of this subnet in CIDR format.",
-			Required:    true,
+			Optional:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
 			},
 		},
+		"ipv6": schema.ListNestedAttribute{
+			Description: "The IPv6 ranges of this subnet.",
+			Optional:    true,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.RequiresReplace(),
+				listplanmodifier.UseStateForUnknown(),
+			},
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"range": schema.StringAttribute{
+						Description: "An existing IPv6 prefix owned by the current account or a " +
+							"forward slash (/) followed by a valid prefix length. " +
+							"If unspecified, a range with the default prefix will be " +
+							"allocated for this VPC.",
+						Optional:   true,
+						Computed:   true,
+						CustomType: customtypes.LinodeAutoAllocRangeType{},
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"allocated_range": schema.StringAttribute{
+						Description: "The IPv6 range assigned to this subnet.",
+						Computed:    true,
+					},
+				},
+			},
+		},
+
 		"created": schema.StringAttribute{
 			Description: "The date and time when the VPC Subnet was created.",
 			Computed:    true,

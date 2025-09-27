@@ -59,6 +59,37 @@ func TestAccDataSourceVPCSubnets_basic_smoke(t *testing.T) {
 	})
 }
 
+func TestAccDataSourceVPCSubnets_dualStack(t *testing.T) {
+	t.Parallel()
+
+	resourceName := "data.linode_vpc_subnets.foobar"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataDualStack(t, vpcLabel, targetRegion, "10.0.0.0/24"),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckResourceAttrGreaterThan(resourceName, "vpc_subnets.#", 0),
+					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.id"),
+					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.label"),
+					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.ipv4"),
+					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.created"),
+					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.updated"),
+
+					resource.TestCheckResourceAttr(resourceName, "vpc_subnets.0.ipv6.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.ipv6.0.range"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccDataSourceVPCSubnets_filterByLabel(t *testing.T) {
 	t.Parallel()
 

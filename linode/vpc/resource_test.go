@@ -131,6 +131,51 @@ func TestAccResourceVPC_update(t *testing.T) {
 	})
 }
 
+func TestAccResourceVPC_dualStack(t *testing.T) {
+	t.Parallel()
+	resName := "linode_vpc.foobar"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DualStack(t, vpcLabel, targetRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkVPCExists,
+					resource.TestCheckResourceAttr(resName, "label", vpcLabel),
+					resource.TestCheckResourceAttrSet(resName, "ipv6.0.range"),
+					resource.TestCheckResourceAttrSet(resName, "ipv6.0.allocated_range"),
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+				),
+			},
+			{
+				Config: tmpl.DualStack(t, vpcLabel, targetRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkVPCExists,
+					resource.TestCheckResourceAttr(resName, "label", vpcLabel),
+					resource.TestCheckResourceAttrSet(resName, "ipv6.0.range"),
+					resource.TestCheckResourceAttrSet(resName, "ipv6.0.allocated_range"),
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "ipv6.0.range"},
+			},
+		},
+	})
+}
+
 func TestAccResourceLinodeVPC_create_InvalidLabel(t *testing.T) {
 	t.Parallel()
 
