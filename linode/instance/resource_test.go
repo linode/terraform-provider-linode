@@ -2706,6 +2706,126 @@ func TestAccResourceInstance_diskEncryption(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_interfaceVPCIPv6(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(64)
+
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.InterfacesVPCIPv60(
+					t,
+					instanceName,
+					targetRegion,
+					rootPass,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+
+					resource.TestCheckResourceAttr(resName, "interface.0.ipv6.0.is_public", "false"),
+
+					resource.TestCheckResourceAttr(resName, "interface.0.ipv6.0.slaac.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.slaac.0.range"),
+					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.slaac.0.assigned_range"),
+					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.slaac.0.address"),
+
+					resource.TestCheckResourceAttr(resName, "interface.0.ipv6.0.range.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.range.0.assigned_range"),
+					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.range.0.range"),
+				),
+			},
+			{
+				Config: tmpl.InterfacesVPCIPv61(
+					t,
+					instanceName,
+					targetRegion,
+					rootPass,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+
+					resource.TestCheckResourceAttr(resName, "interface.0.ipv6.0.is_public", "true"),
+
+					resource.TestCheckResourceAttr(resName, "interface.0.ipv6.0.slaac.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.slaac.0.range"),
+					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.slaac.0.assigned_range"),
+					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.slaac.0.address"),
+
+					resource.TestCheckResourceAttr(resName, "interface.0.ipv6.0.range.#", "2"),
+					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.range.0.assigned_range"),
+					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.range.0.range"),
+					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.range.1.assigned_range"),
+					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.range.1.range"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "interface", "firewall_id"},
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_configInterfaceVPCIPv6(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(64)
+
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ConfigInterfacesVPCIPv6(
+					t,
+					instanceName,
+					targetRegion,
+					rootPass,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.ipv6.0.is_public", "true"),
+
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.ipv6.0.slaac.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv6.0.slaac.0.range"),
+					resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv6.0.slaac.0.assigned_range"),
+					resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv6.0.slaac.0.address"),
+
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.ipv6.0.range.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv6.0.range.0.assigned_range"),
+					resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv6.0.range.0.range"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "interface", "firewall_id"},
+			},
+		},
+	})
+}
+
 func checkInstancePrivateNetworkAttributes(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

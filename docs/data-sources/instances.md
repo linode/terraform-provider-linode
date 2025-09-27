@@ -207,6 +207,8 @@ Each interface exports the following attributes:
 
 * [`ipv4`](#ipv4) -The IPv4 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose.
 
+* [`ipv6`](#ipv6) - (Optional) The IPv6 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose.  NOTE: IPv6 VPCs may not yet be available to all users.
+
 * `vpc_id` - The ID of VPC which this interface is attached to.
 
 * `ip_ranges` - IPv4 CIDR VPC Subnet ranges that are routed to this Interface. IPv6 ranges are also available to select participants in the Beta program.
@@ -218,6 +220,32 @@ The following arguments are available in an `ipv4` configuration block of an `in
 * `vpc` - The IP from the VPC subnet to use for this interface. A random address will be assigned if this is not specified in a VPC interface.
 
 * `nat_1_1` - The public IP that will be used for the one-to-one NAT purpose. If this is `any`, the public IPv4 address assigned to this Linode is used on this interface and will be 1:1 NATted with the VPC IPv4 address.
+
+#### ipv6
+
+**NOTICE:** NOTE: IPv6 VPCs may not yet be available to all users.
+
+The following arguments are available in an `ipv6` configuration block of an `interface` block:
+
+* `is_public` - (Optional) If true, connections from the interface to IPv6 addresses outside the VPC, and connections from IPv6 addresses outside the VPC to the interface will be permitted. (Default: `false`)
+
+* [`slaac`](#ipv6slaac) - (Optional) An array of SLAAC prefixes to use for this interface.
+
+* [`range`](#ipv6range) - (Optional) An array of IPv6 ranges to use for this interface.
+
+#### ipv6.slaac
+
+The following arguments are available in a `slaac` configuration block of an [`ipv6`](#ipv6) block:
+
+* `range` - A prefix to add to this interface, or `auto` for a new IPv6 prefix to be automatically allocated.
+
+* `address` - The SLAAC address chosen for this interface.
+
+#### ipv6.range
+
+The following arguments are available in a `range` configuration block of an [`ipv6`](#ipv6) block:
+
+* `range` - A prefix to add to this interface, or `auto` for a new IPv6 prefix to be automatically allocated.
 
 ### Backups
 

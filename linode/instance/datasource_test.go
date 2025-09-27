@@ -177,3 +177,40 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 		},
 	})
 }
+
+func TestAccDataSourceInstance_interfaceVPCIPv6(t *testing.T) {
+	t.Parallel()
+
+	dataSourceName := "data.linode_instances.foobar"
+	instanceName := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(64)
+
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataInterfacesVPCIPv6(
+					t,
+					instanceName,
+					targetRegion,
+					rootPass,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(dataSourceName, "instances.0.config.0.interface.0.ipv6.0.slaac.#", "1"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "instances.0.config.0.interface.0.ipv6.0.slaac.0.range"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "instances.0.config.0.interface.0.ipv6.0.slaac.0.assigned_range"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "instances.0.config.0.interface.0.ipv6.0.slaac.0.address"),
+
+					resource.TestCheckResourceAttr(dataSourceName, "instances.0.config.0.interface.0.ipv6.0.range.#", "1"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "instances.0.config.0.interface.0.ipv6.0.range.0.assigned_range"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "instances.0.config.0.interface.0.ipv6.0.range.0.range"),
+				),
+			},
+		},
+	})
+}

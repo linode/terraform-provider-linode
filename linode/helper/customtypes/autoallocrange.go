@@ -3,14 +3,12 @@ package customtypes
 import (
 	"context"
 	"fmt"
-	"net/netip"
-	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 var (
@@ -120,7 +118,7 @@ func (v LinodeAutoAllocRangeValue) StringSemanticEquals(
 		return true, diags
 	}
 
-	addr, prefix, err := parseRangeOptionalAddress(v.ValueString())
+	addr, prefix, err := helper.ParseRangeOptionalAddress(v.ValueString())
 	if err != nil {
 		diags.AddError(
 			"Failed to Parse Range",
@@ -129,7 +127,7 @@ func (v LinodeAutoAllocRangeValue) StringSemanticEquals(
 		return false, diags
 	}
 
-	newAddr, newPrefix, err := parseRangeOptionalAddress(newValue.ValueString())
+	newAddr, newPrefix, err := helper.ParseRangeOptionalAddress(newValue.ValueString())
 	if err != nil {
 		diags.AddError(
 			"Failed to Parse Range",
@@ -145,34 +143,4 @@ func (v LinodeAutoAllocRangeValue) StringSemanticEquals(
 	}
 
 	return prefix == newPrefix && addr.Compare(*newAddr) == 0, diags
-}
-
-func parseRangeOptionalAddress(cidr string) (*netip.Addr, int, error) {
-	cidrSplit := strings.Split(cidr, "/")
-	if len(cidrSplit) != 2 {
-		return nil, 0, fmt.Errorf("malformed CIDR: %s", cidr)
-	}
-
-	ipStr, prefixStr := cidrSplit[0], cidrSplit[1]
-
-	if prefixStr == "" {
-		return nil, 0, fmt.Errorf("expected non-empty prefix: %s", cidr)
-	}
-
-	prefix, err := strconv.Atoi(prefixStr)
-	if err != nil {
-		return nil, 0, fmt.Errorf("malformed prefix: %w", err)
-	}
-
-	// No address is specified
-	if ipStr == "" {
-		return nil, prefix, nil
-	}
-
-	ip, err := netip.ParseAddr(ipStr)
-	if err != nil {
-		return nil, 0, fmt.Errorf("failed to parse CIDR: %w", err)
-	}
-
-	return &ip, prefix, nil
 }
