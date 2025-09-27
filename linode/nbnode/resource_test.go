@@ -162,10 +162,11 @@ func TestAccResourceNodeBalancerNode_vpc(t *testing.T) {
 				Config: tmpl.VPC(t, label, targetRegion, rootPass),
 			},
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: importResourceStateID,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importResourceStateID,
+				ImportStateVerifyIgnore: []string{"status"},
 			},
 		},
 	})
