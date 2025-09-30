@@ -187,7 +187,7 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
     * `disk_id` - The Disk ID of the associated `disk_label`, if used
 
-  * [`interface`](#interface) - (Optional) A list of network interfaces to be assigned to the Linode.
+  * [`interface`](#interface) - A list of network interfaces to be assigned to the Linode.
 
 ### Interface
 
@@ -207,7 +207,7 @@ Each interface exports the following attributes:
 
 * [`ipv4`](#ipv4) -The IPv4 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose.
 
-* [`ipv6`](#ipv6) - (Optional) The IPv6 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose.  NOTE: IPv6 VPCs may not yet be available to all users.
+* [`ipv6`](#ipv6) - The IPv6 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose.  NOTE: IPv6 VPCs may not yet be available to all users.
 
 * `vpc_id` - The ID of VPC which this interface is attached to.
 
@@ -227,11 +227,11 @@ The following arguments are available in an `ipv4` configuration block of an `in
 
 The following arguments are available in an `ipv6` configuration block of an `interface` block:
 
-* `is_public` - (Optional) If true, connections from the interface to IPv6 addresses outside the VPC, and connections from IPv6 addresses outside the VPC to the interface will be permitted. (Default: `false`)
+* `is_public` - If true, connections from the interface to IPv6 addresses outside the VPC, and connections from IPv6 addresses outside the VPC to the interface will be permitted. (Default: `false`)
 
-* [`slaac`](#ipv6slaac) - (Optional) An array of SLAAC prefixes to use for this interface.
+* [`slaac`](#ipv6slaac) - An array of SLAAC prefixes to use for this interface.
 
-* [`range`](#ipv6range) - (Optional) An array of IPv6 ranges to use for this interface.
+* [`range`](#ipv6range) - An array of IPv6 ranges to use for this interface.
 
 #### ipv6.slaac
 
