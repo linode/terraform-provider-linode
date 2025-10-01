@@ -1,4 +1,4 @@
-package nbnode
+package nbvpc
 
 import (
 	"context"
@@ -13,8 +13,8 @@ func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
-				Name:   "linode_nodebalancer_node",
-				Schema: &frameworkDatasourceSchema,
+				Name:   "linode_nodebalancer_vpc",
+				Schema: &DataSourceSchema,
 			},
 		),
 	}
@@ -29,7 +29,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.nb_node")
+	tflog.Debug(ctx, "Read data.linode_nodebalancer_vpc")
 
 	client := d.Meta.Client
 
@@ -41,40 +41,29 @@ func (d *DataSource) Read(
 	}
 
 	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+
 	nodeBalancerID := helper.FrameworkSafeInt64ToInt(
 		data.NodeBalancerID.ValueInt64(),
 		&resp.Diagnostics,
 	)
-	configID := helper.FrameworkSafeInt64ToInt(data.ConfigID.ValueInt64(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx = tflog.SetField(ctx, "node_id", id)
+	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+		"id":              id,
+		"nodebalancer_id": nodeBalancerID,
+	})
 
-	node, err := client.GetNodeBalancerNode(ctx, nodeBalancerID, configID, id)
+	tflog.Debug(ctx, "client.GetNodeBalancerVPCConfig(...)")
+
+	vpcConfig, err := client.GetNodeBalancerVPCConfig(ctx, nodeBalancerID, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to get nodebalancer node with id %d:", id), err.Error(),
+			fmt.Sprintf("Failed to get NodeBalancer-VPC config with id %d:", id), err.Error(),
 		)
 		return
 	}
 
-	vpcConfig := safeGetVPCConfig(
-		ctx,
-		client,
-		nodeBalancerID,
-		node.VPCConfigID,
-		resp.Diagnostics,
-	)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(data.Flatten(node, vpcConfig)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, data.Flatten(vpcConfig))...)
 }

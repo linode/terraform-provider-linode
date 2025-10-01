@@ -1,0 +1,14 @@
+{{ define "nbvpcs_data_filter" }}
+
+{{ template "nbvpc_data_base" . }}
+
+data "linode_nodebalancer_vpcs" "test" {
+    nodebalancer_id = linode_nodebalancer.test.id
+
+    filter {
+        name = "ipv4_range"
+        values = ["10.0.0.4/30"]
+    }
+}
+
+{{ end }}
