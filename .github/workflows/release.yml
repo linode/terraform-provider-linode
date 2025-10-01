@@ -36,7 +36,7 @@ jobs:
           - "https://registry.terraform.io/v1"
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@v8
         env:
           REGISTRY: ${{ matrix.registry }}
         with:
