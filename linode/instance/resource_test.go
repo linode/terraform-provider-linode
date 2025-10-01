@@ -2932,12 +2932,6 @@ func TestAccResourceInstance_configInterfaceVPCIPv6(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resName,
-						ipv6Path.AtMapKey("is_public"),
-						knownvalue.Bool(true),
-					),
-
-					statecheck.ExpectKnownValue(
-						resName,
 						ipv6Path.AtMapKey("slaac"),
 						knownvalue.ListSizeExact(1),
 					),
@@ -2971,6 +2965,19 @@ func TestAccResourceInstance_configInterfaceVPCIPv6(t *testing.T) {
 						resName,
 						ipv6Path.AtMapKey("range").AtSliceIndex(0).AtMapKey("range"),
 						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						// There seems to be a bug that causes reusing a path
+						// to break bool checks under certain conditions.
+						tfjsonpath.New("config").
+							AtSliceIndex(0).
+							AtMapKey("interface").
+							AtSliceIndex(0).
+							AtMapKey("ipv6").
+							AtSliceIndex(0).
+							AtMapKey("is_public"),
+						knownvalue.Bool(true),
 					),
 				},
 			},
