@@ -9,6 +9,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/vpcs/tmpl"
 )
@@ -56,17 +59,43 @@ func TestAccDataSourceVPCs_dualStack(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataDualStack(t, vpcLabel, targetRegion),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckResourceAttrGreaterThan(resourceName, "vpcs.#", 0),
-					resource.TestCheckResourceAttrSet(resourceName, "vpcs.0.label"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpcs.0.description"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpcs.0.region"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpcs.0.created"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpcs.0.updated"),
-
-					resource.TestCheckResourceAttr(resourceName, "vpcs.0.ipv6.#", "1"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpcs.0.ipv6.0.range"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("label"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("description"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("region"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("created"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("updated"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv6"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv6").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 		},
 	})

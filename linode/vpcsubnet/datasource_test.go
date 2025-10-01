@@ -7,6 +7,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/vpcsubnet/tmpl"
 )
@@ -55,15 +58,38 @@ func TestAccDataSourceVPCSubnet_dualStack(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataDualStack(t, subnetLabel, "10.0.0.0/24", targetRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "label"),
-					resource.TestCheckResourceAttrSet(resourceName, "ipv4"),
-					resource.TestCheckResourceAttrSet(resourceName, "created"),
-					resource.TestCheckResourceAttrSet(resourceName, "updated"),
-
-					resource.TestCheckResourceAttr(resourceName, "ipv6.#", "1"),
-					resource.TestCheckResourceAttrSet(resourceName, "ipv6.0.range"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("label"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("ipv4"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("created"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("updated"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("ipv6"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 		},
 	})

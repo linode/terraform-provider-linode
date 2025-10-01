@@ -12,7 +12,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -146,25 +149,65 @@ func TestAccResourceVPC_dualStack(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DualStack(t, vpcLabel, targetRegion),
-				Check: resource.ComposeTestCheckFunc(
-					checkVPCExists,
-					resource.TestCheckResourceAttr(resName, "label", vpcLabel),
-					resource.TestCheckResourceAttrSet(resName, "ipv6.0.range"),
-					resource.TestCheckResourceAttrSet(resName, "ipv6.0.allocated_range"),
-					resource.TestCheckResourceAttrSet(resName, "id"),
-					resource.TestCheckResourceAttrSet(resName, "created"),
-				),
+				Check:  checkVPCExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(vpcLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("allocated_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("created"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 			{
 				Config: tmpl.DualStack(t, vpcLabel, targetRegion),
-				Check: resource.ComposeTestCheckFunc(
-					checkVPCExists,
-					resource.TestCheckResourceAttr(resName, "label", vpcLabel),
-					resource.TestCheckResourceAttrSet(resName, "ipv6.0.range"),
-					resource.TestCheckResourceAttrSet(resName, "ipv6.0.allocated_range"),
-					resource.TestCheckResourceAttrSet(resName, "id"),
-					resource.TestCheckResourceAttrSet(resName, "created"),
-				),
+				Check:  checkVPCExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(vpcLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("allocated_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("created"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 			{
 				ResourceName:            resName,

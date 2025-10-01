@@ -9,6 +9,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/vpcips/tmpl"
 )
@@ -33,58 +36,180 @@ func TestAccDataSourceVPCIPs_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, vpcLabel, testRegion, "10.0.0.0/24", "10.0.1.0/24"),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckResourceAttrGreaterThan(resourceNameAll, "vpc_ips.#", 0),
-					resource.TestCheckResourceAttr(resourceNameScoped, "vpc_ips.#", "1"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					// Index 0
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("gateway"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("linode_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("prefix"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("region"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("subnet_mask"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("config_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("interface_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("vpc_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("active"),
+						knownvalue.NotNull(),
+					),
 
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.address"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.gateway"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.linode_id"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.prefix"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.region"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.subnet_mask"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.subnet_id"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.config_id"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.interface_id"),
-					resource.TestCheckNoResourceAttr(resourceNameAll, "vpc_ips.0.address_range"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.vpc_id"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.active"),
+					// index 1
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(1).AtMapKey("gateway"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(1).AtMapKey("linode_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(1).AtMapKey("prefix"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(1).AtMapKey("region"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(1).AtMapKey("subnet_mask"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(1).AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(1).AtMapKey("config_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(1).AtMapKey("interface_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(1).AtMapKey("vpc_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(1).AtMapKey("active"),
+						knownvalue.NotNull(),
+					),
 
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.1.address"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.1.gateway"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.1.linode_id"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.1.prefix"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.1.region"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.1.subnet_mask"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.1.subnet_id"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.1.config_id"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.1.interface_id"),
-					resource.TestCheckNoResourceAttr(resourceNameAll, "vpc_ips.1.address_range"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.1.vpc_id"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.1.active"),
-
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.address"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.gateway"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.linode_id"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.prefix"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.region"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.subnet_mask"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.subnet_id"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.config_id"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.interface_id"),
-					resource.TestCheckNoResourceAttr(resourceNameScoped, "vpc_ips.0.address_range"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.vpc_id"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.active"),
-				),
+					// scoped
+					statecheck.ExpectKnownValue(
+						resourceNameScoped,
+						tfjsonpath.New("vpc_ips"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameScoped,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("address"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameScoped,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("gateway"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameScoped,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("linode_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameScoped,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("prefix"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameScoped,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("region"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameScoped,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("subnet_mask"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameScoped,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameScoped,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("config_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameScoped,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("interface_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameScoped,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("vpc_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameScoped,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("active"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 		},
-	})
+	},
+	)
 }
 
 func TestAccDataSourceVPCIPs_dualStack(t *testing.T) {
-	// TODO (VPC Dual Stack): Finish test after interfaces readiness.
-	t.Skip("TODO (VPC Dual Stack): Finish test after interfaces readiness.")
-
 	t.Parallel()
 
 	const (
@@ -93,52 +218,86 @@ func TestAccDataSourceVPCIPs_dualStack(t *testing.T) {
 	)
 
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"}, "core")
-	if err != nil {
-		log.Fatal(fmt.Errorf("Error getting region: %s", err))
-	}
+
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataDualStack(t, vpcLabel, testRegion, "10.0.0.0/24"),
+				Config: tmpl.DataDualStack(t, vpcLabel, targetRegion, "10.0.0.0/24"),
 			},
 			{
-				Config: tmpl.DataDualStack(t, vpcLabel, testRegion, "10.0.0.0/24"),
-				Check: resource.ComposeTestCheckFunc(
-					// acceptance.CheckResourceAttrGreaterThan(resourceNameAll, "vpc_ips.#", 0),
-					// acceptance.CheckResourceAttrGreaterThan(resourceNameScoped, "vpc_ips.#", 0),
-
-					resource.TestCheckNoResourceAttr(resourceNameAll, "vpc_ips.0.address"),
-					resource.TestCheckResourceAttr(resourceNameAll, "vpc_ips.0.gateway", ""),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.linode_id"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.prefix"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.region"),
-					resource.TestCheckResourceAttr(resourceNameAll, "vpc_ips.0.subnet_mask", ""),
-					resource.TestCheckResourceAttr(resourceNameAll, "vpc_ips.0.nat_1_1", ""),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.subnet_id"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.config_id"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.interface_id"),
-					resource.TestCheckNoResourceAttr(resourceNameAll, "vpc_ips.0.address_range"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.vpc_id"),
-					resource.TestCheckResourceAttrSet(resourceNameAll, "vpc_ips.0.active"),
-
-					// resource.TestCheckNoResourceAttr(resourceNameScoped, "vpc_ips.0.address"),
-					// resource.TestCheckResourceAttr(resourceNameScoped, "vpc_ips.0.gateway", ""),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.linode_id"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.prefix"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.region"),
-					resource.TestCheckResourceAttr(resourceNameScoped, "vpc_ips.0.subnet_mask", ""),
-					resource.TestCheckResourceAttr(resourceNameScoped, "vpc_ips.0.nat_1_1", ""),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.subnet_id"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.config_id"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.interface_id"),
-					resource.TestCheckNoResourceAttr(resourceNameScoped, "vpc_ips.0.address_range"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.vpc_id"),
-					resource.TestCheckResourceAttrSet(resourceNameScoped, "vpc_ips.0.active"),
-				),
+				Config: tmpl.DataDualStack(t, vpcLabel, targetRegion, "10.0.0.0/24"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("gateway"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("linode_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("prefix"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("region"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("subnet_mask"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("config_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("interface_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("vpc_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("active"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("ipv6_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("ipv6_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceNameAll,
+						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("ipv6_addresses"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 		},
 	})

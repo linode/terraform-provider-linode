@@ -12,7 +12,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -116,16 +119,40 @@ func TestAccResourceVPCSubnet_dualStack(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DualStack(t, subnetLabel, "10.0.0.0/24", targetRegion),
-				Check: resource.ComposeTestCheckFunc(
-					checkVPCSubnetExists,
-					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
-					resource.TestCheckResourceAttrSet(resName, "id"),
-					resource.TestCheckResourceAttrSet(resName, "created"),
+				Check:  checkVPCSubnetExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(subnetLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("created"),
+						knownvalue.NotNull(),
+					),
 
-					resource.TestCheckResourceAttr(resName, "ipv6.#", "1"),
-					resource.TestCheckResourceAttrSet(resName, "ipv6.0.range"),
-					resource.TestCheckResourceAttrSet(resName, "ipv6.0.allocated_range"),
-				),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv6"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("allocated_range"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 			{
 				ResourceName:            resName,

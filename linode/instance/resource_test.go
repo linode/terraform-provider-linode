@@ -15,7 +15,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -2717,6 +2720,11 @@ func TestAccResourceInstance_interfaceVPCIPv6(t *testing.T) {
 	// TODO (VPC Dual Stack): Remove region hardcoding
 	targetRegion := "no-osl-1"
 
+	ipv6Path := tfjsonpath.New("interface").
+		AtSliceIndex(0).
+		AtMapKey("ipv6").
+		AtSliceIndex(0)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
@@ -2729,20 +2737,67 @@ func TestAccResourceInstance_interfaceVPCIPv6(t *testing.T) {
 					targetRegion,
 					rootPass,
 				),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists(resName, &instance),
+				Check: acceptance.CheckInstanceExists(resName, &instance),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("is_public"),
+						knownvalue.Bool(false),
+					),
 
-					resource.TestCheckResourceAttr(resName, "interface.0.ipv6.0.is_public", "false"),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("slaac"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("address"),
+						knownvalue.NotNull(),
+					),
 
-					resource.TestCheckResourceAttr(resName, "interface.0.ipv6.0.slaac.#", "1"),
-					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.slaac.0.range"),
-					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.slaac.0.assigned_range"),
-					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.slaac.0.address"),
-
-					resource.TestCheckResourceAttr(resName, "interface.0.ipv6.0.range.#", "1"),
-					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.range.0.assigned_range"),
-					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.range.0.range"),
-				),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range").
+							AtSliceIndex(0).
+							AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range").
+							AtSliceIndex(0).
+							AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 			{
 				Config: tmpl.InterfacesVPCIPv61(
@@ -2751,22 +2806,87 @@ func TestAccResourceInstance_interfaceVPCIPv6(t *testing.T) {
 					targetRegion,
 					rootPass,
 				),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists(resName, &instance),
+				Check: acceptance.CheckInstanceExists(resName, &instance),
+				ConfigStateChecks: []statecheck.StateCheck{
+					// interface[0].ipv6[0] public flag
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("is_public"),
+						knownvalue.Bool(true),
+					),
 
-					resource.TestCheckResourceAttr(resName, "interface.0.ipv6.0.is_public", "true"),
+					// slaac block (exactly one) with fields
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("slaac"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("address"),
+						knownvalue.NotNull(),
+					),
 
-					resource.TestCheckResourceAttr(resName, "interface.0.ipv6.0.slaac.#", "1"),
-					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.slaac.0.range"),
-					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.slaac.0.assigned_range"),
-					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.slaac.0.address"),
-
-					resource.TestCheckResourceAttr(resName, "interface.0.ipv6.0.range.#", "2"),
-					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.range.0.assigned_range"),
-					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.range.0.range"),
-					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.range.1.assigned_range"),
-					resource.TestCheckResourceAttrSet(resName, "interface.0.ipv6.0.range.1.range"),
-				),
+					// range list (exactly two) with fields
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range"),
+						knownvalue.ListSizeExact(2),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range").
+							AtSliceIndex(0).
+							AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range").
+							AtSliceIndex(0).
+							AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range").
+							AtSliceIndex(1).
+							AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range").
+							AtSliceIndex(1).
+							AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 			{
 				ResourceName:            resName,
@@ -2789,6 +2909,13 @@ func TestAccResourceInstance_configInterfaceVPCIPv6(t *testing.T) {
 	// TODO (VPC Dual Stack): Remove region hardcoding
 	targetRegion := "no-osl-1"
 
+	ipv6Path := tfjsonpath.New("config").
+		AtSliceIndex(0).
+		AtMapKey("interface").
+		AtSliceIndex(0).
+		AtMapKey("ipv6").
+		AtSliceIndex(0)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
@@ -2801,20 +2928,51 @@ func TestAccResourceInstance_configInterfaceVPCIPv6(t *testing.T) {
 					targetRegion,
 					rootPass,
 				),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists(resName, &instance),
+				Check: acceptance.CheckInstanceExists(resName, &instance),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("is_public"),
+						knownvalue.Bool(true),
+					),
 
-					resource.TestCheckResourceAttr(resName, "config.0.interface.0.ipv6.0.is_public", "true"),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("slaac"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("slaac").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("slaac").AtSliceIndex(0).AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("slaac").AtSliceIndex(0).AtMapKey("address"),
+						knownvalue.NotNull(),
+					),
 
-					resource.TestCheckResourceAttr(resName, "config.0.interface.0.ipv6.0.slaac.#", "1"),
-					resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv6.0.slaac.0.range"),
-					resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv6.0.slaac.0.assigned_range"),
-					resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv6.0.slaac.0.address"),
-
-					resource.TestCheckResourceAttr(resName, "config.0.interface.0.ipv6.0.range.#", "1"),
-					resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv6.0.range.0.assigned_range"),
-					resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv6.0.range.0.range"),
-				),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("range"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("range").AtSliceIndex(0).AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("range").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 			{
 				ResourceName:            resName,
