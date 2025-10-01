@@ -34,10 +34,6 @@ type ModelIPv6Address struct {
 	SLAACAddress types.String `tfsdk:"slaac_address"`
 }
 
-var ModelIPv6AddressObjectType = helper.Must(
-	helper.FrameworkModelToObjectType[ModelIPv6Address](context.Background()),
-)
-
 func (m *ModelVPCIP) FlattenVPCIP(ctx context.Context, vpcIp *linodego.VPCIP, preserveKnown bool) diag.Diagnostics {
 	var rd diag.Diagnostics
 
@@ -66,7 +62,7 @@ func (m *ModelVPCIP) FlattenVPCIP(ctx context.Context, vpcIp *linodego.VPCIP, pr
 		},
 	)
 
-	ipv6AddressSet, diags := types.SetValueFrom(ctx, ModelIPv6AddressObjectType, ipv6AddressModels)
+	ipv6AddressSet, diags := types.SetValueFrom(ctx, DataSourceSchemaIPv6NestedObject.Type(), ipv6AddressModels)
 	if diags.HasError() {
 		return diags
 	}

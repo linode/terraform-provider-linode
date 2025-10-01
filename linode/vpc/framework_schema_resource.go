@@ -9,6 +9,33 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
 )
 
+var ResourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"range": schema.StringAttribute{
+			Description: "The IPv6 range assigned to this VPC.",
+			Optional:    true,
+			CustomType:  customtypes.LinodeAutoAllocRangeType{},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifier.RequiresReplace(),
+			},
+		},
+		"allocated_range": schema.StringAttribute{
+			Description: "The IPv6 range assigned to this VPC.",
+			Computed:    true,
+		},
+		"allocation_class": schema.StringAttribute{
+			Description: "The labeled IPv6 Inventory that the VPC Prefix should be allocated from.",
+			Optional:    true,
+			WriteOnly:   true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifier.RequiresReplace(),
+			},
+		},
+	},
+}
+
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
@@ -44,32 +71,7 @@ var frameworkResourceSchema = schema.Schema{
 				listplanmodifier.UseStateForUnknown(),
 				listplanmodifier.RequiresReplace(),
 			},
-			NestedObject: schema.NestedAttributeObject{
-				Attributes: map[string]schema.Attribute{
-					"range": schema.StringAttribute{
-						Description: "The IPv6 range assigned to this VPC.",
-						Optional:    true,
-						CustomType:  customtypes.LinodeAutoAllocRangeType{},
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-							stringplanmodifier.RequiresReplace(),
-						},
-					},
-					"allocated_range": schema.StringAttribute{
-						Description: "The IPv6 range assigned to this VPC.",
-						Computed:    true,
-					},
-					"allocation_class": schema.StringAttribute{
-						Description: "The labeled IPv6 Inventory that the VPC Prefix should be allocated from.",
-						Optional:    true,
-						WriteOnly:   true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-							stringplanmodifier.RequiresReplace(),
-						},
-					},
-				},
-			},
+			NestedObject: ResourceSchemaIPv6NestedObject,
 		},
 
 		"created": schema.StringAttribute{

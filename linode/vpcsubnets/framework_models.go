@@ -57,7 +57,7 @@ func (model *Model) FlattenSubnets(
 				},
 			)
 
-			ipv6AddressesList, d := types.ListValueFrom(ctx, vpcsubnet.DataSourceModelIPv6ObjectType, ipv6AddressModels)
+			ipv6AddressesList, d := types.ListValueFrom(ctx, vpcsubnet.DataSourceSchemaIPv6NestedObject.Type(), ipv6AddressModels)
 			diags.Append(d...)
 			if diags.HasError() {
 				return s

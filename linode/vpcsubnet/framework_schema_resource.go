@@ -28,6 +28,28 @@ var LinodeObjectType = types.ObjectType{
 	},
 }
 
+var ResourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"range": schema.StringAttribute{
+			Description: "An existing IPv6 prefix owned by the current account or a " +
+				"forward slash (/) followed by a valid prefix length. " +
+				"If unspecified, a range with the default prefix will be " +
+				"allocated for this VPC.",
+			Optional:   true,
+			Computed:   true,
+			CustomType: customtypes.LinodeAutoAllocRangeType{},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"allocated_range": schema.StringAttribute{
+			Description: "The IPv6 range assigned to this subnet.",
+			Computed:    true,
+		},
+	},
+}
+
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
@@ -62,27 +84,7 @@ var frameworkResourceSchema = schema.Schema{
 				listplanmodifier.RequiresReplace(),
 				listplanmodifier.UseStateForUnknown(),
 			},
-			NestedObject: schema.NestedAttributeObject{
-				Attributes: map[string]schema.Attribute{
-					"range": schema.StringAttribute{
-						Description: "An existing IPv6 prefix owned by the current account or a " +
-							"forward slash (/) followed by a valid prefix length. " +
-							"If unspecified, a range with the default prefix will be " +
-							"allocated for this VPC.",
-						Optional:   true,
-						Computed:   true,
-						CustomType: customtypes.LinodeAutoAllocRangeType{},
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.RequiresReplace(),
-							stringplanmodifier.UseStateForUnknown(),
-						},
-					},
-					"allocated_range": schema.StringAttribute{
-						Description: "The IPv6 range assigned to this subnet.",
-						Computed:    true,
-					},
-				},
-			},
+			NestedObject: ResourceSchemaIPv6NestedObject,
 		},
 
 		"created": schema.StringAttribute{

@@ -5,6 +5,16 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
 
+var DataSourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"slaac_address": schema.StringAttribute{
+			Description: "The specific address within the prefix that the " +
+				"interface is expected to autoconfigure through SLAAC",
+			Computed: true,
+		},
+	},
+}
+
 var VPCIPAttrs = map[string]schema.Attribute{
 	"address": schema.StringAttribute{
 		Description: "An IPv4 address configured for this VPC interface. These follow the RFC 1918 private address format. Displayed as null if an address_range.",
@@ -68,17 +78,9 @@ var VPCIPAttrs = map[string]schema.Attribute{
 		Computed:    true,
 	},
 	"ipv6_addresses": schema.SetNestedAttribute{
-		Description: "The addresses within the prefix that the interface is associated with.",
-		Computed:    true,
-		NestedObject: schema.NestedAttributeObject{
-			Attributes: map[string]schema.Attribute{
-				"slaac_address": schema.StringAttribute{
-					Description: "The specific address within the prefix that the " +
-						"interface is expected to autoconfigure through SLAAC",
-					Computed: true,
-				},
-			},
-		},
+		Description:  "The addresses within the prefix that the interface is associated with.",
+		Computed:     true,
+		NestedObject: DataSourceSchemaIPv6NestedObject,
 	},
 }
 

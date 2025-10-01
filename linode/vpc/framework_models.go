@@ -70,10 +70,6 @@ type ResourceModelIPv6 struct {
 	AllocationClass types.String                          `tfsdk:"allocation_class"`
 }
 
-var ResourceModelIPv6ObjectType = helper.Must(
-	helper.FrameworkModelToObjectType[ResourceModelIPv6](context.Background()),
-)
-
 func (m *ResourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) diag.Diagnostics {
 	m.BaseModel.FlattenVPC(ctx, vpc, preserveKnown)
 
@@ -86,7 +82,7 @@ func (m *ResourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, prese
 		},
 	)
 
-	ipv6List, diags := types.ListValueFrom(ctx, ResourceModelIPv6ObjectType, ipv6Models)
+	ipv6List, diags := types.ListValueFrom(ctx, ResourceSchemaIPv6NestedObject.Type(), ipv6Models)
 	if diags.HasError() {
 		return diags
 	}
@@ -119,10 +115,6 @@ type DataSourceModelIPv6 struct {
 	Range customtypes.LinodeAutoAllocRangeValue `tfsdk:"range"`
 }
 
-var DataSourceModelIPv6ObjectType = helper.Must(
-	helper.FrameworkModelToObjectType[DataSourceModelIPv6](context.Background()),
-)
-
 func (m *DataSourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) diag.Diagnostics {
 	m.BaseModel.FlattenVPC(ctx, vpc, preserveKnown)
 
@@ -135,7 +127,7 @@ func (m *DataSourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, pre
 		},
 	)
 
-	ipv6List, diags := types.ListValueFrom(ctx, DataSourceModelIPv6ObjectType, ipv6Models)
+	ipv6List, diags := types.ListValueFrom(ctx, DataSourceSchemaIPv6NestedObject.Type(), ipv6Models)
 	if diags.HasError() {
 		return diags
 	}

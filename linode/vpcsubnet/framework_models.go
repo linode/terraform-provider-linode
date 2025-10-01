@@ -137,10 +137,6 @@ type ResourceModelIPv6 struct {
 	AllocatedRange types.String                          `tfsdk:"allocated_range"`
 }
 
-var ResourceModelIPv6ObjectType = helper.Must(
-	helper.FrameworkModelToObjectType[ResourceModelIPv6](context.Background()),
-)
-
 func (m *ResourceModel) CopyFrom(ctx context.Context, other ResourceModel, preserveKnown bool) {
 	m.BaseModel.CopyFrom(ctx, other.BaseModel, preserveKnown)
 	m.IPv6 = helper.KeepOrUpdateValue(m.IPv6, other.IPv6, preserveKnown)
@@ -163,7 +159,7 @@ func (m *ResourceModel) FlattenSubnet(
 		},
 	)
 
-	ipv6AddressesList, diags := types.ListValueFrom(ctx, ResourceModelIPv6ObjectType, ipv6AddressModels)
+	ipv6AddressesList, diags := types.ListValueFrom(ctx, ResourceSchemaIPv6NestedObject.Type(), ipv6AddressModels)
 	if diags.HasError() {
 		return diags
 	}
@@ -190,10 +186,6 @@ type DataSourceModelIPv6 struct {
 	Range customtypes.LinodeAutoAllocRangeValue `tfsdk:"range"`
 }
 
-var DataSourceModelIPv6ObjectType = helper.Must(
-	helper.FrameworkModelToObjectType[DataSourceModelIPv6](context.Background()),
-)
-
 func (m *DataSourceModel) CopyFrom(ctx context.Context, other DataSourceModel, preserveKnown bool) {
 	m.BaseModel.CopyFrom(ctx, other.BaseModel, preserveKnown)
 	m.IPv6 = helper.KeepOrUpdateValue(m.IPv6, other.IPv6, preserveKnown)
@@ -215,7 +207,7 @@ func (m *DataSourceModel) FlattenSubnet(
 		},
 	)
 
-	ipv6AddressesList, diags := types.ListValueFrom(ctx, DataSourceModelIPv6ObjectType, ipv6AddressModels)
+	ipv6AddressesList, diags := types.ListValueFrom(ctx, DataSourceSchemaIPv6NestedObject.Type(), ipv6AddressModels)
 	if diags.HasError() {
 		return diags
 	}
