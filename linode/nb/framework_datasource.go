@@ -18,7 +18,7 @@ func NewDataSource() datasource.DataSource {
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
 				Name:   "linode_nodebalancer",
-				Schema: &frameworkDatasourceSchema,
+				Schema: dataSourceSchema(),
 			},
 		),
 	}
@@ -58,18 +58,29 @@ func (d *DataSource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.ListNodeBalancerFirewalls(...)")
-
-	firewalls, err := client.ListNodeBalancerFirewalls(ctx, nodeBalancerID, nil)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to list firewalls assgiend to nodebalancer %d", nodeBalancerID),
-			err.Error(),
-		)
+	firewalls := safeListFirewalls(
+		ctx,
+		client,
+		nodeBalancerID,
+		nil,
+		resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(data.flattenNodeBalancer(ctx, nodeBalancer, firewalls)...)
+	vpcConfigs := safeListVPCConfigs(
+		ctx,
+		client,
+		nodeBalancerID,
+		nil,
+		resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(data.Flatten(ctx, nodeBalancer, firewalls, vpcConfigs)...)
 
 	if resp.Diagnostics.HasError() {
 		return
