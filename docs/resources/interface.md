@@ -220,10 +220,10 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Interfaces can be imported using an Interface ID followed by a Linode ID, separated by a comma, e.g.
+Interfaces can be imported using a Linode ID followed by an Interface ID, separated by a comma, e.g.
 
 ```sh
-terraform import linode_interface.example 12345,67890
+terraform import linode_interface.example 67890,12345
 ```
 
 ## Notes

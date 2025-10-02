@@ -229,12 +229,12 @@ func (r *Resource) ImportState(
 		ctx, req, resp,
 		[]helper.ImportableID{
 			{
-				Name:          "id",
-				TypeConverter: helper.IDTypeConverterString,
-			},
-			{
 				Name:          "linode_id",
 				TypeConverter: helper.IDTypeConverterInt64,
+			},
+			{
+				Name:          "id",
+				TypeConverter: helper.IDTypeConverterString,
 			},
 		},
 	)
