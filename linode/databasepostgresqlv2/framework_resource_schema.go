@@ -243,6 +243,9 @@ var frameworkResourceSchema = schema.Schema{
 					Optional: true,
 					Computed: true,
 					Default:  booldefault.StaticBool(false),
+					PlanModifiers: []planmodifier.Bool{
+						boolplanmodifier.UseStateForUnknown(),
+					},
 				},
 			},
 		},
