@@ -109,5 +109,5 @@ func (model *DatabaseFilterModel) parseDatabases(
 
 	model.Databases = result
 
-	return
+	return d
 }
