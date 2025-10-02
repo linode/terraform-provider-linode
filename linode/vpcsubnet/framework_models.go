@@ -14,7 +14,7 @@ import (
 
 type VPCSubnetModel struct {
 	ID      types.String      `tfsdk:"id"`
-	VPCId   types.Int64       `tfsdk:"vpc_id"`
+	VPCID   types.Int64       `tfsdk:"vpc_id"`
 	Label   types.String      `tfsdk:"label"`
 	IPv4    types.String      `tfsdk:"ipv4"`
 	Linodes types.List        `tfsdk:"linodes"`
@@ -77,31 +77,41 @@ func FlattenSubnetLinodes(
 	return &linodesList, diags
 }
 
-func (d *VPCSubnetModel) FlattenSubnet(
+func (v *VPCSubnetModel) FlattenSubnet(
 	ctx context.Context,
 	subnet *linodego.VPCSubnet,
 	preserveKnown bool,
 ) diag.Diagnostics {
-	d.ID = helper.KeepOrUpdateString(d.ID, strconv.Itoa(subnet.ID), preserveKnown)
+	v.ID = helper.KeepOrUpdateString(v.ID, strconv.Itoa(subnet.ID), preserveKnown)
 
 	linodesList, diags := FlattenSubnetLinodes(ctx, subnet.Linodes)
 	if diags.HasError() {
 		return diags
 	}
-	d.Linodes = helper.KeepOrUpdateValue(d.Linodes, *linodesList, preserveKnown)
+	v.Linodes = helper.KeepOrUpdateValue(v.Linodes, *linodesList, preserveKnown)
 
-	d.Created = helper.KeepOrUpdateValue(
-		d.Created,
+	v.Created = helper.KeepOrUpdateValue(
+		v.Created,
 		timetypes.NewRFC3339TimePointerValue(subnet.Created),
 		preserveKnown,
 	)
-	d.Updated = helper.KeepOrUpdateValue(
-		d.Updated,
+	v.Updated = helper.KeepOrUpdateValue(
+		v.Updated,
 		timetypes.NewRFC3339TimePointerValue(subnet.Updated),
 		preserveKnown,
 	)
-	d.Label = helper.KeepOrUpdateString(d.Label, subnet.Label, preserveKnown)
-	d.IPv4 = helper.KeepOrUpdateString(d.IPv4, subnet.IPv4, preserveKnown)
+	v.Label = helper.KeepOrUpdateString(v.Label, subnet.Label, preserveKnown)
+	v.IPv4 = helper.KeepOrUpdateString(v.IPv4, subnet.IPv4, preserveKnown)
 
 	return nil
+}
+
+func (v *VPCSubnetModel) CopyFrom(other VPCSubnetModel, preserveKnown bool) {
+	v.ID = helper.KeepOrUpdateValue(v.ID, other.ID, preserveKnown)
+	v.VPCID = helper.KeepOrUpdateValue(v.VPCID, other.VPCID, preserveKnown)
+	v.Label = helper.KeepOrUpdateValue(v.Label, other.Label, preserveKnown)
+	v.IPv4 = helper.KeepOrUpdateValue(v.IPv4, other.IPv4, preserveKnown)
+	v.Linodes = helper.KeepOrUpdateValue(v.Linodes, other.Linodes, preserveKnown)
+	v.Created = helper.KeepOrUpdateValue(v.Created, other.Created, preserveKnown)
+	v.Updated = helper.KeepOrUpdateValue(v.Updated, other.Updated, preserveKnown)
 }
