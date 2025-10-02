@@ -40,8 +40,18 @@ In addition to all arguments above, the following attributes are exported:
 
 * `ipv4` - The IPv4 range of this subnet in CIDR format.
 
+* [`ipv6`](#ipv6) - A list of IPv6 ranges under this subnet.
+
 * `linodes` - A list of Linode IDs that added to this subnet.
 
 * `created` - The date and time when the VPC Subnet was created.
 
 * `updated` - The date and time when the VPC Subnet was last updated.
+
+## IPv6
+
+-> **Limited Availability** IPv6 VPCs may not currently be available to all users.
+
+The following attributes are exported under each entry of the `ipv6` field:
+
+* `range` - An IPv6 range allocated to this subnet in CIDR format.

@@ -59,7 +59,7 @@ func (r *Resource) Create(
 ) {
 	tflog.Debug(ctx, "Read "+r.Config.Name)
 
-	var data VPCSubnetModel
+	var data ResourceModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -67,11 +67,29 @@ func (r *Resource) Create(
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, data)
+	ctx = resourcePopulateLogAttributes(ctx, data)
 
 	createOpts := linodego.VPCSubnetCreateOptions{
 		Label: data.Label.ValueString(),
 		IPv4:  data.IPv4.ValueString(),
+	}
+
+	if !data.IPv6.IsNull() {
+		modelIPv6 := make([]ResourceModelIPv6, len(data.IPv6.Elements()))
+
+		resp.Diagnostics.Append(data.IPv6.ElementsAs(ctx, &modelIPv6, true)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		createOpts.IPv6 = helper.MapSlice(
+			modelIPv6,
+			func(m ResourceModelIPv6) linodego.VPCSubnetCreateOptionsIPv6 {
+				return linodego.VPCSubnetCreateOptionsIPv6{
+					Range: m.Range.ValueStringPointer(),
+				}
+			},
+		)
 	}
 
 	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
@@ -112,14 +130,14 @@ func (r *Resource) Read(
 	tflog.Debug(ctx, "Read "+r.Config.Name)
 
 	client := r.Meta.Client
-	var data VPCSubnetModel
+	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, data)
+	ctx = resourcePopulateLogAttributes(ctx, data)
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
 		return
 	}
@@ -166,7 +184,7 @@ func (r *Resource) Update(
 ) {
 	tflog.Debug(ctx, "Update "+r.Config.Name)
 
-	var plan, state VPCSubnetModel
+	var plan, state ResourceModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -176,7 +194,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, state)
+	ctx = resourcePopulateLogAttributes(ctx, state)
 
 	var updateOpts linodego.VPCSubnetUpdateOptions
 	shouldUpdate := false
@@ -233,7 +251,7 @@ func (r *Resource) Delete(
 ) {
 	tflog.Debug(ctx, "Delete "+r.Config.Name)
 
-	var data VPCSubnetModel
+	var data ResourceModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -241,7 +259,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, data)
+	ctx = resourcePopulateLogAttributes(ctx, data)
 
 	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
 	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
@@ -297,7 +315,7 @@ func (r *Resource) Delete(
 	}
 }
 
-func populateLogAttributes(ctx context.Context, data VPCSubnetModel) context.Context {
+func resourcePopulateLogAttributes(ctx context.Context, data ResourceModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
 		"vpc_id": data.VPCId.ValueInt64(),
 		"id":     data.ID.ValueString(),

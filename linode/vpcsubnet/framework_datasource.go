@@ -32,14 +32,14 @@ func (d *DataSource) Read(
 	tflog.Trace(ctx, "Read data."+d.Config.Name)
 	client := d.Meta.Client
 
-	var data VPCSubnetModel
+	var data DataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, data)
+	ctx = dataSourcePopulateLogAttributes(ctx, data)
 
 	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
 	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
@@ -63,4 +63,11 @@ func (d *DataSource) Read(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func dataSourcePopulateLogAttributes(ctx context.Context, data DataSourceModel) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"vpc_id": data.VPCId.ValueInt64(),
+		"id":     data.ID.ValueString(),
+	})
 }

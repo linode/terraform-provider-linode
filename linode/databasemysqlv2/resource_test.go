@@ -135,7 +135,7 @@ func TestAccResource_basic(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
 			},
 		},
 	})
@@ -268,7 +268,7 @@ func TestAccResource_resize(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
 			},
 		},
 	})
@@ -401,7 +401,7 @@ func TestAccResource_complex(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
 			},
 		},
 	})
@@ -465,7 +465,7 @@ func TestAccResource_fork(t *testing.T) {
 				ResourceName:            resNameSource,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
 			},
 			{
 				PreConfig: func() {
@@ -542,7 +542,7 @@ func TestAccResource_fork(t *testing.T) {
 				ResourceName:            resNameFork,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
 			},
 		},
 	})
@@ -635,6 +635,7 @@ func TestAccResource_suspension(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"updated",
 					"oldest_restore_time",
+					"members",
 
 					// These fields will be populated with null when importing a suspended database
 					"ca_cert", "root_password", "root_username",

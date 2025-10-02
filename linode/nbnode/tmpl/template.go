@@ -61,6 +61,20 @@ func Updates(t testing.TB, nodebalancer, region string, rootPass string) string 
 		})
 }
 
+func VPC(t testing.TB, nodebalancer, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_node_vpc",
+		TemplateData{
+			Label: nodebalancer,
+			Config: config.TemplateData{
+				NodeBalancer: tmpl.TemplateData{
+					Label:  nodebalancer,
+					Region: region,
+				},
+			},
+		})
+}
+
 func DataBasic(t testing.TB, nodebalancer, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_data_basic",
@@ -72,6 +86,20 @@ func DataBasic(t testing.TB, nodebalancer, region string, rootPass string) strin
 				Region:   region,
 				RootPass: rootPass,
 			},
+			Config: config.TemplateData{
+				NodeBalancer: tmpl.TemplateData{
+					Label:  nodebalancer,
+					Region: region,
+				},
+			},
+		})
+}
+
+func DataVPC(t testing.TB, nodebalancer, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_node_data_vpc",
+		TemplateData{
+			Label: nodebalancer,
 			Config: config.TemplateData{
 				NodeBalancer: tmpl.TemplateData{
 					Label:  nodebalancer,

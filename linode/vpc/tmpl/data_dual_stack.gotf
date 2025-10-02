@@ -1,0 +1,9 @@
+{{ define "vpc_data_dual_stack" }}
+
+{{ template "vpc_dual_stack" . }}
+
+data "linode_vpc" "foo" {
+    id = linode_vpc.foobar.id
+}
+
+{{ end }}

@@ -176,6 +176,19 @@ func (r *Resource) Create(
 			)
 			return
 		}
+
+		tflog.Debug(ctx, "Waiting for database to finish updating")
+
+		if err := client.WaitForDatabaseStatus(
+			ctx,
+			db.ID,
+			linodego.DatabaseEngineTypePostgres,
+			linodego.DatabaseStatusActive,
+			int(createTimeout.Seconds()),
+		); err != nil {
+			resp.Diagnostics.AddError("Failed to wait for PostgreSQL database active", err.Error())
+			return
+		}
 	}
 
 	if err := helper.ReconcileDatabaseSuspensionSync(
