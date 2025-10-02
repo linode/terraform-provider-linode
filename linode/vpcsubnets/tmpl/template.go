@@ -21,6 +21,15 @@ func DataBasic(t testing.TB, label, region, ipv4 string) string {
 		})
 }
 
+func DataDualStack(t testing.TB, label, region, ipv4 string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_subnets_data_dual_stack", TemplateData{
+			Label:  label,
+			Region: region,
+			IPv4:   ipv4,
+		})
+}
+
 func DataFilterLabel(t testing.TB, label, region, ipv4 string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_subnets_data_filter_label", TemplateData{

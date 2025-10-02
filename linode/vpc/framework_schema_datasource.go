@@ -5,6 +5,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
+var DataSourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"range": schema.StringAttribute{
+			Description: "The IPv6 range assigned to this VPC.",
+			Computed:    true,
+		},
+	},
+}
+
 var VPCAttrs = map[string]schema.Attribute{
 	"id": schema.StringAttribute{
 		Description: "The id of the VPC.",
@@ -21,6 +30,11 @@ var VPCAttrs = map[string]schema.Attribute{
 	"region": schema.StringAttribute{
 		Description: "The region of the VPC.",
 		Computed:    true,
+	},
+	"ipv6": schema.ListNestedAttribute{
+		Description:  "The IPv6 configuration of this VPC.",
+		Computed:     true,
+		NestedObject: DataSourceSchemaIPv6NestedObject,
 	},
 	"created": schema.StringAttribute{
 		Description: "The date and time when the VPC was created.",

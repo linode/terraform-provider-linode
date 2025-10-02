@@ -12,7 +12,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -42,7 +45,7 @@ func TestAccResourceVPCSubnet_basic(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, subnetLabel, "172.16.0.0/24", testRegion),
+				Config: tmpl.Basic(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
@@ -95,6 +98,68 @@ func TestAccResourceVPCSubnet_update(t *testing.T) {
 				ImportStateIdFunc: resourceImportStateID,
 				// TODO:: remove when API response for updated timestamp is consistent
 				ImportStateVerifyIgnore: []string{"updated"},
+			},
+		},
+	})
+}
+
+func TestAccResourceVPCSubnet_dualStack(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc_subnet.foobar"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DualStack(t, subnetLabel, "10.0.0.0/24", targetRegion),
+				Check:  checkVPCSubnetExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(subnetLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("created"),
+						knownvalue.NotNull(),
+					),
+
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv6"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("allocated_range"),
+						knownvalue.NotNull(),
+					),
+				},
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       resourceImportStateID,
+				ImportStateVerifyIgnore: []string{"ipv6.0.range"},
 			},
 		},
 	})
@@ -159,7 +224,7 @@ func TestAccResourceVPCSubnet_attached(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Attached(t, subnetLabel, "172.16.0.0/24", testRegion),
+				Config: tmpl.Attached(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
@@ -169,7 +234,7 @@ func TestAccResourceVPCSubnet_attached(t *testing.T) {
 			},
 			{
 				// Refresh the configuration so the `linodes` field is updated
-				Config: tmpl.Attached(t, subnetLabel, "172.16.0.0/24", testRegion),
+				Config: tmpl.Attached(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "linodes.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "linodes.0.id"),

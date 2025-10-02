@@ -1,0 +1,59 @@
+{{ define "instance_interfaces_vpc_ipv6_1" }}
+
+{{ template "e2e_test_firewall" . }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+    image = "{{.Image}}"
+
+    interface {
+        purpose = "vpc"
+        subnet_id = linode_vpc_subnet.foobar.id
+
+        ipv6 {
+            is_public = true
+
+            slaac {
+                range = "auto"
+            }
+
+            range {
+                range = "auto"
+            }
+
+            range {
+                range = "auto"
+            }
+        }
+    }
+
+    firewall_id = linode_firewall.e2e_test_firewall.id
+}
+
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+
+    ipv6 = [
+        {
+            range = "/52"
+        }
+    ]
+}
+
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = linode_vpc.foobar.id
+    label = "{{.Label}}"
+    ipv4 = "10.0.0.0/24"
+    ipv6 = [
+        {
+            range = "auto"
+        }
+    ]
+}
+
+
+{{ end }}

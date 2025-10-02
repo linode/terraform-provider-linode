@@ -1,0 +1,25 @@
+{{ define "vpc_subnet_dual_stack" }}
+
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+
+    ipv6 = [
+        {
+            range = "/52"
+        }
+    ]
+}
+
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = linode_vpc.foobar.id
+    label = "{{.Label}}"
+    ipv4 = "{{.IPv4}}"
+    ipv6 = [
+        {
+            range = "auto"
+        }
+    ]
+}
+
+{{ end }}
