@@ -268,6 +268,8 @@ func (r *Resource) Delete(
 		return
 	}
 
+	// This is necessary because database deletion propagation can often take a while,
+	// leading to errors during destruction.
 	shouldRetryOn400s, err := shouldRetryOn400sForDatabasePropagation(ctx, client, vpcId, id)
 	if err != nil {
 		if linodego.IsNotFound(err) {
