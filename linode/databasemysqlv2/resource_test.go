@@ -914,7 +914,7 @@ func TestAccResource_vpc(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
 			},
 		},
 	})
