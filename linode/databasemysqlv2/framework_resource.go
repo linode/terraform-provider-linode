@@ -173,11 +173,11 @@ func (r *Resource) Create(
 		if err := client.WaitForDatabaseStatus(
 			ctx,
 			db.ID,
-			linodego.DatabaseEngineTypePostgres,
+			linodego.DatabaseEngineTypeMySQL,
 			linodego.DatabaseStatusActive,
 			int(createTimeout.Seconds()),
 		); err != nil {
-			resp.Diagnostics.AddError("Failed to wait for PostgreSQL database active", err.Error())
+			resp.Diagnostics.AddError("Failed to wait for MySQL database active", err.Error())
 			return
 		}
 	}
