@@ -66,6 +66,19 @@ func KeepOrUpdateSet(
 	return KeepOrUpdateValue(original, setValue, preserveKnown)
 }
 
+func KeepOrUpdateList(
+	elementType attr.Type, original types.List, updated []attr.Value, preserveKnown bool, diags *diag.Diagnostics,
+) types.List {
+	listValue, newDiags := types.ListValue(elementType, updated)
+	diags.Append(newDiags...)
+
+	if diags.HasError() {
+		return listValue
+	}
+
+	return KeepOrUpdateValue(original, listValue, preserveKnown)
+}
+
 func KeepOrUpdateStringPointer(original types.String, updated *string, preserveKnown bool) types.String {
 	return KeepOrUpdateValue(original, types.StringPointerValue(updated), preserveKnown)
 }

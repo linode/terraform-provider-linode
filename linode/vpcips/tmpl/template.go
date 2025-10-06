@@ -22,3 +22,12 @@ func DataBasic(t testing.TB, label, region, ipv4_1, ipv4_2 string) string {
 			IPv4_2: ipv4_2,
 		})
 }
+
+func DataDualStack(t testing.TB, label, region, ipv4_1 string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_ips_data_dual_stack", TemplateDataBasic{
+			Label:  label,
+			Region: region,
+			IPv4_1: ipv4_1,
+		})
+}

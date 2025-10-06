@@ -31,7 +31,7 @@ var frameworkDatasourceSchema = schema.Schema{
 		"nodebalancers": schema.ListNestedBlock{
 			Description: "The returned list of NodeBalancers.",
 			NestedObject: schema.NestedBlockObject{
-				Attributes: nb.NodeBalancerAttributes,
+				Attributes: nb.DataSourceAttributes,
 			},
 		},
 	},

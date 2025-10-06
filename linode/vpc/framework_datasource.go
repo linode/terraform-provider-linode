@@ -33,14 +33,14 @@ func (d *DataSource) Read(
 
 	client := d.Meta.Client
 
-	var data VPCModel
+	var data DataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, data)
+	ctx = dataSourcePopulateLogAttributes(ctx, data)
 
 	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -56,6 +56,14 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.FlattenVPC(ctx, vpc, false)
+	resp.Diagnostics.Append(data.FlattenVPC(ctx, vpc, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func dataSourcePopulateLogAttributes(ctx context.Context, data DataSourceModel) context.Context {
+	return tflog.SetField(ctx, "id", data.ID)
 }

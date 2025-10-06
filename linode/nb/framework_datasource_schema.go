@@ -1,6 +1,8 @@
 package nb
 
 import (
+	"maps"
+
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -16,7 +18,14 @@ var TransferObjectType = types.ObjectType{
 	},
 }
 
-var NodeBalancerAttributes = map[string]schema.Attribute{
+var dataSourceVPCObjType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"subnet_id":  types.Int64Type,
+		"ipv4_range": types.StringType,
+	},
+}
+
+var DataSourceAttributes = map[string]schema.Attribute{
 	"id": schema.Int64Attribute{
 		Description: "The unique ID of the Linode NodeBalancer.",
 		Required:    true,
@@ -71,61 +80,90 @@ var NodeBalancerAttributes = map[string]schema.Attribute{
 	},
 }
 
-var frameworkDatasourceSchema = schema.Schema{
-	Attributes: NodeBalancerAttributes,
-	Blocks: map[string]schema.Block{
-		"firewalls": schema.ListNestedBlock{
-			Description: "A list of Firewalls assigned to this NodeBalancer.",
-			NestedObject: schema.NestedBlockObject{
-				Attributes: map[string]schema.Attribute{
-					"id": schema.Int64Attribute{
-						Description: "The unique ID assigned to this Firewall.",
-						Computed:    true,
-					},
-					"label": schema.StringAttribute{
-						Computed: true,
-						Description: "The label for the Firewall. For display purposes only. If no label is provided, a " +
-							"default will be assigned.",
-					},
-					"tags": schema.SetAttribute{
-						Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
-						ElementType: types.StringType,
-						Computed:    true,
-					},
-					"inbound_policy": schema.StringAttribute{
-						Description: "The default behavior for inbound traffic.",
-						Computed:    true,
-					},
-					"outbound_policy": schema.StringAttribute{
-						Description: "The default behavior for outbound traffic.",
-						Computed:    true,
-					},
-					"status": schema.StringAttribute{
-						Description: "The status of the firewall.",
-						Computed:    true,
-					},
-					"created": schema.StringAttribute{
-						CustomType:  timetypes.RFC3339Type{},
-						Description: "When this Firewall was created.",
-						Computed:    true,
-					},
-					"updated": schema.StringAttribute{
-						CustomType:  timetypes.RFC3339Type{},
-						Description: "When this Firewall was last updated.",
-						Computed:    true,
-					},
+// dataSourceAttributesVPC contains all user-configurable fields for a VPC NodeBalancer.
+// This attribute is stored separately to avoid making an additional request
+// per-NodeBalancer in the NodeBalancer list data source.
+var dataSourceAttributesVPC = map[string]schema.Attribute{
+	"vpcs": schema.ListNestedAttribute{
+		Description: "A list of VPCs assigned to this NodeBalancer.",
+		Computed:    true,
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"subnet_id": schema.Int64Attribute{
+					Description: "The ID of a subnet to assign to this NodeBalancer.",
+					Computed:    true,
 				},
-				Blocks: map[string]schema.Block{
-					"inbound": schema.ListNestedBlock{
-						Description:  "A set of firewall rules that specify what inbound network traffic is allowed.",
-						NestedObject: firewalls.FirewallRuleObject,
-					},
-					"outbound": schema.ListNestedBlock{
-						Description:  "A set of firewall rules that specify what outbound network traffic is allowed.",
-						NestedObject: firewalls.FirewallRuleObject,
-					},
+				"ipv4_range": schema.StringAttribute{
+					Description: "A CIDR range for the VPC's IPv4 addresses. " +
+						"The NodeBalancer sources IP addresses from this range " +
+						"when routing traffic to the backend VPC nodes.",
+					Computed: true,
 				},
 			},
 		},
 	},
+}
+
+func dataSourceSchema() *schema.Schema {
+	attributes := maps.Clone(DataSourceAttributes)
+	maps.Copy(attributes, dataSourceAttributesVPC)
+
+	return &schema.Schema{
+		Attributes: attributes,
+		Blocks: map[string]schema.Block{
+			"firewalls": schema.ListNestedBlock{
+				Description: "A list of Firewalls assigned to this NodeBalancer.",
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.Int64Attribute{
+							Description: "The unique ID assigned to this Firewall.",
+							Computed:    true,
+						},
+						"label": schema.StringAttribute{
+							Computed: true,
+							Description: "The label for the Firewall. For display purposes only. If no label is provided, a " +
+								"default will be assigned.",
+						},
+						"tags": schema.SetAttribute{
+							Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
+							ElementType: types.StringType,
+							Computed:    true,
+						},
+						"inbound_policy": schema.StringAttribute{
+							Description: "The default behavior for inbound traffic.",
+							Computed:    true,
+						},
+						"outbound_policy": schema.StringAttribute{
+							Description: "The default behavior for outbound traffic.",
+							Computed:    true,
+						},
+						"status": schema.StringAttribute{
+							Description: "The status of the firewall.",
+							Computed:    true,
+						},
+						"created": schema.StringAttribute{
+							CustomType:  timetypes.RFC3339Type{},
+							Description: "When this Firewall was created.",
+							Computed:    true,
+						},
+						"updated": schema.StringAttribute{
+							CustomType:  timetypes.RFC3339Type{},
+							Description: "When this Firewall was last updated.",
+							Computed:    true,
+						},
+					},
+					Blocks: map[string]schema.Block{
+						"inbound": schema.ListNestedBlock{
+							Description:  "A set of firewall rules that specify what inbound network traffic is allowed.",
+							NestedObject: firewalls.FirewallRuleObject,
+						},
+						"outbound": schema.ListNestedBlock{
+							Description:  "A set of firewall rules that specify what outbound network traffic is allowed.",
+							NestedObject: firewalls.FirewallRuleObject,
+						},
+					},
+				},
+			},
+		},
+	}
 }

@@ -25,6 +25,22 @@ resource "linode_nodebalancer" "foobar" {
 }
 ```
 
+The following example shows how one might use this resource to configure a NodeBalancer attached to a VPC.
+
+```hcl
+# NOTE: VPC-attached NodeBalancers may not currently be available to all users.
+resource "linode_nodebalancer" "foobar" {
+    label = "mynodebalancer"
+    region = "us-mia"
+
+    vpcs = [
+        {
+          subnet_id = linode_vpc_subnet.test.id
+        }
+    ]
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -61,6 +77,8 @@ This resource exports the following attributes:
 
 * [`firewalls`](#firewalls) - A list of Firewalls assigned to this NodeBalancer.
 
+* [`vpcs`](#vpcs) - A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+
 ### transfer
 
 The following attributes are available on transfer:
@@ -95,7 +113,7 @@ The following attributes are available on firewalls:
 
 * `updated` - When this firewall was last updated.
 
-#### inboud and outbound
+#### inbound and outbound
 
 The following arguments are supported in the inbound and outbound rule blocks:
 
@@ -110,6 +128,18 @@ The following arguments are supported in the inbound and outbound rule blocks:
 * `ipv4` - A list of IPv4 addresses or networks. Must be in IP/mask format.
 
 * `ipv6` - A list of IPv6 addresses or networks. Must be in IP/mask format.
+
+#### vpcs
+
+-> **Limited Availability** VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+
+The following arguments are supported under each entry of the `vpcs` attribute:
+
+* `subnet_id` - (Required) The ID of a subnet to assign to this NodeBalancer.
+
+* `ipv4_range` - (Optional) A CIDR range for the VPC's IPv4 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
+
+* `ipv4_range_auto_assign` - (Optional, Write-Only) Enables the use of a larger ipv4_range subnet for multiple NodeBalancers within the same VPC by allocating smaller /30 subnets for each NodeBalancer's backends.
 
 ## Import
 

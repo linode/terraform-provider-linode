@@ -1,0 +1,10 @@
+{{ define "nodebalancer_node_vpc" }}
+
+provider "linode" {
+  skip_instance_ready_poll = true
+  skip_instance_delete_poll = true
+}
+
+{{ template "nodebalancer_node_vpc_base" . }}
+
+{{ end }}
