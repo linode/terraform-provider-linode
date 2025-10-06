@@ -284,9 +284,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 		createOpts.Image = d.Get("image").(string)
 
-		createOpts.Booted = &boolTrue
-
-		if !d.GetRawConfig().GetAttr("booted").IsNull() {
+		if !bootedNull {
 			createOpts.Booted = &booted
 		}
 
@@ -308,7 +306,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			}
 		}
 	} else {
-		createOpts.Booted = &boolFalse // necessary to prepare disks and configs
+		createOpts.Booted = linodego.Pointer(false) // necessary to prepare disks and configs
 	}
 
 	createPoller, err := client.NewEventPollerWithoutEntity(linodego.EntityLinode, linodego.ActionLinodeCreate)
