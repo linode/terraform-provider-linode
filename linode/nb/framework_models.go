@@ -116,12 +116,14 @@ func (data *NodeBalancerModel) Flatten(
 		},
 	)
 
-	vpcs, diags := types.ListValueFrom(ctx, resourceVPCObjType, vpcConfigsModels)
+	vpcs, diags := types.ListValueFrom(ctx, frameworkResourceSchemaVPCs.Type(), vpcConfigsModels)
 	if diags.HasError() {
 		return diags
 	}
 
-	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, vpcs, preserveKnown)
+	// TODO: Make use of new KeepOrUpdate helpers once Linode Interfaces has been merged.
+	//		 In the meantime, enabling preserveKnown will break the diff logic for computed fields.
+	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, vpcs, false)
 
 	return nil
 }
