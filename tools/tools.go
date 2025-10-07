@@ -5,7 +5,6 @@ package main
 
 //go:generate go install github.com/bflad/tfproviderlint/cmd/tfproviderlint
 //go:generate go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint
-//go:generate go install golang.org/x/tools/cmd/goimports
 //go:generate go install mvdan.cc/gofumpt
 
 import (

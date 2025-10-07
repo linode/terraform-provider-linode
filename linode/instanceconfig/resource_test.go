@@ -625,7 +625,6 @@ func TestAccResourceInstanceConfig_vpcInterfaceIPv6(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resName,
 						ipv6Path.
-							AtSliceIndex(0).
 							AtMapKey("range").
 							AtSliceIndex(0).
 							AtMapKey("assigned_range"),
@@ -786,10 +785,7 @@ func TestAccResourceInstanceConfig_vpcInterfaceIPv6(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("interface").
-							AtSliceIndex(0).
-							AtMapKey("ipv6").
-							AtSliceIndex(0).
+						ipv6Path.
 							AtMapKey("slaac").
 							AtSliceIndex(0).
 							AtMapKey("assigned_range"),
@@ -811,10 +807,7 @@ func TestAccResourceInstanceConfig_vpcInterfaceIPv6(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("interface").
-							AtSliceIndex(0).
-							AtMapKey("ipv6").
-							AtSliceIndex(0).
+						ipv6Path.
 							AtMapKey("range").
 							AtSliceIndex(0).
 							AtMapKey("assigned_range"),
@@ -831,7 +824,6 @@ func TestAccResourceInstanceConfig_vpcInterfaceIPv6(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resName,
 						ipv6Path.
-							AtSliceIndex(0).
 							AtMapKey("range").
 							AtSliceIndex(1).
 							AtMapKey("assigned_range"),
