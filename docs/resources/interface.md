@@ -8,6 +8,10 @@ description: |-
 
 Provides a Linode Interface resource. This can be used to create, modify, and delete network interfaces for Linode instances. Interfaces allow you to configure public, VLAN, and VPC networking for your Linode instances.
 
+This resource is for Linode interfaces only, and if you are interested in deploying a Linode instance with legacy config interface, you can checkout the doc for `linode_instance_config` resource for details.
+
+This resource is designed to work with explicitly defined disk and config resources for the Linode instance. See the [Complete Example with Linode](#complete-example-with-linode) section below for details.
+
 For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-linode-instance-interface).
 
 ## Example Usage
@@ -103,6 +107,65 @@ resource "linode_interface" "vlan" {
   }
 }
 ```
+
+### Complete Example with Linode
+
+```hcl
+resource "linode_instance" "my-instance" {
+  label                = "my-instance"
+  region               = "us-mia"
+  type                 = "g6-standard-1"
+  interface_generation = "linode"
+}
+
+resource "linode_instance_config" "my-config" {
+
+  # this is necessary to ensure the interface is created
+  # before the config being booted with the Linode instance
+  depends_on = [linode_interface.public]
+
+  linode_id = linode_instance.my-instance.id
+  label     = "my-config"
+
+  device {
+    device_name = "sda"
+    disk_id     = linode_instance_disk.boot.id
+  }
+
+  booted = true
+}
+
+resource "linode_instance_disk" "boot" {
+  label     = "boot"
+  linode_id = linode_instance.my-instance.id
+  size      = linode_instance.my-instance.specs.0.disk
+
+  image     = "linode/debian12"
+  root_pass = "this-is-NOT-a-safe-password"
+}
+
+resource "linode_interface" "public" {
+  linode_id = linode_instance.my-instance.id
+  public = {
+    ipv4 = {
+      addresses = [
+        {
+          address = "auto",
+          primary = true,
+        }
+      ]
+    }
+    ipv6 = {
+      ranges = [
+        {
+          range = "/64"
+        }
+      ]
+    }
+  }
+}
+```
+
 
 ## Argument Reference
 
