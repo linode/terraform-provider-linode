@@ -4,8 +4,6 @@ go 1.24.0
 
 toolchain go1.24.1
 
-replace github.com/linode/linodego => github.com/lgarber-akamai/linodego v1.9.4-0.20250919191520-2e0b0343cc89
-
 require (
 	github.com/aws/aws-sdk-go-v2 v1.39.2
 	github.com/aws/aws-sdk-go-v2/config v1.31.6
@@ -28,7 +26,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.21.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0
 	github.com/hashicorp/terraform-plugin-testing v1.13.3
-	github.com/linode/linodego v1.57.0
+	github.com/linode/linodego v1.60.0
 	github.com/linode/linodego/k8s v1.25.2
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.42.0
