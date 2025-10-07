@@ -81,7 +81,7 @@ The following arguments are supported:
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
-* `encryption` - (Optional) Whether Block Storage Disk Encryption is enabled or disabled on this Volume. Note: Block Storage Disk Encryption is not currently available to all users.
+* `encryption` - (Optional) Whether Block Storage Disk Encryption is enabled or disabled on this Volume.
 
 ### Timeouts
 
