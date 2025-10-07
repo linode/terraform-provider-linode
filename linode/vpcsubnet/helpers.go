@@ -49,7 +49,7 @@ func shouldRetryOn400sForDatabasePropagation(
 	// Aggregate which databases still exist on the current account
 	validDatabaseIDs := make(map[int]bool, len(databases))
 	for _, db := range databases {
-		if db.PrivateNetwork == nil || db.PrivateNetwork.VPCID != db.ID {
+		if db.PrivateNetwork == nil || db.PrivateNetwork.VPCID != vpcID {
 			// If this is a detachment that hasn't yet propagated,
 			// don't set the status
 			continue

@@ -111,12 +111,12 @@ resource "linode_database_mysql_v2" "foobar" {
 }
 ```
 
-Creating a PostgreSQL database hidden behind a VPC:
+Creating a MySQL database hidden behind a VPC:
 
 ```hcl
-resource "linode_database_postgresql_v2" "foobar" {
+resource "linode_database_mysql_v2" "foobar" {
   label = "mydatabase"
-  engine_id = "postgresql/16"
+  engine_id = "mysql/16"
   region = "us-mia"
   type = "g6-nanode-1"
 
