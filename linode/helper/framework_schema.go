@@ -27,15 +27,6 @@ func EmptySetDefault(elemType attr.Type) defaults.Set {
 	)
 }
 
-func EmptyListDefault(elemType attr.Type) defaults.List {
-	return listdefault.StaticValue(
-		types.ListValueMust(
-			elemType,
-			[]attr.Value{},
-		),
-	)
-}
-
 func EmptyMapDefault(elemType attr.Type) defaults.Map {
 	return mapdefault.StaticValue(
 		types.MapValueMust(
