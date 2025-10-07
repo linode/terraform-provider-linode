@@ -1,0 +1,15 @@
+{{ define "vpc_dual_stack" }}
+
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+    description = "some description"
+
+    ipv6 = [
+        {
+            range = "/52"
+        }
+    ]
+}
+
+{{ end }}

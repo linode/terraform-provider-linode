@@ -152,3 +152,25 @@ func VPCInterfaceOnly(t testing.TB, label, region string, rootPass string) strin
 		},
 	)
 }
+
+func VPCInterfaceIPv60(t testing.TB, label, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"instance_config_vpc_interface_ipv6_0", TemplateData{
+			Label:    label,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+}
+
+func VPCInterfaceIPv61(t testing.TB, label, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"instance_config_vpc_interface_ipv6_1", TemplateData{
+			Label:    label,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+}

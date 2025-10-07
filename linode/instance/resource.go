@@ -461,38 +461,31 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	targetStatus := linodego.InstanceRunning
 
-	if createOpts.Booted == nil || !*createOpts.Booted {
-		if disksOk && configsOk && (bootedNull || booted) {
-			p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeBoot)
-			if err != nil {
-				return diag.Errorf("failed to initialize event poller: %s", err)
-			}
-
-			tflog.Debug(ctx, "client.BootInstance(...)", map[string]any{
-				"config_id": bootConfig,
-			})
-
-			if err = client.BootInstance(ctx, instance.ID, bootConfig); err != nil {
-				return diag.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
-			}
-
-			event, err := p.WaitForFinished(
-				ctx, getDeadlineSeconds(ctx, d),
-			)
-			if err != nil {
-				return diag.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
-			}
-
-			tflog.Debug(ctx, "Instance finished booting", map[string]any{
-				"event_id": event.ID,
-			})
-		} else {
-			targetStatus = linodego.InstanceOffline
+	if disksOk && configsOk && (bootedNull || booted) {
+		p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeBoot)
+		if err != nil {
+			return diag.Errorf("failed to initialize event poller: %s", err)
 		}
-	}
 
-	// If the instance has implicit disks and config with no specified image it will not boot.
-	if (!disksOk || !configsOk) && len(createOpts.Image) < 1 {
+		tflog.Debug(ctx, "client.BootInstance(...)", map[string]any{
+			"config_id": bootConfig,
+		})
+
+		if err = client.BootInstance(ctx, instance.ID, bootConfig); err != nil {
+			return diag.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
+		}
+
+		event, err := p.WaitForFinished(
+			ctx, getDeadlineSeconds(ctx, d),
+		)
+		if err != nil {
+			return diag.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
+		}
+
+		tflog.Debug(ctx, "Instance finished booting", map[string]any{
+			"event_id": event.ID,
+		})
+	} else if createOpts.Image == "" || (!bootedNull && !booted) {
 		targetStatus = linodego.InstanceOffline
 	}
 

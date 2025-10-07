@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/diffsuppressfuncs"
 )
 
 const deviceDescription = "Device can be either a Disk or Volume identified by disk_id or " +
@@ -196,6 +197,79 @@ var InterfaceSchema = &schema.Resource{
 							}
 							return old == new
 						},
+					},
+				},
+			},
+		},
+		"ipv6": {
+			Type: schema.TypeList,
+			Description: "The IPv6 configuration of the VPC interface. " +
+				onlyAllowedForVPCMsg,
+			Computed: true,
+			Optional: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"slaac": {
+						Type:        schema.TypeList,
+						Description: "An array of SLAAC prefixes to use for this interface.",
+						Computed:    true,
+						Optional:    true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"range": {
+									Type: schema.TypeString,
+									Description: "A SLAAC prefix to add to this interface, " +
+										"or `auto` for a new IPv6 prefix to be automatically allocated.",
+									Optional:         true,
+									DiffSuppressFunc: diffsuppressfuncs.AutoAllocRange,
+								},
+								"assigned_range": {
+									Type: schema.TypeString,
+									Description: "The value of `range` computed by the API. " +
+										"This is necessary when needing to access the range " +
+										"implicitly allocated using `auto`.",
+									Computed: true,
+								},
+								"address": {
+									Type:        schema.TypeString,
+									Description: "The SLAAC address chosen for this interface.",
+									Computed:    true,
+								},
+							},
+						},
+					},
+					"range": {
+						Type:        schema.TypeList,
+						Description: "An array of SLAAC prefixes to use for this interface.",
+						Computed:    true,
+						Optional:    true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"range": {
+									Type: schema.TypeString,
+									Description: "A prefix to add to this interface, " +
+										"or `auto` for a new IPv6 prefix to be automatically allocated.",
+									Optional:         true,
+									DiffSuppressFunc: diffsuppressfuncs.AutoAllocRange,
+								},
+								"assigned_range": {
+									Type: schema.TypeString,
+									Description: "The value of `range` computed by the API. " +
+										"This is necessary when needing to access the range " +
+										"implicitly allocated using `auto`.",
+									Computed: true,
+								},
+							},
+						},
+					},
+					"is_public": {
+						Type: schema.TypeBool,
+						Description: "If true, connections from the interface to IPv6 addresses outside the VPC, " +
+							"and connections from IPv6 addresses outside the VPC to the interface will be permitted.",
+						Optional: true,
+						Computed: true,
+						Default:  nil,
 					},
 				},
 			},
@@ -828,6 +902,7 @@ var resourceSchema = map[string]*schema.Schema{
 				"kernel": {
 					Type:     schema.TypeString,
 					Optional: true,
+					Computed: true,
 					Description: "A Kernel ID to boot a Linode with. Default is based on image choice. " +
 						"(examples: linode/latest-64bit, linode/grub2, linode/direct-disk)",
 				},

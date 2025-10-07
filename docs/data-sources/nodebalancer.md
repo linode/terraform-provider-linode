@@ -89,7 +89,7 @@ The following attributes are available on firewalls:
 
 * `updated` - When this firewall was last updated.
 
-#### inboud and outbound
+#### inbound and outbound
 
 The following arguments are supported in the inbound and outbound rule blocks:
 

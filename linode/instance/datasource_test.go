@@ -241,3 +241,92 @@ func TestAccDataSourceInstances_explicitInterfaceGeneration(t *testing.T) {
 		},
 	})
 }
+
+func TestAccDataSourceInstance_interfaceVPCIPv6(t *testing.T) {
+	t.Parallel()
+
+	dataSourceName := "data.linode_instances.foobar"
+	instanceName := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(64)
+
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
+
+	ipv6Path := tfjsonpath.New("instances").
+		AtSliceIndex(0).
+		AtMapKey("config").
+		AtSliceIndex(0).
+		AtMapKey("interface").
+		AtSliceIndex(0).
+		AtMapKey("ipv6").
+		AtSliceIndex(0)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataInterfacesVPCIPv6(
+					t,
+					instanceName,
+					targetRegion,
+					rootPass,
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						ipv6Path.AtMapKey("slaac"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("address"),
+						knownvalue.NotNull(),
+					),
+
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						ipv6Path.AtMapKey("range"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						ipv6Path.
+							AtMapKey("range").
+							AtSliceIndex(0).
+							AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						ipv6Path.
+							AtMapKey("range").
+							AtSliceIndex(0).
+							AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+				},
+			},
+		},
+	})
+}

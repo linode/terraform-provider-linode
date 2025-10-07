@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/linode/linodego"
 )
 
 // AddRootCAToTransport applies the cert file at the given path to the given *http.Transport
@@ -30,4 +32,21 @@ func AddRootCAToTransport(cert string, transport *http.Transport) error {
 	tlsConfig.RootCAs.AppendCertsFromPEM(certData)
 
 	return nil
+}
+
+// NotFoundDefault wraps the given inner function, returning the given fallback
+// value if it returns a linodego 404 error.
+func NotFoundDefault[T any](inner func() (T, error), fallback T) (T, error) {
+	result, err := inner()
+	if linodego.IsNotFound(err) {
+		return fallback, nil
+	}
+
+	return result, err
+}
+
+// NotFoundDefaultSlice functions the same as NotFoundDefault but uses an empty slice
+// as a fallback.
+func NotFoundDefaultSlice[T any](inner func() ([]T, error)) ([]T, error) {
+	return NotFoundDefault(inner, nil)
 }

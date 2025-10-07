@@ -2839,6 +2839,288 @@ func TestAccResourceInstance_interfaceGenerationLinode(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_interfaceVPCIPv6(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(64)
+
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
+
+	ipv6Path := tfjsonpath.New("interface").
+		AtSliceIndex(0).
+		AtMapKey("ipv6").
+		AtSliceIndex(0)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.InterfacesVPCIPv60(
+					t,
+					instanceName,
+					targetRegion,
+					rootPass,
+				),
+				Check: acceptance.CheckInstanceExists(resName, &instance),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("is_public"),
+						knownvalue.Bool(false),
+					),
+
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("slaac"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("address"),
+						knownvalue.NotNull(),
+					),
+
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range").
+							AtSliceIndex(0).
+							AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range").
+							AtSliceIndex(0).
+							AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+				},
+			},
+			{
+				Config: tmpl.InterfacesVPCIPv61(
+					t,
+					instanceName,
+					targetRegion,
+					rootPass,
+				),
+				Check: acceptance.CheckInstanceExists(resName, &instance),
+				ConfigStateChecks: []statecheck.StateCheck{
+					// interface[0].ipv6[0] public flag
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("is_public"),
+						knownvalue.Bool(true),
+					),
+
+					// slaac block (exactly one) with fields
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("slaac"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("slaac").
+							AtSliceIndex(0).
+							AtMapKey("address"),
+						knownvalue.NotNull(),
+					),
+
+					// range list (exactly two) with fields
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range"),
+						knownvalue.ListSizeExact(2),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range").
+							AtSliceIndex(0).
+							AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range").
+							AtSliceIndex(0).
+							AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range").
+							AtSliceIndex(1).
+							AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.
+							AtMapKey("range").
+							AtSliceIndex(1).
+							AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+				},
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "interface", "firewall_id"},
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_configInterfaceVPCIPv6(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(64)
+
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
+
+	ipv6Path := tfjsonpath.New("config").
+		AtSliceIndex(0).
+		AtMapKey("interface").
+		AtSliceIndex(0).
+		AtMapKey("ipv6").
+		AtSliceIndex(0)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ConfigInterfacesVPCIPv6(
+					t,
+					instanceName,
+					targetRegion,
+					rootPass,
+				),
+				Check: acceptance.CheckInstanceExists(resName, &instance),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("slaac"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("slaac").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("slaac").AtSliceIndex(0).AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("slaac").AtSliceIndex(0).AtMapKey("address"),
+						knownvalue.NotNull(),
+					),
+
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("range"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("range").AtSliceIndex(0).AtMapKey("assigned_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						ipv6Path.AtMapKey("range").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						// There seems to be a bug that causes reusing a path
+						// to break bool checks under certain conditions.
+						tfjsonpath.New("config").
+							AtSliceIndex(0).
+							AtMapKey("interface").
+							AtSliceIndex(0).
+							AtMapKey("ipv6").
+							AtSliceIndex(0).
+							AtMapKey("is_public"),
+						knownvalue.Bool(true),
+					),
+				},
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "interface", "firewall_id"},
+			},
+		},
+	})
+}
+
 func checkInstancePrivateNetworkAttributes(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

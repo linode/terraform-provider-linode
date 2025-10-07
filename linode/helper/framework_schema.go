@@ -9,6 +9,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+func EmptyListDefault(elemType attr.Type) defaults.List {
+	return listdefault.StaticValue(
+		types.ListValueMust(
+			elemType,
+			[]attr.Value{},
+		),
+	)
+}
+
 func EmptySetDefault(elemType attr.Type) defaults.Set {
 	return setdefault.StaticValue(
 		types.SetValueMust(
