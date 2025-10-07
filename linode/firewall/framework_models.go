@@ -145,7 +145,7 @@ func (data *FirewallResourceModel) getCreateOptions(
 
 	createOpts.Devices.Interfaces = helper.ExpandFwInt64Set(data.Interfaces, diags)
 	if diags.HasError() {
-		return
+		return createOpts
 	}
 
 	createOpts.Rules = data.ExpandFirewallRuleSet(ctx, diags)

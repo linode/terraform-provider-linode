@@ -93,6 +93,65 @@ func TestAccDataSourceVPCSubnets_basic_smoke(t *testing.T) {
 	})
 }
 
+func TestAccDataSourceVPCSubnets_dualStack(t *testing.T) {
+	t.Parallel()
+
+	resourceName := "data.linode_vpc_subnets.foobar"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataDualStack(t, vpcLabel, targetRegion, "10.0.0.0/24"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("label"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("ipv4"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("created"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("updated"),
+						knownvalue.NotNull(),
+					),
+
+					// ipv6 nested block assertions
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("ipv6"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("ipv6").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+				},
+			},
+		},
+	})
+}
+
 func TestAccDataSourceVPCSubnets_filterByLabel(t *testing.T) {
 	t.Parallel()
 

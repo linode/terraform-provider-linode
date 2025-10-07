@@ -17,6 +17,40 @@ type BaseModel struct {
 	Mode           types.String `tfsdk:"mode"`
 	Address        types.String `tfsdk:"address"`
 	Status         types.String `tfsdk:"status"`
+	SubnetID       types.Int64  `tfsdk:"subnet_id"`
+	VPCConfigID    types.Int64  `tfsdk:"vpc_config_id"`
+}
+
+func (data *BaseModel) Flatten(
+	node *linodego.NodeBalancerNode,
+	vpcConfig *linodego.NodeBalancerVPCConfig,
+	preserveKnown bool,
+) (diags diag.Diagnostics) {
+	data.NodeBalancerID = helper.KeepOrUpdateInt64(data.NodeBalancerID, int64(node.NodeBalancerID), preserveKnown)
+	data.ConfigID = helper.KeepOrUpdateInt64(data.ConfigID, int64(node.ConfigID), preserveKnown)
+	data.Label = helper.KeepOrUpdateString(data.Label, node.Label, preserveKnown)
+	data.Weight = helper.KeepOrUpdateInt64(data.Weight, int64(node.Weight), preserveKnown)
+	data.Mode = helper.KeepOrUpdateString(data.Mode, string(node.Mode), preserveKnown)
+	data.Address = helper.KeepOrUpdateString(data.Address, node.Address, preserveKnown)
+	data.Status = helper.KeepOrUpdateString(data.Status, node.Status, preserveKnown)
+
+	if vpcConfig != nil {
+		data.SubnetID = helper.KeepOrUpdateValue(
+			data.SubnetID,
+			types.Int64Value(int64(vpcConfig.SubnetID)),
+			preserveKnown,
+		)
+		data.VPCConfigID = helper.KeepOrUpdateValue(
+			data.VPCConfigID,
+			types.Int64Value(int64(vpcConfig.ID)),
+			preserveKnown,
+		)
+	} else {
+		data.SubnetID = helper.KeepOrUpdateValue(data.SubnetID, types.Int64Null(), preserveKnown)
+		data.VPCConfigID = helper.KeepOrUpdateValue(data.SubnetID, types.Int64Null(), preserveKnown)
+	}
+
+	return diags
 }
 
 type DataSourceModel struct {
@@ -24,15 +58,14 @@ type DataSourceModel struct {
 	BaseModel
 }
 
-func (data *DataSourceModel) ParseNodeBalancerNode(nbnode *linodego.NodeBalancerNode) {
-	data.ID = types.Int64Value(int64(nbnode.ID))
-	data.NodeBalancerID = types.Int64Value(int64(nbnode.NodeBalancerID))
-	data.ConfigID = types.Int64Value(int64(nbnode.ConfigID))
-	data.Label = types.StringValue(nbnode.Label)
-	data.Weight = types.Int64Value(int64(nbnode.Weight))
-	data.Mode = types.StringValue(string(nbnode.Mode))
-	data.Address = types.StringValue(nbnode.Address)
-	data.Status = types.StringValue(nbnode.Status)
+func (data *DataSourceModel) Flatten(
+	node *linodego.NodeBalancerNode,
+	vpcConfig *linodego.NodeBalancerVPCConfig,
+) (diags diag.Diagnostics) {
+	data.ID = helper.KeepOrUpdateInt64(data.ID, int64(node.ID), false)
+	diags.Append(data.BaseModel.Flatten(node, vpcConfig, false)...)
+
+	return diags
 }
 
 // TODO: consider merging two models when resource's ID change to int type
@@ -41,17 +74,15 @@ type ResourceModel struct {
 	BaseModel
 }
 
-func (data *ResourceModel) FlattenNodeBalancerNode(
-	nbnode *linodego.NodeBalancerNode, preserveKnown bool,
-) {
-	data.ID = helper.KeepOrUpdateString(data.ID, strconv.Itoa(nbnode.ID), preserveKnown)
-	data.NodeBalancerID = helper.KeepOrUpdateInt64(data.NodeBalancerID, int64(nbnode.NodeBalancerID), preserveKnown)
-	data.ConfigID = helper.KeepOrUpdateInt64(data.ConfigID, int64(nbnode.ConfigID), preserveKnown)
-	data.Label = helper.KeepOrUpdateString(data.Label, nbnode.Label, preserveKnown)
-	data.Weight = helper.KeepOrUpdateInt64(data.Weight, int64(nbnode.Weight), preserveKnown)
-	data.Mode = helper.KeepOrUpdateString(data.Mode, string(nbnode.Mode), preserveKnown)
-	data.Address = helper.KeepOrUpdateString(data.Address, nbnode.Address, preserveKnown)
-	data.Status = helper.KeepOrUpdateString(data.Status, nbnode.Status, preserveKnown)
+func (data *ResourceModel) Flatten(
+	node *linodego.NodeBalancerNode,
+	vpcConfig *linodego.NodeBalancerVPCConfig,
+	preserveKnown bool,
+) (diags diag.Diagnostics) {
+	data.ID = helper.KeepOrUpdateString(data.ID, strconv.Itoa(node.ID), preserveKnown)
+	diags.Append(data.BaseModel.Flatten(node, vpcConfig, preserveKnown)...)
+
+	return nil
 }
 
 func (data *ResourceModel) GetIDs(diags *diag.Diagnostics) (int, int, int) {
@@ -70,11 +101,14 @@ func (data *ResourceModel) GetCreateParameters(diags *diag.Diagnostics) (int, in
 
 func (plan *ResourceModel) GetCreateOptions(diags *diag.Diagnostics) linodego.NodeBalancerNodeCreateOptions {
 	weight := helper.FrameworkSafeInt64ToInt(plan.Weight.ValueInt64(), diags)
+	subnetID := helper.FrameworkSafeInt64ToInt(plan.SubnetID.ValueInt64(), diags)
+
 	return linodego.NodeBalancerNodeCreateOptions{
-		Address: plan.Address.ValueString(),
-		Label:   plan.Label.ValueString(),
-		Weight:  weight,
-		Mode:    linodego.NodeMode(plan.Mode.ValueString()),
+		Address:  plan.Address.ValueString(),
+		Label:    plan.Label.ValueString(),
+		Weight:   weight,
+		Mode:     linodego.NodeMode(plan.Mode.ValueString()),
+		SubnetID: subnetID,
 	}
 }
 
@@ -113,4 +147,6 @@ func (plan *ResourceModel) CopyFrom(state ResourceModel, preserveKnown bool) {
 	plan.Mode = helper.KeepOrUpdateValue(plan.Mode, state.Mode, preserveKnown)
 	plan.Address = helper.KeepOrUpdateValue(plan.Address, state.Address, preserveKnown)
 	plan.Status = helper.KeepOrUpdateValue(plan.Status, state.Status, preserveKnown)
+	plan.SubnetID = helper.KeepOrUpdateValue(plan.SubnetID, state.SubnetID, preserveKnown)
+	plan.VPCConfigID = helper.KeepOrUpdateValue(plan.VPCConfigID, state.VPCConfigID, preserveKnown)
 }

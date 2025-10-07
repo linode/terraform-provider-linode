@@ -75,7 +75,6 @@ func TestParseUserGrants(t *testing.T) {
 			AddLinodes:           true,
 			AddLongview:          true,
 			AddNodeBalancers:     true,
-			AddPlacementGroups:   true,
 			AddStackScripts:      true,
 			AddVolumes:           true,
 			AddVPCs:              true,

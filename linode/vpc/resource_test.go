@@ -12,7 +12,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -126,6 +129,91 @@ func TestAccResourceVPC_update(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"updated"},
+			},
+		},
+	})
+}
+
+func TestAccResourceVPC_dualStack(t *testing.T) {
+	t.Parallel()
+	resName := "linode_vpc.foobar"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+
+	// TODO (VPC Dual Stack): Remove region hardcoding
+	targetRegion := "no-osl-1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DualStack(t, vpcLabel, targetRegion),
+				Check:  checkVPCExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(vpcLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("allocated_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("created"),
+						knownvalue.NotNull(),
+					),
+				},
+			},
+			{
+				Config: tmpl.DualStack(t, vpcLabel, targetRegion),
+				Check:  checkVPCExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(vpcLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("allocated_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("created"),
+						knownvalue.NotNull(),
+					),
+				},
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "ipv6.0.range"},
 			},
 		},
 	})

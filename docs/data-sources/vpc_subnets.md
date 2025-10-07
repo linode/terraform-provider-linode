@@ -60,9 +60,19 @@ Each Linode VPC subnet will be stored in the `vpc_subnets` attribute and will ex
     * `config_id` - ID of Linode Config that the interface is associated with. `null` for a Linode Interface.
     * `active` - Whether the Interface is actively in use.
 
+* [`ipv6`](#ipv6) - A list of IPv6 ranges under this subnet.
+
 * `created` - The date and time when the VPC Subnet was created.
 
 * `updated` - The date and time when the VPC Subnet was last updated.
+
+## IPv6
+
+-> **Limited Availability** IPv6 VPCs may not currently be available to all users.
+
+The following attributes are exported under each entry of the `ipv6` field:
+
+* `range` - An IPv6 range allocated to this subnet in CIDR format.
 
 ## Filterable Fields
 

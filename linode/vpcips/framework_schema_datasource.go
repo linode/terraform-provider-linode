@@ -5,6 +5,16 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
 
+var DataSourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"slaac_address": schema.StringAttribute{
+			Description: "The specific address within the prefix that the " +
+				"interface is expected to autoconfigure through SLAAC",
+			Computed: true,
+		},
+	},
+}
+
 var VPCIPAttrs = map[string]schema.Attribute{
 	"address": schema.StringAttribute{
 		Description: "An IPv4 address configured for this VPC interface. These follow the RFC 1918 private address format. Displayed as null if an address_range.",
@@ -58,14 +68,30 @@ var VPCIPAttrs = map[string]schema.Attribute{
 		Description: "Returns true if the VPC interface is in use, meaning that the Linode was powered on using the config_id to which the interface belongs. Otherwise returns false",
 		Computed:    true,
 	},
+
+	"ipv6_range": schema.StringAttribute{
+		Description: "The /64 prefix, in CIDR notation, assigned to an interface.",
+		Computed:    true,
+	},
+	"ipv6_is_public": schema.BoolAttribute{
+		Description: "The is_public setting for the interface associated with this address.",
+		Computed:    true,
+	},
+	"ipv6_addresses": schema.SetNestedAttribute{
+		Description:  "The addresses within the prefix that the interface is associated with.",
+		Computed:     true,
+		NestedObject: DataSourceSchemaIPv6NestedObject,
+	},
 }
 
 var filterConfig = frameworkfilter.Config{
-	"active":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
-	"config_id": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
-	"linode_id": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
-	"region":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"vpc_id":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"active":         {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
+	"config_id":      {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"linode_id":      {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"region":         {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"vpc_id":         {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"ipv6_range":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"ipv6_is_public": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
 }
 
 var frameworkDataSourceSchema = schema.Schema{
@@ -76,6 +102,10 @@ var frameworkDataSourceSchema = schema.Schema{
 		},
 		"vpc_id": schema.Int64Attribute{
 			Description: "The ID of the VPC that the list of IP addresses is associated with.",
+			Optional:    true,
+		},
+		"ipv6": schema.BoolAttribute{
+			Description: "If true, only IPv6 addresses will be returned by this data source.",
 			Optional:    true,
 		},
 	},

@@ -1,0 +1,63 @@
+{{ define "vpc_ips_data_dual_stack" }}
+
+{{ template "e2e_test_firewall" . }}
+
+# Create a test vpc with a subnet containing a linode instance
+resource "linode_vpc" "foobar" {
+    label  = "{{.Label}}-1"
+    region = "{{.Region}}"
+
+    ipv6 = [
+        {
+            range = "auto"
+        }
+    ]
+}
+
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = linode_vpc.foobar.id
+    label  = "{{.Label}}-subnet-label-1"
+    ipv4   = "{{.IPv4_1}}"
+
+    ipv6 = [
+        {
+            range = "auto"
+        }
+    ]
+}
+
+resource "linode_instance" "foobar" {
+    label  = "{{.Label}}-1"
+    region = "{{.Region}}"
+    type   = "g6-nanode-1"
+}
+
+resource "linode_instance_config" "foobar" {
+    linode_id = linode_instance.foobar.id
+    label     = "test-config-1"
+
+    interface {
+        purpose   = "vpc"
+        subnet_id = linode_vpc_subnet.foobar.id
+    }
+}
+
+data "linode_vpc_ips" "scoped" {
+    depends_on = [linode_instance_config.foobar]
+
+    vpc_id = linode_vpc.foobar.id
+    ipv6   = true
+}
+
+data "linode_vpc_ips" "all" {
+    depends_on = [linode_instance_config.foobar]
+
+    ipv6 = true
+
+    filter {
+        name = "linode_id"
+        values = [linode_instance.foobar.id]
+    }
+}
+
+{{ end}}

@@ -34,7 +34,7 @@ func (fsds *FirewallSettingsModel) GetUpdateOptions(
 	})...)
 
 	if diags.HasError() {
-		return
+		return opts
 	}
 
 	shouldUpdateDefaultFirewallIDs := false
@@ -68,14 +68,14 @@ func (fsds *FirewallSettingsModel) GetUpdateOptions(
 	}
 
 	if diags.HasError() {
-		return
+		return opts
 	}
 
 	if shouldUpdateDefaultFirewallIDs {
 		opts.DefaultFirewallIDs = &defaultFirewallIDs
 	}
 
-	return
+	return opts
 }
 
 func (fsds *FirewallSettingsModel) FlattenFirewallSettings(

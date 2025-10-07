@@ -1,0 +1,12 @@
+{{ define "vpcs_data_dual_stack" }}
+
+{{ template "vpc_dual_stack" . }}
+
+data "linode_vpcs" "foobar" {
+    filter {
+        name = "id"
+        values = [linode_vpc.foobar.id]
+    }
+}
+
+{{ end }}
