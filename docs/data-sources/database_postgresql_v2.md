@@ -199,7 +199,7 @@ The following arguments are supported in the `updates` specification block:
 
 ## private_network
 
-The following arguments exposed by the `private_network` attribute:
+The following arguments are exposed by the `private_network` attribute:
 
 * `vpc_id` - The ID of the virtual private cloud (VPC) to restrict access to this database using.
 
