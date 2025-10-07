@@ -50,7 +50,7 @@ var VolumeAttributes = map[string]schema.Attribute{
 	},
 	"encryption": schema.StringAttribute{
 		Description: "Whether Block Storage Disk Encryption is enabled or disabled on this Volume.",
-		Computed: true,
+		Computed:    true,
 	},
 }
 
