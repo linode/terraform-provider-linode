@@ -166,7 +166,6 @@ resource "linode_interface" "public" {
 }
 ```
 
-
 ## Argument Reference
 
 The following arguments are supported:
