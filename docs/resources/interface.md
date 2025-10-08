@@ -6,9 +6,9 @@ description: |-
 
 # linode\_interface
 
-Provides a Linode Interface resource. This can be used to create, modify, and delete network interfaces for Linode instances. Interfaces allow you to configure public, VLAN, and VPC networking for your Linode instances.
+Provides a Linode Interface resource that can be used to create, modify, and delete network interfaces for Linode instances. Interfaces allow you to configure public, VLAN, and VPC networking for your Linode instances.
 
-This resource is for Linode interfaces only, and if you are interested in deploying a Linode instance with legacy config interface, you can checkout the doc for `linode_instance_config` resource for details.
+This resource is specifically for Linode interfaces. If you are interested in deploying a Linode instance with a legacy config interface, please refer to the `linode_instance_config` resource documentation for details.
 
 This resource is designed to work with explicitly defined disk and config resources for the Linode instance. See the [Complete Example with Linode](#complete-example-with-linode) section below for details.
 
@@ -120,8 +120,8 @@ resource "linode_instance" "my-instance" {
 
 resource "linode_instance_config" "my-config" {
 
-  # this is necessary to ensure the interface is created
-  # before the config being booted with the Linode instance
+  # This is necessary to ensure the interface is created
+  # before the config is booted with the Linode instance
   depends_on = [linode_interface.public]
 
   linode_id = linode_instance.my-instance.id
@@ -172,17 +172,17 @@ The following arguments are supported:
 
 * `linode_id` - (Required) The ID of the Linode to assign this interface to.
 
-* `firewall_id` - (Optional) ID of an enabled firewall to secure a VPC or public interface. Not allowed for VLAN interfaces.
+* `firewall_id` - (Optional) The ID of an enabled firewall to secure a VPC or public interface. Not allowed for VLAN interfaces.
 
-* `default_route` - (Optional) Indicates if the interface serves as the default route when multiple interfaces are eligible for this role.
+* `default_route` - (Optional) Indicates whether the interface serves as the default route when multiple interfaces are eligible for this role.
 
-  * `ipv4` - (Optional) If set to true, the interface is used for the IPv4 default route.
+  * `ipv4` - (Optional) When set to true, the interface is used for the IPv4 default route.
 
-  * `ipv6` - (Optional) If set to true, the interface is used for the IPv6 default route.
+  * `ipv6` - (Optional) When set to true, the interface is used for the IPv6 default route.
 
-* `public` - (Optional) Nested attributes object for a Linode public interface. Exactly one of `public`, `vlan`, or `vpc` must be specified.
+* `public` - (Optional) Configuration for a Linode public interface. Exactly one of `public`, `vlan`, or `vpc` must be specified.
 
-  * `ipv4` - (Optional) IPv4 addresses for this interface.
+  * `ipv4` - (Optional) IPv4 configuration for this interface.
 
     * `addresses` - (Optional) IPv4 addresses configured for this Linode interface. Each object in this list supports:
 
@@ -190,9 +190,9 @@ The following arguments are supported:
 
       * `primary` - (Optional) Whether this address is the primary address for the interface.
 
-  * `ipv6` - (Optional) IPv6 addresses for this interface.
+  * `ipv6` - (Optional) IPv6 configuration for this interface.
 
-    * `ranges` - (Optional) Configured IPv6 range in CIDR notation (2600:0db8::1/64) or prefix-only (/64). Each object in this list supports:
+    * `ranges` - (Optional) IPv6 ranges in CIDR notation (2600:0db8::1/64) or prefix-only (/64). Each object in this list supports:
 
       * `range` - (Required) The IPv6 range.
 
@@ -200,7 +200,7 @@ The following arguments are supported:
 
 * `vlan` - (Optional) Nested attributes object for a Linode VLAN interface. Exactly one of `public`, `vlan`, or `vpc` must be specified.
 
-  * `ipam_address` - (Optional) This VLAN interface's private IPv4 address in classless inter-domain routing (CIDR) notation.
+  * `ipam_address` - (Optional) The VLAN interface's private IPv4 address in CIDR notation.
 
   * `vlan_label` - (Required) The VLAN's unique label. Must be between 1 and 64 characters.
 
@@ -218,7 +218,7 @@ The following arguments are supported:
 
       * `nat_1_1_address` - (Optional) The 1:1 NAT IPv4 address used to associate a public IPv4 address with the interface's VPC subnet IPv4 address.
 
-    * `ranges` - (Optional) CIDR notation of a range (1.2.3.4/24) or prefix only (/24). Each object in this list supports:
+    * `ranges` - (Optional) IPv4 ranges in CIDR notation (1.2.3.4/24) or prefix-only format (/24). Each object in this list supports:
 
       * `range` - (Required) The IPv4 range.
 
@@ -232,13 +232,13 @@ In addition to all arguments above, the following attributes are exported:
 
   * `ipv4` - IPv4 configuration for the public interface:
 
-    * `assigned_addresses` - (Computed) The IPv4 address exclusively assigned to this Linode interface. Each object in this set supports:
+    * `assigned_addresses` - (Computed) The IPv4 addresses exclusively assigned to this Linode interface. Each object in this set supports:
 
       * `address` - The assigned IPv4 address.
 
       * `primary` - Whether this address is the primary address for the interface.
 
-    * `shared` - (Computed) The IPv4 address assigned to this Linode interface, which is also shared with another Linode. Each object in this set supports:
+    * `shared` - (Computed) The IPv4 addresses assigned to this Linode interface that are also shared with another Linode. Each object in this set supports:
 
       * `address` - The shared IPv4 address.
 
@@ -252,7 +252,7 @@ In addition to all arguments above, the following attributes are exported:
 
       * `route_target` - The public IPv6 address that the range is routed to.
 
-    * `shared` - (Computed) The IPv6 address assigned to this Linode interface, which is also shared with another Linode. Each object in this set supports:
+    * `shared` - (Computed) The IPv6 ranges assigned to this Linode interface that are also shared with another Linode. Each object in this set supports:
 
       * `range` - The shared IPv6 range.
 
@@ -268,7 +268,7 @@ In addition to all arguments above, the following attributes are exported:
 
   * `ipv4` - IPv4 configuration for the VPC interface:
 
-    * `assigned_addresses` - (Computed) Assigned IPv4 addresses to use in the VPC subnet, calculated from `addresses` input. Each object in this set supports:
+    * `assigned_addresses` - (Computed) The IPv4 addresses assigned for use in the VPC subnet, calculated from the `addresses` input. Each object in this set supports:
 
       * `address` - The assigned IPv4 address.
 
@@ -276,7 +276,7 @@ In addition to all arguments above, the following attributes are exported:
 
       * `nat_1_1_address` - The assigned 1:1 NAT IPv4 address used to associate a public IPv4 address with the interface's VPC subnet IPv4 address.
 
-    * `assigned_ranges` - (Computed) Assigned IPv4 ranges to use in the VPC subnet, calculated from `ranges` input. Each object in this set supports:
+    * `assigned_ranges` - (Computed) The IPv4 ranges assigned for use in the VPC subnet, calculated from the `ranges` input. Each object in this set supports:
 
       * `range` - The assigned IPv4 range.
 
@@ -293,5 +293,5 @@ terraform import linode_interface.example 67890,12345
 * Each Linode instance can have up to 3 network interfaces.
 * VLAN interfaces cannot be updated after creation and require recreation.
 * VPC subnet IDs cannot be changed after interface creation.
-* Firewall IDs are only supported for public and VPC interfaces, not VLAN interfaces.
-* When configuring multiple interfaces, use `default_route` to specify which interface should handle default routing.
+* Firewall IDs are only supported for public and VPC interfaces, not for VLAN interfaces.
+* When configuring multiple interfaces, use the `default_route` setting to specify which interface should handle default routing.
