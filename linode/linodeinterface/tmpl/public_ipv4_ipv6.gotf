@@ -14,7 +14,7 @@ resource "linode_interface" "test" {
         ipv4 = {
             addresses = [
                 {
-                    address = "auto"
+                    address = "{{.IPv4Address}}"
                     primary = true
                 }
             ]
@@ -22,7 +22,7 @@ resource "linode_interface" "test" {
         ipv6 = {
             ranges = [
                 {
-                    range = "/64"
+                    range = "{{.IPv6Range}}"
                 }
             ]
         }

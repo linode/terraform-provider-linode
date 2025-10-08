@@ -105,6 +105,12 @@ func TestAccLinodeInterface_vlan_basic(t *testing.T) {
 				},
 				Check: checkInterfaceExists,
 			},
+			{
+				ResourceName:      testInterfaceResName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: importStateID,
+			},
 		},
 	})
 }
@@ -147,6 +153,13 @@ func TestAccLinodeInterface_public_basic(t *testing.T) {
 				},
 				Check: checkInterfaceExists,
 			},
+			{
+				ResourceName:            testInterfaceResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importStateID,
+				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges"},
+			},
 		},
 	})
 }
@@ -162,7 +175,7 @@ func TestAccLinodeInterface_public_ipv4_ipv6(t *testing.T) {
 		CheckDestroy:             checkInterfaceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: linodeinstancetmpl.ProviderNoPoll(t) + tmpl.PublicWithIPv4AndIPv6(t, label, testRegion),
+				Config: linodeinstancetmpl.ProviderNoPoll(t) + tmpl.PublicWithIPv4AndIPv6(t, label, testRegion, "auto", "/64"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("linode_id"), knownvalue.NotNull()),
@@ -203,6 +216,13 @@ func TestAccLinodeInterface_public_ipv4_ipv6(t *testing.T) {
 					),
 				},
 				Check: checkInterfaceExists,
+			},
+			{
+				ResourceName:            testInterfaceResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importStateID,
+				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges"},
 			},
 		},
 	})
@@ -255,6 +275,13 @@ func TestAccLinodeInterface_public_ipv6_only(t *testing.T) {
 				},
 				Check: checkInterfaceExists,
 			},
+			{
+				ResourceName:            testInterfaceResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importStateID,
+				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges"},
+			},
 		},
 	})
 }
@@ -270,7 +297,7 @@ func TestAccLinodeInterface_public_update_addresses(t *testing.T) {
 		CheckDestroy:             checkInterfaceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: linodeinstancetmpl.ProviderNoPoll(t) + tmpl.PublicWithIPv4(t, label, testRegion),
+				Config: linodeinstancetmpl.ProviderNoPoll(t) + tmpl.PublicWithIPv4AndIPv6(t, label, testRegion, "auto", "/64"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("linode_id"), knownvalue.NotNull()),
@@ -289,11 +316,21 @@ func TestAccLinodeInterface_public_update_addresses(t *testing.T) {
 						tfjsonpath.New("public").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("primary"),
 						knownvalue.Bool(true),
 					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("public").AtMapKey("ipv6").AtMapKey("ranges"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("public").AtMapKey("ipv6").AtMapKey("ranges").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.StringExact("/64"),
+					),
 				},
 				Check: checkInterfaceExists,
 			},
 			{
-				Config: linodeinstancetmpl.ProviderNoPoll(t) + tmpl.PublicUpdatedIPv4(t, label, testRegion),
+				Config: linodeinstancetmpl.ProviderNoPoll(t) + tmpl.PublicUpdatedIPv4AndIPv6(t, label, testRegion, "auto", "auto", "/64", "/64"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("linode_id"), knownvalue.NotNull()),
@@ -340,6 +377,13 @@ func TestAccLinodeInterface_public_update_addresses(t *testing.T) {
 				},
 				Check: checkInterfaceExists,
 			},
+			{
+				ResourceName:            testInterfaceResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importStateID,
+				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges"},
+			},
 		},
 	})
 }
@@ -363,6 +407,13 @@ func TestAccLinodeInterface_vpc_basic(t *testing.T) {
 				},
 				Check: checkInterfaceExists,
 			},
+			{
+				ResourceName:            testInterfaceResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importStateID,
+				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses"},
+			},
 		},
 	})
 }
@@ -378,7 +429,7 @@ func TestAccLinodeInterface_vpc_with_ipv4(t *testing.T) {
 		CheckDestroy:             checkInterfaceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: linodeinstancetmpl.ProviderNoPoll(t) + tmpl.VPCWithIPv4(t, label, testRegion, "10.0.0.0/24"),
+				Config: linodeinstancetmpl.ProviderNoPoll(t) + tmpl.VPCWithIPv4(t, label, testRegion, "10.0.0.0/24", "auto"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("linode_id"), knownvalue.NotNull()),
@@ -406,12 +457,18 @@ func TestAccLinodeInterface_vpc_with_ipv4(t *testing.T) {
 				},
 				Check: checkInterfaceExists,
 			},
+			{
+				ResourceName:            testInterfaceResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importStateID,
+				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses"},
+			},
 		},
 	})
 }
 
 func TestAccLinodeInterface_vpc_update_ipv4(t *testing.T) {
-	t.Skip("Backend issue prevents adding additional IPv4 addresses to VPC interfaces")
 	t.Parallel()
 
 	label := acctest.RandomWithPrefix("tf-test")
@@ -422,34 +479,64 @@ func TestAccLinodeInterface_vpc_update_ipv4(t *testing.T) {
 		CheckDestroy:             checkInterfaceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: linodeinstancetmpl.ProviderNoPoll(t) + tmpl.VPCWithIPv4(t, label, testRegion, "10.0.0.0/24"),
-				Check: resource.ComposeTestCheckFunc(
-					checkInterfaceExists,
-					resource.TestCheckResourceAttrSet(testInterfaceResName, "id"),
-					resource.TestCheckResourceAttrSet(testInterfaceResName, "linode_id"),
-					resource.TestCheckResourceAttrSet(testInterfaceResName, "vpc.subnet_id"),
-					resource.TestCheckResourceAttr(testInterfaceResName, "vpc.ipv4.addresses.#", "1"),
-					resource.TestCheckResourceAttr(testInterfaceResName, "vpc.ipv4.addresses.0.address", "auto"),
-					resource.TestCheckResourceAttr(testInterfaceResName, "vpc.ipv4.addresses.0.primary", "true"),
-				),
+				Config: linodeinstancetmpl.ProviderNoPoll(t) + tmpl.VPCWithIPv4(t, label, testRegion, "10.0.0.0/24", "auto"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("linode_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("vpc").AtMapKey("subnet_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv4").AtMapKey("addresses"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("address"),
+						knownvalue.StringExact("auto"),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("primary"),
+						knownvalue.Bool(true),
+					),
+				},
+				Check: checkInterfaceExists,
 			},
 			{
-				Config: linodeinstancetmpl.ProviderNoPoll(t) + tmpl.VPCUpdatedIPv4(t, label, testRegion, "10.0.0.0/24"),
-				Check: resource.ComposeTestCheckFunc(
-					checkInterfaceExists,
-					resource.TestCheckResourceAttrSet(testInterfaceResName, "id"),
-					resource.TestCheckResourceAttrSet(testInterfaceResName, "linode_id"),
-					resource.TestCheckResourceAttrSet(testInterfaceResName, "vpc.subnet_id"),
-					resource.TestCheckResourceAttr(testInterfaceResName, "vpc.ipv4.addresses.#", "2"),
-					resource.TestCheckResourceAttr(testInterfaceResName, "vpc.ipv4.addresses.0.address", "auto"),
-					resource.TestCheckResourceAttr(testInterfaceResName, "vpc.ipv4.addresses.0.primary", "true"),
-					resource.TestCheckResourceAttr(testInterfaceResName, "vpc.ipv4.addresses.1.address", "auto"),
-					resource.TestCheckResourceAttr(testInterfaceResName, "vpc.ipv4.addresses.1.primary", "false"),
-					resource.TestCheckResourceAttr(testInterfaceResName, "vpc.ipv4.ranges.#", "1"),
-					resource.TestCheckResourceAttr(testInterfaceResName, "vpc.ipv4.ranges.0.range", "/32"),
-					resource.TestCheckResourceAttrSet(testInterfaceResName, "vpc.ipv4.assigned_addresses.#"),
-					resource.TestCheckResourceAttrSet(testInterfaceResName, "vpc.ipv4.assigned_ranges.#"),
-				),
+				Config: linodeinstancetmpl.ProviderNoPoll(t) + tmpl.VPCWithIPv4(t, label, testRegion, "10.0.0.0/24", "10.0.0.100"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("linode_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("vpc").AtMapKey("subnet_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv4").AtMapKey("addresses"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("address"),
+						knownvalue.StringExact("10.0.0.100"),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("primary"),
+						knownvalue.Bool(true),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv4").AtMapKey("assigned_addresses"),
+						knownvalue.NotNull(),
+					),
+				},
+				Check: checkInterfaceExists,
+			},
+			{
+				ResourceName:            testInterfaceResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importStateID,
+				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses"},
 			},
 		},
 	})
@@ -475,6 +562,13 @@ func TestAccLinodeInterface_public_default_route(t *testing.T) {
 				},
 				Check: checkInterfaceExists,
 			},
+			{
+				ResourceName:            testInterfaceResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importStateID,
+				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges"},
+			},
 		},
 	})
 }
@@ -499,6 +593,13 @@ func TestAccLinodeInterface_vpc_default_route(t *testing.T) {
 					// VPC interfaces don't support IPv6, so we don't expect ipv6 field to be set
 				},
 				Check: checkInterfaceExists,
+			},
+			{
+				ResourceName:            testInterfaceResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importStateID,
+				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses"},
 			},
 		},
 	})
@@ -609,6 +710,13 @@ func TestAccLinodeInterface_vpc_default_ip(t *testing.T) {
 				},
 				Check: checkInterfaceExists,
 			},
+			{
+				ResourceName:            testInterfaceResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importStateID,
+				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses"},
+			},
 		},
 	})
 }
@@ -630,6 +738,13 @@ func TestAccLinodeInterface_public_default_ip(t *testing.T) {
 					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("linode_id"), knownvalue.NotNull()),
 				},
 				Check: checkInterfaceExists,
+			},
+			{
+				ResourceName:            testInterfaceResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importStateID,
+				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges"},
 			},
 		},
 	})
@@ -655,6 +770,13 @@ func TestAccLinodeInterface_public_empty_ip_objects(t *testing.T) {
 					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("public").AtMapKey("ipv6"), knownvalue.NotNull()),
 				},
 				Check: checkInterfaceExists,
+			},
+			{
+				ResourceName:            testInterfaceResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importStateID,
+				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges"},
 			},
 		},
 	})
@@ -682,6 +804,31 @@ func TestAccLinodeInterface_vpc_empty_ip_objects(t *testing.T) {
 				},
 				Check: checkInterfaceExists,
 			},
+			{
+				ResourceName:            testInterfaceResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importStateID,
+				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses"},
+			},
 		},
 	})
+}
+
+func importStateID(s *terraform.State) (string, error) {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_interface" {
+			continue
+		}
+
+		linodeID := rs.Primary.Attributes["linode_id"]
+		id := rs.Primary.ID
+		if linodeID == "" || id == "" {
+			return "", fmt.Errorf("The id %q or linode_id %q is not set correctly", id, linodeID)
+		}
+
+		return fmt.Sprintf("%s,%s", linodeID, id), nil
+	}
+
+	return "", fmt.Errorf("Error finding linode_interface")
 }

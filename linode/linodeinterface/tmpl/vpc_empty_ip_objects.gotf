@@ -9,7 +9,7 @@ resource "linode_vpc" "test" {
 resource "linode_vpc_subnet" "test" {
     vpc_id = linode_vpc.test.id
     label = "{{.Label}}-subnet"  
-    ipv4 = "{{.IPv4}}"
+    ipv4 = "{{.SubnetIPv4}}"
 }
 
 resource "linode_instance" "test" {

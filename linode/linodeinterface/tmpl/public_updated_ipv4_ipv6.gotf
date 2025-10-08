@@ -1,4 +1,4 @@
-{{ define "interface_public_updated_ipv4" }}
+{{ define "interface_public_updated_ipv4_ipv6" }}
 
 resource "linode_instance" "test" {
     label = "{{.Label}}"
@@ -14,11 +14,11 @@ resource "linode_interface" "test" {
         ipv4 = {
             addresses = [
                 {
-                    address = "auto"
+                    address = "{{.IPv4Address}}"
                     primary = true
                 },
                 {
-                    address = "auto"
+                    address = "{{.IPv4Address2}}"
                     primary = false
                 }
             ]
@@ -26,10 +26,10 @@ resource "linode_interface" "test" {
         ipv6 = {
             ranges = [
                 {
-                    range = "/64"
+                    range = "{{.IPv6Range}}"
                 },
                 {
-                    range = "/64"
+                    range = "{{.IPv6Range2}}"
                 }
             ]
         }
