@@ -230,7 +230,7 @@ var frameworkResourceSchema = schema.Schema{
 				},
 				"subnet_id": schema.Int64Attribute{
 					Description: "The ID of the VPC subnet to restrict access to this database using.",
-					Optional:    true,
+					Required:    true,
 					PlanModifiers: []planmodifier.Int64{
 						int64planmodifier.UseStateForUnknown(),
 					},
