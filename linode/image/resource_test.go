@@ -70,7 +70,7 @@ func init() {
 		return !ok || !isDisallowed
 	})
 
-	testRegion = testRegions[1]
+	testRegion = testRegions[0]
 }
 
 func sweep(prefix string) error {
@@ -121,6 +121,12 @@ func TestAccImage_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "size"),
 					resource.TestCheckResourceAttr(resName, "type", "manual"),
 					resource.TestCheckResourceAttr(resName, "is_public", "false"),
+					resource.TestCheckResourceAttr(resName, "is_shared", "false"),
+					resource.TestCheckResourceAttr(resName, "image_sharing.shared_with.sharegroup_count", "0"),
+					resource.TestCheckResourceAttrSet(
+						resName,
+						"image_sharing.shared_with.sharegroup_list_url",
+					),
 					resource.TestCheckResourceAttr(resName, "capabilities.0", "cloud-init"),
 					resource.TestCheckResourceAttrSet(resName, "deprecated"),
 					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
