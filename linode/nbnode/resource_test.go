@@ -12,7 +12,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbnode/tmpl"
@@ -102,6 +105,73 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 	})
 }
 
+func TestAccResourceNodeBalancerNode_vpc(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_nodebalancer_node.test"
+	label := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(64)
+
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{"NodeBalancers", "VPCs"}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkNodeBalancerNodeDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPC(t, label, targetRegion, rootPass),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("nodebalancer_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("config_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("address"),
+						knownvalue.StringExact("10.0.0.5:80"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(label),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("weight"),
+						knownvalue.Int64Exact(50),
+					),
+				},
+			},
+			{
+				Config: tmpl.VPC(t, label, targetRegion, rootPass),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importResourceStateID,
+				ImportStateVerifyIgnore: []string{"status"},
+			},
+		},
+	})
+}
+
 func checkNodeBalancerNodeExists(s *terraform.State) (err error) {
 	client, err := acceptance.GetTestClient()
 	if err != nil {
@@ -169,7 +239,7 @@ func checkNodeBalancerNodeExists(s *terraform.State) (err error) {
 	if nodePort != expectedNodePort {
 		return fmt.Errorf("expected node to have port '%s'; got '%s'", expectedNodePort, nodePort)
 	}
-	return
+	return err
 }
 
 func checkNodeBalancerNodeDestroy(s *terraform.State) error {

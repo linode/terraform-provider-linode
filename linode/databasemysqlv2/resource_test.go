@@ -30,7 +30,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases", "VPCs"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -135,7 +135,7 @@ func TestAccResource_basic(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
 			},
 		},
 	})
@@ -268,7 +268,7 @@ func TestAccResource_resize(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
 			},
 		},
 	})
@@ -401,7 +401,7 @@ func TestAccResource_complex(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
 			},
 		},
 	})
@@ -465,7 +465,7 @@ func TestAccResource_fork(t *testing.T) {
 				ResourceName:            resNameSource,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
 			},
 			{
 				PreConfig: func() {
@@ -542,7 +542,7 @@ func TestAccResource_fork(t *testing.T) {
 				ResourceName:            resNameFork,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
 			},
 		},
 	})
@@ -635,6 +635,7 @@ func TestAccResource_suspension(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"updated",
 					"oldest_restore_time",
+					"members",
 
 					// These fields will be populated with null when importing a suspended database
 					"ca_cert", "root_password", "root_username",
@@ -850,6 +851,63 @@ func TestAccResource_engineConfig(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sql_require_primary_key", "true"),
 					// Nullable field EngineConfigMySQLInnoDBFTServerStopwordTable assertion
 					resource.TestCheckNoResourceAttr(resName, "engine_config_mysql_innodb_ft_server_stopword_table"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+			},
+		},
+	})
+}
+
+func TestAccResource_vpc(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_database_mysql_v2.foobar"
+	label := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPC0(t, label, testRegion, testEngine, "g6-nanode-1"),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+
+					resource.TestCheckResourceAttr(resName, "private_network.public_access", "false"),
+					resource.TestCheckResourceAttrPair(
+						resName, "private_network.vpc_id",
+						"linode_vpc.foobar", "id",
+					),
+					resource.TestCheckResourceAttrPair(
+						resName, "private_network.subnet_id",
+						"linode_vpc_subnet.foobar", "id",
+					),
+				),
+			},
+			{
+				Config: tmpl.VPC1(t, label, testRegion, testEngine, "g6-nanode-1"),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+
+					resource.TestCheckResourceAttr(resName, "private_network.public_access", "true"),
+					resource.TestCheckResourceAttrPair(
+						resName, "private_network.vpc_id",
+						"linode_vpc.foobar2", "id",
+					),
+					resource.TestCheckResourceAttrPair(
+						resName, "private_network.subnet_id",
+						"linode_vpc_subnet.foobar2", "id",
+					),
 				),
 			},
 			{

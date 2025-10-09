@@ -68,6 +68,11 @@ func (r *Resource) Create(
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
+	privateNetwork := data.GetPrivateNetwork(ctx, resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	createOpts := linodego.MySQLCreateOptions{
 		Label:        data.Label.ValueString(),
 		Region:       data.Region.ValueString(),
@@ -77,6 +82,10 @@ func (r *Resource) Create(
 		Fork:         data.GetFork(resp.Diagnostics),
 		AllowList:    data.GetAllowList(ctx, resp.Diagnostics),
 		EngineConfig: data.GetEngineConfig(resp.Diagnostics),
+	}
+
+	if privateNetwork != nil {
+		createOpts.PrivateNetwork = privateNetwork.ToLinodego(resp.Diagnostics)
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -165,6 +174,19 @@ func (r *Resource) Create(
 				"Failed to update MySQL database",
 				err.Error(),
 			)
+			return
+		}
+
+		tflog.Debug(ctx, "Waiting for database to finish updating")
+
+		if err := client.WaitForDatabaseStatus(
+			ctx,
+			db.ID,
+			linodego.DatabaseEngineTypeMySQL,
+			linodego.DatabaseStatusActive,
+			int(createTimeout.Seconds()),
+		); err != nil {
+			resp.Diagnostics.AddError("Failed to wait for MySQL database active", err.Error())
 			return
 		}
 	}
@@ -330,6 +352,24 @@ func (r *Resource) Update(
 	if !state.Type.Equal(plan.Type) {
 		shouldResize = true
 		updateOpts.Type = plan.Type.ValueString()
+	}
+
+	if !state.PrivateNetwork.Equal(plan.PrivateNetwork) {
+		shouldUpdate = true
+
+		privateNetwork := plan.GetPrivateNetwork(ctx, resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		if privateNetwork != nil {
+			updateOpts.PrivateNetwork = linodego.Pointer(privateNetwork.ToLinodego(resp.Diagnostics))
+			if resp.Diagnostics.HasError() {
+				return
+			}
+		} else {
+			updateOpts.PrivateNetwork = linodego.DoublePointerNull[linodego.DatabasePrivateNetwork]()
+		}
 	}
 
 	// `updates` field updates
@@ -532,8 +572,7 @@ func (r *Resource) Delete(
 	}
 
 	tflog.Debug(ctx, "client.DeleteMySQLDatabase(...)")
-	err := client.DeleteMySQLDatabase(ctx, id)
-	if err != nil {
+	if err := client.DeleteMySQLDatabase(ctx, id); err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
 				"Failed to delete the database",

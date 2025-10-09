@@ -1,6 +1,7 @@
 package objbucket
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -42,6 +43,7 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 		"created": schema.StringAttribute{
 			Description: "When this bucket was created.",
+			CustomType:  timetypes.RFC3339Type{},
 			Computed:    true,
 		},
 		"hostname": schema.StringAttribute{

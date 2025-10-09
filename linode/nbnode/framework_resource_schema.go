@@ -42,6 +42,21 @@ var frameworkResourceSchema = schema.Schema{
 				"This must be a private IP address.",
 			Required: true,
 		},
+		"subnet_id": schema.Int64Attribute{
+			Description: "The ID of the VPC subnet for this node.",
+			Optional:    true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+				int64planmodifier.RequiresReplace(),
+			},
+		},
+		"vpc_config_id": schema.Int64Attribute{
+			Description: "The ID of the NB-VPC config for this node.",
+			Computed:    true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
+		},
 		"weight": schema.Int64Attribute{
 			Description: "Used when picking a backend to serve a request and is not pinned to a single backend " +
 				"yet. Nodes with a higher weight will receive more traffic. (1-255)",

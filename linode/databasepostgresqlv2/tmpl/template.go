@@ -169,3 +169,42 @@ func DataEngineConfig(
 		data,
 	)
 }
+
+func VPC0(t testing.TB, label, region, engine, nodeType string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"database_postgresql_v2_vpc_0",
+		TemplateData{
+			Label:    label,
+			Region:   region,
+			EngineID: engine,
+			Type:     nodeType,
+		},
+	)
+}
+
+func VPC1(t testing.TB, label, region, engine, nodeType string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"database_postgresql_v2_vpc_1",
+		TemplateData{
+			Label:    label,
+			Region:   region,
+			EngineID: engine,
+			Type:     nodeType,
+		},
+	)
+}
+
+func DataVPC(t testing.TB, label, region, engine, nodeType string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"database_postgresql_v2_data_vpc",
+		TemplateData{
+			Label:    label,
+			Region:   region,
+			EngineID: engine,
+			Type:     nodeType,
+		},
+	)
+}

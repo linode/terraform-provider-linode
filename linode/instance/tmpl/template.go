@@ -781,6 +781,58 @@ func WithReservedIP(t *testing.T, label, pubKey, region, rootPass string) string
 	return generatedConfig
 }
 
+func InterfacesVPCIPv60(t *testing.T, label, region, rootPass string) string {
+	generatedConfig := acceptance.ExecuteTemplate(t,
+		"instance_interfaces_vpc_ipv6_0", TemplateData{
+			Label:    label,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+
+	return generatedConfig
+}
+
+func InterfacesVPCIPv61(t *testing.T, label, region, rootPass string) string {
+	generatedConfig := acceptance.ExecuteTemplate(t,
+		"instance_interfaces_vpc_ipv6_1", TemplateData{
+			Label:    label,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+
+	return generatedConfig
+}
+
+func ConfigInterfacesVPCIPv6(t *testing.T, label, region, rootPass string) string {
+	generatedConfig := acceptance.ExecuteTemplate(t,
+		"instance_config_interfaces_vpc_ipv6", TemplateData{
+			Label:    label,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+
+	return generatedConfig
+}
+
+func DataInterfacesVPCIPv6(t *testing.T, label, region, rootPass string) string {
+	generatedConfig := acceptance.ExecuteTemplate(t,
+		"instance_data_interfaces_vpc_ipv6", TemplateData{
+			Label:    label,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+
+	return generatedConfig
+}
+
 func OnlyReservedIP(t *testing.T, region string) string {
 	return fmt.Sprintf(`
 resource "linode_networking_ip" "test" {
