@@ -4,7 +4,7 @@ resource "linode_stackscript" "stackscript" {
     label = "{{.Label}}"
     script = <<EOF
 {{.Script}}EOF
-	images = ["linode/ubuntu18.04", "linode/ubuntu16.04lts"]
+	images = ["linode/ubuntu24.04", "linode/ubuntu16.04lts"]
 	description = "test"
 	rev_note = "initial"
 }
@@ -22,7 +22,7 @@ data "linode_stackscripts" "stackscript" {
 
 	filter {
     	name = "images"
-    	values = ["linode/ubuntu18.04"]
+    	values = ["linode/ubuntu24.04"]
     }
 
     filter {

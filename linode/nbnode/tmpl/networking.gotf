@@ -3,7 +3,7 @@
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     type = "g6-nanode-1"
-    image = "linode/alpine3.22"
+    image = "linode/ubuntu24.04"
     region = "{{ .Region }}"
     root_pass = "{{ .RootPass }}"
     swap_size = 256
