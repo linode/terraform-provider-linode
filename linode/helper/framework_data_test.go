@@ -60,7 +60,7 @@ type DataUnitTestExpandedObject struct {
 }
 
 func TestKeepOrUpdateSingleNestedAttribute(t *testing.T) {
-	// This test covers both the general behavior of KeepOrUpdateSingleNestedAttribute
+	// This test covers both the general behavior of KeepOrUpdateSingleNestedAttributes
 	// and the specific isNull boolean parameter behavior. The isNull parameter allows
 	// the flatten function to indicate that the target should be a Terraform null value.
 	ctx := context.Background()
@@ -409,7 +409,7 @@ func TestKeepOrUpdateSingleNestedAttribute(t *testing.T) {
 					model.SomeNullableString = helper.KeepOrUpdateStringPointer(model.SomeNullableString, tt.data.SomeNullableString, preserveKnown)
 					model.SomeBool = helper.KeepOrUpdateBool(model.SomeBool, tt.data.SomeBool, preserveKnown)
 
-					flattenNestedObject := helper.KeepOrUpdateSingleNestedAttributeWithTypes(
+					flattenNestedObject := helper.KeepOrUpdateSingleNestedAttributesWithTypes(
 						ctx,
 						model.SomeNestedAttrsObject,
 						nestedObjectType,
@@ -432,7 +432,7 @@ func TestKeepOrUpdateSingleNestedAttribute(t *testing.T) {
 				}
 			}
 
-			out := helper.KeepOrUpdateSingleNestedAttribute(ctx, tt.input, tt.preserveKnown, &diags, flatten)
+			out := helper.KeepOrUpdateSingleNestedAttributes(ctx, tt.input, tt.preserveKnown, &diags, flatten)
 			if diags.HasError() {
 				t.Fatalf("unexpected error: %v", diags)
 			}

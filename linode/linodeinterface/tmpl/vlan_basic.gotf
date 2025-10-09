@@ -1,0 +1,19 @@
+{{ define "interface_vlan_basic" }}
+
+resource "linode_instance" "test" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+    type = "g6-nanode-1"
+    interface_generation = "linode"
+}
+
+resource "linode_interface" "test" {
+    linode_id = linode_instance.test.id
+    
+    vlan = {
+        vlan_label = "{{.VLANLabel}}"
+        ipam_address = "{{.IPAMAddress}}"
+    }
+}
+
+{{ end }}

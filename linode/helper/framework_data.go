@@ -118,17 +118,17 @@ func KeepOrUpdateValue[T attr.Value](original T, updated T, preserveKnown bool) 
 	return updated
 }
 
-// KeepOrUpdateSingleNestedAttribute is a convenience wrapper to keep or update a single nested attribute.
+// KeepOrUpdateSingleNestedAttributes is a convenience wrapper to keep or update a single nested attribute.
 // Should only use for the single nested object at root level. For multi-layer nested object, use
-// KeepOrUpdateSingleNestedAttributeWithTypes instead.
-func KeepOrUpdateSingleNestedAttribute[T any](
+// KeepOrUpdateSingleNestedAttributesWithTypes instead.
+func KeepOrUpdateSingleNestedAttributes[T any](
 	ctx context.Context,
 	original types.Object,
 	preserveKnown bool,
 	diags *diag.Diagnostics,
 	flatten func(*T, *bool, bool, *diag.Diagnostics),
 ) *types.Object {
-	return KeepOrUpdateSingleNestedAttributeWithTypes(
+	return KeepOrUpdateSingleNestedAttributesWithTypes(
 		ctx, original, original.AttributeTypes(ctx), preserveKnown, diags, flatten,
 	)
 }
@@ -140,7 +140,7 @@ func KeepOrUpdateSingleNestedAttribute[T any](
 // For any collection attribute (set, list, map) with a null value, override it with a null value with the
 // corresponding element type (e.g., types.SetNull(types.StringType)). This ensures the framework can determine
 // the element type when setting the attribute in the state. This is necessary because when the original nested
-// object is null or unknown, the KeepOrUpdateSingleNestedAttributeWithTypes function cannot provide element
+// object is null or unknown, the KeepOrUpdateSingleNestedAttributesWithTypes function cannot provide element
 // type information for the attributes within.
 type FlattenNestedObjectFunc[T any] func(model *T, isNull *bool, preserveKnown bool, diags *diag.Diagnostics)
 
@@ -153,7 +153,7 @@ type FlattenNestedObjectFunc[T any] func(model *T, isNull *bool, preserveKnown b
 // the child nested object. Passing explicit attributeTypes will then be necessary.
 //
 // Checkout the corresponding unit tests for more details.
-func KeepOrUpdateSingleNestedAttributeWithTypes[T any](
+func KeepOrUpdateSingleNestedAttributesWithTypes[T any](
 	ctx context.Context,
 	original types.Object,
 	attributeTypes map[string]attr.Type,
@@ -200,5 +200,45 @@ func KeepOrUpdateSingleNestedAttributeWithTypes[T any](
 		}
 	}
 
+	return &updated
+}
+
+func KeepOrUpdateSetNestedAttributeWithTypes[T any](
+	ctx context.Context,
+	original types.Set,
+	elementType attr.Type,
+	preserveKnown bool,
+	diags *diag.Diagnostics,
+	flatten func([]types.Object, *bool, bool, *diag.Diagnostics) []T,
+) *types.Set {
+	if preserveKnown && original.IsNull() {
+		return &original
+	}
+
+	elements := make([]types.Object, 0, len(original.Elements()))
+
+	if !original.IsUnknown() && !original.IsNull() {
+		diags.Append(original.ElementsAs(ctx, &elements, false)...)
+		if diags.HasError() {
+			return nil
+		}
+	}
+
+	preserveKnown = preserveKnown && !original.IsUnknown()
+	isNull := false
+
+	flattened := flatten(elements, &isNull, preserveKnown, diags)
+
+	var updated types.Set
+	if isNull && !preserveKnown {
+		updated = types.SetNull(elementType)
+	} else {
+		var newDiags diag.Diagnostics
+		updated, newDiags = types.SetValueFrom(ctx, elementType, flattened)
+		diags.Append(newDiags...)
+		if diags.HasError() {
+			return nil
+		}
+	}
 	return &updated
 }

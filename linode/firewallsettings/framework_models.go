@@ -84,7 +84,7 @@ func (fsds *FirewallSettingsModel) FlattenFirewallSettings(
 	preserveKnown bool,
 	diags *diag.Diagnostics,
 ) {
-	defaultFirewallIDs := helper.KeepOrUpdateSingleNestedAttribute(
+	defaultFirewallIDs := helper.KeepOrUpdateSingleNestedAttributes(
 		ctx,
 		fsds.DefaultFirewallIDs,
 		preserveKnown,
