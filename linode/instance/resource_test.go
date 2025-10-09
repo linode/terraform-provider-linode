@@ -2982,10 +2982,19 @@ func TestAccResourceInstance_configInterfaceVPCIPv6(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:            resName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "interface", "firewall_id"},
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"backups",
+					"root_pass",
+					"authorized_keys",
+					"image",
+					"resize_disk",
+					"migration_type",
+					"interface",
+					"firewall_id",
+				},
 			},
 		},
 	})

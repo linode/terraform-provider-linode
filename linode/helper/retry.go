@@ -1,11 +1,15 @@
 package helper
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net/url"
 	"regexp"
+	"time"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 )
 
@@ -96,4 +100,46 @@ func ApplyAllRetryConditions(client *linodego.Client) {
 	client.AddRetryCondition(OBJKeyDelete500Retry())
 	client.AddRetryCondition(OBJBucketCreate500Retry())
 	client.AddRetryCondition(OBJBucketDelete500Retry())
+}
+
+// WithRetries runs the given retryFunc at most maxRetries times
+// every interval if the returned bool is true.
+func WithRetries(
+	ctx context.Context,
+	maxRetries int,
+	interval time.Duration,
+	retryFunc func() (bool, error),
+) error {
+	var lastError error
+
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for currentAttempt := range maxRetries {
+		canRetry, err := retryFunc()
+		if err == nil {
+			// Success!
+			return nil
+		}
+
+		lastError = err
+
+		if !canRetry {
+			return fmt.Errorf("got non-retryable error (attempt %d): %w", currentAttempt, err)
+		}
+
+		tflog.Warn(
+			ctx,
+			"Retrying failed operation",
+			map[string]any{
+				"attempt":      currentAttempt,
+				"max_attempts": maxRetries,
+				"error":        err.Error(),
+			},
+		)
+
+		<-ticker.C
+	}
+
+	return fmt.Errorf("failed after %d retries: %w", maxRetries, lastError)
 }

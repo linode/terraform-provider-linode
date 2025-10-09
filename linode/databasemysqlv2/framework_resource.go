@@ -68,6 +68,11 @@ func (r *Resource) Create(
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
+	privateNetwork := data.GetPrivateNetwork(ctx, resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	createOpts := linodego.MySQLCreateOptions{
 		Label:        data.Label.ValueString(),
 		Region:       data.Region.ValueString(),
@@ -77,6 +82,10 @@ func (r *Resource) Create(
 		Fork:         data.GetFork(resp.Diagnostics),
 		AllowList:    data.GetAllowList(ctx, resp.Diagnostics),
 		EngineConfig: data.GetEngineConfig(resp.Diagnostics),
+	}
+
+	if privateNetwork != nil {
+		createOpts.PrivateNetwork = privateNetwork.ToLinodego(resp.Diagnostics)
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -345,6 +354,24 @@ func (r *Resource) Update(
 		updateOpts.Type = plan.Type.ValueString()
 	}
 
+	if !state.PrivateNetwork.Equal(plan.PrivateNetwork) {
+		shouldUpdate = true
+
+		privateNetwork := plan.GetPrivateNetwork(ctx, resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		if privateNetwork != nil {
+			updateOpts.PrivateNetwork = linodego.Pointer(privateNetwork.ToLinodego(resp.Diagnostics))
+			if resp.Diagnostics.HasError() {
+				return
+			}
+		} else {
+			updateOpts.PrivateNetwork = linodego.DoublePointerNull[linodego.DatabasePrivateNetwork]()
+		}
+	}
+
 	// `updates` field updates
 	if !state.Updates.Equal(plan.Updates) {
 		shouldUpdate = true
@@ -545,8 +572,7 @@ func (r *Resource) Delete(
 	}
 
 	tflog.Debug(ctx, "client.DeleteMySQLDatabase(...)")
-	err := client.DeleteMySQLDatabase(ctx, id)
-	if err != nil {
+	if err := client.DeleteMySQLDatabase(ctx, id); err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
 				"Failed to delete the database",
