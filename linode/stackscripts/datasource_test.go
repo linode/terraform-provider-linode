@@ -86,7 +86,7 @@ func validateStackscript(resourceName, stackScriptName string) resource.TestChec
 		resource.TestCheckResourceAttr(resourceName, "stackscripts.0.script", basicStackScript),
 		resource.TestCheckResourceAttr(resourceName, "stackscripts.0.images.#", "2"),
 		acceptance.CheckListContains(resourceName, "stackscripts.0.images", "linode/ubuntu24.04"),
-		acceptance.CheckListContains(resourceName, "stackscripts.0.images", "linode/ubuntu16.04lts"),
+		acceptance.CheckListContains(resourceName, "stackscripts.0.images", "linode/ubuntu22.04"),
 		resource.TestCheckResourceAttr(resourceName, "stackscripts.0.user_defined_fields.#", "1"),
 		resource.TestCheckResourceAttr(resourceName, "stackscripts.0.user_defined_fields.0.name", "name"),
 		resource.TestCheckResourceAttr(resourceName, "stackscripts.0.user_defined_fields.0.label", "Your name"),

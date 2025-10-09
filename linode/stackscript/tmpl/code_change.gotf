@@ -7,7 +7,7 @@ resource "linode_stackscript" "foobar" {
 # <UDF name="hasudf" label="a label" example="an example" default="a default">
 echo bye
 EOF
-    images = ["linode/ubuntu24.04", "linode/ubuntu16.04lts"]
+    images = ["linode/ubuntu24.04", "linode/ubuntu22.04"]
     description = "tf_test stackscript"
     rev_note = "second"
 }

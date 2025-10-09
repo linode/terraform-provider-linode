@@ -166,7 +166,7 @@ func TestAccResourceStackscript_codeChange(t *testing.T) {
 						"#!/bin/bash\n# <UDF name=\"hasudf\" label=\"a label\" example=\"an example\" default=\"a default\">\necho bye\n",
 					),
 					acceptance.CheckListContains(resName, "images", "linode/ubuntu24.04"),
-					acceptance.CheckListContains(resName, "images", "linode/ubuntu16.04lts"),
+					acceptance.CheckListContains(resName, "images", "linode/ubuntu22.04"),
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.#", "1"),
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.name", "hasudf"),
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.label", "a label"),

@@ -41,7 +41,7 @@ func TestAccDataSourceStackscript_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "script", basicStackScript),
 					resource.TestCheckResourceAttr(resourceName, "images.#", "2"),
 					acceptance.CheckListContains(resourceName, "images", "linode/ubuntu24.04"),
-					acceptance.CheckListContains(resourceName, "images", "linode/ubuntu16.04lts"),
+					acceptance.CheckListContains(resourceName, "images", "linode/ubuntu22.04"),
 					resource.TestCheckResourceAttr(resourceName, "user_defined_fields.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "user_defined_fields.0.name", "name"),
 					resource.TestCheckResourceAttr(resourceName, "user_defined_fields.0.label", "Your name"),

@@ -4,7 +4,7 @@ resource "linode_stackscript" "stackscript" {
     label = "my_stackscript"
     script = <<EOF
 {{.Script}}EOF
-	images = ["linode/ubuntu24.04", "linode/ubuntu16.04lts"]
+	images = ["linode/ubuntu24.04", "linode/ubuntu22.04"]
 	description = "test"
 	rev_note = "initial"
 }
