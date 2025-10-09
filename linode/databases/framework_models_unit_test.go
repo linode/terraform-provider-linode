@@ -51,7 +51,7 @@ func TestParseDatabases(t *testing.T) {
 	mockDatabases := []linodego.Database{mockDB1, mockDB2}
 
 	model := &DatabaseFilterModel{}
-	model.parseDatabases(mockDatabases)
+	model.parseDatabases(t.Context(), mockDatabases)
 
 	assert.Len(t, model.Databases, 2)
 

@@ -14,6 +14,20 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
+type ModelPrivateNetwork struct {
+	VPCID        types.Int64 `tfsdk:"vpc_id"`
+	SubnetID     types.Int64 `tfsdk:"subnet_id"`
+	PublicAccess types.Bool  `tfsdk:"public_access"`
+}
+
+func (m ModelPrivateNetwork) ToLinodego(d diag.Diagnostics) *linodego.DatabasePrivateNetwork {
+	return &linodego.DatabasePrivateNetwork{
+		VPCID:        helper.FrameworkSafeInt64ToInt(m.VPCID.ValueInt64(), &d),
+		SubnetID:     helper.FrameworkSafeInt64ToInt(m.SubnetID.ValueInt64(), &d),
+		PublicAccess: m.PublicAccess.ValueBool(),
+	}
+}
+
 type ModelHosts struct {
 	Primary   types.String `tfsdk:"primary"`
 	Secondary types.String `tfsdk:"secondary"`
@@ -77,6 +91,7 @@ type Model struct {
 	ForkSource        types.Int64       `tfsdk:"fork_source"`
 	ForkRestoreTime   timetypes.RFC3339 `tfsdk:"fork_restore_time"`
 
+	PrivateNetwork types.Object `tfsdk:"private_network"`
 	Updates        types.Object `tfsdk:"updates"`
 	PendingUpdates types.Set    `tfsdk:"pending_updates"`
 
@@ -273,6 +288,20 @@ func (m *Model) Flatten(
 			timetypes.NewRFC3339Null(),
 			preserveKnown,
 		)
+	}
+
+	if db.PrivateNetwork != nil {
+		privateNetworkObject, rd := types.ObjectValueFrom(
+			ctx,
+			privateNetworkAttributes,
+			&ModelPrivateNetwork{
+				VPCID:        types.Int64Value(int64(db.PrivateNetwork.VPCID)),
+				SubnetID:     types.Int64Value(int64(db.PrivateNetwork.SubnetID)),
+				PublicAccess: types.BoolValue(db.PrivateNetwork.PublicAccess),
+			},
+		)
+		d.Append(rd...)
+		m.PrivateNetwork = helper.KeepOrUpdateValue(m.PrivateNetwork, privateNetworkObject, preserveKnown)
 	}
 
 	updatesObject, rd := types.ObjectValueFrom(
@@ -500,6 +529,7 @@ func (m *Model) CopyFrom(other *Model, preserveKnown bool) {
 	m.PendingUpdates = helper.KeepOrUpdateValue(m.PendingUpdates, other.PendingUpdates, preserveKnown)
 	m.Platform = helper.KeepOrUpdateValue(m.Platform, other.Platform, preserveKnown)
 	m.Port = helper.KeepOrUpdateValue(m.Port, other.Port, preserveKnown)
+	m.PrivateNetwork = helper.KeepOrUpdateValue(m.PrivateNetwork, other.PrivateNetwork, preserveKnown)
 	m.Region = helper.KeepOrUpdateValue(m.Region, other.Region, preserveKnown)
 	m.RootPassword = helper.KeepOrUpdateValue(m.RootPassword, other.RootPassword, preserveKnown)
 	m.RootUsername = helper.KeepOrUpdateValue(m.RootUsername, other.RootUsername, preserveKnown)
@@ -703,6 +733,25 @@ func (m *Model) GetAllowList(ctx context.Context, d diag.Diagnostics) []string {
 	return result
 }
 
+// GetPrivateNetwork returns the ModelPrivateNetwork for this model if specified, else nil.
+func (m *Model) GetPrivateNetwork(ctx context.Context, d diag.Diagnostics) *ModelPrivateNetwork {
+	if m.PrivateNetwork.IsUnknown() || m.PrivateNetwork.IsNull() {
+		return nil
+	}
+
+	var result ModelPrivateNetwork
+
+	d.Append(
+		m.PrivateNetwork.As(
+			ctx,
+			&result,
+			basetypes.ObjectAsOptions{UnhandledUnknownAsEmpty: true},
+		)...,
+	)
+
+	return &result
+}
+
 // GetUpdates returns the ModelUpdates for this model if specified, else nil.
 func (m *Model) GetUpdates(ctx context.Context, d diag.Diagnostics) *ModelUpdates {
 	if m.Updates.IsUnknown() || m.Updates.IsNull() {
@@ -722,7 +771,7 @@ func (m *Model) GetUpdates(ctx context.Context, d diag.Diagnostics) *ModelUpdate
 	return &result
 }
 
-// GetEngineConfig returns a pointer to the linodego.MySQLDatabaseEngineConfig for this model if specified, else nil.
+// GetEngineConfig returns a pointer to the linodego.PostgreSQLDatabaseEngineConfig for this model if specified, else nil.
 func (m *Model) GetEngineConfig(d diag.Diagnostics) *linodego.PostgresDatabaseEngineConfig {
 	var engineConfig linodego.PostgresDatabaseEngineConfig
 	var engineConfigPG linodego.PostgresDatabaseEngineConfigPG

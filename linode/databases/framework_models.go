@@ -1,13 +1,21 @@
 package databases
 
 import (
+	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
+
+type ModelPrivateNetwork struct {
+	VPCID        types.Int64 `tfsdk:"vpc_id"`
+	SubnetID     types.Int64 `tfsdk:"subnet_id"`
+	PublicAccess types.Bool  `tfsdk:"public_access"`
+}
 
 // DatabaseModel represents a single Database object.
 type DatabaseModel struct {
@@ -21,6 +29,7 @@ type DatabaseModel struct {
 	HostSecondary   types.String   `tfsdk:"host_secondary"`
 	InstanceURI     types.String   `tfsdk:"instance_uri"`
 	Label           types.String   `tfsdk:"label"`
+	PrivateNetwork  types.Object   `tfsdk:"private_network"`
 	Region          types.String   `tfsdk:"region"`
 	ReplicationType types.String   `tfsdk:"replication_type"`
 	SSLConnection   types.Bool     `tfsdk:"ssl_connection"`
@@ -41,7 +50,10 @@ type DatabaseFilterModel struct {
 }
 
 // parseDatabases parses the given list of regions into the `databases` model attribute.
-func (model *DatabaseFilterModel) parseDatabases(databases []linodego.Database) {
+func (model *DatabaseFilterModel) parseDatabases(
+	ctx context.Context,
+	databases []linodego.Database,
+) (d diag.Diagnostics) {
 	parseDB := func(db linodego.Database) DatabaseModel {
 		var m DatabaseModel
 		m.ID = types.Int64Value(int64(db.ID))
@@ -72,6 +84,20 @@ func (model *DatabaseFilterModel) parseDatabases(databases []linodego.Database) 
 			m.Updated = types.StringNull()
 		}
 
+		if db.PrivateNetwork != nil {
+			privateNetworkObject, rd := types.ObjectValueFrom(
+				ctx,
+				privateNetworkAttributes,
+				&ModelPrivateNetwork{
+					VPCID:        types.Int64Value(int64(db.PrivateNetwork.VPCID)),
+					SubnetID:     types.Int64Value(int64(db.PrivateNetwork.SubnetID)),
+					PublicAccess: types.BoolValue(db.PrivateNetwork.PublicAccess),
+				},
+			)
+			d.Append(rd...)
+			m.PrivateNetwork = privateNetworkObject
+		}
+
 		return m
 	}
 
@@ -82,4 +108,6 @@ func (model *DatabaseFilterModel) parseDatabases(databases []linodego.Database) 
 	}
 
 	model.Databases = result
+
+	return d
 }
