@@ -207,7 +207,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		interfaceIDs := helper.ExpandFwInt64Set(plan.NodeBalancers, &resp.Diagnostics)
+		interfaceIDs := helper.ExpandFwInt64Set(plan.Interfaces, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
