@@ -51,7 +51,7 @@ var DataSourceSchema = schema.Schema{
 			ElementType: ObjectTypePGLimits,
 		},
 		"monitors": schema.ObjectAttribute{
-			Description:    "The monitoring configuration for a region.",
+			Description:    "The monitoring services available in a region.",
 			Computed:       true,
 			AttributeTypes: MonitorsAttrTypes,
 		},
