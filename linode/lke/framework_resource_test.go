@@ -820,3 +820,38 @@ func TestAccResourceLKECluster_acl_disabled_addresses(t *testing.T) {
 		},
 	})
 }
+
+// TestAccResourceLKECluster_tierNoAccess ensures that a tier value of
+// `standard` will not trigger diffs in a cluster that does not expose
+// the `tier` field due to various circumstances.
+func TestAccResourceLKECluster_tierNoAccess(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf_test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.TierNoAccess(t, clusterName, k8sVersionLatest, testRegion, string(linodego.LKEVersionStandard)),
+			},
+			{
+				Config: tmpl.TierNoAccess(t, clusterName, k8sVersionLatest, testRegion, string(linodego.LKEVersionStandard)),
+			},
+			{
+				Config: tmpl.TierNoAccess(
+					t,
+					clusterName,
+					k8sVersionLatest,
+					testRegion,
+					string(linodego.LKEVersionEnterprise),
+				),
+				ExpectError: regexp.MustCompile(".*"),
+			},
+			{
+				Config: tmpl.TierNoAccess(t, clusterName, k8sVersionLatest, testRegion, string(linodego.LKEVersionStandard)),
+			},
+		},
+	})
+}

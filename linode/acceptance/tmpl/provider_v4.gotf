@@ -1,7 +1,0 @@
-{{ define "provider_v4" }}
-
-provider "linode" {
-    api_version = "v4"
-}
-
-{{ end }}
