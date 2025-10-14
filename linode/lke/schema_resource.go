@@ -75,8 +75,19 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 		Computed:    true,
-		Description: "The desired Kubernetes tier.",
 		ForceNew:    true,
+		Description: "The desired Kubernetes tier.",
+
+		// The tier attribute may not be returned under certain conditions,
+		// notably when not using v4beta.
+		//
+		// This was originally going to be implemented as a validator requiring
+		// api_version be set to v4beta but this approach eliminates the need for
+		// an additional change once LKE tiers become available in the v4 namespace
+		// and accounts for any possible edge cases where this could occur (e.g. old clusters).
+		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+			return old == "" && linodego.LKEVersionTier(new) == linodego.LKEVersionStandard
+		},
 	},
 	"subnet_id": {
 		Type:        schema.TypeInt,
