@@ -40,7 +40,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `ipv4` - The IPv4 range of this subnet in CIDR format.
 
-* `linodes` - A list of Linode that added to this subnet.
+* `linodes` - A list of Linodes added to this subnet.
   * `id` - ID of the Linode
   * `interfaces` - A list of networking interfaces objects.
     * `id` - ID of the interface.
