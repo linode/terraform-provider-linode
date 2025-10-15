@@ -8,7 +8,7 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"slug": {APIFilterable: false, TypeFunc: helper.FilterTypeInt},
+	"slug": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
 }
 
 var templatesObject = schema.NestedBlockObject{
