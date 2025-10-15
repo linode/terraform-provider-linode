@@ -15,7 +15,7 @@ var templatesObject = schema.NestedBlockObject{
 	Attributes: map[string]schema.Attribute{
 		"slug": schema.StringAttribute{
 			Description: "The slug of the firewall template.",
-			Required:    true,
+			Computed:    true,
 		},
 		"inbound": schema.ListAttribute{
 			ElementType: firewall.RuleObjectType,
