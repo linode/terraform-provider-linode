@@ -114,13 +114,15 @@ var frameworkResourceSchema = schema.Schema{
 			Default: helper.EmptySetDefault(types.StringType),
 		},
 		"encryption": schema.StringAttribute{
-			Description: "Whether Block Storage Disk Encryption is enabled or disabled on this Volume. " +
-				"Note: Block Storage Disk Encryption is not currently available to all users.",
-			Optional: true,
-			Computed: true,
-			Default:  stringdefault.StaticString("disabled"),
+			Description: "Whether Block Storage Disk Encryption is enabled or disabled on this Volume. ",
+			Optional:    true,
+			Computed:    true,
+			Default:     stringdefault.StaticString("disabled"),
 			Validators: []validator.String{
 				stringvalidator.OneOf("enabled", "disabled"),
+			},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
 			},
 		},
 	},
