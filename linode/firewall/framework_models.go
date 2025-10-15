@@ -197,7 +197,7 @@ func (data *FirewallResourceModel) flattenDevices(
 		return
 	}
 
-	data.Interfaces = helper.KeepOrUpdateIntSet(data.Interfaces, AggregateEntityIDs(devices, linodego.FirewallDeviceInterface), preserveKnown, diags)
+	data.Interfaces = helper.KeepOrUpdateIntSet(data.Interfaces, AggregateEntityIDs(devices, linodego.FirewallDeviceLinodeInterface), preserveKnown, diags)
 	if diags.HasError() {
 		return
 	}
@@ -289,7 +289,7 @@ func (data *FirewallDataSourceModel) flattenFirewallForDataSource(
 	interfaces, diags := types.SetValueFrom(
 		ctx,
 		types.Int64Type,
-		AggregateEntityIDs(devices, linodego.FirewallDeviceInterface),
+		AggregateEntityIDs(devices, linodego.FirewallDeviceLinodeInterface),
 	)
 	if diags.HasError() {
 		return diags

@@ -39,7 +39,7 @@ func TestParseComputedAttributes(t *testing.T) {
 	}
 	deviceEntity3 := linodego.FirewallDeviceEntity{
 		ID:    1221,
-		Type:  linodego.FirewallDeviceInterface,
+		Type:  linodego.FirewallDeviceLinodeInterface,
 		Label: "device_entity_3",
 		URL:   "test-firewall.example.com",
 	}

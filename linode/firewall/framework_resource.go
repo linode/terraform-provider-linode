@@ -230,7 +230,7 @@ func (r *Resource) Update(
 		for _, entityID := range interfaceIDs {
 			assignments = append(assignments, firewallDeviceAssignment{
 				ID:   entityID,
-				Type: linodego.FirewallDeviceInterface,
+				Type: linodego.FirewallDeviceLinodeInterface,
 			})
 		}
 

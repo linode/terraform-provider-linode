@@ -94,7 +94,7 @@ func (data *FirewallModel) parseFirewall(
 		firewallresource.AggregateEntityIDs(devices, linodego.FirewallDeviceNodeBalancer),
 	)
 	data.Interfaces = helper.IntSliceToFramework(
-		firewallresource.AggregateEntityIDs(devices, linodego.FirewallDeviceInterface),
+		firewallresource.AggregateEntityIDs(devices, linodego.FirewallDeviceLinodeInterface),
 	)
 	data.Status = types.StringValue(string(firewall.Status))
 
