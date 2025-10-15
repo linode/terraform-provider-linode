@@ -54,6 +54,27 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The ID of the database that was forked from.",
 			Computed:    true,
 		},
+		"private_network": schema.SingleNestedAttribute{
+			Description: "Restricts access to this database using a virtual private cloud (VPC) " +
+				"that you've configured in the region where the database will live.",
+			Computed: true,
+			Attributes: map[string]schema.Attribute{
+				"vpc_id": schema.Int64Attribute{
+					Description: "The ID of the virtual private cloud (VPC) " +
+						"to restrict access to this database using.",
+					Computed: true,
+				},
+				"subnet_id": schema.Int64Attribute{
+					Description: "The ID of the VPC subnet to restrict access to this database using.",
+					Computed:    true,
+				},
+				"public_access": schema.BoolAttribute{
+					Description: "If true, clients outside of the VPC can " +
+						"connect to the database using a public IP address.",
+					Computed: true,
+				},
+			},
+		},
 		"updates": schema.ObjectAttribute{
 			Description:    "Configuration settings for automated patch update maintenance for the Managed Database.",
 			AttributeTypes: updatesAttributes,

@@ -130,6 +130,23 @@ resource "linode_database_postgresql_v2" "foobar" {
 }
 ```
 
+Creating a PostgreSQL database hidden behind a VPC:
+
+```hcl
+resource "linode_database_postgresql_v2" "foobar" {
+  label = "mydatabase"
+  engine_id = "postgresql/16"
+  region = "us-mia"
+  type = "g6-nanode-1"
+
+  private_network = {
+    vpc_id = 123
+    subnet_id = 456
+    public_access = false
+  }
+}
+```
+
 > **_NOTE:_** The name of the default database in the returned database cluster is `defaultdb`.
 
 ## Argument Reference
@@ -153,6 +170,8 @@ The following arguments are supported:
 * `fork_restore_time` - (Optional) The database timestamp from which it was restored.
 
 * `fork_source` - (Optional) The ID of the database that was forked from.
+
+* [`private_network`](#private_network) - (Optional) Restricts access to this database using a virtual private cloud (VPC) that you've configured in the region where the database will live.
 
 * [`updates`](#updates) - (Optional) Configuration settings for automated patch update maintenance for the Managed Database.
 
@@ -309,6 +328,16 @@ The following arguments are supported in the `updates` specification block:
 * `frequency` - (Required) The frequency at which maintenance occurs. (`weekly`)
 
 * `hour_of_day` - (Required) The hour to begin maintenance based in UTC time. (`0`..`23`)
+
+## private_network
+
+The following arguments are supported in the `private_network` specification block:
+
+* `vpc_id` - (Required) The ID of the virtual private cloud (VPC) to restrict access to this database using.
+
+* `subnet_id` - (Required) The ID of the VPC subnet to restrict access to this database using.
+
+* `public_access` - (Optional) Set to `true` to allow clients outside the VPC to connect to the database using a public IP address. (Default `false`)
 
 ## Import
 
