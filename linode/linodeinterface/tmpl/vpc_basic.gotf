@@ -1,0 +1,30 @@
+{{ define "interface_vpc_basic" }}
+
+resource "linode_vpc" "test" {
+    label = "{{.Label}}-vpc"
+    region = "{{.Region}}"
+    description = "vpc for interface testing"
+}
+
+resource "linode_vpc_subnet" "test" {
+    vpc_id = linode_vpc.test.id
+    label = "{{.Label}}-subnet"  
+    ipv4 = "{{.SubnetIPv4}}"
+}
+
+resource "linode_instance" "test" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+    type = "g6-nanode-1"
+    interface_generation = "linode"
+}
+
+resource "linode_interface" "test" {
+    linode_id = linode_instance.test.id
+    
+    vpc = {
+        subnet_id = linode_vpc_subnet.test.id
+    }
+}
+
+{{ end }}

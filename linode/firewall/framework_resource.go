@@ -196,7 +196,7 @@ func (r *Resource) Update(
 		}
 	}
 
-	if state.LinodesOrNodeBalancersHaveChanges(ctx, plan) {
+	if state.LinodesOrNodeBalancersOrInterfacesHaveChanges(ctx, plan) {
 		linodeIDs := helper.ExpandFwInt64Set(plan.Linodes, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
@@ -207,7 +207,12 @@ func (r *Resource) Update(
 			return
 		}
 
-		assignments := make([]firewallDeviceAssignment, 0, len(linodeIDs)+len(nodeBalancerIDs))
+		interfaceIDs := helper.ExpandFwInt64Set(plan.Interfaces, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		assignments := make([]firewallDeviceAssignment, 0, len(linodeIDs)+len(nodeBalancerIDs)+len(interfaceIDs))
 		for _, entityID := range linodeIDs {
 			assignments = append(assignments, firewallDeviceAssignment{
 				ID:   entityID,
@@ -219,6 +224,13 @@ func (r *Resource) Update(
 			assignments = append(assignments, firewallDeviceAssignment{
 				ID:   entityID,
 				Type: linodego.FirewallDeviceNodeBalancer,
+			})
+		}
+
+		for _, entityID := range interfaceIDs {
+			assignments = append(assignments, firewallDeviceAssignment{
+				ID:   entityID,
+				Type: linodego.FirewallDeviceLinodeInterface,
 			})
 		}
 

@@ -37,6 +37,12 @@ func TestParseComputedAttributes(t *testing.T) {
 		Label: "device_entity_2",
 		URL:   "test-firewall.example.com",
 	}
+	deviceEntity3 := linodego.FirewallDeviceEntity{
+		ID:    1221,
+		Type:  linodego.FirewallDeviceLinodeInterface,
+		Label: "device_entity_3",
+		URL:   "test-firewall.example.com",
+	}
 	devices := []linodego.FirewallDevice{
 		{
 			ID:     111,
@@ -45,6 +51,10 @@ func TestParseComputedAttributes(t *testing.T) {
 		{
 			ID:     112,
 			Entity: deviceEntity2,
+		},
+		{
+			ID:     113,
+			Entity: deviceEntity3,
 		},
 	}
 
@@ -76,7 +86,7 @@ func TestParseComputedAttributes(t *testing.T) {
 		},
 	}
 
-	firewallRules := &linodego.FirewallRuleSet{
+	firewallRules := linodego.FirewallRuleSet{
 		InboundPolicy:  "ACCEPT",
 		Inbound:        inboundRules,
 		OutboundPolicy: "DROP",
@@ -92,6 +102,7 @@ func TestParseComputedAttributes(t *testing.T) {
 
 	assert.Contains(t, data.Linodes.String(), "1234")
 	assert.Contains(t, data.NodeBalancers.String(), "4321")
+	assert.Contains(t, data.Interfaces.String(), "1221")
 
 	assert.Nil(t, diags)
 
