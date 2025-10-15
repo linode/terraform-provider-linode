@@ -341,7 +341,6 @@ func (data *FirewallResourceModel) CopyFrom(
 	data.NodeBalancers = helper.KeepOrUpdateValue(data.NodeBalancers, other.NodeBalancers, preserveKnown)
 	data.Interfaces = helper.KeepOrUpdateValue(data.Interfaces, other.Interfaces, preserveKnown)
 	data.Devices = helper.KeepOrUpdateValue(data.Devices, other.Devices, preserveKnown)
-	data.Devices = helper.KeepOrUpdateValue(data.Devices, other.Devices, preserveKnown)
 	data.Status = helper.KeepOrUpdateValue(data.Status, other.Status, preserveKnown)
 	data.Created = helper.KeepOrUpdateValue(data.Created, other.Created, preserveKnown)
 	data.Updated = helper.KeepOrUpdateValue(data.Updated, other.Updated, preserveKnown)
