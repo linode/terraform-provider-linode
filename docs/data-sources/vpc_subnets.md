@@ -55,7 +55,7 @@ Each Linode VPC subnet will be stored in the `vpc_subnets` attribute and will ex
 
 * [`ipv6`](#ipv6) - A list of IPv6 ranges under this subnet.
 
-* `linodes` - A list of Linode that added to this subnet.
+* `linodes` - A list of Linodes added to this subnet.
 
   * `id` - ID of the Linode
 
