@@ -3,6 +3,7 @@ package producerimagesharegroup
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -163,6 +164,11 @@ func (r *Resource) Read(
 	}
 
 	state.Images = listVal
+
+	// Normalize null/unknown -> []
+	if state.Images.IsNull() || state.Images.IsUnknown() {
+		state.Images = types.ListValueMust(imageShareGroupImage.Type(), []attr.Value{})
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -372,6 +378,11 @@ func (r *Resource) Update(
 		return
 	}
 	state.Images = listVal
+
+	// Normalize null/unknown -> []
+	if state.Images.IsNull() || state.Images.IsUnknown() {
+		state.Images = types.ListValueMust(imageShareGroupImage.Type(), []attr.Value{})
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

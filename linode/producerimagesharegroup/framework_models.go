@@ -2,6 +2,7 @@ package producerimagesharegroup
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -52,10 +53,10 @@ func (data *ResourceModel) FlattenImageShareGroup(
 	)
 
 	// Images must persist in state across CRUD operations but is not returned by the API. It will be maintained
-	// manually as a part of Create, Update, and Read, so we only need to set it here if it is null so that it is
-	// properly typed.
-	if data.Images.IsNull() {
-		data.Images = types.ListNull(imageShareGroupImage.Type())
+	// manually as a part of Create, Update, and Read, so we only need to set it here if it is null or unknown
+	// so that it is properly typed.
+	if data.Images.IsNull() || data.Images.IsUnknown() {
+		data.Images = types.ListValueMust(imageShareGroupImage.Type(), []attr.Value{})
 	}
 }
 
