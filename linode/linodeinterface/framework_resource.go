@@ -242,7 +242,7 @@ func (r *Resource) ImportState(
 
 func populateLogAttributes(ctx context.Context, model LinodeInterfaceModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"linode_id": model.LinodeID.ValueInt64(),
 		"id":        model.ID.ValueString(),
+		"linode_id": model.LinodeID.ValueInt64(),
 	})
 }
