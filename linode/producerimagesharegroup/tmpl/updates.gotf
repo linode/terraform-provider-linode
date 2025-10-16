@@ -1,0 +1,55 @@
+{{ define "producer_image_share_group_updates" }}
+
+{{ template "e2e_test_firewall" . }}
+
+resource "linode_instance" "foobar" {
+  label  = "{{ .Label }}"
+  group  = "tf_test"
+  type   = "g6-standard-1"
+  region = "{{ .Region }}"
+
+  disk {
+    label      = "disk"
+    size       = 1000
+    filesystem = "ext4"
+  }
+
+  firewall_id = linode_firewall.e2e_test_firewall.id
+}
+
+resource "linode_image" "foobar" {
+  linode_id   = linode_instance.foobar.id
+  disk_id     = linode_instance.foobar.disk.0.id
+  label       = "{{ .ImageLabel1 }}"
+  description = "descriptive text"
+}
+
+resource "linode_image" "barfoo" {
+  linode_id   = linode_instance.foobar.id
+  disk_id     = linode_instance.foobar.disk.0.id
+  label       = "{{ .ImageLabel2 }}"
+  description = "descriptive text"
+}
+
+resource "linode_producer_image_share_group" "foobar" {
+  label       = "{{ .ImageShareGroupLabel }}"
+  description = "{{ .ImageShareGroupDescription }}"
+
+  {{- if .Images }}
+  images = [
+    {{- range .Images }}
+    {
+      id = "{{ .ID }}"
+      {{- if .Label }}
+      label       = "{{ .Label }}"
+      {{- end }}
+      {{- if .Description }}
+      description = "{{ .Description }}"
+      {{- end }}
+    },
+    {{- end }}
+  ]
+  {{- end }}
+}
+
+{{ end }}

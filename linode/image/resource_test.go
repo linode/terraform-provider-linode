@@ -70,7 +70,7 @@ func init() {
 		return !ok || !isDisallowed
 	})
 
-	testRegion = testRegions[0]
+	testRegion = testRegions[1]
 }
 
 func sweep(prefix string) error {

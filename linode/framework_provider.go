@@ -75,6 +75,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/placementgroup"
 	"github.com/linode/terraform-provider-linode/v3/linode/placementgroupassignment"
 	"github.com/linode/terraform-provider-linode/v3/linode/placementgroups"
+	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroup"
 	"github.com/linode/terraform-provider-linode/v3/linode/profile"
 	"github.com/linode/terraform-provider-linode/v3/linode/rdns"
 	"github.com/linode/terraform-provider-linode/v3/linode/region"
@@ -252,6 +253,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		networkingipassignment.NewResource,
 		obj.NewResource,
 		databasemysqlv2.NewResource,
+		producerimagesharegroup.NewResource,
 	}
 }
 
@@ -332,5 +334,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		objendpoints.NewDataSource,
 		objquota.NewDataSource,
 		objquotas.NewDataSource,
+		producerimagesharegroup.NewDataSource,
 	}
 }
