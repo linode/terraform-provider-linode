@@ -49,6 +49,14 @@ func (m *ModelVPCIP) FlattenVPCIP(ctx context.Context, vpcIp *linodego.VPCIP, pr
 	m.VPCID = helper.KeepOrUpdateInt64(m.VPCID, int64(vpcIp.VPCID), preserveKnown)
 	m.SubnetID = helper.KeepOrUpdateInt64(m.SubnetID, int64(vpcIp.SubnetID), preserveKnown)
 	m.InterfaceID = helper.KeepOrUpdateInt64(m.InterfaceID, int64(vpcIp.InterfaceID), preserveKnown)
+
+	var newConfigID types.Int64
+	if vpcIp.ConfigID == 0 {
+		newConfigID = types.Int64Null()
+	} else {
+		newConfigID = types.Int64Value(int64(vpcIp.ConfigID))
+	}
+	m.ConfigID = helper.KeepOrUpdateValue(m.ConfigID, newConfigID, preserveKnown)
 	m.IPv6Range = helper.KeepOrUpdateStringPointer(m.IPv6Range, vpcIp.IPv6Range, preserveKnown)
 	m.IPv6IsPublic = helper.KeepOrUpdateBoolPointer(m.IPv6IsPublic, vpcIp.IPv6IsPublic, preserveKnown)
 
@@ -70,14 +78,6 @@ func (m *ModelVPCIP) FlattenVPCIP(ctx context.Context, vpcIp *linodego.VPCIP, pr
 		ipv6AddressSet,
 		preserveKnown,
 	)
-
-	var newConfigID types.Int64
-	if vpcIp.ConfigID == 0 {
-		newConfigID = types.Int64Null()
-	} else {
-		newConfigID = types.Int64Value(int64(vpcIp.ConfigID))
-	}
-	m.ConfigID = helper.KeepOrUpdateValue(m.ConfigID, newConfigID, preserveKnown)
 
 	return rd
 }
