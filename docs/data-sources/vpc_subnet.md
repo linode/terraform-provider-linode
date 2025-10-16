@@ -42,7 +42,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * [`ipv6`](#ipv6) - A list of IPv6 ranges under this subnet.
 
-* `linodes` - A list of Linode that added to this subnet.
+* `linodes` - A list of Linodes added to this subnet.
 
   * `id` - ID of the Linode
 
