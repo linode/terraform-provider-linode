@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -37,6 +38,8 @@ type VPCIPv4RangeAttrModel struct {
 }
 
 func (plan *VPCAttrModel) GetCreateOptions(ctx context.Context, diags *diag.Diagnostics) (opts linodego.VPCInterfaceCreateOptions) {
+	tflog.Trace(ctx, "Enter VPCAttrModel.GetCreateOptions")
+
 	opts.SubnetID = helper.FrameworkSafeInt64ToInt(plan.SubnetID.ValueInt64(), diags)
 
 	if !plan.IPv4.IsUnknown() && !plan.IPv4.IsNull() {
@@ -54,6 +57,8 @@ func (plan *VPCAttrModel) GetUpdateOptions(
 	state *VPCAttrModel,
 	diags *diag.Diagnostics,
 ) (opts linodego.VPCInterfaceUpdateOptions, shouldUpdate bool) {
+	tflog.Trace(ctx, "Enter VPCAttrModel.GetUpdateOptions")
+
 	// Note: SubnetID cannot be updated according to the API, so we don't include it
 
 	if !plan.IPv4.IsUnknown() && !plan.IPv4.IsNull() {
@@ -78,6 +83,7 @@ func (plan *VPCIPv4AttrModel) GetCreateOrUpdateOptions(
 	ctx context.Context,
 	state *VPCIPv4AttrModel,
 ) (opts linodego.VPCInterfaceIPv4CreateOptions, shouldUpdate bool) {
+	tflog.Trace(ctx, "Enter VPCIPv4AttrModel.GetCreateOrUpdateOptions")
 	if !plan.Addresses.IsUnknown() && !plan.Addresses.IsNull() && (state == nil || !state.Addresses.Equal(plan.Addresses)) {
 		length := len(plan.Addresses.Elements())
 		addresses := make([]VPCIPv4AddressAttrModel, 0, length)
@@ -85,7 +91,7 @@ func (plan *VPCIPv4AttrModel) GetCreateOrUpdateOptions(
 
 		addressOpts := make([]linodego.VPCInterfaceIPv4AddressCreateOptions, len(addresses))
 		for i, address := range addresses {
-			addressOpts[i] = address.GetCreateOptions()
+			addressOpts[i] = address.GetCreateOptions(ctx)
 		}
 		opts.Addresses = &addressOpts
 		shouldUpdate = true
@@ -98,7 +104,7 @@ func (plan *VPCIPv4AttrModel) GetCreateOrUpdateOptions(
 
 		rangeOpts := make([]linodego.VPCInterfaceIPv4RangeCreateOptions, len(ranges))
 		for i, r := range ranges {
-			rangeOpts[i] = r.GetCreateOptions()
+			rangeOpts[i] = r.GetCreateOptions(ctx)
 		}
 		opts.Ranges = &rangeOpts
 		shouldUpdate = true
@@ -107,7 +113,9 @@ func (plan *VPCIPv4AttrModel) GetCreateOrUpdateOptions(
 	return opts, shouldUpdate
 }
 
-func (plan *VPCIPv4AddressAttrModel) GetCreateOptions() linodego.VPCInterfaceIPv4AddressCreateOptions {
+func (plan *VPCIPv4AddressAttrModel) GetCreateOptions(ctx context.Context) linodego.VPCInterfaceIPv4AddressCreateOptions {
+	tflog.Trace(ctx, "Enter VPCIPv4AddressAttrModel.GetCreateOptions")
+
 	opts := linodego.VPCInterfaceIPv4AddressCreateOptions{}
 
 	if !plan.Address.IsUnknown() {
@@ -125,7 +133,9 @@ func (plan *VPCIPv4AddressAttrModel) GetCreateOptions() linodego.VPCInterfaceIPv
 	return opts
 }
 
-func (plan *VPCIPv4RangeAttrModel) GetCreateOptions() linodego.VPCInterfaceIPv4RangeCreateOptions {
+func (plan *VPCIPv4RangeAttrModel) GetCreateOptions(ctx context.Context) linodego.VPCInterfaceIPv4RangeCreateOptions {
+	tflog.Trace(ctx, "Enter VPCIPv4RangeAttrModel.GetCreateOptions")
+
 	return linodego.VPCInterfaceIPv4RangeCreateOptions{
 		Range: plan.Range.ValueString(),
 	}
@@ -134,6 +144,8 @@ func (plan *VPCIPv4RangeAttrModel) GetCreateOptions() linodego.VPCInterfaceIPv4R
 func (data *VPCAttrModel) FlattenVPCInterface(
 	ctx context.Context, vpcInterface linodego.VPCInterface, preserveKnown bool, diags *diag.Diagnostics,
 ) {
+	tflog.Trace(ctx, "Enter VPCAttrModel.FlattenVPCInterface")
+
 	data.SubnetID = helper.KeepOrUpdateInt64(data.SubnetID, int64(vpcInterface.SubnetID), preserveKnown)
 
 	flattenedIPv4 := helper.KeepOrUpdateSingleNestedAttributesWithTypes(
@@ -151,6 +163,8 @@ func (data *VPCAttrModel) FlattenVPCInterface(
 }
 
 func (data *VPCIPv4AttrModel) FlattenVPCIPv4(ctx context.Context, ipv4 linodego.VPCInterfaceIPv4, preserveKnown bool, diags *diag.Diagnostics) {
+	tflog.Trace(ctx, "Enter VPCIPv4AttrModel.FlattenVPCIPv4")
+
 	// When the object is null/unknown, the types of attributes of the object won't be filled by object.As(...) in the
 	// helper function `KeepOrUpdateSingleNestedAttributeWithTypes`, so resetting manually here.
 	if data.Addresses.IsNull() {

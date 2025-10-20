@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -23,18 +24,9 @@ type LinodeInterfaceModel struct {
 	VPC          types.Object `tfsdk:"vpc"`
 }
 
-// Structs for Public Interfaces
+func (state *LinodeInterfaceModel) GetIDs(ctx context.Context, diags *diag.Diagnostics) (linodeID int, id int) {
+	tflog.Trace(ctx, "Enter LinodeInterfaceModel.GetIDs")
 
-// Structs for VLAN Interfaces
-
-// Structs for VPC Interfaces
-
-// type VPCAttrModel struct {
-// 	IPv4 types.Bool `tfsdk:"ipv4"`
-// 	IPv6 types.Bool `tfsdk:"ipv6"`
-// }
-
-func (state *LinodeInterfaceModel) GetIDs(diags *diag.Diagnostics) (linodeID int, id int) {
 	id, err := strconv.Atoi(state.ID.ValueString())
 	if err != nil {
 		diags.AddError(
@@ -50,10 +42,12 @@ func (state *LinodeInterfaceModel) GetIDs(diags *diag.Diagnostics) (linodeID int
 }
 
 func (plan *LinodeInterfaceModel) GetCreateOptions(ctx context.Context, diags *diag.Diagnostics) (opts linodego.LinodeInterfaceCreateOptions, linodeID int) {
+	tflog.Trace(ctx, "Enter LinodeInterfaceModel.GetCreateOptions")
+
 	if !plan.DefaultRoute.IsUnknown() && !plan.DefaultRoute.IsNull() {
 		var planDefaultRoute DefaultRouteAttrModel
 		plan.DefaultRoute.As(ctx, &planDefaultRoute, basetypes.ObjectAsOptions{})
-		defaultRouteOpts, _ := planDefaultRoute.GetCreateOrUpdateOptions(nil)
+		defaultRouteOpts, _ := planDefaultRoute.GetCreateOrUpdateOptions(ctx, nil)
 		opts.DefaultRoute = linodego.Pointer(defaultRouteOpts)
 	}
 
@@ -72,7 +66,7 @@ func (plan *LinodeInterfaceModel) GetCreateOptions(ctx context.Context, diags *d
 	} else if !plan.VLAN.IsUnknown() && !plan.VLAN.IsNull() {
 		var planVLANInterface VLANAttrModel
 		plan.VLAN.As(ctx, &planVLANInterface, basetypes.ObjectAsOptions{})
-		opts.VLAN = linodego.Pointer(planVLANInterface.GetCreateOptions())
+		opts.VLAN = linodego.Pointer(planVLANInterface.GetCreateOptions(ctx))
 	} else if !plan.VPC.IsUnknown() && !plan.VPC.IsNull() {
 		var planVPCInterface VPCAttrModel
 		plan.VPC.As(ctx, &planVPCInterface, basetypes.ObjectAsOptions{})
@@ -89,6 +83,8 @@ func (plan *LinodeInterfaceModel) GetUpdateOptions(
 	state LinodeInterfaceModel,
 	diags *diag.Diagnostics,
 ) (opts linodego.LinodeInterfaceUpdateOptions) {
+	tflog.Trace(ctx, "Enter LinodeInterfaceModel.GetUpdateOptions")
+
 	if !plan.DefaultRoute.IsUnknown() && !plan.DefaultRoute.IsNull() {
 		var planDefaultRoute DefaultRouteAttrModel
 		var stateDefaultRoute *DefaultRouteAttrModel
@@ -99,7 +95,7 @@ func (plan *LinodeInterfaceModel) GetUpdateOptions(
 			state.DefaultRoute.As(ctx, &stateDefaultRoute, basetypes.ObjectAsOptions{})
 		}
 
-		if updatedDefaultRoute, ok := planDefaultRoute.GetCreateOrUpdateOptions(stateDefaultRoute); ok {
+		if updatedDefaultRoute, ok := planDefaultRoute.GetCreateOrUpdateOptions(ctx, stateDefaultRoute); ok {
 			opts.DefaultRoute = linodego.Pointer(updatedDefaultRoute)
 		}
 	}
@@ -142,6 +138,8 @@ func (plan *LinodeInterfaceModel) GetUpdateOptions(
 func (data *LinodeInterfaceModel) FlattenInterface(
 	ctx context.Context, i linodego.LinodeInterface, preserveKnown bool, diags *diag.Diagnostics,
 ) {
+	tflog.Trace(ctx, "Enter LinodeInterfaceModel.FlattenInterface")
+
 	data.ID = helper.KeepOrUpdateString(data.ID, strconv.Itoa(i.ID), preserveKnown)
 
 	flattenedDefaultRoute := helper.KeepOrUpdateSingleNestedAttributes(
@@ -152,7 +150,7 @@ func (data *LinodeInterfaceModel) FlattenInterface(
 				*isNull = true
 				return
 			}
-			dr.FlattenInterfaceDefaultRoute(*i.DefaultRoute, pk)
+			dr.FlattenInterfaceDefaultRoute(ctx, *i.DefaultRoute, pk)
 		},
 	)
 
@@ -170,7 +168,7 @@ func (data *LinodeInterfaceModel) FlattenInterface(
 				vlan.VLANLabel = helper.KeepOrUpdateValue(vlan.VLANLabel, types.StringNull(), pk)
 				return
 			}
-			vlan.FlattenVLANInterface(*i.VLAN, pk)
+			vlan.FlattenVLANInterface(ctx, *i.VLAN, pk)
 		},
 	)
 	if diags.HasError() {
