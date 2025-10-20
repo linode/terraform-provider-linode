@@ -27,57 +27,12 @@ const testInterfaceResName = "linode_interface.test"
 var testRegion string
 
 func init() {
-	resource.AddTestSweepers("linode_interface", &resource.Sweeper{
-		Name: "linode_interface",
-		F:    sweep,
-	})
-
 	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	testRegion = region
-}
-
-func sweep(prefix string) error {
-	client, err := acceptance.GetTestClient()
-	if err != nil {
-		return fmt.Errorf("failed to get client: %s", err)
-	}
-
-	// Get all instances and sweep their interfaces
-	instances, err := client.ListInstances(context.Background(), nil)
-	if err != nil {
-		return fmt.Errorf("failed to get instances: %s", err)
-	}
-
-	for _, instance := range instances {
-		if !acceptance.ShouldSweep(prefix, instance.Label) {
-			continue
-		}
-
-		// Get instance configs to find interfaces
-		configs, err := client.ListInstanceConfigs(context.Background(), instance.ID, nil)
-		if err != nil {
-			continue // Skip if we can't get configs
-		}
-
-		// Delete non-primary interfaces from configs
-		for _, config := range configs {
-			for i, iface := range config.Interfaces {
-				// Skip eth0 (primary interface) and other essential interfaces
-				if i == 0 || iface.Purpose == linodego.InterfacePurposePublic {
-					continue
-				}
-
-				// For sweep purposes, we'll let the instance deletion handle interface cleanup
-				// since interfaces are tied to instances
-			}
-		}
-	}
-
-	return nil
 }
 
 func TestAccLinodeInterface_vlan_basic(t *testing.T) {
