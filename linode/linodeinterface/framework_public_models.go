@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -56,6 +57,8 @@ func (plan *PublicAttrModel) GetCreateOrUpdateOptions(
 	ctx context.Context,
 	state *PublicAttrModel,
 ) (opts linodego.PublicInterfaceCreateOptions, shouldUpdate bool) {
+	tflog.Trace(ctx, "Enter PublicAttrModel.GetCreateOrUpdateOptions")
+
 	if !plan.IPv4.IsUnknown() && !plan.IPv4.IsNull() && (state == nil || !state.IPv4.Equal(plan.IPv4)) {
 		var planPublicIPv4 PublicIPv4AttrModel
 		plan.IPv4.As(ctx, &planPublicIPv4, basetypes.ObjectAsOptions{})
@@ -74,6 +77,8 @@ func (plan *PublicAttrModel) GetCreateOrUpdateOptions(
 }
 
 func (plan *PublicIPv4AttrModel) GetCreateOptions(ctx context.Context) (opts linodego.PublicInterfaceIPv4CreateOptions) {
+	tflog.Trace(ctx, "Enter PublicIPv4AttrModel.GetCreateOptions")
+
 	if !plan.Addresses.IsNull() && !plan.Addresses.IsUnknown() {
 		length := len(plan.Addresses.Elements())
 		addressesOpts := make([]linodego.PublicInterfaceIPv4AddressCreateOptions, 0, length)
@@ -85,7 +90,7 @@ func (plan *PublicIPv4AttrModel) GetCreateOptions(ctx context.Context) (opts lin
 		plan.Addresses.ElementsAs(ctx, &addresses, false)
 
 		for _, v := range addresses {
-			addressesOpts = append(addressesOpts, v.GetCreateOptions())
+			addressesOpts = append(addressesOpts, v.GetCreateOptions(ctx))
 		}
 		opts.Addresses = linodego.Pointer(addressesOpts)
 	}
@@ -94,6 +99,8 @@ func (plan *PublicIPv4AttrModel) GetCreateOptions(ctx context.Context) (opts lin
 }
 
 func (data *PublicIPv4AttrModel) FlattenPublicIPv4(ctx context.Context, ipv4 linodego.PublicInterfaceIPv4, preserveKnown bool, diags *diag.Diagnostics) {
+	tflog.Trace(ctx, "Enter PublicIPv4AttrModel.FlattenPublicIPv4")
+
 	// data.Address should never need to be flattened from a linodego struct because its values can
 	// either be configured by the TF practitioner or defaulted to an empty list
 
@@ -142,6 +149,8 @@ func (data *PublicIPv4AttrModel) FlattenPublicIPv4(ctx context.Context, ipv4 lin
 }
 
 func (data *PublicIPv6AttrModel) FlattenPublicIPv6(ctx context.Context, ipv6 linodego.PublicInterfaceIPv6, preserveKnown bool, diags *diag.Diagnostics) {
+	tflog.Trace(ctx, "Enter PublicIPv6AttrModel.FlattenPublicIPv6")
+
 	// data.Ranges should never need to be flattened from a linodego struct because its values can
 	// either be configured by the TF practitioner or defaulted to an empty list
 
@@ -199,6 +208,8 @@ func (data *PublicIPv6AttrModel) FlattenPublicIPv6(ctx context.Context, ipv6 lin
 }
 
 func (plan *PublicIPv6AttrModel) GetCreateOptions(ctx context.Context) (opts linodego.PublicInterfaceIPv6CreateOptions) {
+	tflog.Trace(ctx, "Enter PublicIPv6AttrModel.GetCreateOptions")
+
 	if !plan.Ranges.IsNull() && !plan.Ranges.IsUnknown() {
 		length := len(plan.Ranges.Elements())
 
@@ -210,7 +221,7 @@ func (plan *PublicIPv6AttrModel) GetCreateOptions(ctx context.Context) (opts lin
 		plan.Ranges.ElementsAs(ctx, &ranges, false)
 
 		for _, v := range ranges {
-			rangesOpts = append(rangesOpts, v.GetCreateOptions())
+			rangesOpts = append(rangesOpts, v.GetCreateOptions(ctx))
 		}
 		opts.Ranges = linodego.Pointer(rangesOpts)
 	}
@@ -218,13 +229,17 @@ func (plan *PublicIPv6AttrModel) GetCreateOptions(ctx context.Context) (opts lin
 	return opts
 }
 
-func (plan *PublicIPv4AddressAttrModel) GetCreateOptions() (opts linodego.PublicInterfaceIPv4AddressCreateOptions) {
+func (plan *PublicIPv4AddressAttrModel) GetCreateOptions(ctx context.Context) (opts linodego.PublicInterfaceIPv4AddressCreateOptions) {
+	tflog.Trace(ctx, "Enter PublicIPv4AddressAttrModel.GetCreateOptions")
+
 	opts.Address = helper.ValueStringPointerWithUnknownToNil(plan.Address)
 	opts.Primary = helper.ValueBoolPointerWithUnknownToNil(plan.Primary)
 	return opts
 }
 
-func (plan *PublicIPv6RangeAttrModel) GetCreateOptions() (opts linodego.PublicInterfaceIPv6RangeCreateOptions) {
+func (plan *PublicIPv6RangeAttrModel) GetCreateOptions(ctx context.Context) (opts linodego.PublicInterfaceIPv6RangeCreateOptions) {
+	tflog.Trace(ctx, "Enter PublicIPv6RangeAttrModel.GetCreateOptions")
+
 	opts.Range = plan.Range.ValueString()
 	return opts
 }
@@ -232,6 +247,8 @@ func (plan *PublicIPv6RangeAttrModel) GetCreateOptions() (opts linodego.PublicIn
 func (data *PublicAttrModel) FlattenPublicInterface(
 	ctx context.Context, publicInterface linodego.PublicInterface, preserveKnown bool, diags *diag.Diagnostics,
 ) {
+	tflog.Trace(ctx, "Enter PublicAttrModel.FlattenPublicInterface")
+
 	flattenedPublicIPv4 := helper.KeepOrUpdateSingleNestedAttributesWithTypes(
 		ctx, data.IPv4, publicIPv4Attribute.GetType().(types.ObjectType).AttrTypes, preserveKnown, diags,
 		func(publicIPv4 *PublicIPv4AttrModel, isNull *bool, pk bool, d *diag.Diagnostics) {
