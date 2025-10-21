@@ -55,7 +55,7 @@ func (r *Resource) Create(
 	plan.ComputeEndpointIfUnknown(ctx, client, &resp.Diagnostics)
 
 	s3client, teardownKeys := getS3ClientFromModel(
-		ctx, client, config, plan, READ_WRITE_PERMISSION, &resp.Diagnostics,
+		ctx, client, config, plan, READ_WRITE_PERMISSION, nil, &resp.Diagnostics,
 	)
 
 	if teardownKeys != nil {
@@ -145,7 +145,7 @@ func (r *Resource) Read(
 	}
 
 	s3client, teardownKeys := getS3ClientFromModel(
-		ctx, client, config, state, READ_PERMISSION, &resp.Diagnostics,
+		ctx, client, config, state, READ_PERMISSION, nil, &resp.Diagnostics,
 	)
 
 	if teardownKeys != nil {
@@ -196,7 +196,7 @@ func (r *Resource) Update(
 	plan.ComputeEndpointIfUnknown(ctx, client, &resp.Diagnostics)
 
 	s3client, teardownKeys := getS3ClientFromModel(
-		ctx, client, config, plan, READ_WRITE_PERMISSION, &resp.Diagnostics,
+		ctx, client, config, plan, READ_WRITE_PERMISSION, nil, &resp.Diagnostics,
 	)
 
 	if teardownKeys != nil {
@@ -256,7 +256,7 @@ func (r *Resource) Delete(
 	config := r.Meta.Config
 
 	s3client, teardownKeys := getS3ClientFromModel(
-		ctx, client, config, state, READ_WRITE_PERMISSION, &resp.Diagnostics,
+		ctx, client, config, state, READ_WRITE_PERMISSION, nil, &resp.Diagnostics,
 	)
 
 	if teardownKeys != nil {
