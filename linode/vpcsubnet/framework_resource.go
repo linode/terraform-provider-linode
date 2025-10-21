@@ -123,7 +123,7 @@ func (r *Resource) Create(
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
-	if !ipv6Configured && subnet.IPv6 == nil {
+	if ipv6Configured && subnet.IPv6 == nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("ipv6"),
 			"Value Mismatch",
