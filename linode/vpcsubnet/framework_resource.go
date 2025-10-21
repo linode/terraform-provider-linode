@@ -110,25 +110,27 @@ func (r *Resource) Create(
 		return
 	}
 
-	// IDs should always be overridden during creation (see #1085)
-	// TODO: Remove when Crossplane empty string ID issue is resolved
-	data.ID = types.StringValue(strconv.Itoa(subnet.ID))
-
-	if !data.IPv6.IsNull() && subnet.IPv6 == nil {
-		resp.Diagnostics.AddError(
-			"Operation Mismatch: `ipv6`",
-			"The `ipv6` field was configured but was not found in the API's response. "+
-				"Please ensure the current user has access to IPv6 VPCs.",
-		)
-		return
-	}
+	ipv6Configured := !data.IPv6.IsNull()
 
 	resp.Diagnostics.Append(data.FlattenSubnet(ctx, subnet, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	data.ID = types.StringValue(strconv.Itoa(subnet.ID))
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	if !ipv6Configured && subnet.IPv6 == nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("ipv6"),
+			"Value Mismatch",
+			"The `ipv6` field was configured but was not found in the API's response. "+
+				"Please ensure the current user has access to the VPC IPv6 feature.",
+		)
+	}
 }
 
 func (r *Resource) Read(
