@@ -55,6 +55,9 @@ func (r *Resource) Create(
 		return
 	}
 
+	tflog.Debug(ctx, "client.CreateInterface(...)", map[string]any{
+		"options": opts,
+	})
 	i, err := client.CreateInterface(ctx, linodeID, opts)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -99,13 +102,14 @@ func (r *Resource) Read(
 
 	ctx = populateLogAttributes(ctx, state)
 
-	linodeID, id := state.GetIDs(&resp.Diagnostics)
+	linodeID, id := state.GetIDs(ctx, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	client := r.Meta.Client
 
+	tflog.Trace(ctx, "client.GetInterface(...)")
 	linodeInterface, err := client.GetInterface(ctx, linodeID, id)
 	if err != nil {
 		if linodego.IsNotFound(err) {
@@ -145,7 +149,7 @@ func (r *Resource) Update(
 
 	ctx = populateLogAttributes(ctx, state)
 
-	linodeID, id := state.GetIDs(&resp.Diagnostics)
+	linodeID, id := state.GetIDs(ctx, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -157,6 +161,9 @@ func (r *Resource) Update(
 		return
 	}
 
+	tflog.Debug(ctx, "client.UpdateInterface(...)", map[string]any{
+		"options": opts,
+	})
 	i, err := client.UpdateInterface(ctx, linodeID, id, opts)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -197,11 +204,12 @@ func (r *Resource) Delete(
 	}
 	client := r.Meta.Client
 
-	linodeID, id := state.GetIDs(&resp.Diagnostics)
+	linodeID, id := state.GetIDs(ctx, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	tflog.Debug(ctx, "client.DeleteInterface(...)")
 	err := client.DeleteInterface(ctx, linodeID, id)
 	if err != nil {
 		if linodego.IsNotFound(err) {
