@@ -41,6 +41,8 @@ The Linode Image resource exports the following attributes:
 
 * `is_public` - True if the Image is public.
 
+* `is_shared` - True if the Image is shared.
+
 * `image_sharing` - Details about image sharing, including who the image is shared with and by.
   * `shared_with` - Details about who the image is shared with.
     * `sharegroup_count` - The number of sharegroups the private image is present in.

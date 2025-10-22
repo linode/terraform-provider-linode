@@ -76,6 +76,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/placementgroupassignment"
 	"github.com/linode/terraform-provider-linode/v3/linode/placementgroups"
 	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroup"
+	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroupimageshares"
 	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroupmember"
 	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroups"
 	"github.com/linode/terraform-provider-linode/v3/linode/profile"
@@ -339,5 +340,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		objquotas.NewDataSource,
 		producerimagesharegroup.NewDataSource,
 		producerimagesharegroups.NewDataSource,
+		producerimagesharegroupimageshares.NewDataSource,
 	}
 }

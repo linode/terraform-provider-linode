@@ -24,7 +24,7 @@ var frameworkDataSourceSchema = schema.Schema{
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
 		"image_share_groups": schema.ListNestedBlock{
-			Description: "The returned list of Image SHare Groups.",
+			Description: "The returned list of Image Share Groups.",
 			NestedObject: schema.NestedBlockObject{
 				Attributes: producerimagesharegroup.Attributes,
 			},
