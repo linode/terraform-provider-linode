@@ -93,7 +93,7 @@ func readResource(
 			"lifecyclePresent":  lifecyclePresent,
 		})
 
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket.Label, regionOrCluster, "read_only")
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket.Label, regionOrCluster, "read_only", &bucket.EndpointType)
 		if diags != nil {
 			return diags
 		}
@@ -228,9 +228,15 @@ func updateResource(
 		config := meta.(*helper.ProviderMeta).Config
 		regionOrCluster := helper.GetRegionOrCluster(d)
 
-		bucket := d.Get("label").(string)
+		bucketLabel := d.Get("label").(string)
 
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket, regionOrCluster, "read_write")
+		et, etOK := d.GetOk("endpoint_type")
+		var endpointType *linodego.ObjectStorageEndpointType
+		if etOK {
+			endpointType = linodego.Pointer(linodego.ObjectStorageEndpointType(et.(string)))
+		}
+
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucketLabel, regionOrCluster, "read_write", endpointType)
 		if diags != nil {
 			return diags
 		}
@@ -277,7 +283,13 @@ func deleteResource(
 	}
 
 	if config.ObjBucketForceDelete {
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, label, regionOrCluster, "read_write")
+		et, etOK := d.GetOk("endpoint_type")
+		var endpointType *linodego.ObjectStorageEndpointType
+		if etOK {
+			endpointType = linodego.Pointer(linodego.ObjectStorageEndpointType(et.(string)))
+		}
+
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, label, regionOrCluster, "read_write", endpointType)
 		if diags != nil {
 			return diags
 		}
