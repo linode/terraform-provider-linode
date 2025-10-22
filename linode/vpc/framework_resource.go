@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -81,6 +82,8 @@ func (r *Resource) Create(
 		return
 	}
 
+	ipv6Configured := !data.IPv6.IsNull()
+
 	resp.Diagnostics.Append(data.FlattenVPC(ctx, vpc, true)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -91,6 +94,15 @@ func (r *Resource) Create(
 	data.ID = types.StringValue(strconv.Itoa(vpc.ID))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	if ipv6Configured && vpc.IPv6 == nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("ipv6"),
+			"Value Mismatch",
+			"The `ipv6` field was configured but was not found in the API's response. "+
+				"Please ensure the current user has access to the VPC IPv6 feature.",
+		)
+	}
 }
 
 func (r *Resource) Read(

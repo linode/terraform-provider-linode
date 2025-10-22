@@ -145,6 +145,50 @@ var computedVPCInterfaceIPv4Range = schema.NestedAttributeObject{
 	},
 }
 
+var configuredVPCInterfaceIPv6SLAAC = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"range": schema.StringAttribute{
+			Description: "The IPv6 network range in CIDR notation.",
+			Optional:    true,
+			Computed:    true,
+			Default:     stringdefault.StaticString("auto"),
+		},
+	},
+}
+
+var computedVPCInterfaceIPv6SLAAC = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"range": schema.StringAttribute{
+			Description: "The IPv6 network range in CIDR notation.",
+			Computed:    true,
+		},
+		"address": schema.StringAttribute{
+			Description: "The assigned IPv6 address within the range.",
+			Computed:    true,
+		},
+	},
+}
+
+var configuredVPCInterfaceIPv6Range = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"range": schema.StringAttribute{
+			Description: "The IPv6 network range in CIDR notation.",
+			Optional:    true,
+			Computed:    true,
+			Default:     stringdefault.StaticString("auto"),
+		},
+	},
+}
+
+var computedVPCInterfaceIPv6Range = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"range": schema.StringAttribute{
+			Description: "The IPv6 network range in CIDR notation.",
+			Computed:    true,
+		},
+	},
+}
+
 var publicIPv4Attribute = schema.SingleNestedAttribute{
 	Description: "IPv4 addresses for this interface.",
 	Optional:    true,
@@ -289,6 +333,57 @@ var vpcIPv4Attribute = schema.SingleNestedAttribute{
 	},
 }
 
+var vpcIPv6Attribute = schema.SingleNestedAttribute{
+	Optional: true,
+	Computed: true,
+	PlanModifiers: []planmodifier.Object{
+		objectplanmodifier.UseStateForUnknown(),
+	},
+	Attributes: map[string]schema.Attribute{
+		"is_public": schema.BoolAttribute{
+			Description: "Indicates whether the IPv6 configuration on the Linode interface is public.",
+			Optional:    true,
+			Computed:    true,
+		},
+		"slaac": schema.ListNestedAttribute{
+			Description:  "Defines IPv6 SLAAC address ranges.",
+			Optional:     true,
+			NestedObject: configuredVPCInterfaceIPv6SLAAC,
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
+			},
+		},
+		"assigned_slaac": schema.SetNestedAttribute{
+			Description:  "Assigned IPv6 SLAAC address ranges, calculated from `addresses` input.",
+			Computed:     true,
+			NestedObject: computedVPCInterfaceIPv6SLAAC,
+			PlanModifiers: []planmodifier.Set{
+				linodesetplanmodifier.UseStateForUnknownUnlessTheseChanged(
+					path.MatchRoot("vpc").AtName("ipv6").AtName("slaac"),
+				),
+			},
+		},
+		"ranges": schema.ListNestedAttribute{
+			Description:  "CIDR notation of a range (1.2.3.4/24) or prefix only (/24).",
+			Optional:     true,
+			NestedObject: configuredVPCInterfaceIPv6Range,
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
+			},
+		},
+		"assigned_ranges": schema.SetNestedAttribute{
+			Description:  "Assigned IPv6 ranges to use in the VPC subnet, calculated from `ranges` input.",
+			Computed:     true,
+			NestedObject: computedVPCInterfaceIPv6Range,
+			PlanModifiers: []planmodifier.Set{
+				linodesetplanmodifier.UseStateForUnknownUnlessTheseChanged(
+					path.MatchRoot("vpc").AtName("ipv6").AtName("ranges"),
+				),
+			},
+		},
+	},
+}
+
 var vpcInterfaceSchema = schema.SingleNestedAttribute{
 	Description: "Linode VPC interface.",
 	Optional:    true,
@@ -300,6 +395,7 @@ var vpcInterfaceSchema = schema.SingleNestedAttribute{
 	},
 	Attributes: map[string]schema.Attribute{
 		"ipv4": vpcIPv4Attribute,
+		"ipv6": vpcIPv6Attribute,
 		"subnet_id": schema.Int64Attribute{
 			Required:    true,
 			Description: "The VPC subnet identifier for this interface.",

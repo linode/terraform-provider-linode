@@ -99,6 +99,16 @@ func VPCDefaultIP(t testing.TB, label, region, subnetIPv4 string) string {
 			Label:      label,
 			Region:     region,
 			SubnetIPv4: subnetIPv4,
+		},
+	)
+}
+
+func VPCUpdatedIPv4(t testing.TB, label, region, ipv4 string) string {
+	return acceptance.ExecuteTemplate(t,
+		"interface_vpc_updated_ipv4", TemplateData{
+			Label:      label,
+			Region:     region,
+			SubnetIPv4: ipv4,
 		})
 }
 
@@ -138,6 +148,24 @@ func PublicDefaultRouteIPv6(t testing.TB, label, region string) string {
 func VPCDefaultRouteIPv4(t testing.TB, label, region, subnetIPv4 string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_default_route_ipv4", TemplateData{
+			Label:      label,
+			Region:     region,
+			SubnetIPv4: subnetIPv4,
+		})
+}
+
+func VPCWithIPv60(t testing.TB, label, region, subnetIPv4 string) string {
+	return acceptance.ExecuteTemplate(t,
+		"interface_vpc_with_ipv6_0", TemplateData{
+			Label:      label,
+			Region:     region,
+			SubnetIPv4: subnetIPv4,
+		})
+}
+
+func VPCWithIPv61(t testing.TB, label, region, subnetIPv4 string) string {
+	return acceptance.ExecuteTemplate(t,
+		"interface_vpc_with_ipv6_1", TemplateData{
 			Label:      label,
 			Region:     region,
 			SubnetIPv4: subnetIPv4,
