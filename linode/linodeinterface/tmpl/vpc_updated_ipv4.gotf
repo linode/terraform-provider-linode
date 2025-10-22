@@ -1,4 +1,4 @@
-{{ define "interface_vpc_basic" }}
+{{ define "interface_vpc_updated_ipv4" }}
 
 resource "linode_vpc" "test" {
     label = "{{.Label}}-vpc"
@@ -8,7 +8,7 @@ resource "linode_vpc" "test" {
 
 resource "linode_vpc_subnet" "test" {
     vpc_id = linode_vpc.test.id
-    label = "{{.Label}}-subnet"
+    label = "{{.Label}}-subnet"  
     ipv4 = "{{.SubnetIPv4}}"
 }
 
@@ -24,6 +24,23 @@ resource "linode_interface" "test" {
     
     vpc = {
         subnet_id = linode_vpc_subnet.test.id
+        ipv4 = {
+            addresses = [
+                {
+                    address = "auto"
+                    primary = true
+                },
+                {
+                    address = "auto"  
+                    primary = false
+                }
+            ]
+            ranges = [
+                {
+                    range = "/32"
+                }
+            ]
+        }
     }
 }
 

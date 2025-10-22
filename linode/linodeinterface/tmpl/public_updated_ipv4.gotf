@@ -1,0 +1,39 @@
+{{ define "interface_public_updated_ipv4" }}
+
+resource "linode_instance" "test" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+    type = "g6-nanode-1"
+    interface_generation = "linode"
+}
+
+resource "linode_interface" "test" {
+    linode_id = linode_instance.test.id
+    
+    public = {
+        ipv4 = {
+            addresses = [
+                {
+                    address = "auto"
+                    primary = true
+                },
+                {
+                    address = "auto"
+                    primary = false
+                }
+            ]
+        }
+        ipv6 = {
+            ranges = [
+                {
+                    range = "/64"
+                },
+                {
+                    range = "/64"
+                }
+            ]
+        }
+    }
+}
+
+{{ end }}

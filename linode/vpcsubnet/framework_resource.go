@@ -110,6 +110,8 @@ func (r *Resource) Create(
 		return
 	}
 
+	ipv6Configured := !data.IPv6.IsNull()
+
 	resp.Diagnostics.Append(data.FlattenSubnet(ctx, subnet, true)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -120,6 +122,15 @@ func (r *Resource) Create(
 	data.ID = types.StringValue(strconv.Itoa(subnet.ID))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	if ipv6Configured && subnet.IPv6 == nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("ipv6"),
+			"Value Mismatch",
+			"The `ipv6` field was configured but was not found in the API's response. "+
+				"Please ensure the current user has access to the VPC IPv6 feature.",
+		)
+	}
 }
 
 func (r *Resource) Read(

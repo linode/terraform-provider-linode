@@ -203,6 +203,9 @@ func (data *LinodeInterfaceModel) FlattenInterface(
 				vpc.IPv4 = helper.KeepOrUpdateValue(
 					vpc.IPv4, types.ObjectNull(vpcIPv4Attribute.GetType().(types.ObjectType).AttrTypes), pk,
 				)
+				vpc.IPv6 = helper.KeepOrUpdateValue(
+					vpc.IPv6, types.ObjectNull(vpcIPv6Attribute.GetType().(types.ObjectType).AttrTypes), pk,
+				)
 				vpc.SubnetID = helper.KeepOrUpdateValue(vpc.SubnetID, types.Int64Null(), pk)
 				return
 			}
