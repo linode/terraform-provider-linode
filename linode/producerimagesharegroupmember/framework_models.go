@@ -22,7 +22,7 @@ func (data *ResourceModel) FlattenImageShareGroupMember(
 	member *linodego.ImageShareGroupMember,
 	preserveKnown bool,
 ) {
-	// We do not touch ShareGroupID Token as they are not returned by the API and must be preserved as-is.
+	// Do not touch ShareGroupID or Token as they are not returned by the API and must be preserved
 
 	data.Label = helper.KeepOrUpdateString(data.Label, member.Label, preserveKnown)
 	data.TokenUUID = helper.KeepOrUpdateString(data.TokenUUID, member.TokenUUID, preserveKnown)

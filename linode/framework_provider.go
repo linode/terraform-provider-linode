@@ -2,6 +2,7 @@ package linode
 
 import (
 	"context"
+	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegrouptoken"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -258,6 +259,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		databasemysqlv2.NewResource,
 		producerimagesharegroup.NewResource,
 		producerimagesharegroupmember.NewResource,
+		consumerimagesharegrouptoken.NewResource,
 	}
 }
 
