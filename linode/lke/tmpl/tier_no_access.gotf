@@ -1,0 +1,23 @@
+{{ define "lke_cluster_tier_no_access" }}
+
+provider "linode" {
+    alias  = "v4"
+    api_version = "v4"
+}
+
+resource "linode_lke_cluster" "test" {
+    provider = linode.v4
+
+    label       = "{{ .Label }}"
+    region      = "{{ .Region }}"
+    k8s_version = "{{ .K8sVersion }}"
+    tier        = "{{ .Tier }}"
+
+    pool {
+        type  = "g6-standard-1"
+        count = 1
+    }
+}
+
+{{ end }}
+
