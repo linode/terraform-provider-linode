@@ -41,6 +41,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * [`placement_group_limits`] (#placement-group-limits) - An object representing the limits relating to placement groups in this region.
 
+* [`monitors`] (#monitors) - An object representing the monitor services available in a region.
+
 ### Resolvers
 
 * `ipv4` - The IPv4 addresses for this region’s DNS resolvers, separated by commas.
@@ -52,3 +54,9 @@ In addition to all arguments above, the following attributes are exported:
 * `maximum_pgs_per_customer` - The maximum number of placement groups allowed for the current user in this region.
 
 * `maximum_linodes_per_pg` - The maximum number of Linodes allowed to be assigned to a placement group in this region.
+
+### Monitors
+
+* `metrics` - A list of ACLP metrics services supported in the region.
+
+* `alerts` - A list of ACLP alerts services supported in the region.

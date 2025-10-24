@@ -3,6 +3,7 @@
 package region
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -26,11 +27,15 @@ func TestParseRegion(t *testing.T) {
 			MaximumPGsPerCustomer: 10,
 		},
 		Label: "Newark, NJ, USA",
+		Monitors: linodego.RegionMonitors{
+			Alerts:  []string{"Managed Databases"},
+			Metrics: []string{"Managed Databases"},
+		},
 	}
 
 	model := &RegionModel{}
 
-	model.ParseRegion(region)
+	model.ParseRegion(context.Background(), region)
 
 	assert.Equal(t, types.StringValue("us-east"), model.ID)
 	assert.Equal(t, types.StringValue("Newark, NJ, USA"), model.Label)
@@ -47,4 +52,12 @@ func TestParseRegion(t *testing.T) {
 
 	assert.Equal(t, types.Int64Value(5), model.PlacementGroupLimits[0].MaximumLinodesPerPG)
 	assert.Equal(t, types.Int64Value(10), model.PlacementGroupLimits[0].MaximumPGsPerCustomer)
+
+	monitorVal, diag := types.ListValueFrom(context.Background(), types.StringType, []string{"Managed Databases"})
+	if diag != nil {
+		t.Error(diag.Errors())
+	}
+
+	assert.Equal(t, monitorVal, model.Monitors.Attributes()["metrics"])
+	assert.Equal(t, monitorVal, model.Monitors.Attributes()["alerts"])
 }
