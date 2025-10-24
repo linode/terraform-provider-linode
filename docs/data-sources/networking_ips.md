@@ -65,6 +65,8 @@ Each IP address will be stored in the `ip_addresses` attribute and will export t
 
 * `linode_id` - The ID of the Linode this address currently belongs to.
 
+* `interface_id` - The ID of the interface this address is assigned to.
+
 * `region` - The Region this IP address resides in. See all regions [here](https://api.linode.com/v4/regions).
 
 * `reserved` - Whether this IP address is a reserved IP.

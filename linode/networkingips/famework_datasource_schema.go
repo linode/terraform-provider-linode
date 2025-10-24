@@ -68,6 +68,10 @@ var frameworkDatasourceSchema = schema.Schema{
 						Description: "The ID of the Linode this address currently belongs to.",
 						Computed:    true,
 					},
+					"interface_id": schema.Int64Attribute{
+						Description: "The ID of the interface this address is assigned to.",
+						Computed:    true,
+					},
 					"region": schema.StringAttribute{
 						Description: "The Region this IP address resides in.",
 						Computed:    true,

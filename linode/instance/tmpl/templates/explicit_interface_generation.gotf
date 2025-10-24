@@ -1,0 +1,20 @@
+{{ define "instance_explicit_interface_generation" }}
+
+{{ template "e2e_test_firewall" . }}
+
+resource "linode_instance" "foobar" {
+    label = "{{ .Label }}"
+    type = "g6-nanode-1"
+    image = "{{.Image}}"
+    region = "{{ .Region }}"
+    firewall_id = linode_firewall.e2e_test_firewall.id
+    booted = {{ .Booted }}
+
+    interface_generation = "{{ .InterfaceGeneration }}"
+
+    {{ if .NetworkHelper }}
+    network_helper = {{ .NetworkHelper }}
+    {{ end }}
+}
+
+{{ end }}

@@ -1,0 +1,36 @@
+{{ define "public_default_route_ipv6" }}
+
+resource "linode_instance" "test" {
+  label      = "{{ .Label }}"
+  region     = "{{ .Region }}"
+  type       = "g6-nanode-1"
+  interface_generation = "linode"
+}
+
+resource "linode_interface" "test" {
+  linode_id = linode_instance.test.id
+
+  public = {
+    ipv4 = {
+      addresses = [
+        {
+          address = "auto"
+        }
+      ]
+    }
+    ipv6 = {
+      ranges = [
+        {
+          range = "/64"
+        }
+      ]
+    }
+  }
+
+  default_route = {
+    ipv4 = true
+    ipv6 = true
+  }
+}
+
+{{ end }}

@@ -92,7 +92,7 @@ This section outlines commonly used provider configuration options.
 
   The Object Secret Key can also be specified using the `LINODE_OBJ_SECRET_KEY` shell environment variable.
 
-* `obj_use_temp_keys` - (Optional) If true, temporary object keys will be created implicitly at apply-time for the [linode_object_storage_bucket](resources/object_storage_bucket.md) and [linode_object_storage_object](resources/object_storage_object.md) resource to use.
+* `obj_use_temp_keys` - (Optional) If true, a temporary object storage keys pair will be created implicitly at apply-time for each of the [linode_object_storage_bucket](resources/object_storage_bucket.md) and [linode_object_storage_object](resources/object_storage_object.md) resources to use. Due to current technical limitations, a temporary keys pair for E2/E3 endpoints takes 30 seconds to become effective, so enabling temporary keys for E2/E3 endpoints is not recommended.
 
 * `obj_bucket_force_delete` - (Optional) If true, all objects and versions will purged from a [linode_object_storage_bucket](resources/object_storage_bucket.md) before it is destroyed.
 

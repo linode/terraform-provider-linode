@@ -54,15 +54,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	rules, err := client.GetFirewallRules(ctx, firewallID)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to get firewall rules",
-			err.Error(),
-		)
-		return
-	}
-
 	tflog.Trace(ctx, "client.ListFirewallDevices(...)")
 	devices, err := client.ListFirewallDevices(ctx, firewallID, nil)
 	if err != nil {
@@ -73,7 +64,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.flattenFirewallForDataSource(ctx, firewall, devices, rules)...)
+	resp.Diagnostics.Append(data.flattenFirewallForDataSource(ctx, firewall, devices, firewall.Rules)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

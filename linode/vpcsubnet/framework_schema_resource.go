@@ -14,8 +14,9 @@ import (
 
 var LinodeInterfaceObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
-		"id":     types.Int64Type,
-		"active": types.BoolType,
+		"id":        types.Int64Type,
+		"config_id": types.Int64Type,
+		"active":    types.BoolType,
 	},
 }
 
@@ -100,7 +101,6 @@ var frameworkResourceSchema = schema.Schema{
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
 		},
-
 		"linodes": schema.ListAttribute{
 			Computed:    true,
 			ElementType: LinodeObjectType,
