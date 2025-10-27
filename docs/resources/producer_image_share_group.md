@@ -4,7 +4,7 @@ description: |-
   Manages an Image Share Group.
 ---
 
-# linode\producer\_image\_share\_group
+# linode\_producer\_image\_share\_group
 
 Manages an Image Share Group.
 For more information, see the [Linode APIv4 docs](TODO).
@@ -53,10 +53,6 @@ In addition to all the arguments above, the following attributes are exported.
 * `id` - The ID of the Image Share Group.
 
 * `uuid` - The UUID of the Image Share Group.
-
-* `label` - The label of the Image Share Group.
-
-* `description` - The description of the Image Share Group.
 
 * `is_suspended` - Whether the Image Share Group is suspended.
 

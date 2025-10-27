@@ -3,6 +3,7 @@ package consumerimagesharegrouptoken
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -130,7 +131,7 @@ func (r *Resource) Update(
 		token, err := client.ImageShareGroupUpdateToken(ctx, tokenUUID, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to update Image Share Group Token (%d).", tokenUUID),
+				fmt.Sprintf("Failed to update Image Share Group Token (%s).", tokenUUID),
 				err.Error(),
 			)
 			return

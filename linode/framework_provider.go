@@ -2,7 +2,6 @@ package linode
 
 import (
 	"context"
-	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegrouptoken"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -17,6 +16,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/backup"
 	"github.com/linode/terraform-provider-linode/v3/linode/childaccount"
 	"github.com/linode/terraform-provider-linode/v3/linode/childaccounts"
+	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegrouptoken"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/v3/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysql"

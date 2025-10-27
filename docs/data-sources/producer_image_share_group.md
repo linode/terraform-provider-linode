@@ -4,7 +4,7 @@ description: |-
   Provides details about an Image Share Group created by a producer.
 ---
 
-# Data Source: linode\producer\_image\_share\_group
+# Data Source: linode\_producer\_image\_share\_group
 
 `linode_producer_image_share_group` provides details about an Image Share Group.
 For more information, see the [Linode APIv4 docs](TODO).
