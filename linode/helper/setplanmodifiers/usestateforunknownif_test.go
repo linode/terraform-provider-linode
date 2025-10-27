@@ -113,7 +113,7 @@ func TestUseStateForUnknownIfNotNull(t *testing.T) {
 func TestUseStateForUnknownIf(t *testing.T) {
 	testCases := map[string]struct {
 		request   planmodifier.SetRequest
-		condition func(context.Context, planmodifier.SetRequest) bool
+		condition setplanmodifiers.UseStateForUnknownIfFunc
 		expected  *planmodifier.SetResponse
 	}{
 		"condition-false": {
@@ -126,8 +126,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.SetUnknown(types.StringType),
 				ConfigValue: types.SetNull(types.StringType),
 			},
-			condition: func(ctx context.Context, req planmodifier.SetRequest) bool {
-				return false
+			condition: func(ctx context.Context, req planmodifier.SetRequest, resp *setplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = false
 			},
 			expected: &planmodifier.SetResponse{
 				PlanValue: types.SetUnknown(types.StringType),
@@ -143,8 +143,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.SetUnknown(types.StringType),
 				ConfigValue: types.SetNull(types.StringType),
 			},
-			condition: func(ctx context.Context, req planmodifier.SetRequest) bool {
-				return true
+			condition: func(ctx context.Context, req planmodifier.SetRequest, resp *setplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = true
 			},
 			expected: &planmodifier.SetResponse{
 				PlanValue: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("state")}),
@@ -160,9 +160,9 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.SetUnknown(types.StringType),
 				ConfigValue: types.SetNull(types.StringType),
 			},
-			condition: func(ctx context.Context, req planmodifier.SetRequest) bool {
+			condition: func(ctx context.Context, req planmodifier.SetRequest, resp *setplanmodifiers.UseStateForUnknownIfFuncResponse) {
 				elements := req.StateValue.Elements()
-				return !req.StateValue.IsNull() && len(elements) > 0
+				resp.UseState = !req.StateValue.IsNull() && len(elements) > 0
 			},
 			expected: &planmodifier.SetResponse{
 				PlanValue: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("item")}),
@@ -178,9 +178,9 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.SetUnknown(types.StringType),
 				ConfigValue: types.SetNull(types.StringType),
 			},
-			condition: func(ctx context.Context, req planmodifier.SetRequest) bool {
+			condition: func(ctx context.Context, req planmodifier.SetRequest, resp *setplanmodifiers.UseStateForUnknownIfFuncResponse) {
 				elements := req.StateValue.Elements()
-				return !req.StateValue.IsNull() && len(elements) > 0
+				resp.UseState = !req.StateValue.IsNull() && len(elements) > 0
 			},
 			expected: &planmodifier.SetResponse{
 				PlanValue: types.SetUnknown(types.StringType),

@@ -26,6 +26,12 @@ import (
 )
 
 var (
+	privateNetworkAttributes = map[string]attr.Type{
+		"vpc_id":        types.Int64Type,
+		"subnet_id":     types.Int64Type,
+		"public_access": types.BoolType,
+	}
+
 	updatesAttributes = map[string]attr.Type{
 		"day_of_week": types.Int64Type,
 		"duration":    types.Int64Type,
@@ -205,6 +211,41 @@ var frameworkResourceSchema = schema.Schema{
 			Description:   "The access port for this Managed Database.",
 			Computed:      true,
 			PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
+		},
+		"private_network": schema.SingleNestedAttribute{
+			Description: "Restricts access to this database using a virtual private cloud (VPC) " +
+				"that you've configured in the region where the database will live.",
+			Optional: true,
+			PlanModifiers: []planmodifier.Object{
+				objectplanmodifier.UseStateForUnknown(),
+			},
+			Attributes: map[string]schema.Attribute{
+				"vpc_id": schema.Int64Attribute{
+					Description: " The ID of the virtual private cloud (VPC) " +
+						"to restrict access to this database using.",
+					Required: true,
+					PlanModifiers: []planmodifier.Int64{
+						int64planmodifier.UseStateForUnknown(),
+					},
+				},
+				"subnet_id": schema.Int64Attribute{
+					Description: "The ID of the VPC subnet to restrict access to this database using.",
+					Required:    true,
+					PlanModifiers: []planmodifier.Int64{
+						int64planmodifier.UseStateForUnknown(),
+					},
+				},
+				"public_access": schema.BoolAttribute{
+					Description: "Set to `true` to allow clients outside of the VPC to " +
+						"connect to the database using a public IP address.",
+					Optional: true,
+					Computed: true,
+					Default:  booldefault.StaticBool(false),
+					PlanModifiers: []planmodifier.Bool{
+						boolplanmodifier.UseStateForUnknown(),
+					},
+				},
+			},
 		},
 		"root_password": schema.StringAttribute{
 			Description:   "The randomly generated root password for the Managed Database instance.",

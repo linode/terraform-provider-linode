@@ -60,6 +60,21 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.ParseNodeBalancerNode(node)
+	vpcConfig := safeGetVPCConfig(
+		ctx,
+		client,
+		nodeBalancerID,
+		node.VPCConfigID,
+		resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(data.Flatten(node, vpcConfig)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

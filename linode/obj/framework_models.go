@@ -53,7 +53,7 @@ func (data ResourceModel) getObjectBody(diags *diag.Diagnostics) (body *s3manage
 		file, err := os.Open(filepath.Clean(sourcePath))
 		if err != nil {
 			diags.AddError(fmt.Sprintf("Failed to Open the File at %q", sourcePath), err.Error())
-			return
+			return body
 		}
 
 		return s3manager.ReadSeekCloser(file)
@@ -80,6 +80,7 @@ func (data ResourceModel) GetObjectStorageKeys(
 	client *linodego.Client,
 	config *helper.FrameworkProviderModel,
 	permissions string,
+	endpointType *linodego.ObjectStorageEndpointType,
 	diags *diag.Diagnostics,
 ) (*ObjectKeys, func()) {
 	result := &ObjectKeys{}
@@ -99,7 +100,7 @@ func (data ResourceModel) GetObjectStorageKeys(
 	}
 
 	if config.ObjUseTempKeys.ValueBool() {
-		objKey := fwCreateTempKeys(ctx, client, data.Bucket.ValueString(), data.GetRegionOrCluster(ctx), permissions, diags)
+		objKey := fwCreateTempKeys(ctx, client, data.Bucket.ValueString(), data.GetRegionOrCluster(ctx), permissions, nil, diags)
 		if diags.HasError() {
 			return nil, nil
 		}
@@ -107,7 +108,9 @@ func (data ResourceModel) GetObjectStorageKeys(
 		result.AccessKey = objKey.AccessKey
 		result.SecretKey = objKey.SecretKey
 
-		teardownTempKeysCleanUp := func() { cleanUpTempKeys(ctx, client, objKey.ID) }
+		teardownTempKeysCleanUp := func() {
+			cleanUpTempKeys(ctx, client, objKey.ID)
+		}
 
 		return result, teardownTempKeysCleanUp
 	}

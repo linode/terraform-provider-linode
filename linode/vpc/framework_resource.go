@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -35,7 +36,7 @@ func (r *Resource) Create(
 ) {
 	tflog.Debug(ctx, "Create "+r.Config.Name)
 
-	var data VPCModel
+	var data ResourceModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -50,6 +51,25 @@ func (r *Resource) Create(
 		Description: data.Description.ValueString(),
 	}
 
+	if !data.IPv6.IsNull() {
+		modelIPv6s := make([]ResourceModelIPv6, len(data.IPv6.Elements()))
+
+		resp.Diagnostics.Append(data.IPv6.ElementsAs(ctx, &modelIPv6s, true)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		vpcCreateOpts.IPv6 = helper.MapSlice(
+			modelIPv6s,
+			func(m ResourceModelIPv6) linodego.VPCCreateOptionsIPv6 {
+				return linodego.VPCCreateOptionsIPv6{
+					Range:           m.Range.ValueStringPointer(),
+					AllocationClass: m.AllocationClass.ValueStringPointer(),
+				}
+			},
+		)
+	}
+
 	tflog.Debug(ctx, "client.CreateVPC(...)", map[string]any{
 		"options": vpcCreateOpts,
 	})
@@ -62,13 +82,27 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.FlattenVPC(ctx, vpc, true)
+	ipv6Configured := !data.IPv6.IsNull()
+
+	resp.Diagnostics.Append(data.FlattenVPC(ctx, vpc, true)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// IDs should always be overridden during creation (see #1085)
 	// TODO: Remove when Crossplane empty string ID issue is resolved
 	data.ID = types.StringValue(strconv.Itoa(vpc.ID))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	if ipv6Configured && vpc.IPv6 == nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("ipv6"),
+			"Value Mismatch",
+			"The `ipv6` field was configured but was not found in the API's response. "+
+				"Please ensure the current user has access to the VPC IPv6 feature.",
+		)
+	}
 }
 
 func (r *Resource) Read(
@@ -78,7 +112,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read "+r.Config.Name)
 
-	var data VPCModel
+	var data ResourceModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -86,7 +120,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, data)
+	ctx = resourcePopulateLogAttributes(ctx, data)
 
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
 		return
@@ -117,7 +151,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.FlattenVPC(ctx, vpc, false)
+	resp.Diagnostics.Append(data.FlattenVPC(ctx, vpc, false)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -129,7 +163,7 @@ func (r *Resource) Update(
 	tflog.Debug(ctx, "Update "+r.Config.Name)
 
 	client := r.Meta.Client
-	var plan, state VPCModel
+	var plan, state ResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -138,7 +172,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, state)
+	ctx = resourcePopulateLogAttributes(ctx, state)
 
 	var updateOpts linodego.VPCUpdateOptions
 	shouldUpdate := false
@@ -170,7 +204,10 @@ func (r *Resource) Update(
 			)
 			return
 		}
-		plan.FlattenVPC(ctx, vpc, false)
+		resp.Diagnostics.Append(plan.FlattenVPC(ctx, vpc, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 	plan.CopyFrom(ctx, state, true)
 
@@ -192,14 +229,14 @@ func (r *Resource) Delete(
 	tflog.Debug(ctx, "Delete "+r.Config.Name)
 
 	client := r.Meta.Client
-	var data VPCModel
+	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, data)
+	ctx = resourcePopulateLogAttributes(ctx, data)
 
 	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -219,6 +256,6 @@ func (r *Resource) Delete(
 	}
 }
 
-func populateLogAttributes(ctx context.Context, data VPCModel) context.Context {
+func resourcePopulateLogAttributes(ctx context.Context, data ResourceModel) context.Context {
 	return tflog.SetField(ctx, "id", data.ID)
 }

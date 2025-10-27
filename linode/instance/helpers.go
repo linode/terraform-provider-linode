@@ -19,11 +19,6 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-var (
-	boolFalse = false
-	boolTrue  = true
-)
-
 type diskSpec map[string]interface{}
 
 // getDeadlineSeconds gets the seconds remaining until deadline is met.
@@ -572,7 +567,7 @@ func getInstanceDiskSpecChange(d *schema.ResourceData) (oldDiskSpecs, newDiskSpe
 		spec := spec.(map[string]interface{})
 		newDiskSpecs[spec["label"].(string)] = spec
 	}
-	return
+	return oldDiskSpecs, newDiskSpecs
 }
 
 // getInstanceDiskSpecDiffs sorts the disk specs by added, removed, and existing.
@@ -599,7 +594,7 @@ func getInstanceDiskSpecDiffs(
 			removed[label] = spec
 		}
 	}
-	return
+	return added, removed, existing
 }
 
 // updateInstanceDisks ensures the disk specification matches the instance disk state. This means creating,
@@ -719,11 +714,11 @@ func ensureInstanceOffline(
 	ctx context.Context, client *linodego.Client, instanceID, timeout int,
 ) (instance *linodego.Instance, err error) {
 	if instance, err = client.GetInstance(ctx, instanceID); err != nil {
-		return
+		return instance, err
 	}
 
 	if instance.Status == linodego.InstanceOffline {
-		return
+		return instance, err
 	} else if instance.Status != linodego.InstanceShuttingDown {
 		tflog.Info(ctx, "Shutting down instance to reach offline status")
 		tflog.Debug(ctx, "client.ShutdownInstance(...)")
@@ -731,7 +726,7 @@ func ensureInstanceOffline(
 	}
 
 	if err != nil {
-		return
+		return instance, err
 	}
 
 	inst, err := client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceOffline, timeout)
@@ -959,7 +954,7 @@ func getInstanceDefaultDisks(
 	}
 	bootDisk = findDiskByFS(disks, linodego.FilesystemExt4)
 	swapDisk = findDiskByFS(disks, linodego.FilesystemSwap)
-	return
+	return bootDisk, swapDisk, err
 }
 
 // getInstanceTypeChange checks to see if the linode itself was resized.
@@ -973,13 +968,13 @@ func getInstanceTypeChange(
 
 	oldSpec, err = client.GetType(ctx, oldType)
 	if err != nil {
-		return
+		return oldSpec, newSpec, err
 	}
 	newSpec, err = client.GetType(ctx, newType)
 	if err != nil {
-		return
+		return oldSpec, newSpec, err
 	}
-	return
+	return oldSpec, newSpec, err
 }
 
 // applyInstanceDiskSpec checks to see if the staged disk changes can be supported by the instance specification's

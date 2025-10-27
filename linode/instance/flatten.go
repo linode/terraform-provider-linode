@@ -49,6 +49,7 @@ func flattenInstance(
 	result["tags"] = instance.Tags
 	result["capabilities"] = instance.Capabilities
 	result["image"] = instance.Image
+	result["interface_generation"] = instance.InterfaceGeneration
 	result["host_uuid"] = instance.HostUUID
 	result["has_user_data"] = instance.HasUserData
 	result["disk_encryption"] = instance.DiskEncryption
@@ -122,7 +123,7 @@ func flattenInstanceDisks(instanceDisks []linodego.InstanceDisk) (disks []map[st
 			"filesystem": string(disk.Filesystem),
 		})
 	}
-	return
+	return disks, swapSize
 }
 
 func flattenInstanceConfigDevice(
@@ -187,7 +188,7 @@ func flattenInstanceConfigs(
 
 		configs = append(configs, c)
 	}
-	return
+	return configs
 }
 
 func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {
@@ -222,6 +223,7 @@ func flattenInstanceSimple(instance *linodego.Instance) (map[string]interface{},
 	result["tags"] = instance.Tags
 	result["capabilities"] = instance.Capabilities
 	result["image"] = instance.Image
+	result["interface_generation"] = instance.InterfaceGeneration
 	result["host_uuid"] = instance.HostUUID
 	result["backups"] = flattenInstanceBackups(*instance)
 	result["specs"] = flattenInstanceSpecs(*instance)

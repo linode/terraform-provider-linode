@@ -30,7 +30,9 @@ type TemplateData struct {
 
 	DiskEncryption *linodego.InstanceDiskEncryption
 
-	MaintenancePolicy string
+	InterfaceGeneration linodego.InterfaceGeneration
+	NetworkHelper       *bool
+	MaintenancePolicy   string
 }
 
 func Basic(t testing.TB, label, pubKey, region string, rootPass string) string {
@@ -165,6 +167,25 @@ func InterfacesUpdateEmpty(t testing.TB, label, region string) string {
 			Label:  label,
 			Image:  acceptance.TestImageLatest,
 			Region: region,
+		})
+}
+
+func ExplicitInterfaceGeneration(
+	t testing.TB,
+	label,
+	region string,
+	booted bool,
+	generation linodego.InterfaceGeneration,
+	networkHelper *bool,
+) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_explicit_interface_generation", TemplateData{
+			Label:               label,
+			Image:               acceptance.TestImageLatest,
+			Region:              region,
+			InterfaceGeneration: generation,
+			NetworkHelper:       networkHelper,
+			Booted:              booted,
 		})
 }
 
@@ -713,6 +734,24 @@ func DataClientFilter(t testing.TB, label, tag, region string, rootPass string) 
 		})
 }
 
+func DataExplicitInterfaceGeneration(
+	t testing.TB,
+	label,
+	region,
+	image string,
+	generation linodego.InterfaceGeneration,
+	booted bool,
+) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_explicit_interface_generation", TemplateData{
+			Label:               label,
+			Region:              region,
+			Image:               image,
+			InterfaceGeneration: generation,
+			Booted:              booted,
+		})
+}
+
 func FirewallOnCreation(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_firewall_on_creation", TemplateData{
@@ -778,6 +817,58 @@ func WithReservedIP(t *testing.T, label, pubKey, region, rootPass string) string
 			Region:   region,
 			RootPass: rootPass,
 		})
+	return generatedConfig
+}
+
+func InterfacesVPCIPv60(t *testing.T, label, region, rootPass string) string {
+	generatedConfig := acceptance.ExecuteTemplate(t,
+		"instance_interfaces_vpc_ipv6_0", TemplateData{
+			Label:    label,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+
+	return generatedConfig
+}
+
+func InterfacesVPCIPv61(t *testing.T, label, region, rootPass string) string {
+	generatedConfig := acceptance.ExecuteTemplate(t,
+		"instance_interfaces_vpc_ipv6_1", TemplateData{
+			Label:    label,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+
+	return generatedConfig
+}
+
+func ConfigInterfacesVPCIPv6(t *testing.T, label, region, rootPass string) string {
+	generatedConfig := acceptance.ExecuteTemplate(t,
+		"instance_config_interfaces_vpc_ipv6", TemplateData{
+			Label:    label,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+
+	return generatedConfig
+}
+
+func DataInterfacesVPCIPv6(t *testing.T, label, region, rootPass string) string {
+	generatedConfig := acceptance.ExecuteTemplate(t,
+		"instance_data_interfaces_vpc_ipv6", TemplateData{
+			Label:    label,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+
 	return generatedConfig
 }
 

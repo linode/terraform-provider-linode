@@ -200,3 +200,33 @@ func TestAccDataSource_engineConfig(t *testing.T) {
 		},
 	})
 }
+
+func TestAccDataSource_vpc(t *testing.T) {
+	t.Parallel()
+
+	label := acctest.RandomWithPrefix("tf-test")
+	dataSourceName := "data.linode_database_postgresql_v2.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataVPC(t, label, testRegion, testEngine, "g6-nanode-1"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(dataSourceName, "id"),
+
+					resource.TestCheckResourceAttr(dataSourceName, "private_network.public_access", "false"),
+					resource.TestCheckResourceAttrPair(
+						dataSourceName, "private_network.vpc_id",
+						"linode_vpc.foobar", "id",
+					),
+					resource.TestCheckResourceAttrPair(
+						dataSourceName, "private_network.subnet_id",
+						"linode_vpc_subnet.foobar", "id",
+					),
+				),
+			},
+		},
+	})
+}

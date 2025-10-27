@@ -216,7 +216,7 @@ func GetSSHClient(t testing.TB, user, addr string) (client *ssh.Client) {
 	if client == nil {
 		t.Fatal("failed to get ssh client")
 	}
-	return
+	return client
 }
 
 func CheckResourceAttrContains(resName string, path, desiredValue string) resource.TestCheckFunc {

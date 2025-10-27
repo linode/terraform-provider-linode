@@ -186,7 +186,13 @@ The following arguments are supported:
 
 * `migration_type` - (Optional) The type of migration to use when updating the type or region of a Linode. (`cold`, `warm`; default `cold`)
 
+* `network_helper` - (Optional) Enables the Network Helper feature. The default value is determined by the network_helper setting in the account settings.
+
 * [`interface`](#interface) - (Optional) A list of network interfaces to be assigned to the Linode on creation. If an explicit config or disk is defined, interfaces must be declared in the [`config` block](#configs).
+
+* `interface_generation` - (Optional) Specifies the interface type for the Linode. If set to `linode`, Linode interfaces must be created using a separate resource before this Linode can be booted. (`linode`, `legacy_config`; default is determined by the account `interfaces_for_new_linodes` setting)
+
+* TODO(Linode Interfaces): Link to a usage example using the `linode_instance_interface` resource
 
 * `firewall_id` - (Optional) The ID of the Firewall to attach to the instance upon creation. *Changing `firewall_id` forces the creation of a new Linode Instance.*
 
@@ -329,6 +335,8 @@ Each interface exports the following attributes:
 
 * [`ipv4`](#ipv4) - (Optional) The IPv4 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose.
 
+* [`ipv6`](#ipv6) - (Optional) The IPv6 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose. NOTE: IPv6 VPCs may not yet be available to all users.
+
 The following computed attribute is available in a VPC interface:
 
 * `vpc_id` - The ID of VPC which this interface is attached to.
@@ -342,6 +350,36 @@ The following arguments are available in an `ipv4` configuration block of an `in
 * `vpc` - (Optional) The IP from the VPC subnet to use for this interface. A random address will be assigned if this is not specified in a VPC interface.
 
 * `nat_1_1` - (Optional) The public IP that will be used for the one-to-one NAT purpose. If this is `any`, the public IPv4 address assigned to this Linode is used on this interface and will be 1:1 NATted with the VPC IPv4 address.
+
+#### ipv6
+
+**NOTICE:** NOTE: IPv6 VPCs may not yet be available to all users.
+
+The following arguments are available in an `ipv6` configuration block of an `interface` block:
+
+* `is_public` - (Optional) If true, connections from the interface to IPv6 addresses outside the VPC, and connections from IPv6 addresses outside the VPC to the interface will be permitted. (Default: `false`)
+
+* [`slaac`](#ipv6slaac) - (Optional) An array of SLAAC prefixes to use for this interface.
+
+* [`range`](#ipv6range) - (Optional) An array of IPv6 ranges to use for this interface.
+
+#### ipv6.slaac
+
+The following arguments are available in a `slaac` configuration block of an [`ipv6`](#ipv6) block:
+
+* `range` - (Optional) A prefix to add to this interface, or `auto` for a new IPv6 prefix to be automatically allocated.
+
+* `allocated_range` - (Read-Only) The value of range computed by the API. This is necessary when needing to access the range implicitly allocated using `auto`.
+
+* `address` - (Read-Only) The SLAAC address chosen for this interface.
+
+#### ipv6.range
+
+The following arguments are available in a `range` configuration block of an [`ipv6`](#ipv6) block:
+
+* `range` - (Optional) A prefix to add to this interface, or `auto` for a new IPv6 prefix to be automatically allocated.
+
+* `allocated_range` - (Read-Only) The value of range computed by the API. This is necessary when needing to access the range implicitly allocated using `auto`.
 
 ### Timeouts
 

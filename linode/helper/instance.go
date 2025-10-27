@@ -219,6 +219,50 @@ func ExpandInterfaceIPv4(ipv4 any) *linodego.VPCIPv4 {
 	return result
 }
 
+func ExpandInterfaceIPv6CreateOptions(ipv6 any) *linodego.InstanceConfigInterfaceCreateOptionsIPv6 {
+	ipv6Map := ipv6.(map[string]any)
+
+	result := &linodego.InstanceConfigInterfaceCreateOptionsIPv6{}
+
+	if ipv6Map["slaac"] != nil {
+		result.SLAAC = MapSlice(
+			ipv6Map["slaac"].([]any),
+			func(slaac any) linodego.InstanceConfigInterfaceCreateOptionsIPv6SLAAC {
+				slaacMap := slaac.(map[string]any)
+
+				return linodego.InstanceConfigInterfaceCreateOptionsIPv6SLAAC{
+					Range: slaacMap["range"].(string),
+				}
+			},
+		)
+	}
+
+	if ipv6Map["range"] != nil {
+		result.Ranges = MapSlice(
+			ipv6Map["range"].([]any),
+			func(ipv6Range any) linodego.InstanceConfigInterfaceCreateOptionsIPv6Range {
+				result := linodego.InstanceConfigInterfaceCreateOptionsIPv6Range{}
+
+				ipv6RangeMap := ipv6Range.(map[string]any)
+
+				rangeStr := ipv6RangeMap["range"]
+				if rangeStr != nil {
+					result.Range = linodego.Pointer(rangeStr.(string))
+				}
+
+				return result
+			},
+		)
+	}
+
+	isPublic := ipv6Map["is_public"]
+	if isPublic != nil {
+		result.IsPublic = linodego.Pointer(isPublic.(bool))
+	}
+
+	return result
+}
+
 func ExpandConfigInterface(ifaceMap map[string]interface{}) linodego.InstanceConfigInterfaceCreateOptions {
 	purpose := linodego.ConfigInterfacePurpose(ifaceMap["purpose"].(string))
 	result := linodego.InstanceConfigInterfaceCreateOptions{
@@ -248,6 +292,13 @@ func ExpandConfigInterface(ifaceMap map[string]interface{}) linodego.InstanceCon
 				result.IPv4 = ExpandInterfaceIPv4(ipv4[0])
 			}
 		}
+
+		if ifaceMap["ipv6"] != nil {
+			if ipv6 := ifaceMap["ipv6"].([]any); len(ipv6) > 0 {
+				result.IPv6 = ExpandInterfaceIPv6CreateOptions(ipv6[0])
+			}
+		}
+
 		if ifaceMap["ip_ranges"] != nil {
 			// this is for keep result.IPRanges as a nil value rather than a value of empty slice
 			// when there is not a range.
@@ -283,6 +334,37 @@ func FlattenInterfaceIPv4(ipv4 *linodego.VPCIPv4) []map[string]any {
 	}
 }
 
+func FlattenInterfaceIPv6(ipv6 *linodego.InstanceConfigInterfaceIPv6) []map[string]any {
+	if ipv6 == nil {
+		return nil
+	}
+
+	return []map[string]any{
+		{
+			"slaac": MapSlice(
+				ipv6.SLAAC,
+				func(r linodego.InstanceConfigInterfaceIPv6SLAAC) map[string]any {
+					return map[string]any{
+						"range":          r.Range,
+						"assigned_range": r.Range,
+						"address":        r.Address,
+					}
+				},
+			),
+			"range": MapSlice(
+				ipv6.Ranges,
+				func(r linodego.InstanceConfigInterfaceIPv6Range) map[string]any {
+					return map[string]any{
+						"range":          r.Range,
+						"assigned_range": r.Range,
+					}
+				},
+			),
+			"is_public": ipv6.IsPublic,
+		},
+	}
+}
+
 func FlattenInterface(iface linodego.InstanceConfigInterface) map[string]any {
 	return map[string]any{
 		"purpose":      iface.Purpose,
@@ -295,6 +377,7 @@ func FlattenInterface(iface linodego.InstanceConfigInterface) map[string]any {
 		"active":       iface.Active,
 		"ip_ranges":    iface.IPRanges,
 		"ipv4":         FlattenInterfaceIPv4(iface.IPv4),
+		"ipv6":         FlattenInterfaceIPv6(iface.IPv6),
 	}
 }
 

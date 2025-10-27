@@ -33,7 +33,7 @@ func (r *DataSource) Read(
 	resp *datasource.ReadResponse,
 ) {
 	tflog.Debug(ctx, "Read data."+r.Config.Name)
-	var data VPCSubnetFilterModel
+	var data Model
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -67,7 +67,7 @@ func (r *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (data *VPCSubnetFilterModel) ListVPCSubnets(
+func (data *Model) ListVPCSubnets(
 	ctx context.Context,
 	client *linodego.Client,
 	filter string,
