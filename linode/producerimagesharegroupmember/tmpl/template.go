@@ -20,3 +20,12 @@ func Basic(t testing.TB, shareGroupLabel, tokenLabel, memberLabel string) string
 			MemberLabel:     memberLabel,
 		})
 }
+
+func DataBasic(t testing.TB, shareGroupLabel, tokenLabel, memberLabel string) string {
+	return acceptance.ExecuteTemplate(t,
+		"producer_image_share_group_member_data_basic", TemplateData{
+			ShareGroupLabel: shareGroupLabel,
+			TokenLabel:      tokenLabel,
+			MemberLabel:     memberLabel,
+		})
+}

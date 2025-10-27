@@ -19,7 +19,7 @@ import (
 // These can be set using the LINODE_PRODUCER_TOKEN and LINODE_CONSUMER_TOKEN
 // environment variables.
 //
-// If either is not set,the test will fail.
+// If either is not set,the test will be skipped.
 func TestAccResourceImageShareGroupMember_basic(t *testing.T) {
 	t.Parallel()
 

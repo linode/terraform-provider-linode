@@ -16,7 +16,7 @@ Accept a member into an Image Share Group:
 ```terraform
 resource "linode_producer_image_share_group_member" "example" {
   sharegroup_id   = 12345
-  token  = abcdefghijklmnopqrstuvwxyz0123456789
+  token  = "abcdefghijklmnopqrstuvwxyz0123456789"
   label = "example-member"
 }
 ```

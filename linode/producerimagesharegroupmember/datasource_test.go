@@ -1,6 +1,6 @@
-//go:build integration || consumerimagesharegrouptoken
+//go:build integration || producerimagesharegroupmember
 
-package consumerimagesharegrouptoken_test
+package producerimagesharegroupmember_test
 
 import (
 	"os"
@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegrouptoken/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroupmember/tmpl"
 )
 
 // This test requires two separate Linode API tokens, one for the producer
@@ -20,7 +20,7 @@ import (
 // environment variables.
 //
 // If either is not set,the test will be skipped.
-func TestAccResourceImageShareGroupToken_basic(t *testing.T) {
+func TestAccDataSourceImageShareGroupMember_basic(t *testing.T) {
 	t.Parallel()
 
 	producerToken := os.Getenv("LINODE_PRODUCER_TOKEN")
@@ -43,10 +43,10 @@ func TestAccResourceImageShareGroupToken_basic(t *testing.T) {
 	producerProvider := acceptance.NewFrameworkProviderWithClient(producerClient)
 	consumerProvider := acceptance.NewFrameworkProviderWithClient(consumerClient)
 
-	resourceName := "linode_consumer_image_share_group_token.foobar"
+	resourceName := "data.linode_producer_image_share_group_member.foobar"
 	shareGroupLabel := acctest.RandomWithPrefix("tf-test")
 	tokenLabel := acctest.RandomWithPrefix("tf-test")
-	tokenLabelUpdated := tokenLabel + "-updated"
+	memberLabel := acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acceptance.PreCheck(t) },
@@ -60,27 +60,12 @@ func TestAccResourceImageShareGroupToken_basic(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, shareGroupLabel, tokenLabel),
+				Config: tmpl.DataBasic(t, shareGroupLabel, tokenLabel, memberLabel),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "token"),
+					resource.TestCheckResourceAttrSet(resourceName, "sharegroup_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "token_uuid"),
 					resource.TestCheckResourceAttrSet(resourceName, "status"),
-					resource.TestCheckResourceAttr(resourceName, "label", tokenLabel),
-					resource.TestCheckResourceAttrSet(resourceName, "valid_for_sharegroup_uuid"),
-					resource.TestCheckNoResourceAttr(resourceName, "sharegroup_uuid"),
-					resource.TestCheckNoResourceAttr(resourceName, "sharegroup_label"),
-				),
-			},
-			{
-				Config: tmpl.Basic(t, shareGroupLabel, tokenLabelUpdated),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "token"),
-					resource.TestCheckResourceAttrSet(resourceName, "token_uuid"),
-					resource.TestCheckResourceAttrSet(resourceName, "status"),
-					resource.TestCheckResourceAttr(resourceName, "label", tokenLabelUpdated),
-					resource.TestCheckResourceAttrSet(resourceName, "valid_for_sharegroup_uuid"),
-					resource.TestCheckNoResourceAttr(resourceName, "sharegroup_uuid"),
-					resource.TestCheckNoResourceAttr(resourceName, "sharegroup_label"),
+					resource.TestCheckResourceAttr(resourceName, "label", memberLabel),
 				),
 			},
 		},
