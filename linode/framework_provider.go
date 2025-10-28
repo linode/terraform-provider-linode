@@ -79,6 +79,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroup"
 	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroupimageshares"
 	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroupmember"
+	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroupmembers"
 	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroups"
 	"github.com/linode/terraform-provider-linode/v3/linode/profile"
 	"github.com/linode/terraform-provider-linode/v3/linode/rdns"
@@ -344,5 +345,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		producerimagesharegroups.NewDataSource,
 		producerimagesharegroupimageshares.NewDataSource,
 		producerimagesharegroupmember.NewDataSource,
+		producerimagesharegroupmembers.NewDataSource,
 	}
 }

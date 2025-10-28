@@ -1,4 +1,4 @@
-package producerimagesharegroupimageshares
+package producerimagesharegroupmembers
 
 import (
 	"context"
@@ -14,7 +14,7 @@ func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
-				Name:   "linode_producer_image_share_group_image_shares",
+				Name:   "linode_producer_image_share_group_members",
 				Schema: &frameworkDataSourceSchema,
 			},
 		),
@@ -32,7 +32,7 @@ func (r *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data."+r.Config.Name)
 
-	var data ImageShareGroupImageShareFilterModel
+	var data ImageShareGroupMemberFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -46,7 +46,10 @@ func (r *DataSource) Read(
 	}
 	data.ID = id
 
-	shareGroupID := helper.FrameworkSafeInt64ToInt(data.ShareGroupID.ValueInt64(), &resp.Diagnostics)
+	shareGroupID := helper.FrameworkSafeInt64ToInt(
+		data.ShareGroupID.ValueInt64(),
+		&resp.Diagnostics,
+	)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -64,7 +67,7 @@ func (r *DataSource) Read(
 		return
 	}
 
-	data.parseImageShares(ctx, helper.AnySliceToTyped[linodego.ImageShareEntry](result))
+	data.ParseImageShareGroupMembers(helper.AnySliceToTyped[linodego.ImageShareGroupMember](result))
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -80,9 +83,9 @@ func listWrapper(
 		client *linodego.Client,
 		filter string,
 	) ([]any, error) {
-		tflog.Trace(ctx, "client.ImageShareGroupListImageShareEntries(...)")
+		tflog.Trace(ctx, "client.ImageShareGroupListMembers(...)")
 
-		imageShares, err := client.ImageShareGroupListImageShareEntries(
+		nbs, err := client.ImageShareGroupListMembers(
 			ctx,
 			shareGroupID,
 			&linodego.ListOptions{
@@ -93,6 +96,6 @@ func listWrapper(
 			return nil, err
 		}
 
-		return helper.TypedSliceToAny(imageShares), nil
+		return helper.TypedSliceToAny(nbs), nil
 	}
 }
