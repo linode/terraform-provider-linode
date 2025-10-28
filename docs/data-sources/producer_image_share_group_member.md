@@ -9,7 +9,6 @@ description: |-
 `linode_producer_image_share_group_member` provides details about a Member of an Image Share Group.
 For more information, see the [Linode APIv4 docs](TODO).
 
-
 ## Example Usage
 
 The following example shows how the datasource might be used to obtain additional information about a member of an Image Share Group.
@@ -17,7 +16,7 @@ The following example shows how the datasource might be used to obtain additiona
 ```hcl
 data "linode_producer_image_share_group_member" "member" {
   sharegroup_id = 12345
-  token_uuid = "db58ab2e-3021-4b08-9426-8e456f6dd268
+  token_uuid = "db58ab2e-3021-4b08-9426-8e456f6dd268"
 }
 ```
 

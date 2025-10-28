@@ -346,5 +346,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		producerimagesharegroupimageshares.NewDataSource,
 		producerimagesharegroupmember.NewDataSource,
 		producerimagesharegroupmembers.NewDataSource,
+		consumerimagesharegrouptoken.NewDataSource,
 	}
 }

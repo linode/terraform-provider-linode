@@ -2,6 +2,7 @@ package consumerimagesharegrouptoken
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -83,4 +84,31 @@ func (m *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	m.Expiry = helper.KeepOrUpdateValue(m.Expiry, other.Expiry, preserveKnown)
 	m.ShareGroupUUID = helper.KeepOrUpdateValue(m.ShareGroupUUID, other.ShareGroupUUID, preserveKnown)
 	m.ShareGroupLabel = helper.KeepOrUpdateValue(m.ShareGroupLabel, other.ShareGroupLabel, preserveKnown)
+}
+
+type DataSourceModel struct {
+	TokenUUID              types.String      `tfsdk:"token_uuid"`
+	Label                  types.String      `tfsdk:"label"`
+	Status                 types.String      `tfsdk:"status"`
+	Created                timetypes.RFC3339 `tfsdk:"created"`
+	Updated                timetypes.RFC3339 `tfsdk:"updated"`
+	Expiry                 timetypes.RFC3339 `tfsdk:"expiry"`
+	ValidForShareGroupUUID types.String      `tfsdk:"valid_for_sharegroup_uuid"`
+	ShareGroupUUID         types.String      `tfsdk:"sharegroup_uuid"`
+	ShareGroupLabel        types.String      `tfsdk:"sharegroup_label"`
+}
+
+func (data *DataSourceModel) ParseImageShareGroupToken(m *linodego.ImageShareGroupToken,
+) diag.Diagnostics {
+	data.TokenUUID = types.StringValue(m.TokenUUID)
+	data.ValidForShareGroupUUID = types.StringValue(m.ValidForShareGroupUUID)
+	data.Status = types.StringValue(m.Status)
+	data.Label = types.StringValue(m.Label)
+	data.Created = timetypes.NewRFC3339TimePointerValue(m.Created)
+	data.Updated = timetypes.NewRFC3339TimePointerValue(m.Updated)
+	data.Expiry = timetypes.NewRFC3339TimePointerValue(m.Expiry)
+	data.ShareGroupUUID = types.StringPointerValue(m.ShareGroupUUID)
+	data.ShareGroupLabel = types.StringPointerValue(m.ShareGroupLabel)
+
+	return nil
 }
