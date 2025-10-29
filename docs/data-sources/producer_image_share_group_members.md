@@ -11,7 +11,7 @@ For more information, see the [Linode APIv4 docs](TODO).
 
 ## Example Usage
 
-The following example shows how one might use this data source to list Image Share Groups.
+The following example shows how one might use this data source to list Image Share Group Members.
 
 ```hcl
 data "linode_producer_image_share_group_members" "all" {

@@ -1,4 +1,4 @@
-package producerimagesharegroupmembers
+package consumerimagesharegrouptokens
 
 import (
 	"context"
@@ -7,14 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
 
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
-				Name:   "linode_producer_image_share_group_members",
+				Name:   "linode_consumer_image_share_group_tokens",
 				Schema: &frameworkDataSourceSchema,
 			},
 		),
@@ -32,7 +31,7 @@ func (r *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data."+r.Config.Name)
 
-	var data ImageShareGroupMemberFilterModel
+	var data ImageShareGroupTokenFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -46,19 +45,11 @@ func (r *DataSource) Read(
 	}
 	data.ID = id
 
-	shareGroupID := helper.FrameworkSafeInt64ToInt(
-		data.ShareGroupID.ValueInt64(),
-		&resp.Diagnostics,
-	)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	result, d := filterConfig.GetAndFilter(
 		ctx,
 		r.Meta.Client,
 		data.Filters,
-		listWrapper(shareGroupID),
+		listImageShareGroupTokens,
 		data.Order,
 		data.OrderBy,
 	)
@@ -67,7 +58,7 @@ func (r *DataSource) Read(
 		return
 	}
 
-	data.ParseImageShareGroupMembers(helper.AnySliceToTyped[linodego.ImageShareGroupMember](result))
+	data.ParseImageShareGroupTokens(helper.AnySliceToTyped[linodego.ImageShareGroupToken](result))
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -75,27 +66,13 @@ func (r *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func listWrapper(
-	shareGroupID int,
-) frameworkfilter.ListFunc {
-	return func(
-		ctx context.Context,
-		client *linodego.Client,
-		filter string,
-	) ([]any, error) {
-		tflog.Trace(ctx, "client.ImageShareGroupListMembers(...)")
-
-		members, err := client.ImageShareGroupListMembers(
-			ctx,
-			shareGroupID,
-			&linodego.ListOptions{
-				Filter: filter,
-			},
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		return helper.TypedSliceToAny(members), nil
+func listImageShareGroupTokens(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+	tokens, err := client.ImageShareGroupListTokens(ctx, &linodego.ListOptions{
+		Filter: filter,
+	})
+	if err != nil {
+		return nil, err
 	}
+
+	return helper.TypedSliceToAny(tokens), nil
 }

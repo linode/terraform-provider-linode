@@ -17,6 +17,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/childaccount"
 	"github.com/linode/terraform-provider-linode/v3/linode/childaccounts"
 	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegrouptoken"
+	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegrouptokens"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/v3/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysql"
@@ -347,5 +348,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		producerimagesharegroupmember.NewDataSource,
 		producerimagesharegroupmembers.NewDataSource,
 		consumerimagesharegrouptoken.NewDataSource,
+		consumerimagesharegrouptokens.NewDataSource,
 	}
 }

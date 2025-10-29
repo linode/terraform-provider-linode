@@ -23,7 +23,7 @@ data "linode_consumer_image_share_group_token" "token" {
 
 The following arguments are supported:
 
-* `token_uuid` - The UUID of the token.
+* `token_uuid` - (Required) The UUID of the token.
 
 ## Attributes Reference
 
