@@ -116,7 +116,7 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "Whether Block Storage Disk Encryption is enabled or disabled on this Volume. ",
 			Optional:    true,
 			Computed:    true,
-			Default:     stringdefault.StaticString("disabled"),
+			Default:     stringdefault.StaticString("enabled"),
 			Validators: []validator.String{
 				stringvalidator.OneOf("enabled", "disabled"),
 			},
