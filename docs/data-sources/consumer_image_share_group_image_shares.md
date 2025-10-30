@@ -1,12 +1,13 @@
 ---
-page_title: "Linode: linode_producer_image_share_group_image_shares"
+page_title: "Linode: linode_consumer_image_share_group_image_shares"
 description: |-
-  Lists Images shared in the specified Image Share Group on your account.
+  Lists Images shared in the Image Share Group the provided Token has been accepted into.
 ---
 
-# Data Source: linode\_producer\_image\_share\_group\_image\_shares
+# Data Source: linode\_consumer\_image\_share\_group\_image\_shares
 
-Provides information about a list of Images shared in the specified Image Share Group that match a set of filters.
+Provides information about a list of Images that match a set of filters that have been 
+.shared in the Image Share Group that the provided Token has been accepted into 
 For more information, see the [Linode APIv4 docs](TODO).
 
 ## Example Usage
@@ -14,12 +15,10 @@ For more information, see the [Linode APIv4 docs](TODO).
 The following example shows how one might use this data source to list Images shared in an Image Share Group.
 
 ```hcl
-data "linode_producer_image_share_group_image_shares" "all" {
-    sharegroup_id = 123
-}
+data "linode_consumer_image_share_group_image_shares" "all" {}
 
-data "linode_producer_image_share_group_image_shares" "filtered" {
-    sharegroup_id = 123
+data "linode_consumer_image_share_group_image_shares" "filtered" {
+    token_uuid = "54e1adf3-e499-4685-82be-10d29d4e8fae"
     filter {
         name = "label"
         values = ["my-label"]
@@ -27,11 +26,11 @@ data "linode_producer_image_share_group_image_shares" "filtered" {
 }
 
 output "all-shared-images" {
-  value = data.linode_producer_image_share_group_image_shares.all.image_shares
+  value = data.linode_consumer_image_share_group_image_shares.all.image_shares
 }
 
 output "filtered-shared-images" {
-  value = data.linode_producer_image_share_group_image_shares.filtered.image_shares
+  value = data.linode_consumer_image_share_group_image_shares.filtered.image_shares
 }
 ```
 
@@ -39,7 +38,7 @@ output "filtered-shared-images" {
 
 The following arguments are supported:
 
-* `sharegroup_id` - (Required) The ID of the Image Share Group to list shared Images from.
+* `token_uuid` - (Required) The UUID of the Token that has been accepted into the Image Share Group to list shared Images from.
 
 * [`filter`](#filter) - (Optional) A set of filters used to select Image Share Groups that meet certain requirements.
 

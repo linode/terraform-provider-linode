@@ -1,4 +1,4 @@
-package producerimagesharegroupimageshares
+package consumerimagesharegroupimageshares
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -111,8 +111,8 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "The data source's unique ID.",
 			Computed:    true,
 		},
-		"sharegroup_id": schema.Int64Attribute{
-			Description: "The ID of the Image Share Group to list Image Shares for.",
+		"token_uuid": schema.StringAttribute{
+			Description: "The UUID of the Token that has been granted access to the Images in the Image Share Group.",
 			Required:    true,
 		},
 		"order":    filterConfig.OrderSchema(),
