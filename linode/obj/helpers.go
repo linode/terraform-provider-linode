@@ -37,9 +37,10 @@ func getS3ClientFromModel(
 	config *helper.FrameworkProviderModel,
 	data ResourceModel,
 	permission string,
+	endpointType *linodego.ObjectStorageEndpointType,
 	diags *diag.Diagnostics,
 ) (*s3.Client, func()) {
-	keys, teardownKeys := data.GetObjectStorageKeys(ctx, client, config, permission, diags)
+	keys, teardownKeys := data.GetObjectStorageKeys(ctx, client, config, permission, endpointType, diags)
 	if diags.HasError() {
 		return nil, teardownKeys
 	}
@@ -82,13 +83,14 @@ func isCluster(regionOrCluster string) bool {
 func fwCreateTempKeys(
 	ctx context.Context,
 	client *linodego.Client,
-	bucket, regionOrCluster, permissions string,
+	bucketLabel, regionOrCluster, permissions string,
+	endpointType *linodego.ObjectStorageEndpointType,
 	diags *diag.Diagnostics,
 ) *linodego.ObjectStorageKey {
 	tflog.Debug(ctx, "Create temporary object storage access keys implicitly.")
 
 	tempBucketAccess := linodego.ObjectStorageKeyBucketAccess{
-		BucketName:  bucket,
+		BucketName:  bucketLabel,
 		Permissions: permissions,
 	}
 
@@ -101,7 +103,7 @@ func fwCreateTempKeys(
 	}
 
 	createOpts := linodego.ObjectStorageKeyCreateOptions{
-		Label:        fmt.Sprintf("temp_%s_%v", bucket, time.Now().Unix()),
+		Label:        fmt.Sprintf("temp_%s_%v", bucketLabel, time.Now().Unix()),
 		BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{tempBucketAccess},
 	}
 
@@ -115,7 +117,36 @@ func fwCreateTempKeys(
 		return nil
 	}
 
+	if endpointType == nil {
+		et, err := getBucketEndpointType(ctx, client, regionOrCluster, bucketLabel)
+		if err != nil {
+			diags.AddWarning(
+				"Can't determine the type of the object storage endpoint. If the it's an E2/E3 OBJ clusters, "+
+					"it may lead to an issue that temporary limited key is used before becoming effective",
+				err.Error(),
+			)
+		} else {
+			endpointType = &et
+		}
+	}
+
+	// OBJ limited key for OBJ gen2 takes at most 30s to refresh the cache can becomes effective
+	if endpointType != nil && *endpointType != linodego.ObjectStorageEndpointE0 && *endpointType != linodego.ObjectStorageEndpointE1 {
+		time.Sleep(30 * time.Second)
+	}
+
 	return keys
+}
+
+func getBucketEndpointType(
+	ctx context.Context, client *linodego.Client, cluster, label string,
+) (linodego.ObjectStorageEndpointType, error) {
+	bucket, err := client.GetObjectStorageBucket(ctx, cluster, label)
+	if err != nil {
+		return "", err
+	}
+
+	return bucket.EndpointType, nil
 }
 
 // createTempKeys creates temporary Object Storage Keys to use.
@@ -124,12 +155,13 @@ func fwCreateTempKeys(
 func createTempKeys(
 	ctx context.Context,
 	client *linodego.Client,
-	bucket, regionOrCluster, permissions string,
+	bucketLabel, regionOrCluster, permissions string,
+	endpointType *linodego.ObjectStorageEndpointType,
 ) (*linodego.ObjectStorageKey, sdkv2diag.Diagnostics) {
 	tflog.Debug(ctx, "Create temporary object storage access keys implicitly.")
 
 	tempBucketAccess := linodego.ObjectStorageKeyBucketAccess{
-		BucketName:  bucket,
+		BucketName:  bucketLabel,
 		Permissions: permissions,
 	}
 
@@ -144,7 +176,6 @@ func createTempKeys(
 	// too long, then truncate it.
 	// We use 16 characters for `temp__{timestamp}`, so the maximum length of a
 	// full bucket name is 34.
-	bucketLabel := bucket
 	if len(bucketLabel) > 34 {
 		bucketLabel = bucketLabel[:34]
 	}
@@ -161,6 +192,20 @@ func createTempKeys(
 	if err != nil {
 		return nil, sdkv2diag.FromErr(err)
 	}
+	if endpointType == nil {
+		et, err := getBucketEndpointType(ctx, client, regionOrCluster, bucketLabel)
+		if err != nil {
+			tflog.Warn(ctx, fmt.Sprintf("Can't determine the type of the object storage endpoint: %s", err.Error()))
+		} else {
+			endpointType = &et
+		}
+	}
+
+	// OBJ limited key for OBJ gen2 takes at most 30s to refresh the cache can becomes effective
+	if endpointType != nil && *endpointType != linodego.ObjectStorageEndpointE0 && *endpointType != linodego.ObjectStorageEndpointE1 {
+		time.Sleep(30 * time.Second)
+	}
+	// panic(fmt.Sprintf("%v", endpointType))
 
 	return keys, nil
 }
@@ -197,6 +242,7 @@ func GetObjKeys(
 	config *helper.Config,
 	client linodego.Client,
 	bucket, regionOrCluster, permission string,
+	endpointType *linodego.ObjectStorageEndpointType,
 ) (ObjectKeys, sdkv2diag.Diagnostics, func()) {
 	var teardownTempKeysCleanUp func() = nil
 
@@ -211,7 +257,7 @@ func GetObjKeys(
 			objKeys = providerKeys
 		} else if config.ObjUseTempKeys {
 			// Implicitly create temporary object storage keys
-			keys, diag := createTempKeys(ctx, &client, bucket, regionOrCluster, permission)
+			keys, diag := createTempKeys(ctx, &client, bucket, regionOrCluster, permission, endpointType)
 			if diag != nil {
 				return objKeys, diag, nil
 			}
@@ -250,9 +296,10 @@ func putObjectWithRetries(
 			if _, err := s3client.PutObject(ctx, putInput); err != nil {
 				tflog.Debug(ctx,
 					fmt.Sprintf(
-						"Failed to put Bucket (%v) Object (%v): %s. Retrying...",
+						"Failed to put Bucket (%v) Object (%v) with input %v: %s. Retrying...",
 						aws.ToString(putInput.Bucket),
 						aws.ToString(putInput.Key),
+						putInput,
 						err.Error(),
 					),
 				)

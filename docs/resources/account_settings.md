@@ -30,6 +30,8 @@ The following arguments are supported:
 
 * `longview_subscription` - (Optional) The Longview Pro tier you are currently subscribed to. The value must be a [Longview Subscription](https://techdocs.akamai.com/linode-api/reference/get-longview-subscriptions) ID or null for Longview Free.
 
+* `interfaces_for_new_linodes` - (Optional) Type of interfaces for new Linode instances. Available values are `"legacy_config_only"`, `"legacy_config_default_but_linode_allowed"`, `"linode_default_but_legacy_config_allowed"`, and `"linode_only"`.
+
 * `maintenance_policy` - (Optional) The default maintenance policy for this account. Examples are `"linode/migrate"` and `"linode/power_off_on"`. Defaults to `"linode/migrate"`. (**Note: v4beta only.**)
 
 ## Additional Results

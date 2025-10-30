@@ -5,6 +5,7 @@ package vpcsubnets_test
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -47,16 +48,46 @@ func TestAccDataSourceVPCSubnets_basic_smoke(t *testing.T) {
 				Config: tmpl.DataBasic(t, vpcLabel, testRegion, "10.0.0.0/24"),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "vpc_subnets.#", 0),
-					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.id"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.label"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.ipv4"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.created"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.updated"),
-
-					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.linodes.0.id"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.linodes.0.interfaces.0.id"),
-					resource.TestCheckResourceAttr(resourceName, "vpc_subnets.0.linodes.0.interfaces.0.active", "false"),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("label"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("ipv4"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("created"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("updated"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("linodes").AtSliceIndex(0).AtMapKey("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("linodes").AtSliceIndex(0).AtMapKey("interfaces").AtSliceIndex(0).AtMapKey("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").
+							AtSliceIndex(0).
+							AtMapKey("linodes").
+							AtSliceIndex(0).
+							AtMapKey("interfaces").
+							AtSliceIndex(0).
+							AtMapKey("active"),
+						knownvalue.Bool(false),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").
+							AtSliceIndex(0).
+							AtMapKey("linodes").
+							AtSliceIndex(0).
+							AtMapKey("interfaces").
+							AtSliceIndex(0).
+							AtMapKey("config_id"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 		},
 	})
@@ -139,12 +170,18 @@ func TestAccDataSourceVPCSubnets_filterByLabel(t *testing.T) {
 				Config: tmpl.DataFilterLabel(t, vpcLabel, testRegion, "10.0.0.0/24"),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "vpc_subnets.#", 0),
-					acceptance.CheckResourceAttrContains(resourceName, "vpc_subnets.0.label", "tf-test"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.id"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.ipv4"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.created"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.updated"),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("label"),
+						knownvalue.StringRegexp(regexp.MustCompile("tf-test")),
+					),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("ipv4"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("created"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("updated"), knownvalue.NotNull()),
+				},
 			},
 		},
 	})

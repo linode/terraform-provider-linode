@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -109,6 +110,8 @@ func (r *Resource) Create(
 		return
 	}
 
+	ipv6Configured := !data.IPv6.IsNull()
+
 	resp.Diagnostics.Append(data.FlattenSubnet(ctx, subnet, true)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -119,6 +122,15 @@ func (r *Resource) Create(
 	data.ID = types.StringValue(strconv.Itoa(subnet.ID))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	if ipv6Configured && subnet.IPv6 == nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("ipv6"),
+			"Value Mismatch",
+			"The `ipv6` field was configured but was not found in the API's response. "+
+				"Please ensure the current user has access to the VPC IPv6 feature.",
+		)
+	}
 }
 
 func (r *Resource) Read(
@@ -267,15 +279,51 @@ func (r *Resource) Delete(
 		return
 	}
 
-	tflog.Debug(ctx, "client.DeleteVPCSubnet(...)")
-	err := client.DeleteVPCSubnet(ctx, vpcId, id)
+	// This is necessary because database deletion propagation can often take a while,
+	// leading to errors during destruction.
+	shouldRetryOn400s, err := shouldRetryOn400sForDatabasePropagation(ctx, client, vpcId, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to delete the VPC subnet (%s)", data.ID.ValueString()),
-				err.Error(),
-			)
+		if linodego.IsNotFound(err) {
+			// This subnet is already gone - nothing to do here
+			return
 		}
+
+		resp.Diagnostics.AddError(
+			"Failed to verify database propagation",
+			err.Error(),
+		)
+		return
+	}
+
+	err = helper.WithRetries(
+		ctx,
+		64,
+		time.Second*10,
+		func() (bool, error) {
+			tflog.Debug(ctx, "client.DeleteVPCSubnet(...)")
+			err := client.DeleteVPCSubnet(ctx, vpcId, id)
+			if err != nil {
+				if linodego.IsNotFound(err) {
+					// This is an acceptable case
+					return false, nil
+				}
+
+				if shouldRetryOn400s && linodego.ErrHasStatus(err, 400) {
+					// Something is likely still propagating
+					return true, err
+				}
+
+				return false, err
+			}
+
+			return false, nil
+		},
+	)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to delete the VPC subnet",
+			err.Error(),
+		)
 		return
 	}
 }

@@ -1,0 +1,41 @@
+{{ define "database_postgresql_v2_vpc_1" }}
+
+resource "linode_database_postgresql_v2" "foobar" {
+    label = "{{ .Label }}"
+    region = "{{ .Region }}"
+    type = "g6-nanode-1"
+    engine_id = "{{ .EngineID }}"
+
+    private_network = {
+        vpc_id = linode_vpc.foobar2.id
+        subnet_id = linode_vpc_subnet.foobar2.id
+        public_access = true
+    }
+}
+
+resource "linode_vpc" "foobar2" {
+    label = "{{ .Label }}-2"
+    region = "{{ .Region }}"
+}
+
+resource "linode_vpc_subnet" "foobar2" {
+    vpc_id = linode_vpc.foobar2.id
+    label = "{{ .Label }}"
+    ipv4 = "10.0.0.0/24"
+}
+
+
+// We need to preserve these to prevent a 400 that occurs
+// because the DB is still attached at the time of deletion
+resource "linode_vpc" "foobar" {
+    label = "{{ .Label }}"
+    region = "{{ .Region }}"
+}
+
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = linode_vpc.foobar.id
+    label = "{{ .Label }}"
+    ipv4 = "10.0.0.0/24"
+}
+
+{{ end }}

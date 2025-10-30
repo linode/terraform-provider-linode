@@ -113,7 +113,7 @@ func (data *ResourceModel) FlattenImage(
 	data.IsPublic = helper.KeepOrUpdateBool(data.IsPublic, image.IsPublic, preserveKnown)
 	data.IsShared = helper.KeepOrUpdateBool(data.IsShared, image.IsShared, preserveKnown)
 
-	imageSharing := helper.KeepOrUpdateSingleNestedAttributeWithTypes(
+	imageSharing := helper.KeepOrUpdateSingleNestedAttributesWithTypes(
 		ctx,
 		data.ImageSharing,
 		imageSharingObjectType.AttrTypes,

@@ -19,11 +19,6 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-var (
-	boolFalse = false
-	boolTrue  = true
-)
-
 type diskSpec map[string]interface{}
 
 // getDeadlineSeconds gets the seconds remaining until deadline is met.

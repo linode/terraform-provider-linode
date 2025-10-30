@@ -59,6 +59,8 @@ The `linode_database_mysql_v2` data source exports the following attributes:
 
 * `port` - The access port for this Managed Database.
 
+* [`private_network`](#private_network) - Restricts access to this database using a virtual private cloud (VPC).
+
 * `region` - The region to use for the Managed Database.
 
 * `root_password` - The randomly-generated root password for the Managed Database instance.
@@ -156,3 +158,13 @@ The following arguments are supported in the `updates` specification block:
 * `frequency` - The frequency at which maintenance occurs. (`weekly`)
 
 * `hour_of_day` - The hour to begin maintenance based in UTC time. (`0`..`23`)
+
+## private_network
+
+The following arguments are exposed by the `private_network` attribute:
+
+* `vpc_id` - The ID of the virtual private cloud (VPC) to restrict access to this database using.
+
+* `subnet_id` - The ID of the VPC subnet to restrict access to this database using.
+
+* `public_access` - If true, clients outside the VPC can connect to the database using a public IP address.

@@ -30,7 +30,9 @@ type TemplateData struct {
 
 	DiskEncryption *linodego.InstanceDiskEncryption
 
-	MaintenancePolicy string
+	InterfaceGeneration linodego.InterfaceGeneration
+	NetworkHelper       *bool
+	MaintenancePolicy   string
 }
 
 func Basic(t testing.TB, label, pubKey, region string, rootPass string) string {
@@ -165,6 +167,25 @@ func InterfacesUpdateEmpty(t testing.TB, label, region string) string {
 			Label:  label,
 			Image:  acceptance.TestImageLatest,
 			Region: region,
+		})
+}
+
+func ExplicitInterfaceGeneration(
+	t testing.TB,
+	label,
+	region string,
+	booted bool,
+	generation linodego.InterfaceGeneration,
+	networkHelper *bool,
+) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_explicit_interface_generation", TemplateData{
+			Label:               label,
+			Image:               acceptance.TestImageLatest,
+			Region:              region,
+			InterfaceGeneration: generation,
+			NetworkHelper:       networkHelper,
+			Booted:              booted,
 		})
 }
 
@@ -710,6 +731,24 @@ func DataClientFilter(t testing.TB, label, tag, region string, rootPass string) 
 			Image:    acceptance.TestImageLatest,
 			Region:   region,
 			RootPass: rootPass,
+		})
+}
+
+func DataExplicitInterfaceGeneration(
+	t testing.TB,
+	label,
+	region,
+	image string,
+	generation linodego.InterfaceGeneration,
+	booted bool,
+) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_explicit_interface_generation", TemplateData{
+			Label:               label,
+			Region:              region,
+			Image:               image,
+			InterfaceGeneration: generation,
+			Booted:              booted,
 		})
 }
 

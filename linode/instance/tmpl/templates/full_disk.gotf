@@ -7,7 +7,7 @@ resource "linode_instance" "foobar" {
     group = "tf_test"
     type = "g6-nanode-1"
     # This needs to be hardcoded to support the StackScript
-    image = "linode/ubuntu18.04"
+    image = "linode/ubuntu24.04"
     region = "{{ .Region }}"
     root_pass = "{{ .RootPass }}"
     swap_size = {{.SwapSize}}
@@ -47,7 +47,7 @@ preallocate_free_space
 fill_disk
 EOF
 description = "script to max out disk"
-images = ["linode/ubuntu18.04"]
+images = ["linode/ubuntu24.04"]
 }
 
 {{ end }}

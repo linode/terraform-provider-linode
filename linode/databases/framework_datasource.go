@@ -49,7 +49,12 @@ func (r *DataSource) Read(
 		return
 	}
 
-	data.parseDatabases(helper.AnySliceToTyped[linodego.Database](result))
+	resp.Diagnostics.Append(
+		data.parseDatabases(ctx, helper.AnySliceToTyped[linodego.Database](result))...,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
