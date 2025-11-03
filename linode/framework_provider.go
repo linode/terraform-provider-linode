@@ -264,6 +264,9 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		networkingipassignment.NewResource,
 		obj.NewResource,
 		databasemysqlv2.NewResource,
+		producerimagesharegroup.NewResource,
+		producerimagesharegroupmember.NewResource,
+		consumerimagesharegrouptoken.NewResource,
 	}
 }
 

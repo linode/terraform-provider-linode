@@ -35,6 +35,11 @@ resource "linode_producer_image_share_group" "foobar" {
   label       = "{{ .ImageShareGroupLabel }}"
   description = "{{ .ImageShareGroupDescription }}"
 
+  depends_on = [
+    linode_image.foobar,
+    linode_image.barfoo,
+  ]
+
   {{- if .Images }}
   images = [
     {{- range .Images }}

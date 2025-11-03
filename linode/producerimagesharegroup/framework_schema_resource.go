@@ -2,11 +2,14 @@ package producerimagesharegroup
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var imageShareGroupImage = schema.NestedAttributeObject{
@@ -85,6 +88,9 @@ var frameworkResourceSchema = schema.Schema{
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.UseStateForUnknown(),
 			},
+			// Default to an empty list to ensure proper typing in state when not specified in config. This makes
+			// it so that the user specifying an empty list and not specifying the attribute at all is equivalent.
+			Default: listdefault.StaticValue(types.ListValueMust(imageShareGroupImage.Type(), []attr.Value{})),
 		},
 	},
 }

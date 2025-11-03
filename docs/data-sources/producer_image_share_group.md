@@ -9,7 +9,6 @@ description: |-
 `linode_producer_image_share_group` provides details about an Image Share Group.
 For more information, see the [Linode APIv4 docs](TODO).
 
-
 ## Example Usage
 
 The following example shows how the datasource might be used to obtain additional information about an Image Share Group.

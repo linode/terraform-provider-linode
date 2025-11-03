@@ -6,8 +6,8 @@ description: |-
 
 # Data Source: linode\_consumer\_image\_share\_group\_image\_shares
 
-Provides information about a list of Images that match a set of filters that have been 
-.shared in the Image Share Group that the provided Token has been accepted into 
+Provides information about a list of Images that match a set of filters that have been
+.shared in the Image Share Group that the provided Token has been accepted into
 For more information, see the [Linode APIv4 docs](TODO).
 
 ## Example Usage
@@ -69,14 +69,14 @@ Each Image Share will be stored in the `images_shares` attribute and will export
 * `is_public` - True if the Image is public.
 
 * `image_sharing` - Details about image sharing, including who the image is shared with and by.
-    * `shared_with` - Details about who the image is shared with.
-        * `sharegroup_count` - The number of sharegroups the private image is present in.
-        * `sharegroup_list_url` - The GET api url to view the sharegroups in which the image is shared.
-    * `shared_by` - Details about who the image is shared by.
-        * `sharegroup_id` - The sharegroup_id from the im_ImageShare row.
-        * `sharegroup_uuid` - The sharegroup_uuid from the im_ImageShare row.
-        * `sharegroup_label` - The label from the associated im_ImageShareGroup row.
-        * `source_image_id` - The image id of the base image (will only be shown to producers, will be null for consumers).
+  * `shared_with` - Details about who the image is shared with.
+    * `sharegroup_count` - The number of sharegroups the private image is present in.
+    * `sharegroup_list_url` - The GET api url to view the sharegroups in which the image is shared.
+  * `shared_by` - Details about who the image is shared by.
+    * `sharegroup_id` - The sharegroup_id from the im_ImageShare row.
+    * `sharegroup_uuid` - The sharegroup_uuid from the im_ImageShare row.
+    * `sharegroup_label` - The label from the associated im_ImageShareGroup row.
+    * `source_image_id` - The image id of the base image (will only be shown to producers, will be null for consumers).
 
 * `size` - The minimum size this Image needs to deploy. Size is in MB. example: 2500
 

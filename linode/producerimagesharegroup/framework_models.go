@@ -2,7 +2,6 @@ package producerimagesharegroup
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -52,12 +51,9 @@ func (data *ResourceModel) FlattenImageShareGroup(
 		data.Expiry, timetypes.NewRFC3339TimePointerValue(imageShareGroup.Expiry), preserveKnown,
 	)
 
-	// Images must persist in state across CRUD operations but is not returned by the API. It will be maintained
-	// manually as a part of Create, Update, and Read, so we only need to set it here if it is null or unknown
-	// so that it is properly typed.
-	if data.Images.IsNull() || data.Images.IsUnknown() {
-		data.Images = types.ListValueMust(imageShareGroupImage.Type(), []attr.Value{})
-	}
+	// Images will persist in state across CRUD operations even though it is not returned by the API. It is maintained
+	// manually as a part of Create, Update, and Read. We do not need to set it here because it defaults to a
+	// properly typed empty list when omitted from the config.
 }
 
 type DataSourceModel struct {

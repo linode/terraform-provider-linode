@@ -197,16 +197,6 @@ func (r *Resource) Update(
 		return
 	}
 
-	// Refresh remote state to ensure accuracy
-	sg, err := client.GetImageShareGroup(ctx, imageShareGroupID)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to read Image Share Group.",
-			err.Error(),
-		)
-		return
-	}
-
 	imagesResp, err := client.ImageShareGroupListImageShareEntries(ctx, imageShareGroupID, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -339,7 +329,7 @@ func (r *Resource) Update(
 	}
 
 	// Refresh and persist final state
-	sg, err = client.GetImageShareGroup(ctx, imageShareGroupID)
+	sg, err := client.GetImageShareGroup(ctx, imageShareGroupID)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to re-fetch share group", err.Error())
 		return
