@@ -3,6 +3,8 @@ package linodeinterface
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/cidrtypes"
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -32,10 +34,12 @@ type VPCIPv4AddressAttrModel struct {
 	Nat11Address types.String `tfsdk:"nat_1_1_address"`
 }
 
-// VPCIPv4RangeAttrModel is a shared model between `configuredVPCInterfaceIPv4Range` and
-// `computedVPCInterfaceIPv4Range`
-type VPCIPv4RangeAttrModel struct {
+type ConfiguredVPCIPv4RangeAttrModel struct {
 	Range types.String `tfsdk:"range"`
+}
+
+type ComputedVPCIPv4RangeAttrModel struct {
+	Range cidrtypes.IPv4Prefix `tfsdk:"range"`
 }
 
 type VPCIPv6AttrModel struct {
@@ -51,12 +55,16 @@ type VPCIPv6SLAACAttrModel struct {
 }
 
 type VPCIPv6SLAACAttrComputedModel struct {
-	Range   types.String `tfsdk:"range"`
-	Address types.String `tfsdk:"address"`
+	Range   cidrtypes.IPv6Prefix `tfsdk:"range"`
+	Address iptypes.IPv6Address  `tfsdk:"address"`
 }
 
-type VPCIPv6RangeAttrModel struct {
+type ConfiguredVPCIPv6RangeAttrModel struct {
 	Range types.String `tfsdk:"range"`
+}
+
+type ComputedVPCIPv6RangeAttrModel struct {
+	Range cidrtypes.IPv6Prefix `tfsdk:"range"`
 }
 
 func (plan *VPCAttrModel) GetCreateOptions(ctx context.Context, diags *diag.Diagnostics) (opts linodego.VPCInterfaceCreateOptions) {
@@ -153,7 +161,7 @@ func (plan *VPCIPv4AttrModel) GetCreateOrUpdateOptions(
 
 	if !plan.Ranges.IsUnknown() && !plan.Ranges.IsNull() && (state == nil || !state.Ranges.Equal(plan.Ranges)) {
 		length := len(plan.Ranges.Elements())
-		ranges := make([]VPCIPv4RangeAttrModel, 0, length)
+		ranges := make([]ConfiguredVPCIPv4RangeAttrModel, 0, length)
 		diags.Append(plan.Ranges.ElementsAs(ctx, &ranges, false)...)
 		if diags.HasError() {
 			return opts, shouldUpdate
@@ -190,8 +198,8 @@ func (plan *VPCIPv4AddressAttrModel) GetCreateOptions(ctx context.Context) linod
 	return opts
 }
 
-func (plan *VPCIPv4RangeAttrModel) GetCreateOptions(ctx context.Context) linodego.VPCInterfaceIPv4RangeCreateOptions {
-	tflog.Trace(ctx, "Enter VPCIPv4RangeAttrModel.GetCreateOptions")
+func (plan *ConfiguredVPCIPv4RangeAttrModel) GetCreateOptions(ctx context.Context) linodego.VPCInterfaceIPv4RangeCreateOptions {
+	tflog.Trace(ctx, "Enter ConfiguredVPCIPv4RangeAttrModel.GetCreateOptions")
 
 	return linodego.VPCInterfaceIPv4RangeCreateOptions{
 		Range: plan.Range.ValueString(),
@@ -263,10 +271,10 @@ func (data *VPCIPv4AttrModel) FlattenVPCIPv4(ctx context.Context, ipv4 linodego.
 
 	data.AssignedAddresses = helper.KeepOrUpdateValue(data.AssignedAddresses, assignedAddressesValue, preserveKnown)
 
-	assignedRanges := make([]VPCIPv4RangeAttrModel, len(ipv4.Ranges))
+	assignedRanges := make([]ComputedVPCIPv4RangeAttrModel, len(ipv4.Ranges))
 	for i, r := range ipv4.Ranges {
-		assignedRanges[i] = VPCIPv4RangeAttrModel{
-			Range: types.StringValue(r.Range),
+		assignedRanges[i] = ComputedVPCIPv4RangeAttrModel{
+			Range: cidrtypes.NewIPv4PrefixValue(r.Range),
 		}
 	}
 
@@ -312,7 +320,7 @@ func (plan *VPCIPv6AttrModel) GetCreateOrUpdateOptions(
 
 	if !plan.Ranges.IsUnknown() && !plan.Ranges.IsNull() && (state == nil || !state.Ranges.Equal(plan.Ranges)) {
 		length := len(plan.Ranges.Elements())
-		ranges := make([]VPCIPv6RangeAttrModel, 0, length)
+		ranges := make([]ConfiguredVPCIPv6RangeAttrModel, 0, length)
 		diags.Append(plan.Ranges.ElementsAs(ctx, &ranges, false)...)
 		if diags.HasError() {
 			return opts, shouldUpdate
@@ -339,7 +347,7 @@ func (plan *VPCIPv6SLAACAttrModel) GetCreateOptions() linodego.VPCInterfaceIPv6S
 	return opts
 }
 
-func (plan *VPCIPv6RangeAttrModel) GetCreateOptions() linodego.VPCInterfaceIPv6RangeCreateOptions {
+func (plan *ConfiguredVPCIPv6RangeAttrModel) GetCreateOptions() linodego.VPCInterfaceIPv6RangeCreateOptions {
 	return linodego.VPCInterfaceIPv6RangeCreateOptions{
 		Range: plan.Range.ValueString(),
 	}
@@ -361,8 +369,8 @@ func (data *VPCIPv6AttrModel) FlattenVPCIPv6(ctx context.Context, ipv6 linodego.
 		ipv6.SLAAC,
 		func(slaac linodego.VPCInterfaceIPv6SLAAC) VPCIPv6SLAACAttrComputedModel {
 			return VPCIPv6SLAACAttrComputedModel{
-				Range:   types.StringValue(slaac.Range),
-				Address: types.StringValue(slaac.Address),
+				Range:   cidrtypes.NewIPv6PrefixValue(slaac.Range),
+				Address: iptypes.NewIPv6AddressValue(slaac.Address),
 			}
 		},
 	)
@@ -379,9 +387,9 @@ func (data *VPCIPv6AttrModel) FlattenVPCIPv6(ctx context.Context, ipv6 linodego.
 
 	assignedRanges := helper.MapSlice(
 		ipv6.Ranges,
-		func(r linodego.VPCInterfaceIPv6Range) VPCIPv6RangeAttrModel {
-			return VPCIPv6RangeAttrModel{
-				Range: types.StringValue(r.Range),
+		func(r linodego.VPCInterfaceIPv6Range) ComputedVPCIPv6RangeAttrModel {
+			return ComputedVPCIPv6RangeAttrModel{
+				Range: cidrtypes.NewIPv6PrefixValue(r.Range),
 			}
 		},
 	)

@@ -35,7 +35,8 @@ var configuredPublicInterfaceIPv4Address = schema.NestedAttributeObject{
 var computedPublicInterfaceIPv4Address = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"address": schema.StringAttribute{
-			Computed: true,
+			CustomType: iptypes.IPv4AddressType{},
+			Computed:   true,
 		},
 		"primary": schema.BoolAttribute{
 			Computed: true,
@@ -46,7 +47,8 @@ var computedPublicInterfaceIPv4Address = schema.NestedAttributeObject{
 var sharedPublicInterfaceIPv4Address = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"address": schema.StringAttribute{
-			Computed: true,
+			CustomType: iptypes.IPv4AddressType{},
+			Computed:   true,
 		},
 		"linode_id": schema.Int64Attribute{
 			Computed: true,
@@ -79,10 +81,11 @@ var computedPublicInterfaceIPv6Range = schema.NestedAttributeObject{
 var resourcePublicInterfaceIPv6SLAAC = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"address": schema.StringAttribute{
+			Computed:   true,
+			CustomType: iptypes.IPv6AddressType{},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
-			Computed: true,
 		},
 		"prefix": schema.Int64Attribute{
 			PlanModifiers: []planmodifier.Int64{
@@ -139,7 +142,8 @@ var configuredVPCInterfaceIPv4Range = schema.NestedAttributeObject{
 var computedVPCInterfaceIPv4Range = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"range": schema.StringAttribute{
-			Computed: true,
+			CustomType: cidrtypes.IPv4PrefixType{},
+			Computed:   true,
 		},
 	},
 }
@@ -221,9 +225,6 @@ var resourcePublicIPv4Attribute = schema.SingleNestedAttribute{
 			Description:  "The IPv4 address assigned to this Linode interface, which is also shared with another Linode.",
 			Computed:     true,
 			NestedObject: sharedPublicInterfaceIPv4Address,
-			PlanModifiers: []planmodifier.Set{
-				setplanmodifier.UseStateForUnknown(),
-			},
 		},
 	},
 }

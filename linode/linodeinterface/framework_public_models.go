@@ -3,6 +3,8 @@ package linodeinterface
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/cidrtypes"
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -30,8 +32,8 @@ type PublicIPv6AttrModel struct {
 }
 
 type SharedPublicIPv4AddressAttrModel struct {
-	Address  types.String `tfsdk:"address"`
-	LinodeID types.Int64  `tfsdk:"linode_id"`
+	Address  iptypes.IPv4Address `tfsdk:"address"`
+	LinodeID types.Int64         `tfsdk:"linode_id"`
 }
 
 // PublicIPv4AddressAttrModel is a shared model between `configuredPublicInterfaceIPv4Address` and
@@ -46,13 +48,13 @@ type ConfiguredPublicIPv6RangeAttrModel struct {
 }
 
 type ComputedPublicIPv6RangeAttrModel struct {
-	Range       types.String `tfsdk:"range"`
-	RouteTarget types.String `tfsdk:"route_target"`
+	Range       cidrtypes.IPv6Prefix `tfsdk:"range"`
+	RouteTarget iptypes.IPv6Address  `tfsdk:"route_target"`
 }
 
 type PublicIPv6SLAACAttrModel struct {
-	Address types.String `tfsdk:"address"`
-	Prefix  types.Int64  `tfsdk:"prefix"`
+	Address iptypes.IPv6Address `tfsdk:"address"`
+	Prefix  types.Int64         `tfsdk:"prefix"`
 }
 
 func (plan *PublicAttrModel) GetCreateOrUpdateOptions(
@@ -134,7 +136,7 @@ func (data *PublicIPv4AttrModel) FlattenPublicIPv4(ctx context.Context, ipv4 lin
 	shared := make([]SharedPublicIPv4AddressAttrModel, len(ipv4.Shared))
 	for i, v := range ipv4.Shared {
 		shared[i] = SharedPublicIPv4AddressAttrModel{
-			Address:  types.StringValue(v.Address),
+			Address:  iptypes.NewIPv4AddressValue(v.Address),
 			LinodeID: types.Int64Value(int64(v.LinodeID)),
 		}
 	}
@@ -166,8 +168,8 @@ func (data *PublicIPv6AttrModel) FlattenPublicIPv6(ctx context.Context, ipv6 lin
 	assignedRanges := make([]ComputedPublicIPv6RangeAttrModel, len(ipv6.Ranges))
 	for i, v := range ipv6.Ranges {
 		assignedRanges[i] = ComputedPublicIPv6RangeAttrModel{
-			Range:       types.StringValue(v.Range),
-			RouteTarget: types.StringPointerValue(v.RouteTarget),
+			Range:       cidrtypes.NewIPv6PrefixValue(v.Range),
+			RouteTarget: iptypes.NewIPv6AddressPointerValue(v.RouteTarget),
 		}
 	}
 
@@ -181,8 +183,8 @@ func (data *PublicIPv6AttrModel) FlattenPublicIPv6(ctx context.Context, ipv6 lin
 	shared := make([]ComputedPublicIPv6RangeAttrModel, len(ipv6.Shared))
 	for i, v := range ipv6.Shared {
 		shared[i] = ComputedPublicIPv6RangeAttrModel{
-			Range:       types.StringValue(v.Range),
-			RouteTarget: types.StringPointerValue(v.RouteTarget),
+			Range:       cidrtypes.NewIPv6PrefixValue(v.Range),
+			RouteTarget: iptypes.NewIPv6AddressPointerValue(v.RouteTarget),
 		}
 	}
 
@@ -196,7 +198,7 @@ func (data *PublicIPv6AttrModel) FlattenPublicIPv6(ctx context.Context, ipv6 lin
 	slaac := make([]PublicIPv6SLAACAttrModel, len(ipv6.SLAAC))
 	for i, v := range ipv6.SLAAC {
 		slaac[i] = PublicIPv6SLAACAttrModel{
-			Address: types.StringValue(v.Address),
+			Address: iptypes.NewIPv6AddressValue(v.Address),
 			Prefix:  types.Int64Value(int64(v.Prefix)),
 		}
 	}
