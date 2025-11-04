@@ -7,7 +7,7 @@ description: |-
 # Data Source: linode\_producer\_image\_share\_group\_image\_shares
 
 Provides information about a list of Images shared in the specified Image Share Group that match a set of filters.
-For more information, see the [Linode APIv4 docs](TODO).
+For more information, see the [Linode APIv4 docs](TODO). May not be currently available to all users even under v4beta.
 
 ## Example Usage
 

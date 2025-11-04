@@ -7,7 +7,7 @@ description: |-
 # Data Source: linode\_consumer\_image\_share\_group\_token
 
 `linode_consumer_image_share_group_token` provides details about a Token for an Image Share Group.
-For more information, see the [Linode APIv4 docs](TODO).
+For more information, see the [Linode APIv4 docs](TODO). May not be currently available to all users even under v4beta.
 
 ## Example Usage
 

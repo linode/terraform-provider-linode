@@ -121,9 +121,9 @@ This resource exports the following attributes:
 
 * `is_public` - True if the Image is public.
 
-* `is_shared` - True if the Image is shared.
+* `is_shared` - True if the Image is shared. (**Note: v4beta only and may not currently be available to all users.**)
 
-* `image_sharing` - Details about image sharing, including who the image is shared with and by.
+* `image_sharing` - Details about image sharing, including who the image is shared with and by. (**Note: v4beta only and may not currently be available to all users.**)
   * `shared_with` - Details about who the image is shared with.
     * `sharegroup_count` - The number of sharegroups the private image is present in.
     * `sharegroup_list_url` - The GET api url to view the sharegroups in which the image is shared.

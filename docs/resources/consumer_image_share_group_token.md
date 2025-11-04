@@ -7,7 +7,7 @@ description: |-
 # linode\_consumer\_image\_share\_group\_token
 
 Manages a token for an Image Share Group.
-For more information, see the [Linode APIv4 docs](TODO).
+For more information, see the [Linode APIv4 docs](TODO). May not be currently available to all users even under v4beta.
 
 ## Example Usage
 
