@@ -206,7 +206,7 @@ func (data *VPCAttrModel) FlattenVPCInterface(
 	data.SubnetID = helper.KeepOrUpdateInt64(data.SubnetID, int64(vpcInterface.SubnetID), preserveKnown)
 
 	flattenedIPv4 := helper.KeepOrUpdateSingleNestedAttributesWithTypes(
-		ctx, data.IPv4, vpcIPv4Attribute.GetType().(basetypes.ObjectType).AttrTypes, preserveKnown, diags,
+		ctx, data.IPv4, resourceVPCIPv4Attribute.GetType().(basetypes.ObjectType).AttrTypes, preserveKnown, diags,
 		func(ipv4 *VPCIPv4AttrModel, isNull *bool, pk bool, d *diag.Diagnostics) {
 			ipv4.FlattenVPCIPv4(ctx, vpcInterface.IPv4, pk, d)
 		},
@@ -219,7 +219,7 @@ func (data *VPCAttrModel) FlattenVPCInterface(
 	data.IPv4 = *flattenedIPv4
 
 	flattenedIPv6 := helper.KeepOrUpdateSingleNestedAttributesWithTypes(
-		ctx, data.IPv6, vpcIPv6Attribute.GetType().(basetypes.ObjectType).AttrTypes, preserveKnown, diags,
+		ctx, data.IPv6, resourceVPCIPv6Attribute.GetType().(basetypes.ObjectType).AttrTypes, preserveKnown, diags,
 		func(ipv6 *VPCIPv6AttrModel, isNull *bool, pk bool, d *diag.Diagnostics) {
 			ipv6.FlattenVPCIPv6(ctx, vpcInterface.IPv6, pk, d)
 		},

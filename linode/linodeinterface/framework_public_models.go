@@ -41,9 +41,11 @@ type PublicIPv4AddressAttrModel struct {
 	Primary types.Bool   `tfsdk:"primary"`
 }
 
-// PublicIPv6RangeAttrModel is a shared model between `configuredPublicInterfaceIPv6Range` and
-// `computedPublicInterfaceIPv6Range` schemas.
-type PublicIPv6RangeAttrModel struct {
+type ConfiguredPublicIPv6RangeAttrModel struct {
+	Range types.String `tfsdk:"range"`
+}
+
+type ComputedPublicIPv6RangeAttrModel struct {
 	Range       types.String `tfsdk:"range"`
 	RouteTarget types.String `tfsdk:"route_target"`
 }
@@ -161,9 +163,9 @@ func (data *PublicIPv6AttrModel) FlattenPublicIPv6(ctx context.Context, ipv6 lin
 	}
 
 	var newDiags diag.Diagnostics
-	assignedRanges := make([]PublicIPv6RangeAttrModel, len(ipv6.Ranges))
+	assignedRanges := make([]ComputedPublicIPv6RangeAttrModel, len(ipv6.Ranges))
 	for i, v := range ipv6.Ranges {
-		assignedRanges[i] = PublicIPv6RangeAttrModel{
+		assignedRanges[i] = ComputedPublicIPv6RangeAttrModel{
 			Range:       types.StringValue(v.Range),
 			RouteTarget: types.StringPointerValue(v.RouteTarget),
 		}
@@ -176,9 +178,9 @@ func (data *PublicIPv6AttrModel) FlattenPublicIPv6(ctx context.Context, ipv6 lin
 		return
 	}
 
-	shared := make([]PublicIPv6RangeAttrModel, len(ipv6.Shared))
+	shared := make([]ComputedPublicIPv6RangeAttrModel, len(ipv6.Shared))
 	for i, v := range ipv6.Shared {
-		shared[i] = PublicIPv6RangeAttrModel{
+		shared[i] = ComputedPublicIPv6RangeAttrModel{
 			Range:       types.StringValue(v.Range),
 			RouteTarget: types.StringPointerValue(v.RouteTarget),
 		}
@@ -200,7 +202,7 @@ func (data *PublicIPv6AttrModel) FlattenPublicIPv6(ctx context.Context, ipv6 lin
 	}
 
 	// `slaac` attribute is computed-only so it's always an unknown when the ipv6 is being flattened
-	data.SLAAC, newDiags = types.SetValueFrom(ctx, publicInterfaceIPv6SLAAC.Type(), slaac)
+	data.SLAAC, newDiags = types.SetValueFrom(ctx, resourcePublicInterfaceIPv6SLAAC.Type(), slaac)
 	diags.Append(newDiags...)
 	if diags.HasError() {
 		return
@@ -214,7 +216,7 @@ func (plan *PublicIPv6AttrModel) GetCreateOptions(ctx context.Context) (opts lin
 		length := len(plan.Ranges.Elements())
 
 		rangesOpts := make([]linodego.PublicInterfaceIPv6RangeCreateOptions, 0, length)
-		ranges := make([]PublicIPv6RangeAttrModel, 0, length)
+		ranges := make([]ConfiguredPublicIPv6RangeAttrModel, 0, length)
 
 		// Since `ranges` list is with a default value of empty list, we may safely assume
 		// its elements won't contain any unknown and null
@@ -237,8 +239,8 @@ func (plan *PublicIPv4AddressAttrModel) GetCreateOptions(ctx context.Context) (o
 	return opts
 }
 
-func (plan *PublicIPv6RangeAttrModel) GetCreateOptions(ctx context.Context) (opts linodego.PublicInterfaceIPv6RangeCreateOptions) {
-	tflog.Trace(ctx, "Enter PublicIPv6RangeAttrModel.GetCreateOptions")
+func (plan *ConfiguredPublicIPv6RangeAttrModel) GetCreateOptions(ctx context.Context) (opts linodego.PublicInterfaceIPv6RangeCreateOptions) {
+	tflog.Trace(ctx, "Enter ConfiguredPublicIPv6RangeAttrModel.GetCreateOptions")
 
 	opts.Range = plan.Range.ValueString()
 	return opts
@@ -250,7 +252,7 @@ func (data *PublicAttrModel) FlattenPublicInterface(
 	tflog.Trace(ctx, "Enter PublicAttrModel.FlattenPublicInterface")
 
 	flattenedPublicIPv4 := helper.KeepOrUpdateSingleNestedAttributesWithTypes(
-		ctx, data.IPv4, publicIPv4Attribute.GetType().(types.ObjectType).AttrTypes, preserveKnown, diags,
+		ctx, data.IPv4, resourcePublicIPv4Attribute.GetType().(types.ObjectType).AttrTypes, preserveKnown, diags,
 		func(publicIPv4 *PublicIPv4AttrModel, isNull *bool, pk bool, d *diag.Diagnostics) {
 			if publicInterface.IPv4 == nil {
 				*isNull = true
@@ -276,7 +278,7 @@ func (data *PublicAttrModel) FlattenPublicInterface(
 	data.IPv4 = *flattenedPublicIPv4
 
 	flattenedPublicIPv6 := helper.KeepOrUpdateSingleNestedAttributesWithTypes(
-		ctx, data.IPv6, publicIPv6Attribute.GetType().(types.ObjectType).AttrTypes, preserveKnown, diags,
+		ctx, data.IPv6, resourcePublicIPv6Attribute.GetType().(types.ObjectType).AttrTypes, preserveKnown, diags,
 		func(publicIPv6 *PublicIPv6AttrModel, isNull *bool, pk bool, d *diag.Diagnostics) {
 			if publicInterface.IPv6 == nil {
 				*isNull = true
@@ -290,7 +292,7 @@ func (data *PublicAttrModel) FlattenPublicInterface(
 					publicIPv6.Shared, types.SetNull(computedPublicInterfaceIPv6Range.GetAttributes().Type()), pk,
 				)
 				publicIPv6.SLAAC = helper.KeepOrUpdateValue(
-					publicIPv6.SLAAC, types.SetNull(publicInterfaceIPv6SLAAC.GetAttributes().Type()), pk,
+					publicIPv6.SLAAC, types.SetNull(resourcePublicInterfaceIPv6SLAAC.GetAttributes().Type()), pk,
 				)
 				return
 			}

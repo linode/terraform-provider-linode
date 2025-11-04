@@ -2,6 +2,7 @@ package linodeinterface
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-nettypes/cidrtypes"
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -58,26 +59,24 @@ var configuredPublicInterfaceIPv6Range = schema.NestedAttributeObject{
 		"range": schema.StringAttribute{
 			Required: true,
 		},
-		"route_target": schema.StringAttribute{
-			Description: "The public IPv6 address that the range is routed to.",
-			Optional:    true,
-		},
 	},
 }
 
 var computedPublicInterfaceIPv6Range = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"range": schema.StringAttribute{
-			Computed: true,
+			CustomType: cidrtypes.IPv6PrefixType{},
+			Computed:   true,
 		},
 		"route_target": schema.StringAttribute{
 			Description: "The public IPv6 address that the range is routed to.",
+			CustomType:  iptypes.IPv6AddressType{},
 			Computed:    true,
 		},
 	},
 }
 
-var publicInterfaceIPv6SLAAC = schema.NestedAttributeObject{
+var resourcePublicInterfaceIPv6SLAAC = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"address": schema.StringAttribute{
 			PlanModifiers: []planmodifier.String{
@@ -160,10 +159,12 @@ var computedVPCInterfaceIPv6SLAAC = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"range": schema.StringAttribute{
 			Description: "The IPv6 network range in CIDR notation.",
+			CustomType:  cidrtypes.IPv6PrefixType{},
 			Computed:    true,
 		},
 		"address": schema.StringAttribute{
 			Description: "The assigned IPv6 address within the range.",
+			CustomType:  iptypes.IPv6AddressType{},
 			Computed:    true,
 		},
 	},
@@ -184,12 +185,13 @@ var computedVPCInterfaceIPv6Range = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"range": schema.StringAttribute{
 			Description: "The IPv6 network range in CIDR notation.",
+			CustomType:  cidrtypes.IPv6PrefixType{},
 			Computed:    true,
 		},
 	},
 }
 
-var publicIPv4Attribute = schema.SingleNestedAttribute{
+var resourcePublicIPv4Attribute = schema.SingleNestedAttribute{
 	Description: "IPv4 addresses for this interface.",
 	Optional:    true,
 	Computed:    true,
@@ -226,7 +228,7 @@ var publicIPv4Attribute = schema.SingleNestedAttribute{
 	},
 }
 
-var publicIPv6Attribute = schema.SingleNestedAttribute{
+var resourcePublicIPv6Attribute = schema.SingleNestedAttribute{
 	Description: "IPv6 addresses for this interface.",
 	Optional:    true,
 	Computed:    true,
@@ -267,12 +269,12 @@ var publicIPv6Attribute = schema.SingleNestedAttribute{
 			PlanModifiers: []planmodifier.Set{
 				setplanmodifier.UseStateForUnknown(),
 			},
-			NestedObject: publicInterfaceIPv6SLAAC,
+			NestedObject: resourcePublicInterfaceIPv6SLAAC,
 		},
 	},
 }
 
-var publicInterfaceSchema = schema.SingleNestedAttribute{
+var resourcePublicInterfaceAttribute = schema.SingleNestedAttribute{
 	Description: "Linode public interface.",
 	Optional:    true,
 	Validators: []validator.Object{
@@ -282,12 +284,12 @@ var publicInterfaceSchema = schema.SingleNestedAttribute{
 		),
 	},
 	Attributes: map[string]schema.Attribute{
-		"ipv4": publicIPv4Attribute,
-		"ipv6": publicIPv6Attribute,
+		"ipv4": resourcePublicIPv4Attribute,
+		"ipv6": resourcePublicIPv6Attribute,
 	},
 }
 
-var vpcIPv4Attribute = schema.SingleNestedAttribute{
+var resourceVPCIPv4Attribute = schema.SingleNestedAttribute{
 	Optional: true,
 	Computed: true,
 	PlanModifiers: []planmodifier.Object{
@@ -333,7 +335,7 @@ var vpcIPv4Attribute = schema.SingleNestedAttribute{
 	},
 }
 
-var vpcIPv6Attribute = schema.SingleNestedAttribute{
+var resourceVPCIPv6Attribute = schema.SingleNestedAttribute{
 	Optional: true,
 	Computed: true,
 	PlanModifiers: []planmodifier.Object{
@@ -394,8 +396,8 @@ var vpcInterfaceSchema = schema.SingleNestedAttribute{
 		),
 	},
 	Attributes: map[string]schema.Attribute{
-		"ipv4": vpcIPv4Attribute,
-		"ipv6": vpcIPv6Attribute,
+		"ipv4": resourceVPCIPv4Attribute,
+		"ipv6": resourceVPCIPv6Attribute,
 		"subnet_id": schema.Int64Attribute{
 			Required:    true,
 			Description: "The VPC subnet identifier for this interface.",
@@ -455,7 +457,7 @@ var frameworkResourceSchema = schema.Schema{
 				},
 			},
 		},
-		"public": publicInterfaceSchema,
+		"public": resourcePublicInterfaceAttribute,
 		"vlan": schema.SingleNestedAttribute{
 			Description: "Linode VLAN interface.",
 			Optional:    true,
