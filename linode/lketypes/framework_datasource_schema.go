@@ -6,9 +6,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
 
-var lkeTypeSchema = schema.NestedBlockObject{
-	Attributes: helper.GetPricingTypeAttributes("LKE Type"),
-}
+var lkeTypeSchema = schema.NestedBlockObject{}
 
 var filterConfig = frameworkfilter.Config{
 	"label":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
@@ -23,12 +21,13 @@ var frameworkDataSourceSchema = schema.Schema{
 		},
 		"order_by": filterConfig.OrderBySchema(),
 		"order":    filterConfig.OrderSchema(),
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"types": schema.ListNestedBlock{
-			Description:  "The returned list of LKE types.",
-			NestedObject: lkeTypeSchema,
+
+		"types": schema.ListNestedAttribute{
+			Computed:    true,
+			Description: "The returned list of LKE types.",
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: helper.GetPricingTypeAttributes("LKE Type"),
+			},
 		},
 	},
 }
