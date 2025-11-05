@@ -11,6 +11,7 @@ resource "linode_nodebalancer" "test" {
         {
             subnet_id = linode_vpc_subnet.test.id
             ipv4_range = "10.0.0.4/30"
+            ipv6_range = "auto"
             ipv4_range_auto_assign = true
         }
     ]
@@ -19,12 +20,22 @@ resource "linode_nodebalancer" "test" {
 resource "linode_vpc" "test" {
     label = "{{ .Label }}"
     region = "{{ .Region }}"
+    ipv6 = [
+        {
+            range = "auto"
+        }
+    ]
 }
 
 resource "linode_vpc_subnet" "test" {
     vpc_id = linode_vpc.test.id
     label = "tf-test"
     ipv4 = "10.0.0.0/24"
+    ipv6 = [
+        {
+            range = "auto"
+        }
+    ]
 }
 
 {{ end }}

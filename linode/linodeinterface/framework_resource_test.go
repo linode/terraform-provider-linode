@@ -27,57 +27,12 @@ const testInterfaceResName = "linode_interface.test"
 var testRegion string
 
 func init() {
-	resource.AddTestSweepers("linode_interface", &resource.Sweeper{
-		Name: "linode_interface",
-		F:    sweep,
-	})
-
 	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	testRegion = region
-}
-
-func sweep(prefix string) error {
-	client, err := acceptance.GetTestClient()
-	if err != nil {
-		return fmt.Errorf("failed to get client: %s", err)
-	}
-
-	// Get all instances and sweep their interfaces
-	instances, err := client.ListInstances(context.Background(), nil)
-	if err != nil {
-		return fmt.Errorf("failed to get instances: %s", err)
-	}
-
-	for _, instance := range instances {
-		if !acceptance.ShouldSweep(prefix, instance.Label) {
-			continue
-		}
-
-		// Get instance configs to find interfaces
-		configs, err := client.ListInstanceConfigs(context.Background(), instance.ID, nil)
-		if err != nil {
-			continue // Skip if we can't get configs
-		}
-
-		// Delete non-primary interfaces from configs
-		for _, config := range configs {
-			for i, iface := range config.Interfaces {
-				// Skip eth0 (primary interface) and other essential interfaces
-				if i == 0 || iface.Purpose == linodego.InterfacePurposePublic {
-					continue
-				}
-
-				// For sweep purposes, we'll let the instance deletion handle interface cleanup
-				// since interfaces are tied to instances
-			}
-		}
-	}
-
-	return nil
 }
 
 func TestAccLinodeInterface_vlan_basic(t *testing.T) {
@@ -810,6 +765,124 @@ func TestAccLinodeInterface_vpc_empty_ip_objects(t *testing.T) {
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
 				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses"},
+			},
+		},
+	})
+}
+
+func TestAccLinodeInterface_vpc_with_ipv6(t *testing.T) {
+	t.Parallel()
+
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+		linodego.CapabilityLinodes,
+		linodego.CapabilityVlans,
+		linodego.CapabilityVPCs,
+		"VPC Dual Stack",
+	}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	label := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkInterfaceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: linodeinstancetmpl.ProviderNoPoll(t) + tmpl.VPCWithIPv60(t, label, targetRegion, "10.0.0.0/24"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("linode_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("vpc").AtMapKey("subnet_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv6").AtMapKey("assigned_slaac"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv6").AtMapKey("assigned_slaac").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv6").AtMapKey("assigned_slaac").AtSliceIndex(0).AtMapKey("address"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv6").AtMapKey("assigned_ranges"),
+						knownvalue.ListSizeExact(2),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv6").AtMapKey("assigned_ranges").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv6").AtMapKey("assigned_ranges").AtSliceIndex(1).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+				},
+				Check: checkInterfaceExists,
+			},
+			{
+				Config: linodeinstancetmpl.ProviderNoPoll(t) + tmpl.VPCWithIPv61(t, label, targetRegion, "10.0.0.0/24"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("linode_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(testInterfaceResName, tfjsonpath.New("vpc").AtMapKey("subnet_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv6").AtMapKey("assigned_slaac"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv6").AtMapKey("assigned_slaac").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv6").AtMapKey("assigned_slaac").AtSliceIndex(0).AtMapKey("address"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv6").AtMapKey("assigned_ranges"),
+						knownvalue.ListSizeExact(3),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv6").AtMapKey("assigned_ranges").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv6").AtMapKey("assigned_ranges").AtSliceIndex(1).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						testInterfaceResName,
+						tfjsonpath.New("vpc").AtMapKey("ipv6").AtMapKey("assigned_ranges").AtSliceIndex(2).AtMapKey("range"),
+						knownvalue.NotNull(),
+					),
+				},
+				Check: checkInterfaceExists,
+			},
+			{
+				Config:            linodeinstancetmpl.ProviderNoPoll(t) + tmpl.VPCWithIPv61(t, label, targetRegion, "10.0.0.0/24"),
+				ConfigStateChecks: []statecheck.StateCheck{},
+			},
+			{
+				ResourceName:            testInterfaceResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       importStateID,
+				ImportStateVerifyIgnore: []string{"vpc.ipv6.ranges", "vpc.ipv6.slaac"},
 			},
 		},
 	})

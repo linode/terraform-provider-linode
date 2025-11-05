@@ -40,14 +40,19 @@ In addition to all arguments above, the following attributes are exported:
 
 * `ipv4` - The IPv4 range of this subnet in CIDR format.
 
-* `linodes` - A list of Linodes added to this subnet.
-  * `id` - ID of the Linode
-  * `interfaces` - A list of networking interfaces objects.
-    * `id` - ID of the interface.
-    * `config_id` - ID of Linode Config that the interface is associated with. `null` for a Linode Interface.
-    * `active` - Whether the Interface is actively in use.
-
 * [`ipv6`](#ipv6) - A list of IPv6 ranges under this subnet.
+
+* `linodes` - A list of Linodes added to this subnet.
+
+  * `id` - ID of the Linode
+
+  * `interfaces` - A list of networking interfaces objects.
+
+    * `id` - ID of the interface.
+
+    * `config_id` - ID of Linode Config that the interface is associated with. `null` for a Linode Interface.
+
+    * `active` - Whether the Interface is actively in use.
 
 * `created` - The date and time when the VPC Subnet was created.
 

@@ -17,11 +17,16 @@ type DefaultFirewallIDsAttributeModel struct {
 	VPCInterface    types.Int64 `tfsdk:"vpc_interface"`
 }
 
-type FirewallSettingsModel struct {
+type FirewallSettingsBaseModel struct {
 	DefaultFirewallIDs types.Object `tfsdk:"default_firewall_ids"`
 }
 
-func (fsds *FirewallSettingsModel) GetUpdateOptions(
+type FirewallSettingsResourceModel struct {
+	FirewallSettingsBaseModel
+	ID types.String `tfsdk:"id"`
+}
+
+func (fsds *FirewallSettingsBaseModel) GetUpdateOptions(
 	ctx context.Context,
 	diags *diag.Diagnostics,
 ) (opts linodego.FirewallSettingsUpdateOptions) {
@@ -78,7 +83,7 @@ func (fsds *FirewallSettingsModel) GetUpdateOptions(
 	return opts
 }
 
-func (fsds *FirewallSettingsModel) FlattenFirewallSettings(
+func (fsds *FirewallSettingsBaseModel) FlattenFirewallSettings(
 	ctx context.Context,
 	settings linodego.FirewallSettings,
 	preserveKnown bool,

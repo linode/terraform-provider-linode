@@ -27,7 +27,7 @@ func TestFlattenFirewallSettings(t *testing.T) {
 		},
 	}
 
-	expectedModelWhenNotPreservingKnown := firewallsettings.FirewallSettingsModel{
+	expectedModelWhenNotPreservingKnown := firewallsettings.FirewallSettingsBaseModel{
 		DefaultFirewallIDs: types.ObjectValueMust(
 			defaultFirewallIDsObjectAttrType,
 			map[string]attr.Value{
@@ -40,13 +40,13 @@ func TestFlattenFirewallSettings(t *testing.T) {
 	}
 
 	tests := map[string]struct {
-		model         firewallsettings.FirewallSettingsModel
+		model         firewallsettings.FirewallSettingsBaseModel
 		settings      linodego.FirewallSettings
-		expected      firewallsettings.FirewallSettingsModel
+		expected      firewallsettings.FirewallSettingsBaseModel
 		preserveKnown bool
 	}{
 		"unknown default firewall IDs with preserving known": {
-			model: firewallsettings.FirewallSettingsModel{
+			model: firewallsettings.FirewallSettingsBaseModel{
 				DefaultFirewallIDs: types.ObjectUnknown(defaultFirewallIDsObjectAttrType),
 			},
 			settings:      firewallSettings,
@@ -54,17 +54,17 @@ func TestFlattenFirewallSettings(t *testing.T) {
 			preserveKnown: true,
 		},
 		"null default firewall IDs with preserving known": {
-			model: firewallsettings.FirewallSettingsModel{
+			model: firewallsettings.FirewallSettingsBaseModel{
 				DefaultFirewallIDs: types.ObjectNull(defaultFirewallIDsObjectAttrType),
 			},
 			settings: firewallSettings,
-			expected: firewallsettings.FirewallSettingsModel{
+			expected: firewallsettings.FirewallSettingsBaseModel{
 				DefaultFirewallIDs: types.ObjectNull(defaultFirewallIDsObjectAttrType),
 			},
 			preserveKnown: true,
 		},
 		"known default firewall IDs with preserving known": {
-			model: firewallsettings.FirewallSettingsModel{
+			model: firewallsettings.FirewallSettingsBaseModel{
 				DefaultFirewallIDs: types.ObjectValueMust(
 					defaultFirewallIDsObjectAttrType,
 					map[string]attr.Value{
@@ -76,7 +76,7 @@ func TestFlattenFirewallSettings(t *testing.T) {
 				),
 			},
 			settings: firewallSettings,
-			expected: firewallsettings.FirewallSettingsModel{
+			expected: firewallsettings.FirewallSettingsBaseModel{
 				DefaultFirewallIDs: types.ObjectValueMust(
 					defaultFirewallIDsObjectAttrType,
 					map[string]attr.Value{
@@ -90,7 +90,7 @@ func TestFlattenFirewallSettings(t *testing.T) {
 			preserveKnown: true,
 		},
 		"unknown default firewall IDs without preserving known": {
-			model: firewallsettings.FirewallSettingsModel{
+			model: firewallsettings.FirewallSettingsBaseModel{
 				DefaultFirewallIDs: types.ObjectUnknown(defaultFirewallIDsObjectAttrType),
 			},
 			settings:      firewallSettings,
@@ -98,7 +98,7 @@ func TestFlattenFirewallSettings(t *testing.T) {
 			preserveKnown: false,
 		},
 		"null default firewall IDs without preserving known": {
-			model: firewallsettings.FirewallSettingsModel{
+			model: firewallsettings.FirewallSettingsBaseModel{
 				DefaultFirewallIDs: types.ObjectNull(defaultFirewallIDsObjectAttrType),
 			},
 			settings:      firewallSettings,
@@ -106,7 +106,7 @@ func TestFlattenFirewallSettings(t *testing.T) {
 			preserveKnown: false,
 		},
 		"known default firewall IDs without preserving known": {
-			model: firewallsettings.FirewallSettingsModel{
+			model: firewallsettings.FirewallSettingsBaseModel{
 				DefaultFirewallIDs: types.ObjectValueMust(
 					defaultFirewallIDsObjectAttrType,
 					map[string]attr.Value{
