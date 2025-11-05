@@ -58,7 +58,7 @@ In order to run the full suite of Acceptance tests, run `make test-int`. Accepta
 
 *Note:* Acceptance tests create real resources, and often cost money to run.
 
-Initialze and update the e2e_scripts submodule before running Acceptance tests,
+Initialize and update the e2e_scripts submodule before running Acceptance tests,
 
 ```sh
 git submodule update --init --recursive
