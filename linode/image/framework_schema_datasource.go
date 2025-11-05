@@ -69,12 +69,10 @@ var ImageAttributes = map[string]schema.Attribute{
 		Description: "The total size of the image in all available regions.",
 		Computed:    true,
 	},
-}
-
-var ReplicationsBlock = map[string]schema.Block{
-	"replications": schema.ListNestedBlock{
+	"replications": schema.ListNestedAttribute{
 		Description: "A list of image replications region and corresponding status.",
-		NestedObject: schema.NestedBlockObject{
+		Computed:    true,
+		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"region": schema.StringAttribute{
 					Description: "The region of an image replica.",
@@ -91,5 +89,4 @@ var ReplicationsBlock = map[string]schema.Block{
 
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: ImageAttributes,
-	Blocks:     ReplicationsBlock,
 }

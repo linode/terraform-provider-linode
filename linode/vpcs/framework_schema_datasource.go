@@ -19,14 +19,15 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "The data source's unique ID.",
 			Computed:    true,
 		},
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"vpcs": schema.ListNestedBlock{
+		"vpcs": schema.ListNestedAttribute{
 			Description: "The returned list of VPCs.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: vpc.VPCAttrs,
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }

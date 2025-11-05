@@ -23,15 +23,15 @@ var frameworkDataSourceSchema = schema.Schema{
 		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),
+		"placement_groups": schema.ListNestedAttribute{
+			Description: "The returned list of Placement Groups.",
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: placementgroup.DataSourceSchema.Attributes,
+			},
+		},
 	},
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
-		"placement_groups": schema.ListNestedBlock{
-			Description: "The returned list of Placement Groups.",
-			NestedObject: schema.NestedBlockObject{
-				Attributes: placementgroup.DataSourceSchema.Attributes,
-				Blocks:     placementgroup.DataSourceSchema.Blocks,
-			},
-		},
 	},
 }
