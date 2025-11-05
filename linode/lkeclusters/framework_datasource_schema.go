@@ -29,6 +29,7 @@ var frameworkDatasourceSchema = schema.Schema{
 		"order_by": filterConfig.OrderBySchema(),
 		"lke_clusters": schema.ListNestedAttribute{
 			Description: "The returned list of LKE clusters available on the account.",
+			Computed:    true,
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
@@ -86,19 +87,17 @@ var frameworkDatasourceSchema = schema.Schema{
 						Computed:    true,
 						Description: "The networking stack type of the Kubernetes cluster.",
 					},
-					"control_plane": schema.ListNestedAttribute{
+					"control_plane": schema.SingleNestedAttribute{
 						Computed:    true,
 						Description: "Defines settings for the Kubernetes Control Plane.",
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"high_availability": schema.BoolAttribute{
-									Description: "Defines whether High Availability is enabled for the Control Plane Components of the cluster.",
-									Computed:    true,
-								},
-								"audit_logs_enabled": schema.BoolAttribute{
-									Description: "Enables audit logs on the cluster's control plane.",
-									Computed:    true,
-								},
+						Attributes: map[string]schema.Attribute{
+							"high_availability": schema.BoolAttribute{
+								Description: "Defines whether High Availability is enabled for the Control Plane Components of the cluster.",
+								Computed:    true,
+							},
+							"audit_logs_enabled": schema.BoolAttribute{
+								Description: "Enables audit logs on the cluster's control plane.",
+								Computed:    true,
 							},
 						},
 					},
