@@ -41,10 +41,6 @@ var firewallDeviceAttributes = map[string]schema.Attribute{
 	},
 }
 
-var firewallDeviceObject = schema.NestedBlockObject{
-	Attributes: firewallDeviceAttributes,
-}
-
 var FirewallRuleObject = schema.NestedBlockObject{
 	Attributes: map[string]schema.Attribute{
 		"label": schema.StringAttribute{
@@ -153,10 +149,6 @@ var firewallAttributes = map[string]schema.Attribute{
 			Attributes: firewallDeviceAttributes,
 		},
 	},
-}
-
-var firewallObject = schema.NestedBlockObject{
-	Attributes: firewallAttributes,
 }
 
 var frameworkDatasourceSchema = schema.Schema{

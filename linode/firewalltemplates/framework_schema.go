@@ -38,10 +38,6 @@ var templatesAttributes = map[string]schema.Attribute{
 	},
 }
 
-var templatesObject = schema.NestedBlockObject{
-	Attributes: templatesAttributes,
-}
-
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
