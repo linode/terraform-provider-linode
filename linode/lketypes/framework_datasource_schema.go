@@ -6,8 +6,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
 
-var lkeTypeSchema = schema.NestedBlockObject{}
-
 var filterConfig = frameworkfilter.Config{
 	"label":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"transfer": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
