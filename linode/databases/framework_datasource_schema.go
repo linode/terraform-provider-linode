@@ -40,12 +40,10 @@ var frameworkDataSourceSchema = schema.Schema{
 		},
 		"order_by": filterConfig.OrderBySchema(),
 		"order":    filterConfig.OrderSchema(),
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"databases": schema.ListNestedBlock{
+		"databases": schema.ListNestedAttribute{
 			Description: "The returned list of databases.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
 						Description: "A unique ID that can be used to identify and reference the Managed Database.",
@@ -141,5 +139,8 @@ var frameworkDataSourceSchema = schema.Schema{
 				},
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }

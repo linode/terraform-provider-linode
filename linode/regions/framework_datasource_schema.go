@@ -19,14 +19,14 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "The data source's unique ID.",
 			Computed:    true,
 		},
+		"regions": schema.ListNestedAttribute{
+			Computed: true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: region.DataSourceSchema.Attributes,
+			},
+		},
 	},
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
-		"regions": schema.ListNestedBlock{
-			NestedObject: schema.NestedBlockObject{
-				Attributes: region.DataSourceSchema.Attributes,
-				Blocks:     region.DataSourceSchema.Blocks,
-			},
-		},
 	},
 }

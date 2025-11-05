@@ -7,8 +7,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/lkeversion"
 )
 
-var lkeVersionSchema = schema.NestedBlockObject{}
-
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
@@ -23,6 +21,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			},
 		},
 		"versions": schema.ListNestedAttribute{
+			Computed:    true,
 			Description: "The Kubernetes version numbers available for deployment to a Kubernetes cluster.",
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: lkeversion.Attributes,

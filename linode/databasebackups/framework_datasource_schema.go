@@ -15,25 +15,23 @@ var filterConfig = frameworkfilter.Config{
 	"id":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 }
 
-var backupSchema = schema.NestedBlockObject{
-	Attributes: map[string]schema.Attribute{
-		"created": schema.StringAttribute{
-			Description: "A time value given in a combined date and time format that represents when the " +
-				"database backup was created.",
-			Computed: true,
-		},
-		"id": schema.Int64Attribute{
-			Description: "The ID of the database backup object.",
-			Computed:    true,
-		},
-		"label": schema.StringAttribute{
-			Description: "The database backup’s label, for display purposes only.",
-			Computed:    true,
-		},
-		"type": schema.StringAttribute{
-			Description: "The type of database backup, determined by how the backup was created.",
-			Computed:    true,
-		},
+var backupAttributes = map[string]schema.Attribute{
+	"created": schema.StringAttribute{
+		Description: "A time value given in a combined date and time format that represents when the " +
+			"database backup was created.",
+		Computed: true,
+	},
+	"id": schema.Int64Attribute{
+		Description: "The ID of the database backup object.",
+		Computed:    true,
+	},
+	"label": schema.StringAttribute{
+		Description: "The database backup's label, for display purposes only.",
+		Computed:    true,
+	},
+	"type": schema.StringAttribute{
+		Description: "The type of database backup, determined by how the backup was created.",
+		Computed:    true,
 	},
 }
 
@@ -61,12 +59,15 @@ var frameworkDataSourceSchema = schema.Schema{
 		},
 		"order_by": filterConfig.OrderBySchema(),
 		"order":    filterConfig.OrderSchema(),
+		"backups": schema.ListNestedAttribute{
+			Description: "The returned list of backups.",
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: backupAttributes,
+			},
+		},
 	},
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
-		"backups": schema.ListNestedBlock{
-			Description:  "The returned list of backups.",
-			NestedObject: backupSchema,
-		},
 	},
 }

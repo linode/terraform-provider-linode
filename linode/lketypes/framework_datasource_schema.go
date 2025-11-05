@@ -30,4 +30,7 @@ var frameworkDataSourceSchema = schema.Schema{
 			},
 		},
 	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
+	},
 }

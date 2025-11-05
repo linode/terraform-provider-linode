@@ -27,12 +27,9 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"lke_clusters": schema.ListNestedBlock{
+		"lke_clusters": schema.ListNestedAttribute{
 			Description: "The returned list of LKE clusters available on the account.",
-			NestedObject: schema.NestedBlockObject{
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
 						Computed:    true,
@@ -108,5 +105,8 @@ var frameworkDatasourceSchema = schema.Schema{
 				},
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }
