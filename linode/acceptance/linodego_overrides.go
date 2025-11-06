@@ -37,6 +37,9 @@ func NewResponseOverrideClient(
 	parsedURL, err := url.Parse(rawURL)
 	require.NoError(t, err)
 
+	// We can't use client.OnAfterResponse(...) here
+	// because it doesn't mutate the response returned
+	// to the user.
 	proxy := &httputil.ReverseProxy{
 		Director: func(req *http.Request) {
 			req.URL.Scheme = parsedURL.Scheme
