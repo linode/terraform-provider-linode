@@ -86,7 +86,7 @@ func TestAccResource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),
@@ -150,7 +150,7 @@ func TestAccResource_resize(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Complex(
@@ -283,7 +283,7 @@ func TestAccResource_complex(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Complex(
@@ -420,7 +420,7 @@ func TestAccResource_fork(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),
@@ -557,7 +557,7 @@ func TestAccResource_suspension(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Suspension(
@@ -654,7 +654,7 @@ func TestAccResource_engineConfig(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.EngineConfig(
@@ -967,7 +967,7 @@ func TestAccResource_vpc(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.VPC0(t, label, testRegion, testEngine, "g6-nanode-1"),
@@ -1032,7 +1032,7 @@ func TestAccResource_noPendingUpdatesRegression(t *testing.T) {
 				return acceptance.ProtoV6CustomProviderFactories["linode"](overriddenProvider)
 			},
 		},
-		CheckDestroy: acceptance.CheckPostgresDatabaseExists(resName, nil),
+		CheckDestroy: acceptance.CheckPostgreSQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),

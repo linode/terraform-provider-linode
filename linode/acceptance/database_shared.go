@@ -51,6 +51,8 @@ var (
 	)
 )
 
+// NewClientWithDatabasePendingUpdates returns a Linode client with injected pending updates
+// for managed databases.
 func NewClientWithDatabasePendingUpdates(
 	t *testing.T,
 ) *linodego.Client {
