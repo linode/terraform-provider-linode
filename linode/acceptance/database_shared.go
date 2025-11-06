@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	DatabaseGetPathRegex           = regexp.MustCompile(`/databases/\\S+/instances/\d+$`)
+	DatabaseGetPathRegex           = regexp.MustCompile(`/databases/\S+/instances/\d+$`)
 	DatabasePendingUpdatesOverride = []map[string]any{
 		{
 			"description": "pending update 1",
