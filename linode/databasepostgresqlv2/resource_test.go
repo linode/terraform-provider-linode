@@ -9,8 +9,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlv2/tmpl"
@@ -1001,6 +1004,55 @@ func TestAccResource_vpc(t *testing.T) {
 						"linode_vpc_subnet.foobar2", "id",
 					),
 				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+			},
+		},
+	})
+}
+
+func TestAccResource_noPendingUpdatesRegression(t *testing.T) {
+	t.Parallel()
+
+	overriddenProvider := acceptance.NewFrameworkProviderWithClient(
+		acceptance.NewClientWithDatabasePendingUpdates(t),
+	)
+
+	resName := "linode_database_postgresql_v2.foobar"
+	label := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"linode": func() (tfprotov6.ProviderServer, error) {
+				return acceptance.ProtoV6CustomProviderFactories["linode"](overriddenProvider)
+			},
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("pending_updates"),
+						acceptance.DatabasePendingUpdatesSetExact,
+					),
+				},
+			},
+			{
+				// Ensure refreshes work as expected
+				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("pending_updates"),
+						acceptance.DatabasePendingUpdatesSetExact,
+					),
+				},
 			},
 			{
 				ResourceName:            resName,

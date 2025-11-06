@@ -45,6 +45,7 @@ type (
 )
 
 var (
+	timeNow                  = time.Now()
 	optInTests               map[string]struct{}
 	privateKeyMaterial       string
 	PublicKeyMaterial        string
