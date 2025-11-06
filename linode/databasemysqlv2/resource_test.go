@@ -940,7 +940,7 @@ func TestAccResource_noPendingUpdatesRegression(t *testing.T) {
 				return acceptance.ProtoV6CustomProviderFactories["linode"](overriddenProvider)
 			},
 		},
-		CheckDestroy: acceptance.CheckVolumeDestroy,
+		CheckDestroy: acceptance.CheckMySQLDatabaseExists(resName, nil),
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),
