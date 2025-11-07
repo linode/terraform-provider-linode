@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
@@ -44,5 +45,31 @@ var ProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, erro
 var HttpExternalProviders = map[string]resource.ExternalProvider{
 	"http": {
 		Source: "hashicorp/http",
+	},
+}
+
+var ProtoV6CustomProviderFactories = map[string]func(provider provider.Provider) (tfprotov6.ProviderServer, error){
+	"linode": func(provider provider.Provider) (tfprotov6.ProviderServer, error) {
+		ctx := context.Background()
+
+		upgradedSDKProvider, err := tf5to6server.UpgradeServer(
+			ctx,
+			TestAccSDKv2Providers["linode"].GRPCProvider,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to upgrade SDKv2 GRPC provider: %w", err)
+		}
+
+		providers := []func() tfprotov6.ProviderServer{
+			providerserver.NewProtocol6(provider),
+			func() tfprotov6.ProviderServer { return upgradedSDKProvider },
+		}
+
+		muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
+		if err != nil {
+			return nil, err
+		}
+
+		return muxServer.ProviderServer(), nil
 	},
 }
