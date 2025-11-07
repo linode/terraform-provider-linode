@@ -74,7 +74,7 @@ func CheckPostgresDatabaseExists(name string, db *linodego.PostgresDatabase) res
 }
 
 func CheckMySQLDatabaseV2Destroy(s *terraform.State) error {
-	client := TestAccFrameworkProvider.Meta.Client
+	client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_database_mysql_v2" {
@@ -105,7 +105,7 @@ func CheckMySQLDatabaseV2Destroy(s *terraform.State) error {
 }
 
 func CheckPostgreSQLDatabaseV2Destroy(s *terraform.State) error {
-	client := TestAccFrameworkProvider.Meta.Client
+	client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_database_postgresql_v2" {

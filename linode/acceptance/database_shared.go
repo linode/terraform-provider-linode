@@ -59,9 +59,9 @@ func NewClientWithDatabasePendingUpdates(
 	return NewResponseOverrideClient(
 		t,
 		func(response *http.Response) bool {
-			return response.Request.Method == "GET" && DatabaseGetPathRegex.MatchString(response.Request.RequestURI)
+			return response.Request.Method == "GET" && DatabaseGetPathRegex.MatchString(response.Request.URL.Path)
 		},
-		func(t *testing.T, responseBody map[string]any) {
+		func(responseBody map[string]any) error {
 			updates, ok := responseBody["updates"]
 			if !ok {
 				responseBody["updates"] = make(map[string]any)
@@ -69,6 +69,8 @@ func NewClientWithDatabasePendingUpdates(
 			}
 
 			updates.(map[string]any)["pending"] = DatabasePendingUpdatesOverride
+
+			return nil
 		},
 	)
 }

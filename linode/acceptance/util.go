@@ -2,6 +2,7 @@ package acceptance
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -17,6 +18,8 @@ import (
 	"text/template"
 	"time"
 
+	fwDiag "github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -26,6 +29,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/version"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -761,4 +765,39 @@ func GetTestClient() (*linodego.Client, error) {
 	}
 
 	return client, nil
+}
+
+func GetFrameworkTestClient(
+	t *testing.T,
+	httpClientModifiers []helper.HTTPClientModifier,
+) *linodego.Client {
+	token := os.Getenv("LINODE_TOKEN")
+	require.NotEmptyf(t, token, "LINODE_TOKEN must be set for acceptance tests")
+
+	apiVersion := cmp.Or(os.Getenv("LINODE_API_VERSION"), "v4beta")
+
+	var diags fwDiag.Diagnostics
+
+	apiURL := types.StringNull()
+
+	if linodeURL, ok := os.LookupEnv("LINODE_URL"); ok {
+		apiURL = types.StringValue(linodeURL)
+	}
+
+	client := TestAccFrameworkProvider.InitLinodeClient(
+		t.Context(),
+		&helper.FrameworkProviderModel{
+			AccessToken: types.StringValue(token),
+			APIURL:      apiURL,
+			APIVersion:  types.StringValue(apiVersion),
+		},
+		helper.GetFrameworkVersion(),
+		httpClientModifiers,
+		&diags,
+	)
+	if diags.HasError() {
+		t.Fatal(diags.Errors())
+	}
+
+	return client
 }

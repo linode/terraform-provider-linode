@@ -2,79 +2,75 @@ package acceptance
 
 import (
 	"bytes"
-	"cmp"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
-	"net/url"
-	"os"
-	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/linode/linodego"
-	"github.com/stretchr/testify/require"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
+
+type (
+	shouldOverrideResponseFunc func(response *http.Response) bool
+	responseOverrideFunc       func(responseBody map[string]any) error
+)
+
+type responseOverrideTransport struct {
+	next             http.RoundTripper
+	shouldOverride   shouldOverrideResponseFunc
+	overrideResponse responseOverrideFunc
+}
+
+func (t *responseOverrideTransport) RoundTrip(request *http.Request) (*http.Response, error) {
+	response, err := t.next.RoundTrip(request)
+	if err != nil {
+		return response, err
+	}
+
+	if !t.shouldOverride(response) {
+		return response, nil
+	}
+
+	var bodyData map[string]any
+	if err := json.NewDecoder(response.Body).Decode(&bodyData); err != nil {
+		return response, fmt.Errorf("failed to decode response body json: %w", err)
+	}
+
+	if err := t.overrideResponse(bodyData); err != nil {
+		return response, fmt.Errorf("failed to override response body: %w", err)
+	}
+
+	var resultBuffer bytes.Buffer
+
+	if err := json.NewEncoder(&resultBuffer).Encode(bodyData); err != nil {
+		return response, fmt.Errorf("failed to encode modified response body: %w", err)
+	}
+
+	response.Body = io.NopCloser(bytes.NewReader(resultBuffer.Bytes()))
+
+	return response, nil
+}
 
 func NewResponseOverrideClient(
 	t *testing.T,
-	shouldOverride func(response *http.Response) bool,
-	override func(t *testing.T, responseBody map[string]any),
+	shouldOverride shouldOverrideResponseFunc,
+	overrideResponse responseOverrideFunc,
 ) *linodego.Client {
-	client, err := GetTestClient()
-	require.NoError(t, err)
+	t.Helper()
 
-	// TODO: Expose client URL through public interface
-	rawURL := cmp.Or(os.Getenv("LINODE_URL"), linodego.APIHost)
-	if !strings.Contains(rawURL, "://") {
-		// Assume HTTPS
-		rawURL = fmt.Sprintf("%s://%s", linodego.APIProto, rawURL)
-	}
-
-	parsedURL, err := url.Parse(rawURL)
-	require.NoError(t, err)
-
-	// We can't use client.OnAfterResponse(...) here
-	// because it doesn't mutate the response returned
-	// to the user.
-	proxy := &httputil.ReverseProxy{
-		Director: func(req *http.Request) {
-			req.URL.Scheme = parsedURL.Scheme
-			req.URL.Host = parsedURL.Host
-			req.Host = parsedURL.Host
-		},
-		ModifyResponse: func(resp *http.Response) error {
-			if !shouldOverride(resp) {
+	return GetFrameworkTestClient(
+		t,
+		[]helper.HTTPClientModifier{
+			func(client *http.Client) error {
+				client.Transport = &responseOverrideTransport{
+					next:             client.Transport,
+					shouldOverride:   shouldOverride,
+					overrideResponse: overrideResponse,
+				}
 				return nil
-			}
-
-			var body map[string]any
-			err := json.NewDecoder(resp.Body).Decode(&body)
-			require.NoError(t, err)
-
-			override(t, body)
-
-			var buf bytes.Buffer
-			require.NoError(t, json.NewEncoder(&buf).Encode(body))
-
-			require.NoError(t, resp.Body.Close())
-			resp.Body = io.NopCloser(bytes.NewReader(buf.Bytes()))
-
-			resp.ContentLength = int64(buf.Len())
-			resp.Header.Set("Content-Length", strconv.Itoa(buf.Len()))
-
-			return nil
+			},
 		},
-	}
-
-	proxyServer := httptest.NewServer(proxy)
-	t.Cleanup(proxyServer.Close)
-
-	proxiedClient, err := client.UseURL(proxyServer.URL)
-	require.NoError(t, err)
-
-	return proxiedClient
+	)
 }
