@@ -12,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlv2/tmpl"
@@ -1034,24 +1036,24 @@ func TestAccResource_noPendingUpdatesRegression(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),
-				//ConfigStateChecks: []statecheck.StateCheck{
-				//	statecheck.ExpectKnownValue(
-				//		resName,
-				//		tfjsonpath.New("pending_updates"),
-				//		acceptance.DatabasePendingUpdatesSetExact,
-				//	),
-				//},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("pending_updates"),
+						acceptance.DatabasePendingUpdatesSetExact,
+					),
+				},
 			},
 			{
 				// Ensure refreshes work as expected
 				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),
-				//ConfigStateChecks: []statecheck.StateCheck{
-				//	statecheck.ExpectKnownValue(
-				//		resName,
-				//		tfjsonpath.New("pending_updates"),
-				//		acceptance.DatabasePendingUpdatesSetExact,
-				//	),
-				//},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("pending_updates"),
+						acceptance.DatabasePendingUpdatesSetExact,
+					),
+				},
 			},
 			{
 				ResourceName:            resName,
