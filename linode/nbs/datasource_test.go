@@ -63,6 +63,14 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 				),
 			},
 			{
+				Config: tmpl.DataFilterTags(t, nbLabel, nbRegion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.region", nbRegion),
+					acceptance.CheckListContains(resourceName, "nodebalancers.0.tags", "tf_test_2"),
+				),
+			},
+			{
 				Config: tmpl.DataOrder(t, nbLabel, nbRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.label", nbLabel+"-0"),
