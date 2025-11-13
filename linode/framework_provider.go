@@ -341,5 +341,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		firewalltemplate.NewDataSource,
 		firewalltemplates.NewDataSource,
 		firewallsettings.NewDataSource,
+		linodeinterface.NewDataSource,
 	}
 }
