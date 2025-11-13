@@ -237,6 +237,9 @@ func TestAccImage_uploadFile(t *testing.T) {
 }
 
 func TestAccImage_replicate(t *testing.T) {
+	// TODO: Remove this skip when Linode API issue is resolved
+	t.Skip("Skipping test: Image Replication is currently not working due to a Linode API issue.")
+
 	t.Parallel()
 
 	resName := "linode_image.foobar"

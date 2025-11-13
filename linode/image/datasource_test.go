@@ -40,6 +40,9 @@ func TestAccDataSourceImage_basic(t *testing.T) {
 }
 
 func TestAccDataSourceImage_replicate(t *testing.T) {
+	// TODO: Remove this skip when Linode API issue is resolved
+	t.Skip("Skipping test: Image Replication is currently not working due to a Linode API issue.")
+
 	t.Parallel()
 
 	resourceName := "data.linode_image.foobar"
