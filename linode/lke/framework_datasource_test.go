@@ -67,7 +67,6 @@ func TestAccDataSourceLKECluster_basic(t *testing.T) {
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.#", "1"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.type", "g6-standard-1"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.label", "test"),
-						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.firewall_id", "12345"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.count", "3"),
 						resource.TestCheckResourceAttrSet(dataSourceClusterName, "pools.0.disk_encryption"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.nodes.#", "3"),

@@ -576,6 +576,7 @@ func flattenLKENodePools(pools []linodego.LKENodePool) []map[string]interface{} 
 			"autoscaler":      autoscaler,
 			"k8s_version":     pool.K8sVersion,
 			"update_strategy": pool.UpdateStrategy,
+			"firewall_id":     pool.FirewallID,
 		}
 	}
 	return flattened
