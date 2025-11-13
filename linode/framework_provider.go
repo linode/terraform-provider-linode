@@ -53,6 +53,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/ipv6ranges"
 	"github.com/linode/terraform-provider-linode/v3/linode/kernel"
 	"github.com/linode/terraform-provider-linode/v3/linode/kernels"
+	"github.com/linode/terraform-provider-linode/v3/linode/linodeinterface"
 	"github.com/linode/terraform-provider-linode/v3/linode/lke"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkeclusters"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
@@ -267,6 +268,8 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		producerimagesharegroup.NewResource,
 		producerimagesharegroupmember.NewResource,
 		consumerimagesharegrouptoken.NewResource,
+		firewallsettings.NewResource,
+		linodeinterface.NewResource,
 	}
 }
 
