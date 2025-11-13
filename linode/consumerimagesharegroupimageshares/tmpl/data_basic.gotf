@@ -48,6 +48,8 @@ resource "linode_firewall" "e2e_test_firewall" {
 
 resource "linode_instance" "foobar" {
   provider        = linode-producer
+  depends_on = [linode_firewall.e2e_test_firewall]
+
   label  = "{{ .InstanceLabel }}"
   group  = "tf_test"
   type   = "g6-standard-1"
