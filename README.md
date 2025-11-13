@@ -58,11 +58,17 @@ In order to run the full suite of Acceptance tests, run `make test-int`. Accepta
 
 *Note:* Acceptance tests create real resources, and often cost money to run.
 
+Initialize and update the e2e_scripts submodule before running Acceptance tests.
+
+```sh
+git submodule update --init --recursive
+```
+
 ```sh
 make test-int
 ```
 
-Use the following command template to execute specific Acceptance test, 
+Use the following command template to execute specific Acceptance test,
 
 ```shell
 # PKG_NAME is the directory in linode/ that contains the corresponding TEST_CASE
