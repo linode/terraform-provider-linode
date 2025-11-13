@@ -1,0 +1,17 @@
+{{ define "instance_data_explicit_interface_generation" }}
+
+{{ template "instance_explicit_interface_generation" . }}
+
+data "linode_instances" "foobar" {
+    filter {
+        name = "id"
+        values = [linode_instance.foobar.id]
+    }
+
+    filter {
+        name = "interface_generation"
+        values = ["{{ .InterfaceGeneration }}"]
+    }
+}
+
+{{ end }}

@@ -4,22 +4,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
 type IPAddressModel struct {
-	Address    types.String `tfsdk:"address"`
-	Type       types.String `tfsdk:"type"`
-	Region     types.String `tfsdk:"region"`
-	RDNS       types.String `tfsdk:"rdns"`
-	Prefix     types.Int64  `tfsdk:"prefix"`
-	Gateway    types.String `tfsdk:"gateway"`
-	SubnetMask types.String `tfsdk:"subnet_mask"`
-	Public     types.Bool   `tfsdk:"public"`
-	LinodeID   types.Int64  `tfsdk:"linode_id"`
-	Reserved   types.Bool   `tfsdk:"reserved"`
-	VPCNAT1To1 types.Object `tfsdk:"vpc_nat_1_1"`
+	Address     types.String `tfsdk:"address"`
+	Type        types.String `tfsdk:"type"`
+	Region      types.String `tfsdk:"region"`
+	RDNS        types.String `tfsdk:"rdns"`
+	Prefix      types.Int64  `tfsdk:"prefix"`
+	Gateway     types.String `tfsdk:"gateway"`
+	SubnetMask  types.String `tfsdk:"subnet_mask"`
+	Public      types.Bool   `tfsdk:"public"`
+	LinodeID    types.Int64  `tfsdk:"linode_id"`
+	InterfaceID types.Int64  `tfsdk:"interface_id"`
+	Reserved    types.Bool   `tfsdk:"reserved"`
+	VPCNAT1To1  types.Object `tfsdk:"vpc_nat_1_1"`
 }
 
 func (m *IPAddressModel) ParseIP(ip linodego.InstanceIP) diag.Diagnostics {
@@ -32,6 +34,7 @@ func (m *IPAddressModel) ParseIP(ip linodego.InstanceIP) diag.Diagnostics {
 	m.SubnetMask = types.StringValue(ip.SubnetMask)
 	m.Public = types.BoolValue(ip.Public)
 	m.LinodeID = types.Int64Value(int64(ip.LinodeID))
+	m.InterfaceID = types.Int64PointerValue(helper.IntPtrToInt64Ptr(ip.InterfaceID))
 	m.Reserved = types.BoolValue(ip.Reserved)
 
 	vpcNAT1To1, d := instancenetworking.FlattenIPVPCNAT1To1(ip.VPCNAT1To1)
