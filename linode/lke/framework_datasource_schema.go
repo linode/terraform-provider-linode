@@ -146,6 +146,10 @@ var frameworkDataSourceSchema = schema.Schema{
 						Description: "The label of the Node Pool.",
 						Optional:    true,
 					},
+					"firewall_id": schema.Int64Attribute{
+						Computed:    true,
+						Description: "The ID of the firewall associated with the Node Pool.",
+					},
 					"count": schema.Int64Attribute{
 						Computed:    true,
 						Description: "The number of nodes in the Node Pool.",

@@ -28,6 +28,7 @@ type NodePoolSpec struct {
 	K8sVersion        *string
 	UpdateStrategy    *string
 	Label             *string
+	FirewallID        *int
 }
 
 type NodePoolUpdates struct {
@@ -63,6 +64,10 @@ func ReconcileLKENodePoolSpecs(
 
 		if spec.Label != nil && *spec.Label != "" {
 			createOpts.Label = spec.Label
+		}
+
+		if spec.FirewallID != nil && *spec.FirewallID != 0 {
+			createOpts.FirewallID = spec.FirewallID
 		}
 
 		if spec.Taints != nil {
@@ -145,6 +150,14 @@ func ReconcileLKENodePoolSpecs(
 		} else if newSpec.Label == nil && oldSpec.Label != nil {
 			empty := ""
 			updateOpts.Label = &empty
+		}
+
+		if (newSpec.FirewallID != nil && oldSpec.FirewallID != nil && *newSpec.FirewallID != *oldSpec.FirewallID) ||
+			(newSpec.FirewallID != nil && oldSpec.FirewallID == nil) {
+			updateOpts.FirewallID = newSpec.FirewallID
+		} else if newSpec.FirewallID == nil && oldSpec.FirewallID != nil {
+			empty := 0
+			updateOpts.FirewallID = &empty
 		}
 
 		if enterprise {
@@ -432,6 +445,12 @@ func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, dec
 				}
 			}
 
+			if declaredFirewallID, ok := declaredPool["firewall_id"].(int); ok && declaredFirewallID != 0 {
+				if apiPool.FirewallID == nil || declaredFirewallID != *apiPool.FirewallID {
+					continue
+				}
+			}
+
 			// Pair the API pool with the declared pool
 			result[i] = apiPool
 			delete(apiPools, apiPool.ID)
@@ -496,9 +515,15 @@ func expandLinodeLKENodePoolSpecs(pool []interface{}, preserveNoTarget bool) (po
 			labelPtr = &v
 		}
 
+		var firewallIdPtr *int
+		if v, ok := specMap["firewall_id"].(int); ok && v != 0 {
+			firewallIdPtr = &v
+		}
+
 		poolSpecs = append(poolSpecs, NodePoolSpec{
 			ID:                specMap["id"].(int),
 			Label:             labelPtr,
+			FirewallID:        firewallIdPtr,
 			Type:              specMap["type"].(string),
 			Tags:              helper.ExpandStringSet(specMap["tags"].(*schema.Set)),
 			Taints:            helper.ExpandObjectSet(specMap["taint"].(*schema.Set)),

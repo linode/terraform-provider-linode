@@ -73,6 +73,7 @@ type LKENodePool struct {
 	K8sVersion     types.String                     `tfsdk:"k8s_version"`
 	UpdateStrategy types.String                     `tfsdk:"update_strategy"`
 	Label          types.String                     `tfsdk:"label"`
+	FirewallId     types.Int64                      `tfsdk:"firewall_id"`
 }
 
 type LKENodePoolDisk struct {
@@ -142,6 +143,12 @@ func (data *LKEDataModel) parseLKEAttributes(
 				label = types.StringPointerValue(p.Label)
 			}
 			pool.Label = label
+
+			var firewallId basetypes.Int64Value
+			if p.FirewallID != nil {
+				firewallId = types.Int64Value(int64(*p.FirewallID))
+			}
+			pool.FirewallId = firewallId
 
 			if p.UpdateStrategy != nil {
 				pool.UpdateStrategy = types.StringValue(string(*p.UpdateStrategy))
