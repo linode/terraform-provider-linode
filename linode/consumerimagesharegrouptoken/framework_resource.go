@@ -138,9 +138,6 @@ func (r *Resource) Update(
 		}
 
 		plan.FlattenImageShareGroupToken(token, false)
-		if resp.Diagnostics.HasError() {
-			return
-		}
 	}
 	plan.CopyFrom(state, true)
 
