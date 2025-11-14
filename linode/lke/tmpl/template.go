@@ -25,6 +25,7 @@ type TemplateData struct {
 	Taints           []TaintData
 	Labels           map[string]string
 	AuditLogsEnabled bool
+	Tier             string
 }
 
 func Basic(t testing.TB, name, version, region string) string {
@@ -155,5 +156,12 @@ func ACLDisabledAddressesDisallowed(t testing.TB, name, version, region string) 
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_acl_disabled_addresses_disallowed",
 		TemplateData{Label: name, K8sVersion: version, Region: region},
+	)
+}
+
+func TierConditional(t testing.TB, name, version, region, tier string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_tier_conditional",
+		TemplateData{Label: name, K8sVersion: version, Region: region, Tier: tier},
 	)
 }

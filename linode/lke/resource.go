@@ -42,6 +42,10 @@ func Resource() *schema.Resource {
 			customDiffValidateOptionalCount,
 			linodediffs.ComputedWithDefault("tags", []string{}),
 			linodediffs.CaseInsensitiveSet("tags"),
+			helper.SDKv2ValidateFieldRequiresAPIVersion(
+				helper.APIVersionV4Beta,
+				"tier",
+			),
 		),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(createLKETimeout),

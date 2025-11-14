@@ -52,10 +52,10 @@ func TestAccDataSourceConsumerImageShareGroup_basic(t *testing.T) {
 		PreCheck: func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"linode-producer": func() (tfprotov6.ProviderServer, error) {
-				return acceptance.ProtoV6CustomProviderFactories["linode"](producerProvider)
+				return acceptance.ProtoV6CustomProviderFactories["linode"](producerProvider, nil)
 			},
 			"linode-consumer": func() (tfprotov6.ProviderServer, error) {
-				return acceptance.ProtoV6CustomProviderFactories["linode"](consumerProvider)
+				return acceptance.ProtoV6CustomProviderFactories["linode"](consumerProvider, nil)
 			},
 		},
 		Steps: []resource.TestStep{
