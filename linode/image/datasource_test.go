@@ -29,6 +29,9 @@ func TestAccDataSourceImage_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "label", "Debian 8"),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
 					resource.TestCheckResourceAttr(resourceName, "is_public", "true"),
+					resource.TestCheckResourceAttr(resourceName, "is_shared", "false"),
+					resource.TestCheckNoResourceAttr(resourceName, "image_sharing.shared_with"),
+					resource.TestCheckNoResourceAttr(resourceName, "image_sharing.shared_by"),
 					resource.TestCheckResourceAttr(resourceName, "type", "manual"),
 					resource.TestCheckResourceAttr(resourceName, "size", "1300"),
 					resource.TestCheckResourceAttr(resourceName, "vendor", "Debian"),
@@ -40,6 +43,9 @@ func TestAccDataSourceImage_basic(t *testing.T) {
 }
 
 func TestAccDataSourceImage_replicate(t *testing.T) {
+	// TODO: Remove this skip when Linode API issue is resolved
+	t.Skip("Skipping test: Image Replication is currently not working due to a Linode API issue.")
+
 	t.Parallel()
 
 	resourceName := "data.linode_image.foobar"

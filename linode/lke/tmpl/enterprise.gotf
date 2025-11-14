@@ -35,6 +35,7 @@ resource "linode_lke_cluster" "test" {
         enabled = true
       }
       audit_logs_enabled = true
+      high_availability = true
     }
 }
 

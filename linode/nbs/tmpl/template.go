@@ -42,3 +42,11 @@ func DataOrder(t testing.TB, label, region string) string {
 			Region: region,
 		})
 }
+
+func DataFilterTags(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nbs_data_filter_tags", TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}

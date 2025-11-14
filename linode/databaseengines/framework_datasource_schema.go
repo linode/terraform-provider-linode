@@ -11,20 +11,18 @@ var filterConfig = frameworkfilter.Config{
 	"id":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
-var engineSchema = schema.NestedBlockObject{
-	Attributes: map[string]schema.Attribute{
-		"engine": schema.StringAttribute{
-			Description: "The Managed Database engine type.",
-			Computed:    true,
-		},
-		"id": schema.StringAttribute{
-			Description: "The Managed Database engine ID in engine/version format.",
-			Computed:    true,
-		},
-		"version": schema.StringAttribute{
-			Description: "The Managed Database engine version.",
-			Computed:    true,
-		},
+var engineAttributes = map[string]schema.Attribute{
+	"engine": schema.StringAttribute{
+		Description: "The Managed Database engine type.",
+		Computed:    true,
+	},
+	"id": schema.StringAttribute{
+		Description: "The Managed Database engine ID in engine/version format.",
+		Computed:    true,
+	},
+	"version": schema.StringAttribute{
+		Description: "The Managed Database engine version.",
+		Computed:    true,
 	},
 }
 
@@ -40,12 +38,15 @@ var frameworkDataSourceSchema = schema.Schema{
 		},
 		"order_by": filterConfig.OrderBySchema(),
 		"order":    filterConfig.OrderSchema(),
+		"engines": schema.ListNestedAttribute{
+			Description: "The returned list of engines.",
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: engineAttributes,
+			},
+		},
 	},
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
-		"engines": schema.ListNestedBlock{
-			Description:  "The returned list of engines.",
-			NestedObject: engineSchema,
-		},
 	},
 }

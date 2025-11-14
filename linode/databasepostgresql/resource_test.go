@@ -17,6 +17,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresql/tmpl"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 )
 
 var (
@@ -35,7 +36,7 @@ func init() {
 		log.Fatalf("failed to get client: %s", err)
 	}
 
-	v, err := helper.ResolveValidDBEngine(context.Background(), *client, "postgresql")
+	v, err := databaseshared.ResolveValidDBEngine(context.Background(), *client, "postgresql")
 	if err != nil {
 		log.Fatalf("failed to get db engine version: %s", err)
 	}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -27,6 +28,8 @@ type ResourceModel struct {
 	CreatedBy           types.String      `tfsdk:"created_by"`
 	Deprecated          types.Bool        `tfsdk:"deprecated"`
 	IsPublic            types.Bool        `tfsdk:"is_public"`
+	IsShared            types.Bool        `tfsdk:"is_shared"`
+	ImageSharing        types.Object      `tfsdk:"image_sharing"`
 	Size                types.Int64       `tfsdk:"size"`
 	Status              types.String      `tfsdk:"status"`
 	Type                types.String      `tfsdk:"type"`
@@ -38,6 +41,46 @@ type ResourceModel struct {
 	ReplicaRegions      types.List        `tfsdk:"replica_regions"`
 	Replications        types.List        `tfsdk:"replications"`
 	WaitForReplications types.Bool        `tfsdk:"wait_for_replications"`
+}
+
+type ImageSharingModel struct {
+	SharedWith types.Object `tfsdk:"shared_with"`
+	SharedBy   types.Object `tfsdk:"shared_by"`
+}
+
+var imageSharingObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"shared_with": imageSharingSharedWithObjectType,
+		"shared_by":   imageSharingSharedByObjectType,
+	},
+}
+
+type ImageSharingSharedWithAttributesModel struct {
+	ShareGroupCount   types.Int64  `tfsdk:"sharegroup_count"`
+	ShareGroupListURL types.String `tfsdk:"sharegroup_list_url"`
+}
+
+var imageSharingSharedWithObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"sharegroup_count":    types.Int64Type,
+		"sharegroup_list_url": types.StringType,
+	},
+}
+
+type ImageSharingSharedByAttributesModel struct {
+	ShareGroupID    types.Int64  `tfsdk:"sharegroup_id"`
+	ShareGroupUUID  types.String `tfsdk:"sharegroup_uuid"`
+	ShareGroupLabel types.String `tfsdk:"sharegroup_label"`
+	SourceImageID   types.String `tfsdk:"source_image_id"`
+}
+
+var imageSharingSharedByObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"sharegroup_id":    types.Int64Type,
+		"sharegroup_uuid":  types.StringType,
+		"sharegroup_label": types.StringType,
+		"source_image_id":  types.StringType,
+	},
 }
 
 func (data *ResourceModel) FlattenImage(
@@ -68,6 +111,23 @@ func (data *ResourceModel) FlattenImage(
 	data.CreatedBy = helper.KeepOrUpdateString(data.CreatedBy, image.CreatedBy, preserveKnown)
 	data.Deprecated = helper.KeepOrUpdateBool(data.Deprecated, image.Deprecated, preserveKnown)
 	data.IsPublic = helper.KeepOrUpdateBool(data.IsPublic, image.IsPublic, preserveKnown)
+	data.IsShared = helper.KeepOrUpdateBool(data.IsShared, image.IsShared, preserveKnown)
+
+	imageSharing := helper.KeepOrUpdateSingleNestedAttributesWithTypes(
+		ctx,
+		data.ImageSharing,
+		imageSharingObjectType.AttrTypes,
+		preserveKnown,
+		diags,
+		func(model *ImageSharingModel, isNull *bool, preserveKnown bool, diags *diag.Diagnostics) {
+			model.FlattenImageSharing(ctx, image.ImageSharing, preserveKnown, diags)
+		},
+	)
+
+	if imageSharing != nil {
+		data.ImageSharing = *imageSharing
+	}
+
 	data.Size = helper.KeepOrUpdateInt64(data.Size, int64(image.Size), preserveKnown)
 	data.Status = helper.KeepOrUpdateString(data.Status, string(image.Status), preserveKnown)
 	data.Type = helper.KeepOrUpdateString(data.Type, image.Type, preserveKnown)
@@ -94,6 +154,47 @@ func (data *ResourceModel) FlattenImage(
 	data.Replications = helper.KeepOrUpdateValue(data.Replications, *replications, preserveKnown)
 }
 
+func (m *ImageSharingModel) FlattenImageSharing(ctx context.Context, imageSharing linodego.ImageSharing, preserveKnown bool, diags *diag.Diagnostics) {
+	if m.SharedWith.IsNull() {
+		m.SharedWith = types.ObjectNull(imageSharingSharedWithObjectType.AttrTypes)
+	}
+	if m.SharedBy.IsNull() {
+		m.SharedBy = types.ObjectNull(imageSharingSharedByObjectType.AttrTypes)
+	}
+
+	if imageSharing.SharedWith != nil {
+		var sharedWithModel ImageSharingSharedWithAttributesModel
+		sharedWithModel.FlattenImageSharingSharedWith(*imageSharing.SharedWith, preserveKnown)
+		objVal, d := types.ObjectValueFrom(ctx, imageSharingSharedWithObjectType.AttrTypes, sharedWithModel)
+		diags.Append(d...)
+		m.SharedWith = objVal
+	} else if !preserveKnown {
+		m.SharedWith = types.ObjectNull(imageSharingSharedWithObjectType.AttrTypes)
+	}
+
+	if imageSharing.SharedBy != nil {
+		var sharedByModel ImageSharingSharedByAttributesModel
+		sharedByModel.FlattenImageSharingSharedBy(*imageSharing.SharedBy, preserveKnown)
+		objVal, d := types.ObjectValueFrom(ctx, imageSharingSharedByObjectType.AttrTypes, sharedByModel)
+		diags.Append(d...)
+		m.SharedBy = objVal
+	} else if !preserveKnown {
+		m.SharedBy = types.ObjectNull(imageSharingSharedByObjectType.AttrTypes)
+	}
+}
+
+func (m *ImageSharingSharedWithAttributesModel) FlattenImageSharingSharedWith(sharedWith linodego.ImageSharingSharedWith, preserveKnown bool) {
+	m.ShareGroupCount = helper.KeepOrUpdateInt64(m.ShareGroupCount, int64(sharedWith.ShareGroupCount), preserveKnown)
+	m.ShareGroupListURL = helper.KeepOrUpdateString(m.ShareGroupListURL, sharedWith.ShareGroupListURL, preserveKnown)
+}
+
+func (m *ImageSharingSharedByAttributesModel) FlattenImageSharingSharedBy(sharedBy linodego.ImageSharingSharedBy, preserveKnown bool) {
+	m.ShareGroupID = helper.KeepOrUpdateInt64(m.ShareGroupID, int64(sharedBy.ShareGroupID), preserveKnown)
+	m.ShareGroupUUID = helper.KeepOrUpdateString(m.ShareGroupUUID, sharedBy.ShareGroupUUID, preserveKnown)
+	m.ShareGroupLabel = helper.KeepOrUpdateString(m.ShareGroupLabel, sharedBy.ShareGroupLabel, preserveKnown)
+	m.SourceImageID = helper.KeepOrUpdateStringPointer(m.SourceImageID, sharedBy.SourceImageID, preserveKnown)
+}
+
 func (data *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	data.ID = helper.KeepOrUpdateValue(data.ID, other.ID, preserveKnown)
 	data.Label = helper.KeepOrUpdateValue(data.Label, other.Label, preserveKnown)
@@ -109,6 +210,8 @@ func (data *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	data.CreatedBy = helper.KeepOrUpdateValue(data.CreatedBy, other.CreatedBy, preserveKnown)
 	data.Deprecated = helper.KeepOrUpdateValue(data.Deprecated, other.Deprecated, preserveKnown)
 	data.IsPublic = helper.KeepOrUpdateValue(data.IsPublic, other.IsPublic, preserveKnown)
+	data.IsShared = helper.KeepOrUpdateValue(data.IsShared, other.IsShared, preserveKnown)
+	data.ImageSharing = helper.KeepOrUpdateValue(data.ImageSharing, other.ImageSharing, preserveKnown)
 	data.Size = helper.KeepOrUpdateValue(data.Size, other.Size, preserveKnown)
 	data.Status = helper.KeepOrUpdateValue(data.Status, other.Status, preserveKnown)
 	data.Type = helper.KeepOrUpdateValue(data.Type, other.Type, preserveKnown)
@@ -125,28 +228,35 @@ func (data *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 // ImageModel describes the Terraform resource data model to match the
 // resource schema.
 type ImageModel struct {
-	ID           types.String       `tfsdk:"id"`
-	Label        types.String       `tfsdk:"label"`
-	Description  types.String       `tfsdk:"description"`
-	Capabilities []types.String     `tfsdk:"capabilities"`
-	Created      types.String       `tfsdk:"created"`
-	CreatedBy    types.String       `tfsdk:"created_by"`
-	Deprecated   types.Bool         `tfsdk:"deprecated"`
-	IsPublic     types.Bool         `tfsdk:"is_public"`
-	Size         types.Int64        `tfsdk:"size"`
-	Status       types.String       `tfsdk:"status"`
-	Type         types.String       `tfsdk:"type"`
-	Expiry       types.String       `tfsdk:"expiry"`
-	Vendor       types.String       `tfsdk:"vendor"`
-	Tags         types.List         `tfsdk:"tags"`
-	TotalSize    types.Int64        `tfsdk:"total_size"`
-	Replications []ReplicationModel `tfsdk:"replications"`
+	ID           types.String                 `tfsdk:"id"`
+	Label        types.String                 `tfsdk:"label"`
+	Description  types.String                 `tfsdk:"description"`
+	Capabilities []types.String               `tfsdk:"capabilities"`
+	Created      types.String                 `tfsdk:"created"`
+	CreatedBy    types.String                 `tfsdk:"created_by"`
+	Deprecated   types.Bool                   `tfsdk:"deprecated"`
+	IsPublic     types.Bool                   `tfsdk:"is_public"`
+	IsShared     types.Bool                   `tfsdk:"is_shared"`
+	ImageSharing *ImageSharingDataSourceModel `tfsdk:"image_sharing"`
+	Size         types.Int64                  `tfsdk:"size"`
+	Status       types.String                 `tfsdk:"status"`
+	Type         types.String                 `tfsdk:"type"`
+	Expiry       types.String                 `tfsdk:"expiry"`
+	Vendor       types.String                 `tfsdk:"vendor"`
+	Tags         types.List                   `tfsdk:"tags"`
+	TotalSize    types.Int64                  `tfsdk:"total_size"`
+	Replications []ReplicationModel           `tfsdk:"replications"`
 }
 
 // ReplicationModel describes an image replication.
 type ReplicationModel struct {
 	Region types.String `tfsdk:"region"`
 	Status types.String `tfsdk:"status"`
+}
+
+type ImageSharingDataSourceModel struct {
+	SharedWith *ImageSharingSharedWithAttributesModel `tfsdk:"shared_with"`
+	SharedBy   *ImageSharingSharedByAttributesModel   `tfsdk:"shared_by"`
 }
 
 func (data *ImageModel) ParseImage(
@@ -171,6 +281,7 @@ func (data *ImageModel) ParseImage(
 	data.CreatedBy = types.StringValue(image.CreatedBy)
 	data.Deprecated = types.BoolValue(image.Deprecated)
 	data.IsPublic = types.BoolValue(image.IsPublic)
+	data.IsShared = types.BoolValue(image.IsShared)
 	data.Size = types.Int64Value(int64(image.Size))
 	data.Status = types.StringValue(string(image.Status))
 	data.Type = types.StringValue(image.Type)
@@ -184,8 +295,40 @@ func (data *ImageModel) ParseImage(
 	data.Tags = tags
 
 	data.Replications = parseReplicationModels(image.Regions)
+	data.ImageSharing = parseImageSharingDataSourceModel(&image.ImageSharing)
 
 	return nil
+}
+
+func parseImageSharingDataSourceModel(
+	imageSharing *linodego.ImageSharing,
+) *ImageSharingDataSourceModel {
+	if imageSharing == nil {
+		return nil
+	}
+
+	var sharedWith *ImageSharingSharedWithAttributesModel
+	if sw := imageSharing.SharedWith; sw != nil {
+		sharedWith = &ImageSharingSharedWithAttributesModel{
+			ShareGroupCount:   types.Int64Value(int64(sw.ShareGroupCount)),
+			ShareGroupListURL: types.StringValue(sw.ShareGroupListURL),
+		}
+	}
+
+	var sharedBy *ImageSharingSharedByAttributesModel
+	if sb := imageSharing.SharedBy; sb != nil {
+		sharedBy = &ImageSharingSharedByAttributesModel{
+			ShareGroupID:    types.Int64Value(int64(sb.ShareGroupID)),
+			ShareGroupUUID:  types.StringValue(sb.ShareGroupUUID),
+			ShareGroupLabel: types.StringValue(sb.ShareGroupLabel),
+			SourceImageID:   types.StringPointerValue(sb.SourceImageID),
+		}
+	}
+
+	return &ImageSharingDataSourceModel{
+		SharedWith: sharedWith,
+		SharedBy:   sharedBy,
+	}
 }
 
 func parseReplicationModels(

@@ -18,12 +18,10 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "The data source's unique ID.",
 			Computed:    true,
 		},
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"ranges": schema.ListNestedBlock{
+		"ranges": schema.ListNestedAttribute{
 			Description: "The return list of IPv6 ranges.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"range": schema.StringAttribute{
 						Description: "The IPv6 address of this range.",
@@ -44,5 +42,8 @@ var frameworkDataSourceSchema = schema.Schema{
 				},
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }

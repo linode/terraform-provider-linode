@@ -17,7 +17,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlv2/tmpl"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 )
 
 var testRegion, testEngine string
@@ -40,7 +40,7 @@ func init() {
 
 	testRegion = region
 
-	engine, err := helper.ResolveValidDBEngine(
+	engine, err := databaseshared.ResolveValidDBEngine(
 		context.Background(),
 		*client,
 		string(linodego.DatabaseEngineTypePostgres),
@@ -1029,7 +1029,7 @@ func TestAccResource_noPendingUpdatesRegression(t *testing.T) {
 		PreCheck: func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"linode": func() (tfprotov6.ProviderServer, error) {
-				return acceptance.ProtoV6CustomProviderFactories["linode"](overriddenProvider)
+				return acceptance.ProtoV6CustomProviderFactories["linode"](overriddenProvider, nil)
 			},
 		},
 		CheckDestroy: acceptance.CheckPostgreSQLDatabaseV2Destroy,

@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 )
 
 func TestResourceDatabaseMySQL_expandFlatten(t *testing.T) {
@@ -19,9 +19,9 @@ func TestResourceDatabaseMySQL_expandFlatten(t *testing.T) {
 		HourOfDay: 5,
 	}
 
-	dataFlattened := helper.FlattenMaintenanceWindow(data)
+	dataFlattened := databaseshared.FlattenMaintenanceWindow(data)
 
-	dataExpanded, err := helper.ExpandMaintenanceWindow(dataFlattened)
+	dataExpanded, err := databaseshared.ExpandMaintenanceWindow(dataFlattened)
 	if err != nil {
 		t.Fatal(err)
 	}

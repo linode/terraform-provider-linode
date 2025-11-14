@@ -1,0 +1,54 @@
+{{ define "producer_image_share_groups_data_basic" }}
+
+resource "linode_producer_image_share_group" "test1" {
+  label       = "{{ .Label1 }}"
+}
+
+resource "linode_producer_image_share_group" "test2" {
+  label       = "{{ .Label2 }}"
+}
+
+data "linode_producer_image_share_groups" "all" {
+  depends_on = [
+    linode_producer_image_share_group.test1,
+    linode_producer_image_share_group.test2,
+  ]
+}
+
+data "linode_producer_image_share_groups" "by_label" {
+  depends_on = [
+    linode_producer_image_share_group.test1,
+    linode_producer_image_share_group.test2,
+  ]
+
+  filter {
+    name   = "label"
+    values = [linode_producer_image_share_group.test1.label]
+  }
+}
+
+data "linode_producer_image_share_groups" "by_id" {
+  depends_on = [
+    linode_producer_image_share_group.test1,
+    linode_producer_image_share_group.test2,
+  ]
+
+  filter {
+    name   = "id"
+    values = [linode_producer_image_share_group.test2.id]
+  }
+}
+
+data "linode_producer_image_share_groups" "by_is_suspended" {
+  depends_on = [
+    linode_producer_image_share_group.test1,
+    linode_producer_image_share_group.test2,
+  ]
+
+  filter {
+    name   = "is_suspended"
+    values = ["false"]
+  }
+}
+
+{{ end }}

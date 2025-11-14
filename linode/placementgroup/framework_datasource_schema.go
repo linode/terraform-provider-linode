@@ -38,11 +38,10 @@ var DataSourceSchema = schema.Schema{
 			Description: "Whether Linodes must be able to become compliant during assignment.",
 			Computed:    true,
 		},
-	},
-	Blocks: map[string]schema.Block{
-		"members": schema.SetNestedBlock{
+		"members": schema.SetNestedAttribute{
 			Description: "A list of Linodes assigned to a placement group.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"linode_id": schema.Int64Attribute{
 						Description: "The ID of the Linode.",
@@ -55,8 +54,9 @@ var DataSourceSchema = schema.Schema{
 				},
 			},
 		},
-		"migrations": schema.SingleNestedBlock{
+		"migrations": schema.SingleNestedAttribute{
 			Description: "An object representing migrations associated with the placement group. Contains inbound and outbound migration lists.",
+			Computed:    true,
 			Attributes: map[string]schema.Attribute{
 				"inbound": schema.ListAttribute{
 					Description: "The compute instances being migrated into the placement group.",

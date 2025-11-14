@@ -1,0 +1,57 @@
+{{ define "consumer_image_share_group_tokens_data_basic" }}
+
+resource "linode_producer_image_share_group" "foobar" {
+  provider                       = linode-producer
+  label                          = "{{ .ShareGroupLabel }}"
+  description                    = "Example description"
+}
+
+resource "linode_consumer_image_share_group_token" "foobar" {
+  provider                       = linode-consumer
+  depends_on                     = [linode_producer_image_share_group.foobar]
+  valid_for_sharegroup_uuid      = linode_producer_image_share_group.foobar.uuid
+  label                          = "{{ .TokenLabel }}"
+}
+
+data "linode_consumer_image_share_group_tokens" "by_label" {
+  depends_on = [linode_consumer_image_share_group_token.foobar]
+  provider                       = linode-consumer
+
+  filter {
+    name   = "label"
+    values = [linode_consumer_image_share_group_token.foobar.label]
+  }
+}
+
+data "linode_consumer_image_share_group_tokens" "by_status" {
+  depends_on = [linode_consumer_image_share_group_token.foobar]
+  provider                       = linode-consumer
+
+  filter {
+    name   = "status"
+    values = [linode_consumer_image_share_group_token.foobar.status]
+  }
+}
+
+data "linode_consumer_image_share_group_tokens" "by_token_uuid" {
+  depends_on = [linode_consumer_image_share_group_token.foobar]
+  provider                       = linode-consumer
+
+  filter {
+    name   = "token_uuid"
+    values = [linode_consumer_image_share_group_token.foobar.token_uuid]
+  }
+}
+
+data "linode_consumer_image_share_group_tokens" "by_valid_for_sharegroup_uuid" {
+  depends_on = [linode_consumer_image_share_group_token.foobar]
+  provider                       = linode-consumer
+
+  filter {
+    name   = "valid_for_sharegroup_uuid"
+    values = [linode_consumer_image_share_group_token.foobar.valid_for_sharegroup_uuid]
+  }
+}
+
+
+{{ end }}

@@ -1,0 +1,16 @@
+{{ define "consumer_image_share_group_token_basic" }}
+
+resource "linode_producer_image_share_group" "foobar" {
+  provider    = linode-producer
+  label  = "{{ .ShareGroupLabel }}"
+  description = "Example description"
+}
+
+resource "linode_consumer_image_share_group_token" "foobar" {
+  provider                 = linode-consumer
+  depends_on               = [linode_producer_image_share_group.foobar]
+  valid_for_sharegroup_uuid = linode_producer_image_share_group.foobar.uuid
+  label =  "{{ .TokenLabel }}"
+}
+
+{{ end }}

@@ -1,6 +1,7 @@
 package acceptance
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -48,20 +50,29 @@ var HttpExternalProviders = map[string]resource.ExternalProvider{
 	},
 }
 
-var ProtoV6CustomProviderFactories = map[string]func(provider provider.Provider) (tfprotov6.ProviderServer, error){
-	"linode": func(provider provider.Provider) (tfprotov6.ProviderServer, error) {
+var ProtoV6CustomProviderFactories = map[string]func(
+	provider.Provider,
+	*schema.Provider,
+) (tfprotov6.ProviderServer, error){
+	"linode": func(
+		frameworkProvider provider.Provider,
+		sdkV2Provider *schema.Provider,
+	) (tfprotov6.ProviderServer, error) {
 		ctx := context.Background()
+
+		frameworkProvider = cmp.Or(frameworkProvider, provider.Provider(TestAccFrameworkProvider))
+		sdkV2Provider = cmp.Or(sdkV2Provider, TestAccSDKv2Provider)
 
 		upgradedSDKProvider, err := tf5to6server.UpgradeServer(
 			ctx,
-			TestAccSDKv2Providers["linode"].GRPCProvider,
+			sdkV2Provider.GRPCProvider,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to upgrade SDKv2 GRPC provider: %w", err)
 		}
 
 		providers := []func() tfprotov6.ProviderServer{
-			providerserver.NewProtocol6(provider),
+			providerserver.NewProtocol6(frameworkProvider),
 			func() tfprotov6.ProviderServer { return upgradedSDKProvider },
 		}
 

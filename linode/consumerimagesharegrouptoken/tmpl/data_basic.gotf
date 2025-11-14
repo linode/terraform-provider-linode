@@ -1,0 +1,10 @@
+{{ define "consumer_image_share_group_token_data_basic" }}
+
+{{ template "consumer_image_share_group_token_basic" .}}
+
+data "linode_consumer_image_share_group_token" "foobar" {
+    provider = linode-consumer
+    token_uuid = linode_consumer_image_share_group_token.foobar.token_uuid
+}
+
+{{ end }}

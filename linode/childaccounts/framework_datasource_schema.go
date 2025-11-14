@@ -30,14 +30,15 @@ var dataSourceSchema = schema.Schema{
 			Description: "The data source's unique ID.",
 			Computed:    true,
 		},
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"child_accounts": schema.ListNestedBlock{
+		"child_accounts": schema.ListNestedAttribute{
 			Description: "The returned list of Child Accounts.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: account.DataSourceSchema().Attributes,
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }

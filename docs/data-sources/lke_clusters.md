@@ -64,7 +64,7 @@ Each LKE Cluster will be stored in the `lke_clusters` attribute and will export 
 
 * `region` - This Kubernetes cluster's location.
 
-* `tier` - The desired Kubernetes tier. (**Note: v4beta only and may not currently be available to all users.**)
+* `tier` - The desired Kubernetes tier. **NOTE: This field may not be available to all users and is only accepted and populated when api_version is set to `v4beta`.**
 
 * `subnet_id` - The ID of the VPC subnet to use for the Kubernetes cluster. This subnet must be dual stack (IPv4 and IPv6 should both be enabled).
 

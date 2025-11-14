@@ -12,47 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 )
-
-type ModelPrivateNetwork struct {
-	VPCID        types.Int64 `tfsdk:"vpc_id"`
-	SubnetID     types.Int64 `tfsdk:"subnet_id"`
-	PublicAccess types.Bool  `tfsdk:"public_access"`
-}
-
-func (m ModelPrivateNetwork) ToLinodego(d diag.Diagnostics) *linodego.DatabasePrivateNetwork {
-	return &linodego.DatabasePrivateNetwork{
-		VPCID:        helper.FrameworkSafeInt64ToInt(m.VPCID.ValueInt64(), &d),
-		SubnetID:     helper.FrameworkSafeInt64ToInt(m.SubnetID.ValueInt64(), &d),
-		PublicAccess: m.PublicAccess.ValueBool(),
-	}
-}
 
 type ModelHosts struct {
 	Primary   types.String `tfsdk:"primary"`
 	Secondary types.String `tfsdk:"secondary"`
-}
-
-type ModelUpdates struct {
-	DayOfWeek types.Int64  `tfsdk:"day_of_week"`
-	Duration  types.Int64  `tfsdk:"duration"`
-	Frequency types.String `tfsdk:"frequency"`
-	HourOfDay types.Int64  `tfsdk:"hour_of_day"`
-}
-
-func (m ModelUpdates) ToLinodego(d diag.Diagnostics) *linodego.DatabaseMaintenanceWindow {
-	return &linodego.DatabaseMaintenanceWindow{
-		DayOfWeek: linodego.DatabaseDayOfWeek(helper.FrameworkSafeInt64ToInt(m.DayOfWeek.ValueInt64(), &d)),
-		Duration:  helper.FrameworkSafeInt64ToInt(m.Duration.ValueInt64(), &d),
-		Frequency: linodego.DatabaseMaintenanceFrequency(m.Frequency.ValueString()),
-		HourOfDay: helper.FrameworkSafeInt64ToInt(m.HourOfDay.ValueInt64(), &d),
-	}
-}
-
-type ModelPendingUpdate struct {
-	Deadline    timetypes.RFC3339 `tfsdk:"deadline"`
-	Description types.String      `tfsdk:"description"`
-	PlannedFor  timetypes.RFC3339 `tfsdk:"planned_for"`
 }
 
 type ResourceModel struct {
@@ -146,7 +111,7 @@ func (m *Model) Refresh(
 	var ssl *linodego.MySQLDatabaseSSL
 	var creds *linodego.MySQLDatabaseCredential
 
-	if !helper.DatabaseStatusIsSuspended(db.Status) {
+	if !databaseshared.StatusIsSuspended(db.Status) {
 		// SSL and credentials endpoints return 400s while a DB is suspended
 
 		tflog.Debug(ctx, "client.GetMySQLDatabaseSSL(...)")
@@ -164,7 +129,7 @@ func (m *Model) Refresh(
 		}
 	}
 
-	m.Flatten(ctx, db, ssl, creds, preserveKnown)
+	d.Append(m.Flatten(ctx, db, ssl, creds, preserveKnown)...)
 	return d
 }
 
@@ -183,7 +148,7 @@ func (m *Model) Flatten(
 	m.Engine = helper.KeepOrUpdateString(m.Engine, db.Engine, preserveKnown)
 	m.EngineID = helper.KeepOrUpdateString(
 		m.EngineID,
-		helper.CreateDatabaseEngineSlug(db.Engine, db.Version),
+		databaseshared.CreateDatabaseEngineSlug(db.Engine, db.Version),
 		preserveKnown,
 	)
 	m.HostPrimary = helper.KeepOrUpdateString(m.HostPrimary, db.Hosts.Primary, preserveKnown)
@@ -195,7 +160,7 @@ func (m *Model) Flatten(
 	m.Region = helper.KeepOrUpdateString(m.Region, db.Region, preserveKnown)
 	m.SSLConnection = helper.KeepOrUpdateBool(m.SSLConnection, db.SSLConnection, preserveKnown)
 	m.Status = helper.KeepOrUpdateString(m.Status, string(db.Status), preserveKnown)
-	m.Suspended = helper.KeepOrUpdateBool(m.Suspended, helper.DatabaseStatusIsSuspended(db.Status), preserveKnown)
+	m.Suspended = helper.KeepOrUpdateBool(m.Suspended, databaseshared.StatusIsSuspended(db.Status), preserveKnown)
 	m.Type = helper.KeepOrUpdateString(m.Type, db.Type, preserveKnown)
 	m.Updated = helper.KeepOrUpdateValue(m.Updated, timetypes.NewRFC3339TimePointerValue(db.Updated), preserveKnown)
 	m.Version = helper.KeepOrUpdateString(m.Version, db.Version, preserveKnown)
@@ -272,29 +237,12 @@ func (m *Model) Flatten(
 	}
 
 	if db.PrivateNetwork != nil {
-		privateNetworkObject, rd := types.ObjectValueFrom(
-			ctx,
-			privateNetworkAttributes,
-			&ModelPrivateNetwork{
-				VPCID:        types.Int64Value(int64(db.PrivateNetwork.VPCID)),
-				SubnetID:     types.Int64Value(int64(db.PrivateNetwork.SubnetID)),
-				PublicAccess: types.BoolValue(db.PrivateNetwork.PublicAccess),
-			},
-		)
+		privateNetworkObject, rd := databaseshared.FlattenPrivateNetwork(ctx, *db.PrivateNetwork)
 		d.Append(rd...)
 		m.PrivateNetwork = helper.KeepOrUpdateValue(m.PrivateNetwork, privateNetworkObject, preserveKnown)
 	}
 
-	updatesObject, rd := types.ObjectValueFrom(
-		ctx,
-		updatesAttributes,
-		&ModelUpdates{
-			DayOfWeek: types.Int64Value(int64(db.Updates.DayOfWeek)),
-			Duration:  types.Int64Value(int64(db.Updates.Duration)),
-			Frequency: types.StringValue(string(db.Updates.Frequency)),
-			HourOfDay: types.Int64Value(int64(db.Updates.HourOfDay)),
-		},
-	)
+	updatesObject, rd := databaseshared.FlattenUpdates(ctx, db.Updates)
 	d.Append(rd...)
 	m.Updates = helper.KeepOrUpdateValue(m.Updates, updatesObject, preserveKnown)
 
@@ -414,30 +362,13 @@ func (m *Model) Flatten(
 	m.EngineConfigMySQLTmpTableSize = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLTmpTableSize, db.EngineConfig.MySQL.TmpTableSize, preserveKnown)
 	m.EngineConfigMySQLWaitTimeout = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLWaitTimeout, db.EngineConfig.MySQL.WaitTimeout, preserveKnown)
 
-	pendingModels := helper.MapSlice(
-		db.Updates.Pending,
-		func(pending linodego.DatabaseMaintenanceWindowPending) ModelPendingUpdate {
-			return ModelPendingUpdate{
-				Deadline:    timetypes.NewRFC3339TimePointerValue(pending.Deadline),
-				Description: types.StringValue(pending.Description),
-				PlannedFor:  timetypes.NewRFC3339TimePointerValue(pending.PlannedFor),
-			}
-		},
-	)
-
-	pendingSet, rd := types.SetValueFrom(
-		ctx,
-		types.ObjectType{
-			AttrTypes: pendingUpdateAttributes,
-		},
-		pendingModels,
-	)
+	pendingUpdates, rd := databaseshared.FlattenPendingUpdates(ctx, db.Updates.Pending)
 	d.Append(rd...)
 	if d.HasError() {
 		return d
 	}
 
-	m.PendingUpdates = helper.KeepOrUpdateValue(m.PendingUpdates, pendingSet, preserveKnown)
+	m.PendingUpdates = helper.KeepOrUpdateValue(m.PendingUpdates, pendingUpdates, preserveKnown)
 
 	return d
 }
@@ -616,12 +547,12 @@ func (m *Model) GetAllowList(ctx context.Context, d diag.Diagnostics) []string {
 }
 
 // GetUpdates returns the ModelUpdates for this model if specified, else nil.
-func (m *Model) GetUpdates(ctx context.Context, d diag.Diagnostics) *ModelUpdates {
+func (m *Model) GetUpdates(ctx context.Context, d diag.Diagnostics) *databaseshared.ModelUpdates {
 	if m.Updates.IsUnknown() || m.Updates.IsNull() {
 		return nil
 	}
 
-	var result ModelUpdates
+	var result databaseshared.ModelUpdates
 
 	d.Append(
 		m.Updates.As(
@@ -635,12 +566,12 @@ func (m *Model) GetUpdates(ctx context.Context, d diag.Diagnostics) *ModelUpdate
 }
 
 // GetPrivateNetwork returns the ModelPrivateNetwork for this model if specified, else nil.
-func (m *Model) GetPrivateNetwork(ctx context.Context, d diag.Diagnostics) *ModelPrivateNetwork {
+func (m *Model) GetPrivateNetwork(ctx context.Context, d diag.Diagnostics) *databaseshared.PrivateNetworkModel {
 	if m.PrivateNetwork.IsUnknown() || m.PrivateNetwork.IsNull() {
 		return nil
 	}
 
-	var result ModelPrivateNetwork
+	var result databaseshared.PrivateNetworkModel
 
 	d.Append(
 		m.PrivateNetwork.As(

@@ -1,0 +1,83 @@
+{{ define "producer_image_share_group_image_shares_data_basic" }}
+
+{{ template "e2e_test_firewall" . }}
+
+resource "linode_instance" "foobar" {
+  label  = "{{ .InstanceLabel }}"
+  group  = "tf_test"
+  type   = "g6-standard-1"
+  region = "{{ .InstanceRegion }}"
+
+  disk {
+    label      = "disk"
+    size       = 1000
+    filesystem = "ext4"
+  }
+
+  firewall_id = linode_firewall.e2e_test_firewall.id
+}
+
+resource "linode_image" "image_one" {
+  depends_on = [linode_instance.foobar]
+  linode_id   = linode_instance.foobar.id
+  disk_id     = linode_instance.foobar.disk.0.id
+  label       = "{{ .ImageLabel1 }}"
+  description = "descriptive text image one"
+}
+
+resource "linode_image" "image_two" {
+  depends_on = [linode_instance.foobar]
+  linode_id   = linode_instance.foobar.id
+  disk_id     = linode_instance.foobar.disk.0.id
+  label       = "{{ .ImageLabel2 }}"
+  description = "descriptive text image two"
+}
+
+resource "linode_producer_image_share_group" "foobar" {
+  label  = "{{ .ShareGroupLabel }}"
+  description = "Example description"
+  images = [
+    {
+        id = linode_image.image_one.id
+        description = "image one description"
+        label = "image_one_label"
+    },
+    {
+        id = linode_image.image_two.id
+        description = "image two description"
+        label = "image_two_label"
+    }
+  ]
+}
+
+data "linode_producer_image_share_group_image_shares" "all" {
+  depends_on = [linode_producer_image_share_group.foobar]
+  sharegroup_id = linode_producer_image_share_group.foobar.id
+}
+
+locals {
+  first_image_share_id = try(
+    data.linode_producer_image_share_group_image_shares.all.image_shares[0].id,
+    null
+  )
+}
+
+data "linode_producer_image_share_group_image_shares" "by_id" {
+  sharegroup_id = linode_producer_image_share_group.foobar.id
+
+  filter {
+    name   = "id"
+    values = [local.first_image_share_id]
+  }
+}
+
+data "linode_producer_image_share_group_image_shares" "by_label" {
+  sharegroup_id = linode_producer_image_share_group.foobar.id
+
+  filter {
+    name   = "label"
+    values = ["image_two_label"]
+  }
+}
+
+{{ end }}

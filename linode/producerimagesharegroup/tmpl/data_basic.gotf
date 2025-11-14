@@ -1,0 +1,9 @@
+{{ define "producer_image_share_group_data_basic" }}
+
+{{ template "producer_image_share_group_basic" .}}
+
+data "linode_producer_image_share_group" "foobar" {
+    id = linode_producer_image_share_group.foobar.id
+}
+
+{{ end }}

@@ -108,14 +108,15 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "If true, only IPv6 addresses will be returned by this data source.",
 			Optional:    true,
 		},
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"vpc_ips": schema.ListNestedBlock{
+		"vpc_ips": schema.ListNestedAttribute{
 			Description: "The returned list of IP addresses that exist in Linode's system, either IPv4 or IPv6.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: VPCIPAttrs,
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }

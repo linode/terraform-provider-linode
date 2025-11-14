@@ -19,12 +19,10 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"endpoints": schema.ListNestedBlock{
+		"endpoints": schema.ListNestedAttribute{
 			Description: "The returned list of endpoints for the Linode Object Storage.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"endpoint_type": schema.StringAttribute{
 						Description: "The type of `s3_endpoint` available to the active " +
@@ -45,5 +43,8 @@ var frameworkDatasourceSchema = schema.Schema{
 				},
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }

@@ -2,8 +2,10 @@ package helper
 
 import (
 	"context"
+	"iter"
 	"log"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -41,4 +43,26 @@ func FrameworkMust[T any](result T, d diag.Diagnostics) T {
 	}
 
 	return result
+}
+
+// FrameworkDropDuplicatesIter returns an iter of attr.Value with the deduplicated contents
+// of the given iter.
+func FrameworkDropDuplicatesIter[T attr.Value](seq iter.Seq[T]) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		existing := make(map[string]bool)
+
+		for entry := range seq {
+			entryStr := entry.String()
+
+			if _, ok := existing[entryStr]; ok {
+				continue
+			}
+
+			if !yield(entry) {
+				return
+			}
+
+			existing[entryStr] = true
+		}
+	}
 }

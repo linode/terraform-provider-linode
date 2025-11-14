@@ -165,9 +165,9 @@ The following arguments are supported:
 
 * `external_pool_tags` - (Optional) A set of node pool tags to ignore when planning and applying this cluster. This prevents externally managed node pools from being deleted or unintentionally updated on subsequent applies. See [Externally Managed Node Pools](#externally-managed-node-pools) for more details.
 
-* `tier` - (Optional) The desired Kubernetes tier. (**Note: v4beta only and may not currently be available to all users.**)
+* `tier` - (Optional) The desired Kubernetes tier. **NOTE: This field may not be available to all users and is only accepted and populated when api_version is set to `v4beta`.**
 
-* `subnet_id` - (Optional) The ID of the VPC subnet to use for the Kubernetes cluster. This subnet must be dual stack (IPv4 and IPv6 should both be enabled). (**Note: v4beta only and may not currently be available to all users.**)
+* `subnet_id` - (Optional) The ID of the VPC subnet to use for the Kubernetes cluster. This subnet must be dual stack (IPv4 and IPv6 should both be enabled). **NOTE: This field may not be available for all users and is only accepted and populated when api_version is set to `v4beta`.**
 
 * `vpc_id` - (Optional) The ID of the VPC to use for the Kubernetes cluster.
 
