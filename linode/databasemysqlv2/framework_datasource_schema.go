@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 )
 
 var frameworkDatasourceSchema = schema.Schema{
@@ -52,11 +53,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The ID of the database that was forked from.",
 			Computed:    true,
 		},
-		"updates": schema.ObjectAttribute{
-			Description:    "Configuration settings for automated patch update maintenance for the Managed Database.",
-			AttributeTypes: updatesAttributes,
-			Computed:       true,
-		},
+		"updates": databaseshared.DataSourceAttributeUpdates,
 		"created": schema.StringAttribute{
 			Description: "When this Managed Database was created.",
 			Computed:    true,
@@ -88,11 +85,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
 		},
-		"pending_updates": schema.SetAttribute{
-			Description: "A set of pending updates.",
-			Computed:    true,
-			ElementType: types.ObjectType{AttrTypes: pendingUpdateAttributes},
-		},
+		"pending_updates": databaseshared.DataSourceAttributePendingUpdates,
 		"platform": schema.StringAttribute{
 			Computed:    true,
 			Description: "The back-end platform for relational databases used by the service.",
@@ -101,27 +94,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The access port for this Managed Database.",
 			Computed:    true,
 		},
-		"private_network": schema.SingleNestedAttribute{
-			Description: "Restricts access to this database using a virtual private cloud (VPC) " +
-				"that you've configured in the region where the database will live.",
-			Computed: true,
-			Attributes: map[string]schema.Attribute{
-				"vpc_id": schema.Int64Attribute{
-					Description: "The ID of the virtual private cloud (VPC) " +
-						"to restrict access to this database using.",
-					Computed: true,
-				},
-				"subnet_id": schema.Int64Attribute{
-					Description: "The ID of the VPC subnet to restrict access to this database using.",
-					Computed:    true,
-				},
-				"public_access": schema.BoolAttribute{
-					Description: "If true, clients outside of the VPC can " +
-						"connect to the database using a public IP address.",
-					Computed: true,
-				},
-			},
-		},
+		"private_network": databaseshared.DataSourceAttributePrivateNetwork,
 		"root_password": schema.StringAttribute{
 			Description: "The randomly generated root password for the Managed Database instance.",
 			Computed:    true,

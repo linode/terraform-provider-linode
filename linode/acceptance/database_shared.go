@@ -23,6 +23,10 @@ var (
 		{
 			"description": "pending update 3",
 		},
+		// This duplicate be filtered out
+		{
+			"description": "pending update 1",
+		},
 	}
 	DatabasePendingUpdatesSetExact = knownvalue.SetExact(
 		[]knownvalue.Check{

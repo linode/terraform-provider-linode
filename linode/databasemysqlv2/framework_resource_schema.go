@@ -8,42 +8,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/stringplanmodifiers"
-)
-
-var (
-	privateNetworkAttributes = map[string]attr.Type{
-		"vpc_id":        types.Int64Type,
-		"subnet_id":     types.Int64Type,
-		"public_access": types.BoolType,
-	}
-
-	updatesAttributes = map[string]attr.Type{
-		"day_of_week": types.Int64Type,
-		"duration":    types.Int64Type,
-		"frequency":   types.StringType,
-		"hour_of_day": types.Int64Type,
-	}
-
-	pendingUpdateAttributes = map[string]attr.Type{
-		"deadline":    timetypes.RFC3339Type{},
-		"description": types.StringType,
-		"planned_for": timetypes.RFC3339Type{},
-	}
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -149,13 +127,7 @@ var frameworkResourceSchema = schema.Schema{
 			Default:       booldefault.StaticBool(false),
 			PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 		},
-		"updates": schema.ObjectAttribute{
-			Description:    "Configuration settings for automated patch update maintenance for the Managed Database.",
-			AttributeTypes: updatesAttributes,
-			Computed:       true,
-			Optional:       true,
-			PlanModifiers:  []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
-		},
+		"updates": databaseshared.ResourceAttributeUpdates,
 		"created": schema.StringAttribute{
 			Description: "When this Managed Database was created.",
 			Computed:    true,
@@ -196,12 +168,7 @@ var frameworkResourceSchema = schema.Schema{
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
 		},
-		"pending_updates": schema.SetAttribute{
-			Description:   "A set of pending updates.",
-			Computed:      true,
-			ElementType:   types.ObjectType{AttrTypes: pendingUpdateAttributes},
-			PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()},
-		},
+		"pending_updates": databaseshared.ResourceAttributePendingUpdates,
 		"platform": schema.StringAttribute{
 			Computed:      true,
 			Description:   "The back-end platform for relational databases used by the service.",
@@ -212,41 +179,7 @@ var frameworkResourceSchema = schema.Schema{
 			Computed:      true,
 			PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
 		},
-		"private_network": schema.SingleNestedAttribute{
-			Description: "Restricts access to this database using a virtual private cloud (VPC) " +
-				"that you've configured in the region where the database will live.",
-			Optional: true,
-			PlanModifiers: []planmodifier.Object{
-				objectplanmodifier.UseStateForUnknown(),
-			},
-			Attributes: map[string]schema.Attribute{
-				"vpc_id": schema.Int64Attribute{
-					Description: " The ID of the virtual private cloud (VPC) " +
-						"to restrict access to this database using.",
-					Required: true,
-					PlanModifiers: []planmodifier.Int64{
-						int64planmodifier.UseStateForUnknown(),
-					},
-				},
-				"subnet_id": schema.Int64Attribute{
-					Description: "The ID of the VPC subnet to restrict access to this database using.",
-					Required:    true,
-					PlanModifiers: []planmodifier.Int64{
-						int64planmodifier.UseStateForUnknown(),
-					},
-				},
-				"public_access": schema.BoolAttribute{
-					Description: "Set to `true` to allow clients outside of the VPC to " +
-						"connect to the database using a public IP address.",
-					Optional: true,
-					Computed: true,
-					Default:  booldefault.StaticBool(false),
-					PlanModifiers: []planmodifier.Bool{
-						boolplanmodifier.UseStateForUnknown(),
-					},
-				},
-			},
-		},
+		"private_network": databaseshared.ResourceAttributePrivateNetwork,
 		"root_password": schema.StringAttribute{
 			Description:   "The randomly generated root password for the Managed Database instance.",
 			Computed:      true,
