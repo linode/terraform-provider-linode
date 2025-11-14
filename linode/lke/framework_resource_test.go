@@ -840,10 +840,6 @@ func TestAccResourceLKECluster_tierNoAccess(t *testing.T) {
 	apiVersionOverrideProvider := acceptance.ModifyProviderMeta(
 		linode.Provider(),
 		func(ctx context.Context, data *schema.ResourceData, config *helper.ProviderMeta) error {
-			// Hack to make sure the suite-level provider has been initialized
-			// to be used in acceptance.CheckLKEClusterDestroy
-			acceptance.TestAccSDKv2Provider.ConfigureContextFunc(ctx, data)
-
 			config.Config.APIVersion = apiVersion
 			config.Client.SetAPIVersion(apiVersion)
 
