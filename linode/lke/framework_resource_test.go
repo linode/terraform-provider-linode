@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -290,7 +291,7 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 
 	// We want to ensure that non-updated values are excluded from update requests
 	acceptance.ModifyProviderMeta(provider,
-		func(ctx context.Context, config *helper.ProviderMeta) error {
+		func(ctx context.Context, _ *schema.ResourceData, config *helper.ProviderMeta) error {
 			config.Client.OnBeforeRequest(func(request *linodego.Request) error {
 				if request.Method != "PUT" {
 					return nil
@@ -838,7 +839,11 @@ func TestAccResourceLKECluster_tierNoAccess(t *testing.T) {
 
 	apiVersionOverrideProvider := acceptance.ModifyProviderMeta(
 		linode.Provider(),
-		func(ctx context.Context, config *helper.ProviderMeta) error {
+		func(ctx context.Context, data *schema.ResourceData, config *helper.ProviderMeta) error {
+			// Hack to make sure the suite-level provider has been initialized
+			// to be used in acceptance.CheckLKEClusterDestroy
+			acceptance.TestAccSDKv2Provider.ConfigureContextFunc(ctx, data)
+
 			config.Config.APIVersion = apiVersion
 			config.Client.SetAPIVersion(apiVersion)
 

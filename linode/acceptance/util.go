@@ -570,7 +570,7 @@ func CreateTestProvider() (*schema.Provider, map[string]*schema.Provider) {
 	return provider, providerMap
 }
 
-type ProviderMetaModifier func(ctx context.Context, config *helper.ProviderMeta) error
+type ProviderMetaModifier func(ctx context.Context, data *schema.ResourceData, config *helper.ProviderMeta) error
 
 func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier) *schema.Provider {
 	oldConfigure := provider.ConfigureContextFunc
@@ -581,7 +581,7 @@ func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier
 			return nil, err
 		}
 
-		if err := modifier(ctx, config.(*helper.ProviderMeta)); err != nil {
+		if err := modifier(ctx, data, config.(*helper.ProviderMeta)); err != nil {
 			return nil, diag.FromErr(err)
 		}
 
