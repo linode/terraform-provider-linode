@@ -7,9 +7,9 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"token_uuid": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"token_uuid": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"label":      {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"status":     {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"status":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDataSourceSchema = schema.Schema{
