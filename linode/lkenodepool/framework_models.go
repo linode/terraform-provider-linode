@@ -26,6 +26,7 @@ type NodePoolModel struct {
 	K8sVersion     types.String              `tfsdk:"k8s_version"`
 	UpdateStrategy types.String              `tfsdk:"update_strategy"`
 	Label          types.String              `tfsdk:"label"`
+	FirewallID     types.Int64               `tfsdk:"firewall_id"`
 }
 
 type NodePoolAutoscalerModel struct {
@@ -101,6 +102,7 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 	pool.Type = helper.KeepOrUpdateString(pool.Type, p.Type, preserveKnown)
 	pool.DiskEncryption = helper.KeepOrUpdateString(pool.DiskEncryption, string(p.DiskEncryption), preserveKnown)
 	pool.Label = helper.KeepOrUpdateStringPointer(pool.Label, p.Label, preserveKnown)
+	pool.FirewallID = helper.KeepOrUpdateIntPointer(pool.FirewallID, p.FirewallID, preserveKnown)
 	pool.Tags = helper.KeepOrUpdateStringSet(pool.Tags, p.Tags, preserveKnown, diags)
 	if diags.HasError() {
 		return
@@ -147,6 +149,10 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 	)
 	p.Type = pool.Type.ValueString()
 	p.Label = pool.Label.ValueStringPointer()
+	if !pool.FirewallID.IsNull() {
+		firewall_id := int(*pool.FirewallID.ValueInt64Pointer())
+		p.FirewallID = &firewall_id
+	}
 
 	if !pool.Tags.IsNull() {
 		diags.Append(pool.Tags.ElementsAs(ctx, &p.Tags, false)...)
@@ -195,6 +201,12 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 
 	if !state.Label.Equal(pool.Label) {
 		p.Label = pool.Label.ValueStringPointer()
+		shouldUpdate = true
+	}
+
+	if state.FirewallID != pool.FirewallID {
+		firewall_id := int(pool.FirewallID.ValueInt64())
+		p.FirewallID = &firewall_id
 		shouldUpdate = true
 	}
 
@@ -341,6 +353,7 @@ func (data *NodePoolModel) CopyFrom(other NodePoolModel, preserveKnown bool) {
 	data.K8sVersion = helper.KeepOrUpdateValue(data.K8sVersion, other.K8sVersion, preserveKnown)
 	data.UpdateStrategy = helper.KeepOrUpdateValue(data.UpdateStrategy, other.UpdateStrategy, preserveKnown)
 	data.Label = helper.KeepOrUpdateValue(data.Label, other.Label, preserveKnown)
+	data.FirewallID = helper.KeepOrUpdateValue(data.FirewallID, other.FirewallID, preserveKnown)
 
 	if !preserveKnown {
 		data.Autoscaler = other.Autoscaler

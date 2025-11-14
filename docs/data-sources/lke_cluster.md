@@ -61,6 +61,8 @@ In addition to all arguments above, the following attributes are exported:
 
   * `label` - The label of the Node Pool.
 
+  * `firewall_id` - The ID of the firewall associated with the Node Pool.
+
   * `type` - The linode type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
 
   * `count` - The number of nodes in the Node Pool.

@@ -118,6 +118,24 @@ resource "linode_lke_cluster" "my-cluster" {
 }
 ```
 
+Creating an LKE cluster with existing firewall on a node pool:
+
+```terraform
+resource "linode_lke_cluster" "my-cluster" {
+    label       = "my-cluster"
+    k8s_version = "1.32"
+    region      = "us-central"
+    tags        = ["prod"]
+
+    pool {
+        type  = "g6-standard-2"
+        count = 2
+        label = "db-pool"
+        firewall_id = "12345" # id of the firewall to associate with this node pool
+    }
+}
+```
+
 Creating an LKE cluster with node pool labels:
 
 ```terraform
@@ -186,6 +204,8 @@ The following arguments are supported in the `pool` specification block:
 * `count` - (Required; Optional with `autoscaler`) The number of nodes in the Node Pool. If undefined with an autoscaler the initial node count will equal the autoscaler minimum.
 
 * `label` - (Optional) A label for the Node Pool. If not provided, it defaults to empty string.
+
+* `firewall_id` - (Optional) The ID of the firewall to associate with this node pool. If not provided, default firewall will be associated.
 
 * `labels` - (Optional) A map of key/value pairs to apply to all nodes in the pool. Labels are used to identify and organize Kubernetes resources within your cluster.
 
