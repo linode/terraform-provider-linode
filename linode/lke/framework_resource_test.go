@@ -15,6 +15,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
@@ -816,6 +817,85 @@ func TestAccResourceLKECluster_acl_disabled_addresses(t *testing.T) {
 			{
 				Config:      tmpl.ACLDisabledAddressesDisallowed(t, clusterName, k8sVersionLatest, testRegion),
 				ExpectError: regexp.MustCompile("addresses are not acceptable when ACL is disabled"),
+			},
+		},
+	})
+}
+
+// TestAccResourceLKECluster_tierNoAccess ensures that a tier value of
+// `standard` will not trigger diffs in a cluster that does not expose
+// the `tier` field due to various circumstances.
+func TestAccResourceLKECluster_tierNoAccess(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.TierConditional(
+					t,
+					clusterName,
+					k8sVersionLatest,
+					testRegion,
+					string(linodego.LKEVersionStandard),
+				),
+				ExpectError: regexp.MustCompile(
+					"tier: The api_version provider argument must be set to 'v4beta' to use this field\\.",
+				),
+			},
+			{
+				Config: tmpl.TierConditional(
+					t,
+					clusterName,
+					k8sVersionLatest,
+					testRegion,
+					"",
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					acceptance.CustomStateCheck(
+						func(
+							ctx context.Context,
+							req statecheck.CheckStateRequest,
+							resp *statecheck.CheckStateResponse,
+						) {
+							if req.State == nil || req.State.Values == nil {
+								resp.Error = fmt.Errorf("invalid state")
+								return
+							}
+
+							for _, resourceEntry := range req.State.Values.RootModule.Resources {
+								if resourceEntry.Type != "linode_lke_cluster" || resourceEntry.Name != "test" {
+									continue
+								}
+
+								tier := resourceEntry.AttributeValues["tier"].(string)
+								if tier != "" {
+									log.Printf(
+										"MAINTAINER ALERT: The tier field is now populated under "+
+											"the v4 API version (value %s). Validation should be removed.\n",
+										tier,
+									)
+								}
+							}
+						},
+					),
+				},
+			},
+			{
+				Config: tmpl.TierConditional(
+					t,
+					clusterName,
+					k8sVersionLatest,
+					testRegion,
+					string(linodego.LKEVersionStandard),
+				),
+				ExpectError: regexp.MustCompile(
+					"tier: The api_version provider argument must be set to 'v4beta' to use this field\\.",
+				),
 			},
 		},
 	})
