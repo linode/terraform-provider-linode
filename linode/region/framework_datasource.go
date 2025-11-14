@@ -57,7 +57,7 @@ func (r *DataSource) Read(
 		return
 	}
 
-	data.ParseRegion(region)
+	resp.Diagnostics.Append(data.ParseRegion(ctx, region)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
