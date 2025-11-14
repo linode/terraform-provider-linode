@@ -937,7 +937,7 @@ func TestAccResource_noPendingUpdatesRegression(t *testing.T) {
 		PreCheck: func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"linode": func() (tfprotov6.ProviderServer, error) {
-				return acceptance.ProtoV6CustomProviderFactories["linode"](overriddenProvider)
+				return acceptance.ProtoV6CustomProviderFactories["linode"](overriddenProvider, nil)
 			},
 		},
 		CheckDestroy: acceptance.CheckMySQLDatabaseV2Destroy,
