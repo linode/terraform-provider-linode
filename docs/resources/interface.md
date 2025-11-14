@@ -226,8 +226,6 @@ The following arguments are supported:
 
       * `range` - (Required) The IPv6 range.
 
-      * `route_target` - (Optional) The public IPv6 address that the range is routed to.
-
 * `vlan` - (Optional) Nested attributes object for a Linode VLAN interface. Exactly one of `public`, `vlan`, or `vpc` must be specified.
 
   * `ipam_address` - (Optional) The VLAN interface's private IPv4 address in CIDR notation.
