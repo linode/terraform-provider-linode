@@ -1,0 +1,16 @@
+{{ define "nbs_data_filter_tags" }}
+
+{{ template "nbs_data_base" . }}
+
+data "linode_nodebalancers" "nbs" {
+    filter {
+        name   = "tags"
+        values = ["tf_test_2"]
+    }
+    filter {
+        name = "region"
+        values = ["{{.Region}}"]
+    }
+}
+
+{{ end }}
