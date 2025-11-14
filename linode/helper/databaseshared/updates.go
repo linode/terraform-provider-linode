@@ -86,7 +86,7 @@ var DataSourceAttributeUpdates = dataSourceSchema.SingleNestedAttribute{
 			Computed:    true,
 		},
 		"hour_of_day": dataSourceSchema.Int64Attribute{
-			Description: "How frequently maintenance occurs. Currently can only be weekly.",
+			Description: "The hour of the day (0-23) when maintenance occurs.",
 			Computed:    true,
 			Validators: []validator.Int64{
 				int64validator.Between(0, 23),

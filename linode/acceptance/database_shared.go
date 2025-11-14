@@ -23,7 +23,7 @@ var (
 		{
 			"description": "pending update 3",
 		},
-		// This duplicate be filtered out
+		// This duplicate will be filtered out
 		{
 			"description": "pending update 1",
 		},
