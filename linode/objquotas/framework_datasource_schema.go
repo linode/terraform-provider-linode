@@ -21,12 +21,10 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "The data source's unique ID.",
 			Computed:    true,
 		},
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"quotas": schema.ListNestedBlock{
+		"quotas": schema.ListNestedAttribute{
 			Description: "The returned list of Object Storage quotas.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"quota_id": schema.StringAttribute{
 						Description: "The ID of the Object Storage quota.",
@@ -59,5 +57,8 @@ var frameworkDataSourceSchema = schema.Schema{
 				},
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }
