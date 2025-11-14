@@ -16,8 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
@@ -904,6 +906,18 @@ func TestAccResourceLKECluster_tierNoAccess(t *testing.T) {
 				},
 			},
 			{
+				Config: tmpl.TierConditional(
+					t,
+					clusterName,
+					k8sVersionLatest,
+					testRegion,
+					string(linodego.LKEVersionEnterprise),
+				),
+				ExpectError: regexp.MustCompile(
+					"tier: The api_version provider argument must be set to 'v4beta' to use this field\\.",
+				),
+			},
+			{
 				PreConfig: func() {
 					apiVersion = "v4beta"
 				},
@@ -914,9 +928,13 @@ func TestAccResourceLKECluster_tierNoAccess(t *testing.T) {
 					testRegion,
 					string(linodego.LKEVersionStandard),
 				),
-				ExpectError: regexp.MustCompile(
-					"tier: The api_version provider argument must be set to 'v4beta' to use this field\\.",
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"linode_lke_cluster.test",
+						tfjsonpath.New("tier"),
+						knownvalue.StringExact(string(linodego.LKEVersionStandard)),
+					),
+				},
 			},
 		},
 	})
