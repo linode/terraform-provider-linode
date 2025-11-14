@@ -767,6 +767,31 @@ func GetTestClient() (*linodego.Client, error) {
 	return client, nil
 }
 
+func GetTestClientAlternateToken(tokenName string) (*linodego.Client, error) {
+	token := os.Getenv(tokenName)
+	if token == "" {
+		return nil, fmt.Errorf("%s must be set for acceptance tests", tokenName)
+	}
+
+	apiVersion := os.Getenv("LINODE_API_VERSION")
+	if apiVersion == "" {
+		apiVersion = "v4beta"
+	}
+
+	config := &helper.Config{
+		AccessToken: token,
+		APIVersion:  apiVersion,
+		APIURL:      os.Getenv("LINODE_URL"),
+	}
+
+	client, err := config.Client(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
+
 func GetFrameworkTestClient(
 	t *testing.T,
 	httpClientModifiers []helper.HTTPClientModifier,

@@ -39,6 +39,50 @@ var ImageAttributes = map[string]schema.Attribute{
 		Description: "True if the Image is public.",
 		Computed:    true,
 	},
+	"is_shared": schema.BoolAttribute{
+		Description: "True if the Image is shared.",
+		Computed:    true,
+	},
+	"image_sharing": schema.SingleNestedAttribute{
+		Description: "Details about image sharing, including who the image is shared with and by.",
+		Computed:    true,
+		Attributes: map[string]schema.Attribute{
+			"shared_with": schema.SingleNestedAttribute{
+				Computed: true,
+				Attributes: map[string]schema.Attribute{
+					"sharegroup_count": schema.Int64Attribute{
+						Description: "The number of sharegroups the private image is present in.",
+						Computed:    true,
+					},
+					"sharegroup_list_url": schema.StringAttribute{
+						Description: "The GET api url to view the sharegroups in which the image is shared.",
+						Computed:    true,
+					},
+				},
+			},
+			"shared_by": schema.SingleNestedAttribute{
+				Computed: true,
+				Attributes: map[string]schema.Attribute{
+					"sharegroup_id": schema.Int64Attribute{
+						Description: "The sharegroup_id from the im_ImageShare row.",
+						Computed:    true,
+					},
+					"sharegroup_uuid": schema.StringAttribute{
+						Description: "The sharegroup_uuid from the im_ImageShare row.",
+						Computed:    true,
+					},
+					"sharegroup_label": schema.StringAttribute{
+						Description: "The label from the associated im_ImageShareGroup row.",
+						Computed:    true,
+					},
+					"source_image_id": schema.StringAttribute{
+						Description: "The image id of the base image (will only be shown to producers, will be None for consumers).",
+						Computed:    true,
+					},
+				},
+			},
+		},
+	},
 	"size": schema.Int64Attribute{
 		Description: "The minimum size this Image needs to deploy. Size is in MB.",
 		Computed:    true,
