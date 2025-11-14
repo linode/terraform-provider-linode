@@ -13,11 +13,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v3/linode"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/lke/tmpl"
@@ -830,10 +832,26 @@ func TestAccResourceLKECluster_tierNoAccess(t *testing.T) {
 
 	clusterName := acctest.RandomWithPrefix("tf_test")
 
+	apiVersion := "v4"
+
+	apiVersionOverrideProvider := acceptance.ModifyProviderMeta(
+		linode.Provider(),
+		func(ctx context.Context, config *helper.ProviderMeta) error {
+			config.Config.APIVersion = apiVersion
+			config.Client.SetAPIVersion(apiVersion)
+
+			return nil
+		},
+	)
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+		PreCheck: func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"linode": func() (tfprotov6.ProviderServer, error) {
+				return acceptance.ProtoV6CustomProviderFactories["linode"](nil, apiVersionOverrideProvider)
+			},
+		},
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.TierConditional(
@@ -886,6 +904,9 @@ func TestAccResourceLKECluster_tierNoAccess(t *testing.T) {
 				},
 			},
 			{
+				PreConfig: func() {
+					apiVersion = "v4beta"
+				},
 				Config: tmpl.TierConditional(
 					t,
 					clusterName,

@@ -572,7 +572,7 @@ func CreateTestProvider() (*schema.Provider, map[string]*schema.Provider) {
 
 type ProviderMetaModifier func(ctx context.Context, config *helper.ProviderMeta) error
 
-func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier) {
+func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier) *schema.Provider {
 	oldConfigure := provider.ConfigureContextFunc
 
 	provider.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
@@ -587,6 +587,8 @@ func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier
 
 		return config, nil
 	}
+
+	return provider
 }
 
 func GetEndpointType(e linodego.ObjectStorageEndpoint) string {

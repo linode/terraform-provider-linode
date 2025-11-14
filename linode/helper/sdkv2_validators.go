@@ -50,7 +50,7 @@ func SDKv2ValidateFieldRequiresAPIVersion(
 	return func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
 		providerMeta := meta.(*ProviderMeta)
 
-		if strings.ToLower(providerMeta.Config.APIVersion) == strings.ToLower(requiredAPIVersion) {
+		if strings.EqualFold(providerMeta.Config.APIVersion, requiredAPIVersion) {
 			return nil
 		}
 
