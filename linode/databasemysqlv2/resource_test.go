@@ -9,8 +9,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlv2/tmpl"
@@ -83,7 +86,7 @@ func TestAccResource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),
@@ -150,7 +153,7 @@ func TestAccResource_resize(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Complex(
@@ -283,7 +286,7 @@ func TestAccResource_complex(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Complex(
@@ -420,7 +423,7 @@ func TestAccResource_fork(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),
@@ -557,7 +560,7 @@ func TestAccResource_suspension(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Suspension(
@@ -654,7 +657,7 @@ func TestAccResource_engineConfig(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.EngineConfig(
@@ -872,7 +875,7 @@ func TestAccResource_vpc(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.VPC0(t, label, testRegion, testEngine, "g6-nanode-1"),
@@ -909,6 +912,56 @@ func TestAccResource_vpc(t *testing.T) {
 						"linode_vpc_subnet.foobar2", "id",
 					),
 				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+			},
+		},
+	})
+}
+
+func TestAccResource_noPendingUpdatesRegression(t *testing.T) {
+	t.Parallel()
+
+	overriddenProvider := acceptance.NewFrameworkProviderWithClient(
+		acceptance.NewClientWithDatabasePendingUpdates(t),
+	)
+
+	resName := "linode_database_mysql_v2.foobar"
+	label := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"linode": func() (tfprotov6.ProviderServer, error) {
+				return acceptance.ProtoV6CustomProviderFactories["linode"](overriddenProvider)
+			},
+		},
+		CheckDestroy: acceptance.CheckMySQLDatabaseV2Destroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("pending_updates"),
+						acceptance.DatabasePendingUpdatesSetExact,
+					),
+				},
+			},
+			{
+				// Ensure refreshes work as expected
+				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("pending_updates"),
+						acceptance.DatabasePendingUpdatesSetExact,
+					),
+				},
 			},
 			{
 				ResourceName:            resName,

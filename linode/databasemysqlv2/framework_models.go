@@ -414,21 +414,14 @@ func (m *Model) Flatten(
 	m.EngineConfigMySQLTmpTableSize = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLTmpTableSize, db.EngineConfig.MySQL.TmpTableSize, preserveKnown)
 	m.EngineConfigMySQLWaitTimeout = helper.KeepOrUpdateIntPointer(m.EngineConfigMySQLWaitTimeout, db.EngineConfig.MySQL.WaitTimeout, preserveKnown)
 
-	pendingObjects := helper.MapSlice(
+	pendingModels := helper.MapSlice(
 		db.Updates.Pending,
-		func(pending linodego.DatabaseMaintenanceWindowPending) types.Object {
-			result, rd := types.ObjectValueFrom(
-				ctx,
-				pendingUpdateAttributes,
-				&ModelPendingUpdate{
-					Deadline:    timetypes.NewRFC3339TimePointerValue(pending.Deadline),
-					Description: types.StringValue(pending.Description),
-					PlannedFor:  timetypes.NewRFC3339TimePointerValue(pending.PlannedFor),
-				},
-			)
-			d.Append(rd...)
-
-			return result
+		func(pending linodego.DatabaseMaintenanceWindowPending) ModelPendingUpdate {
+			return ModelPendingUpdate{
+				Deadline:    timetypes.NewRFC3339TimePointerValue(pending.Deadline),
+				Description: types.StringValue(pending.Description),
+				PlannedFor:  timetypes.NewRFC3339TimePointerValue(pending.PlannedFor),
+			}
 		},
 	)
 
@@ -437,13 +430,16 @@ func (m *Model) Flatten(
 		types.ObjectType{
 			AttrTypes: pendingUpdateAttributes,
 		},
-		pendingObjects,
+		pendingModels,
 	)
 	d.Append(rd...)
+	if d.HasError() {
+		return d
+	}
 
 	m.PendingUpdates = helper.KeepOrUpdateValue(m.PendingUpdates, pendingSet, preserveKnown)
 
-	return nil
+	return d
 }
 
 func (m *Model) CopyFrom(other *Model, preserveKnown bool) {
