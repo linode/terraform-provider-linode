@@ -17,7 +17,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlv2/tmpl"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 )
 
 var testRegion, testEngine string
@@ -40,7 +40,7 @@ func init() {
 
 	testRegion = region
 
-	engine, err := helper.ResolveValidDBEngine(
+	engine, err := databaseshared.ResolveValidDBEngine(
 		context.Background(),
 		*client,
 		string(linodego.DatabaseEngineTypePostgres),

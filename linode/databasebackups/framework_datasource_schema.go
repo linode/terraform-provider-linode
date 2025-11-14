@@ -4,7 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
 
@@ -50,7 +50,7 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "The type of the Managed Database",
 			Required:    true,
 			Validators: []validator.String{
-				stringvalidator.OneOf(helper.ValidDatabaseTypes...),
+				stringvalidator.OneOf(databaseshared.ValidDatabaseTypes...),
 			},
 		},
 		"latest": schema.BoolAttribute{

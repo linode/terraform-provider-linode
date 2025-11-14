@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 )
 
 const (
@@ -69,7 +70,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("failed to get credentials for the specified mysql database: %s", err)
 	}
 
-	d.Set("engine_id", helper.CreateLegacyDatabaseEngineSlug(db.Engine, db.Version))
+	d.Set("engine_id", databaseshared.CreateLegacyDatabaseEngineSlug(db.Engine, db.Version))
 	d.Set("engine", db.Engine)
 	d.Set("label", db.Label)
 	d.Set("region", db.Region)
@@ -88,7 +89,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("updated", db.Updated.Format(time.RFC3339))
 	d.Set("root_username", creds.Username)
 	d.Set("version", db.Version)
-	d.Set("updates", []interface{}{helper.FlattenMaintenanceWindow(db.Updates)})
+	d.Set("updates", []interface{}{databaseshared.FlattenMaintenanceWindow(db.Updates)})
 
 	return nil
 }
@@ -142,7 +143,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	updateList := d.Get("updates").([]interface{})
 
 	if !d.GetRawConfig().GetAttr("updates").IsNull() && len(updateList) > 0 {
-		updates, err := helper.ExpandMaintenanceWindow(updateList[0].(map[string]interface{}))
+		updates, err := databaseshared.ExpandMaintenanceWindow(updateList[0].(map[string]interface{}))
 		if err != nil {
 			return diag.Errorf("failed to read maintenance window config: %s", err)
 		}
@@ -161,7 +162,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to convert float64 update timeout to int: %s", err)
 		}
 
-		err = helper.WaitForDatabaseUpdated(ctx, client, db.ID,
+		err = databaseshared.WaitForUpdated(ctx, client, db.ID,
 			linodego.DatabaseEngineTypeMySQL, updatedDB.Created, timeoutSeconds)
 		if err != nil {
 			return diag.FromErr(err)
@@ -199,7 +200,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 		updatesRaw := d.Get("updates")
 		if updatesRaw != nil && len(updatesRaw.([]interface{})) > 0 {
-			expanded, err := helper.ExpandMaintenanceWindow(updatesRaw.([]interface{})[0].(map[string]interface{}))
+			expanded, err := databaseshared.ExpandMaintenanceWindow(updatesRaw.([]interface{})[0].(map[string]interface{}))
 			if err != nil {
 				return diag.Errorf("failed to update maintenance window: %s", err)
 			}
@@ -228,7 +229,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		if err != nil {
 			return diag.Errorf("failed to convert float64 update timeout to int: %s", err)
 		}
-		err = helper.WaitForDatabaseUpdated(ctx, client, id,
+		err = databaseshared.WaitForUpdated(ctx, client, id,
 			linodego.DatabaseEngineTypeMySQL, updatedDB.Created, timeoutSeconds)
 		if err != nil {
 			return diag.FromErr(err)
