@@ -24,12 +24,10 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "The data source's unique ID.",
 			Computed:    true,
 		},
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"vpc_subnets": schema.ListNestedBlock{
+		"vpc_subnets": schema.ListNestedAttribute{
 			Description: "The returned list of subnets under a VPC.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
 						Description: "The id of the VPC Subnet.",
@@ -73,5 +71,8 @@ var frameworkDataSourceSchema = schema.Schema{
 				},
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }

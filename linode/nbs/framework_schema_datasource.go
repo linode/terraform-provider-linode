@@ -8,9 +8,11 @@ import (
 
 var filterConfig = frameworkfilter.Config{
 	"label":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"tags":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"ipv4":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"region": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+
+	// temporarily use client-side filter while API filter for tags is not working properly
+	"tags": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 
 	"hostname":             {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"ipv6":                 {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
@@ -25,14 +27,15 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"nodebalancers": schema.ListNestedBlock{
+		"nodebalancers": schema.ListNestedAttribute{
 			Description: "The returned list of NodeBalancers.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: nb.DataSourceAttributes,
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }

@@ -28,14 +28,15 @@ var frameworkDataSourceSchema = schema.Schema{
 		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"volumes": schema.ListNestedBlock{
+		"volumes": schema.ListNestedAttribute{
 			Description: "The return list of Volumes.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: volume.VolumeAttributes,
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }

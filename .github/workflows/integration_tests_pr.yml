@@ -63,8 +63,10 @@ jobs:
         if: ${{ steps.disallowed-character-check.outputs.result == 'pass' }}
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
+          LINODE_PRODUCER_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
+          LINODE_CONSUMER_TOKEN: ${{ secrets.LINODE_TOKEN_USER_2 }}
           RUN_LONG_TESTS: ${{ inputs.run_long_tests }}
-      
+
       - name: Get the hash value of the latest commit from the PR branch
         uses: octokit/graphql-action@v2.x
         id: commit-hash
