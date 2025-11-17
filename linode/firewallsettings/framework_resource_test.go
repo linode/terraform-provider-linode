@@ -55,7 +55,6 @@ func init() {
 }
 
 func TestAccResourceFirewallSettings_basic(t *testing.T) {
-	t.Parallel()
 	t.Cleanup(func() {
 		client, err := acceptance.GetTestClient()
 		if err != nil {
