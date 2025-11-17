@@ -1,0 +1,24 @@
+{{ define "producer_image_share_group_member_basic" }}
+
+resource "linode_producer_image_share_group" "foobar" {
+  provider                       = linode-producer
+  label                          = "{{ .ShareGroupLabel }}"
+  description                    = "Example description"
+}
+
+resource "linode_consumer_image_share_group_token" "foobar" {
+  provider                       = linode-consumer
+  depends_on                     = [linode_producer_image_share_group.foobar]
+  valid_for_sharegroup_uuid      = linode_producer_image_share_group.foobar.uuid
+  label                          = "{{ .TokenLabel }}"
+}
+
+resource "linode_producer_image_share_group_member" "foobar" {
+  provider                       = linode-producer
+  depends_on                     = [linode_producer_image_share_group.foobar, linode_consumer_image_share_group_token.foobar]
+  sharegroup_id                  = linode_producer_image_share_group.foobar.id
+  token                          = linode_consumer_image_share_group_token.foobar.token
+  label                          = "{{ .MemberLabel }}"
+}
+
+{{ end }}

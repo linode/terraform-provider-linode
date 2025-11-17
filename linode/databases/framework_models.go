@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
 
@@ -85,15 +86,7 @@ func (model *DatabaseFilterModel) parseDatabases(
 		}
 
 		if db.PrivateNetwork != nil {
-			privateNetworkObject, rd := types.ObjectValueFrom(
-				ctx,
-				privateNetworkAttributes,
-				&ModelPrivateNetwork{
-					VPCID:        types.Int64Value(int64(db.PrivateNetwork.VPCID)),
-					SubnetID:     types.Int64Value(int64(db.PrivateNetwork.SubnetID)),
-					PublicAccess: types.BoolValue(db.PrivateNetwork.PublicAccess),
-				},
-			)
+			privateNetworkObject, rd := databaseshared.FlattenPrivateNetwork(ctx, *db.PrivateNetwork)
 			d.Append(rd...)
 			m.PrivateNetwork = privateNetworkObject
 		}

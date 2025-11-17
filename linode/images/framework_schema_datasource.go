@@ -34,15 +34,15 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),
+		"images": schema.ListNestedAttribute{
+			Description: "The returned list of Images.",
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: image.ImageAttributes,
+			},
+		},
 	},
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
-		"images": schema.ListNestedBlock{
-			Description: "The returned list of Images.",
-			NestedObject: schema.NestedBlockObject{
-				Attributes: image.ImageAttributes,
-				Blocks:     image.ReplicationsBlock,
-			},
-		},
 	},
 }

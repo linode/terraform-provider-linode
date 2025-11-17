@@ -104,66 +104,73 @@ var dataSourceAttributesVPC = map[string]schema.Attribute{
 	},
 }
 
-func dataSourceSchema() *schema.Schema {
-	attributes := maps.Clone(DataSourceAttributes)
-	maps.Copy(attributes, dataSourceAttributesVPC)
-
-	return &schema.Schema{
-		Attributes: attributes,
-		Blocks: map[string]schema.Block{
-			"firewalls": schema.ListNestedBlock{
-				Description: "A list of Firewalls assigned to this NodeBalancer.",
-				NestedObject: schema.NestedBlockObject{
-					Attributes: map[string]schema.Attribute{
-						"id": schema.Int64Attribute{
-							Description: "The unique ID assigned to this Firewall.",
-							Computed:    true,
-						},
-						"label": schema.StringAttribute{
-							Computed: true,
-							Description: "The label for the Firewall. For display purposes only. If no label is provided, a " +
-								"default will be assigned.",
-						},
-						"tags": schema.SetAttribute{
-							Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
-							ElementType: types.StringType,
-							Computed:    true,
-						},
-						"inbound_policy": schema.StringAttribute{
-							Description: "The default behavior for inbound traffic.",
-							Computed:    true,
-						},
-						"outbound_policy": schema.StringAttribute{
-							Description: "The default behavior for outbound traffic.",
-							Computed:    true,
-						},
-						"status": schema.StringAttribute{
-							Description: "The status of the firewall.",
-							Computed:    true,
-						},
-						"created": schema.StringAttribute{
-							CustomType:  timetypes.RFC3339Type{},
-							Description: "When this Firewall was created.",
-							Computed:    true,
-						},
-						"updated": schema.StringAttribute{
-							CustomType:  timetypes.RFC3339Type{},
-							Description: "When this Firewall was last updated.",
-							Computed:    true,
-						},
+var dataSourceAttributesFirewalls = map[string]schema.Attribute{
+	"firewalls": schema.ListNestedAttribute{
+		Description: "A list of Firewalls assigned to this NodeBalancer.",
+		Computed:    true,
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"id": schema.Int64Attribute{
+					Description: "The unique ID assigned to this Firewall.",
+					Computed:    true,
+				},
+				"label": schema.StringAttribute{
+					Computed: true,
+					Description: "The label for the Firewall. For display purposes only. If no label is provided, a " +
+						"default will be assigned.",
+				},
+				"tags": schema.SetAttribute{
+					Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
+					ElementType: types.StringType,
+					Computed:    true,
+				},
+				"inbound_policy": schema.StringAttribute{
+					Description: "The default behavior for inbound traffic.",
+					Computed:    true,
+				},
+				"outbound_policy": schema.StringAttribute{
+					Description: "The default behavior for outbound traffic.",
+					Computed:    true,
+				},
+				"status": schema.StringAttribute{
+					Description: "The status of the firewall.",
+					Computed:    true,
+				},
+				"created": schema.StringAttribute{
+					CustomType:  timetypes.RFC3339Type{},
+					Description: "When this Firewall was created.",
+					Computed:    true,
+				},
+				"updated": schema.StringAttribute{
+					CustomType:  timetypes.RFC3339Type{},
+					Description: "When this Firewall was last updated.",
+					Computed:    true,
+				},
+				"inbound": schema.ListNestedAttribute{
+					Description: "A set of firewall rules that specify what inbound network traffic is allowed.",
+					Computed:    true,
+					NestedObject: schema.NestedAttributeObject{
+						Attributes: firewalls.FirewallRuleObject.Attributes,
 					},
-					Blocks: map[string]schema.Block{
-						"inbound": schema.ListNestedBlock{
-							Description:  "A set of firewall rules that specify what inbound network traffic is allowed.",
-							NestedObject: firewalls.FirewallRuleObject,
-						},
-						"outbound": schema.ListNestedBlock{
-							Description:  "A set of firewall rules that specify what outbound network traffic is allowed.",
-							NestedObject: firewalls.FirewallRuleObject,
-						},
+				},
+				"outbound": schema.ListNestedAttribute{
+					Description: "A set of firewall rules that specify what outbound network traffic is allowed.",
+					Computed:    true,
+					NestedObject: schema.NestedAttributeObject{
+						Attributes: firewalls.FirewallRuleObject.Attributes,
 					},
 				},
 			},
 		},
+	},
+}
+
+func dataSourceSchema() *schema.Schema {
+	attributes := maps.Clone(DataSourceAttributes)
+	maps.Copy(attributes, dataSourceAttributesVPC)
+	maps.Copy(attributes, dataSourceAttributesFirewalls)
+
+	return &schema.Schema{
+		Attributes: attributes,
 	}
 }

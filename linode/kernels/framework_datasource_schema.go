@@ -25,14 +25,15 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"kernels": schema.ListNestedBlock{
+		"kernels": schema.ListNestedAttribute{
 			Description: "The returned list of Kernels.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: kernel.KernelAttributes,
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }
