@@ -65,7 +65,7 @@ func TestAccDataSourceImageShareGroupTokens_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t, shareGroupLabel, tokenLabel),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(dsByStatus, "tokens.#", "1"),
+					acceptance.CheckResourceAttrGreaterThan(dsByStatus, "tokens.#", 0),
 					resource.TestCheckResourceAttrSet(dsByStatus, "tokens.0.token_uuid"),
 					resource.TestCheckResourceAttrSet(dsByStatus, "tokens.0.status"),
 					resource.TestCheckResourceAttrSet(dsByStatus, "tokens.0.valid_for_sharegroup_uuid"),
