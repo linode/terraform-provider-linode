@@ -177,12 +177,12 @@ func (data *LinodeInterfaceModel) FlattenInterface(
 
 	data.VLAN = *flattenedVLAN
 	flattenedPublic := helper.KeepOrUpdateSingleNestedAttributesWithTypes(
-		ctx, data.Public, publicInterfaceSchema.GetType().(types.ObjectType).AttrTypes, preserveKnown, diags,
+		ctx, data.Public, resourcePublicInterfaceAttribute.GetType().(types.ObjectType).AttrTypes, preserveKnown, diags,
 		func(public *PublicAttrModel, isNull *bool, pk bool, d *diag.Diagnostics) {
 			if i.Public == nil {
 				*isNull = true
-				public.IPv4 = helper.KeepOrUpdateValue(public.IPv4, types.ObjectNull(publicIPv4Attribute.GetType().(types.ObjectType).AttrTypes), pk)
-				public.IPv6 = helper.KeepOrUpdateValue(public.IPv6, types.ObjectNull(publicIPv6Attribute.GetType().(types.ObjectType).AttrTypes), pk)
+				public.IPv4 = helper.KeepOrUpdateValue(public.IPv4, types.ObjectNull(resourcePublicIPv4Attribute.GetType().(types.ObjectType).AttrTypes), pk)
+				public.IPv6 = helper.KeepOrUpdateValue(public.IPv6, types.ObjectNull(resourcePublicIPv6Attribute.GetType().(types.ObjectType).AttrTypes), pk)
 				return
 			}
 			public.FlattenPublicInterface(ctx, *i.Public, pk, d)
@@ -201,10 +201,10 @@ func (data *LinodeInterfaceModel) FlattenInterface(
 			if i.VPC == nil {
 				*isNull = true
 				vpc.IPv4 = helper.KeepOrUpdateValue(
-					vpc.IPv4, types.ObjectNull(vpcIPv4Attribute.GetType().(types.ObjectType).AttrTypes), pk,
+					vpc.IPv4, types.ObjectNull(resourceVPCIPv4Attribute.GetType().(types.ObjectType).AttrTypes), pk,
 				)
 				vpc.IPv6 = helper.KeepOrUpdateValue(
-					vpc.IPv6, types.ObjectNull(vpcIPv6Attribute.GetType().(types.ObjectType).AttrTypes), pk,
+					vpc.IPv6, types.ObjectNull(resourceVPCIPv6Attribute.GetType().(types.ObjectType).AttrTypes), pk,
 				)
 				vpc.SubnetID = helper.KeepOrUpdateValue(vpc.SubnetID, types.Int64Null(), pk)
 				return
