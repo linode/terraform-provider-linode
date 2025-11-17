@@ -73,7 +73,7 @@ In addition to all arguments above, the following attributes are exported:
 
   * `tags` - An array of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
-  * `tier` - The desired Kubernetes tier. (**Note: v4beta only and may not currently be available to all users.**)
+  * `tier` - The desired Kubernetes tier. **NOTE: This field may not be available to all users and is only populated when api_version is set to `v4beta`.**
 
   * `k8s_version` - The k8s version of the nodes in this Node Pool. For LKE enterprise only and may not currently available to all users even under v4beta.
 

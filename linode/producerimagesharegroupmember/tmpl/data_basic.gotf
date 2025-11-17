@@ -1,0 +1,11 @@
+{{ define "producer_image_share_group_member_data_basic" }}
+
+{{ template "producer_image_share_group_member_basic" .}}
+
+data "linode_producer_image_share_group_member" "foobar" {
+    provider = linode-producer
+    sharegroup_id = linode_producer_image_share_group.foobar.id
+    token_uuid = linode_producer_image_share_group_member.foobar.token_uuid
+}
+
+{{ end }}

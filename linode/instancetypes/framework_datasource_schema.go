@@ -17,10 +17,6 @@ var filterConfig = frameworkfilter.Config{
 	"vcpus":       {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
 }
 
-var instanceTypeSchema = schema.NestedBlockObject{
-	Attributes: instancetype.Attributes,
-}
-
 var frameworkDataSourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
@@ -29,12 +25,15 @@ var frameworkDataSourceSchema = schema.Schema{
 		},
 		"order_by": filterConfig.OrderBySchema(),
 		"order":    filterConfig.OrderSchema(),
+		"types": schema.ListNestedAttribute{
+			Description: "The returned list of instance types.",
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: instancetype.Attributes,
+			},
+		},
 	},
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
-		"types": schema.ListNestedBlock{
-			Description:  "The returned list of instance types.",
-			NestedObject: instanceTypeSchema,
-		},
 	},
 }

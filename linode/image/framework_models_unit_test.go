@@ -26,6 +26,7 @@ func TestParseImage(t *testing.T) {
 		Status:       "available",
 		Size:         2500,
 		IsPublic:     true,
+		IsShared:     false,
 		Deprecated:   false,
 		Created:      createdTime,
 		Expiry:       nil,
@@ -40,6 +41,18 @@ func TestParseImage(t *testing.T) {
 				Region: "us-west",
 				Status: linodego.ImageRegionStatus("pending replication"),
 			},
+		},
+		ImageSharing: linodego.ImageSharing{
+			SharedWith: linodego.Pointer(linodego.ImageSharingSharedWith{
+				ShareGroupCount:   1,
+				ShareGroupListURL: "/images/private/1234/sharegroups",
+			}),
+			SharedBy: linodego.Pointer(linodego.ImageSharingSharedBy{
+				ShareGroupID:    1,
+				ShareGroupUUID:  "0ee8e1c1-b19b-4052-9487-e3b13faac111",
+				ShareGroupLabel: "my-label",
+				SourceImageID:   linodego.Pointer("private/1234"),
+			}),
 		},
 	}
 
@@ -56,6 +69,7 @@ func TestParseImage(t *testing.T) {
 	assert.Equal(t, types.StringValue("available"), imageModel.Status)
 	assert.Equal(t, types.Int64Value(2500), imageModel.Size)
 	assert.Equal(t, types.BoolValue(true), imageModel.IsPublic)
+	assert.Equal(t, types.BoolValue(false), imageModel.IsShared)
 	assert.Equal(t, types.BoolValue(false), imageModel.Deprecated)
 	assert.Equal(t, imageModel.Created, types.StringValue(createdTimeFormatted))
 	assert.Empty(t, imageModel.Expiry)
@@ -64,5 +78,11 @@ func TestParseImage(t *testing.T) {
 	assert.Equal(t, types.StringValue("available"), imageModel.Replications[0].Status)
 	assert.Equal(t, types.StringValue("us-west"), imageModel.Replications[1].Region)
 	assert.Equal(t, types.StringValue("pending replication"), imageModel.Replications[1].Status)
+	assert.Equal(t, types.Int64Value(1), imageModel.ImageSharing.SharedWith.ShareGroupCount)
+	assert.Equal(t, types.StringValue("/images/private/1234/sharegroups"), imageModel.ImageSharing.SharedWith.ShareGroupListURL)
+	assert.Equal(t, types.Int64Value(1), imageModel.ImageSharing.SharedBy.ShareGroupID)
+	assert.Equal(t, types.StringValue("0ee8e1c1-b19b-4052-9487-e3b13faac111"), imageModel.ImageSharing.SharedBy.ShareGroupUUID)
+	assert.Equal(t, types.StringValue("my-label"), imageModel.ImageSharing.SharedBy.ShareGroupLabel)
+	assert.Equal(t, types.StringValue("private/1234"), imageModel.ImageSharing.SharedBy.SourceImageID)
 	assert.Contains(t, imageModel.Tags.String(), "test")
 }

@@ -49,7 +49,7 @@ func (fp *FrameworkProvider) Configure(
 		tflog.Info(ctx, "Linode client was already configured, re-using..")
 		meta.Client = fp.Meta.Client
 	} else {
-		meta.Client = fp.InitLinodeClient(ctx, &data, req.TerraformVersion, &resp.Diagnostics)
+		meta.Client = fp.InitLinodeClient(ctx, &data, req.TerraformVersion, nil, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -240,6 +240,7 @@ func (fp *FrameworkProvider) InitLinodeClient(
 	ctx context.Context,
 	lpm *helper.FrameworkProviderModel,
 	tfVersion string,
+	httpClientModifiers []helper.HTTPClientModifier,
 	diags *diag.Diagnostics,
 ) *linodego.Client {
 	accessToken := lpm.AccessToken.ValueString()
@@ -283,6 +284,13 @@ func (fp *FrameworkProvider) InitLinodeClient(
 				httpTransport,
 			),
 		),
+	}
+
+	for _, modifier := range httpClientModifiers {
+		if err := modifier(oauth2Client); err != nil {
+			diags.AddError("Failed to run HTTP client modifier", err.Error())
+			return nil
+		}
 	}
 
 	client := linodego.NewClient(oauth2Client)

@@ -13,10 +13,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v3/linode"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/lke/tmpl"
@@ -285,7 +291,7 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 
 	// We want to ensure that non-updated values are excluded from update requests
 	acceptance.ModifyProviderMeta(provider,
-		func(ctx context.Context, config *helper.ProviderMeta) error {
+		func(ctx context.Context, _ *schema.ResourceData, config *helper.ProviderMeta) error {
 			config.Client.OnBeforeRequest(func(request *linodego.Request) error {
 				if request.Method != "PUT" {
 					return nil
@@ -817,6 +823,120 @@ func TestAccResourceLKECluster_acl_disabled_addresses(t *testing.T) {
 			{
 				Config:      tmpl.ACLDisabledAddressesDisallowed(t, clusterName, k8sVersionLatest, testRegion),
 				ExpectError: regexp.MustCompile("addresses are not acceptable when ACL is disabled"),
+			},
+		},
+	})
+}
+
+// TestAccResourceLKECluster_tierNoAccess ensures that a tier value of
+// `standard` will not trigger diffs in a cluster that does not expose
+// the `tier` field due to various circumstances.
+func TestAccResourceLKECluster_tierNoAccess(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf_test")
+
+	apiVersion := "v4"
+
+	apiVersionOverrideProvider := acceptance.ModifyProviderMeta(
+		linode.Provider(),
+		func(ctx context.Context, data *schema.ResourceData, config *helper.ProviderMeta) error {
+			config.Config.APIVersion = apiVersion
+			config.Client.SetAPIVersion(apiVersion)
+
+			return nil
+		},
+	)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"linode": func() (tfprotov6.ProviderServer, error) {
+				return acceptance.ProtoV6CustomProviderFactories["linode"](nil, apiVersionOverrideProvider)
+			},
+		},
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.TierConditional(
+					t,
+					clusterName,
+					k8sVersionLatest,
+					testRegion,
+					string(linodego.LKEVersionStandard),
+				),
+				ExpectError: regexp.MustCompile(
+					"tier: The api_version provider argument must be set to 'v4beta' to use this field\\.",
+				),
+			},
+			{
+				Config: tmpl.TierConditional(
+					t,
+					clusterName,
+					k8sVersionLatest,
+					testRegion,
+					"",
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					acceptance.CustomStateCheck(
+						func(
+							ctx context.Context,
+							req statecheck.CheckStateRequest,
+							resp *statecheck.CheckStateResponse,
+						) {
+							if req.State == nil || req.State.Values == nil {
+								resp.Error = fmt.Errorf("invalid state")
+								return
+							}
+
+							for _, resourceEntry := range req.State.Values.RootModule.Resources {
+								if resourceEntry.Type != "linode_lke_cluster" || resourceEntry.Name != "test" {
+									continue
+								}
+
+								tier := resourceEntry.AttributeValues["tier"].(string)
+								if tier != "" {
+									log.Printf(
+										"MAINTAINER ALERT: The tier field is now populated under "+
+											"the v4 API version (value %s). Validation should be removed.\n",
+										tier,
+									)
+								}
+							}
+						},
+					),
+				},
+			},
+			{
+				Config: tmpl.TierConditional(
+					t,
+					clusterName,
+					k8sVersionLatest,
+					testRegion,
+					string(linodego.LKEVersionEnterprise),
+				),
+				ExpectError: regexp.MustCompile(
+					"tier: The api_version provider argument must be set to 'v4beta' to use this field\\.",
+				),
+			},
+			{
+				PreConfig: func() {
+					apiVersion = "v4beta"
+				},
+				Config: tmpl.TierConditional(
+					t,
+					clusterName,
+					k8sVersionLatest,
+					testRegion,
+					string(linodego.LKEVersionStandard),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"linode_lke_cluster.test",
+						tfjsonpath.New("tier"),
+						knownvalue.StringExact(string(linodego.LKEVersionStandard)),
+					),
+				},
 			},
 		},
 	})

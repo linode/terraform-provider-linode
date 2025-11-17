@@ -14,6 +14,26 @@ var filterConfig = frameworkfilter.Config{
 	"linodes": {APIFilterable: false, TypeFunc: helper.FilterTypeInt},
 }
 
+var vlanAttributes = map[string]schema.Attribute{
+	"label": schema.StringAttribute{
+		Description: "The unique label of this VLAN.",
+		Computed:    true,
+	},
+	"linodes": schema.SetAttribute{
+		Description: "The Linodes currently attached to this VLAN.",
+		ElementType: types.Int64Type,
+		Computed:    true,
+	},
+	"region": schema.StringAttribute{
+		Description: "The region this VLAN is located in.",
+		Computed:    true,
+	},
+	"created": schema.StringAttribute{
+		Description: "When this VLAN was created.",
+		Computed:    true,
+	},
+}
+
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
@@ -22,35 +42,15 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),
+		"vlans": schema.ListNestedAttribute{
+			Description: "The returned list of VLANs.",
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: vlanAttributes,
+			},
+		},
 	},
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
-
-		"vlans": schema.ListNestedBlock{
-			Description:  "The returned list of VLANs.",
-			NestedObject: vlanSchema,
-		},
-	},
-}
-
-var vlanSchema = schema.NestedBlockObject{
-	Attributes: map[string]schema.Attribute{
-		"label": schema.StringAttribute{
-			Description: "The unique label of this VLAN.",
-			Computed:    true,
-		},
-		"linodes": schema.SetAttribute{
-			Description: "The Linodes currently attached to this VLAN.",
-			ElementType: types.Int64Type,
-			Computed:    true,
-		},
-		"region": schema.StringAttribute{
-			Description: "The region this VLAN is located in.",
-			Computed:    true,
-		},
-		"created": schema.StringAttribute{
-			Description: "When this VLAN was created.",
-			Computed:    true,
-		},
 	},
 }

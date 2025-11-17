@@ -13,22 +13,21 @@ var filterConfig = frameworkfilter.Config{
 	"status":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
-var accountLoginSchema = schema.NestedBlockObject{
-	Attributes: accountlogin.Attributes,
-}
-
 var frameworkDataSourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Description: "The data source's unique ID.",
 			Computed:    true,
 		},
+		"logins": schema.ListNestedAttribute{
+			Description: "The returned list of account logins.",
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: accountlogin.Attributes,
+			},
+		},
 	},
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
-		"logins": schema.ListNestedBlock{
-			Description:  "The returned list of account logins.",
-			NestedObject: accountLoginSchema,
-		},
 	},
 }
