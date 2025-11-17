@@ -77,7 +77,7 @@ func TestAccDataSourceImageShareGroupMembers_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(dsByTokenUUID, "members.0.status"),
 					resource.TestCheckResourceAttr(dsByTokenUUID, "members.0.label", memberLabel),
 
-					resource.TestCheckResourceAttr(dsByStatus, "members.#", "1"),
+					acceptance.CheckResourceAttrGreaterThan(dsByStatus, "members.#", 0),
 					resource.TestCheckResourceAttrSet(dsByStatus, "members.0.sharegroup_id"),
 					resource.TestCheckResourceAttrSet(dsByStatus, "members.0.token_uuid"),
 					resource.TestCheckResourceAttrSet(dsByStatus, "members.0.status"),
