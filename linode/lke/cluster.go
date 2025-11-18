@@ -156,8 +156,7 @@ func ReconcileLKENodePoolSpecs(
 			(newSpec.FirewallID != nil && oldSpec.FirewallID == nil) {
 			updateOpts.FirewallID = newSpec.FirewallID
 		} else if newSpec.FirewallID == nil && oldSpec.FirewallID != nil {
-			empty := 0
-			updateOpts.FirewallID = &empty
+			updateOpts.FirewallID = nil
 		}
 
 		if enterprise {

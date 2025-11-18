@@ -144,11 +144,10 @@ func (data *LKEDataModel) parseLKEAttributes(
 			}
 			pool.Label = label
 
-			var firewallId basetypes.Int64Value
 			if p.FirewallID != nil {
-				firewallId = types.Int64Value(int64(*p.FirewallID))
+				firewallId := types.Int64Value(int64(*p.FirewallID))
+				pool.FirewallId = firewallId
 			}
-			pool.FirewallId = firewallId
 
 			if p.UpdateStrategy != nil {
 				pool.UpdateStrategy = types.StringValue(string(*p.UpdateStrategy))

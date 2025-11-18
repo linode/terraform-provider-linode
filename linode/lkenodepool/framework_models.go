@@ -149,8 +149,8 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 	)
 	p.Type = pool.Type.ValueString()
 	p.Label = pool.Label.ValueStringPointer()
-	if !pool.FirewallID.IsNull() {
-		firewall_id := int(*pool.FirewallID.ValueInt64Pointer())
+	if !pool.FirewallID.IsNull() && pool.FirewallID.ValueInt64() != 0 {
+		firewall_id := int(pool.FirewallID.ValueInt64())
 		p.FirewallID = &firewall_id
 	}
 
