@@ -85,11 +85,10 @@ var frameworkDataSourceSchema = schema.Schema{
 			Computed:    true,
 			Description: "The networking stack type of the Kubernetes cluster.",
 		},
-	},
-	Blocks: map[string]schema.Block{
-		"control_plane": schema.ListNestedBlock{
+		"control_plane": schema.ListNestedAttribute{
+			Computed:    true,
 			Description: "Defines settings for the Kubernetes Control Plane.",
-			NestedObject: schema.NestedBlockObject{
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"high_availability": schema.BoolAttribute{
 						Description: "Defines whether High Availability is enabled for the Control Plane Components of the cluster.",
@@ -99,21 +98,19 @@ var frameworkDataSourceSchema = schema.Schema{
 						Description: "Enables audit logs on the cluster's control plane.",
 						Computed:    true,
 					},
-				},
-				Blocks: map[string]schema.Block{
-					"acl": schema.ListNestedBlock{
+					"acl": schema.ListNestedAttribute{
+						Computed:    true,
 						Description: "The ACL configuration for an LKE cluster's control plane.",
-						NestedObject: schema.NestedBlockObject{
+						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"enabled": schema.BoolAttribute{
 									Description: "The default policy. A value of true means a default policy of DENY. A value of false means default policy of ALLOW.",
 									Computed:    true,
 								},
-							},
-							Blocks: map[string]schema.Block{
-								"addresses": schema.ListNestedBlock{
+								"addresses": schema.ListNestedAttribute{
 									Description: "A list of ip addresses allowed.",
-									NestedObject: schema.NestedBlockObject{
+									Computed:    true,
+									NestedObject: schema.NestedAttributeObject{
 										Attributes: map[string]schema.Attribute{
 											"ipv4": schema.SetAttribute{
 												Description: "A set of individual ipv4 addresses or CIDRs allowed.",
@@ -134,9 +131,10 @@ var frameworkDataSourceSchema = schema.Schema{
 				},
 			},
 		},
-		"pools": schema.ListNestedBlock{
+		"pools": schema.ListNestedAttribute{
+			Computed:    true,
 			Description: "All active Node Pools on the cluster.",
-			NestedObject: schema.NestedBlockObject{
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
 						Computed:    true,
@@ -188,11 +186,10 @@ var frameworkDataSourceSchema = schema.Schema{
 						Description: "The strategy for updating the node pool k8s version. " +
 							"For LKE enterprise only and may not currently available to all users.",
 					},
-				},
-				Blocks: map[string]schema.Block{
-					"nodes": schema.ListNestedBlock{
+					"nodes": schema.ListNestedAttribute{
+						Computed:    true,
 						Description: "The nodes in the node pool.",
-						NestedObject: schema.NestedBlockObject{
+						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"id": schema.StringAttribute{
 									Computed:    true,
@@ -209,10 +206,11 @@ var frameworkDataSourceSchema = schema.Schema{
 							},
 						},
 					},
-					"autoscaler": schema.ListNestedBlock{
-						Description: "When specified, the number of nodes autoscales within " +
+					"autoscaler": schema.ListNestedAttribute{
+						Computed: true,
+						Description: "The number of nodes autoscales within " +
 							"the defined minimum and maximum values.",
-						NestedObject: schema.NestedBlockObject{
+						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"min": schema.Int64Attribute{
 									Description: "The minimum number of nodes to autoscale to. Defaults to the Node Pool’s count.",
@@ -229,9 +227,10 @@ var frameworkDataSourceSchema = schema.Schema{
 							},
 						},
 					},
-					"disks": schema.ListNestedBlock{
+					"disks": schema.ListNestedAttribute{
+						Computed:    true,
 						Description: "This Node Pool’s custom disk layout.",
-						NestedObject: schema.NestedBlockObject{
+						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"size": schema.Int64Attribute{
 									Description: "The size of this custom disk partition in MB.",

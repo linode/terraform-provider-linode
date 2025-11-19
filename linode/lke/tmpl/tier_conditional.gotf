@@ -1,0 +1,20 @@
+{{ define "lke_cluster_tier_conditional" }}
+
+resource "linode_lke_cluster" "test" {
+    label       = "{{ .Label }}"
+    region      = "{{ .Region }}"
+    k8s_version = "{{ .K8sVersion }}"
+
+    # Only populate the tier if it's set
+{{ if ne .Tier "" }}
+    tier        = "{{ .Tier }}"
+{{ end }}
+
+    pool {
+        type  = "g6-standard-1"
+        count = 1
+    }
+}
+
+{{ end }}
+

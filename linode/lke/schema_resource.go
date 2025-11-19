@@ -75,8 +75,8 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 		Computed:    true,
-		Description: "The desired Kubernetes tier.",
 		ForceNew:    true,
+		Description: "The desired Kubernetes tier.",
 	},
 	"subnet_id": {
 		Type:        schema.TypeInt,

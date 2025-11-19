@@ -79,6 +79,18 @@ Each Linode image will be stored in the `images` attribute and will export the f
 
 * `is_public` - True if the Image is public.
 
+* `is_shared` - True if the Image is shared. (**Note: v4beta only and may not currently be available to all users.**)
+
+* `image_sharing` - Details about image sharing, including who the image is shared with and by. (**Note: v4beta only and may not currently be available to all users.**)
+  * `shared_with` - Details about who the image is shared with.
+    * `sharegroup_count` - The number of sharegroups the private image is present in.
+    * `sharegroup_list_url` - The GET api url to view the sharegroups in which the image is shared.
+  * `shared_by` - Details about who the image is shared by.
+    * `sharegroup_id` - The sharegroup_id from the im_ImageShare row.
+    * `sharegroup_uuid` - The sharegroup_uuid from the im_ImageShare row.
+    * `sharegroup_label` - The label from the associated im_ImageShareGroup row.
+    * `source_image_id` - The image id of the base image (will only be shown to producers, will be null for consumers).
+
 * `size` - The minimum size this Image needs to deploy. Size is in MB. example: 2500
 
 * `status` - The current status of this image. (`creating`, `pending_upload`, `available`)

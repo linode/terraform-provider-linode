@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 )
 
 const (
@@ -190,7 +191,7 @@ func (r *Resource) Create(
 		}
 	}
 
-	if err := helper.ReconcileDatabaseSuspensionSync(
+	if err := databaseshared.ReconcileSuspensionSync(
 		ctx,
 		client,
 		db.ID,
@@ -309,7 +310,7 @@ func (r *Resource) Update(
 
 	// Suspend or resume the database if necessary
 	// NOTE: Other fields cannot be updated if suspended = true
-	if err := helper.ReconcileDatabaseSuspensionSync(
+	if err := databaseshared.ReconcileSuspensionSync(
 		ctx,
 		client,
 		id,
@@ -445,7 +446,7 @@ func (r *Resource) Update(
 
 	// `engine_id` field updates
 	if !state.EngineID.Equal(plan.EngineID) {
-		engine, version, err := helper.ParseDatabaseEngineSlug(plan.EngineID.ValueString())
+		engine, version, err := databaseshared.ParseDatabaseEngineSlug(plan.EngineID.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to parse database engine slug", err.Error())
 			return

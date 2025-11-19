@@ -27,12 +27,10 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"lke_clusters": schema.ListNestedBlock{
+		"lke_clusters": schema.ListNestedAttribute{
 			Description: "The returned list of LKE clusters available on the account.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
 						Computed:    true,
@@ -89,9 +87,8 @@ var frameworkDatasourceSchema = schema.Schema{
 						Computed:    true,
 						Description: "The networking stack type of the Kubernetes cluster.",
 					},
-				},
-				Blocks: map[string]schema.Block{
-					"control_plane": schema.SingleNestedBlock{
+					"control_plane": schema.SingleNestedAttribute{
+						Computed:    true,
 						Description: "Defines settings for the Kubernetes Control Plane.",
 						Attributes: map[string]schema.Attribute{
 							"high_availability": schema.BoolAttribute{
@@ -107,5 +104,8 @@ var frameworkDatasourceSchema = schema.Schema{
 				},
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }

@@ -28,7 +28,7 @@ The following arguments are supported:
 
 * `public` - (Optional) Whether the IP address is public. Defaults to true.
 
-* `linode_id` - (Optional) The ID of the Linode to which the IP address will be assigned. Updating this field on an ephemeral IP will trigger a recreation. Conflicts with `region`.
+* `linode_id` - (Optional) The ID of the Linode to allocate an IPv4 address for. **Required** when `reserved` is `false` or not set. Updating this field on an ephemeral IP will trigger a recreation. Conflicts with `region`.
 
 ### Reserved-Specific Argument Reference
 
