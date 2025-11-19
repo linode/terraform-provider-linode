@@ -145,7 +145,7 @@ func TestUseStateForUnknownIf(t *testing.T) {
 
 	testCases := map[string]struct {
 		request   planmodifier.ObjectRequest
-		condition func(context.Context, planmodifier.ObjectRequest) bool
+		condition objectplanmodifiers.UseStateForUnknownIfFunc
 		expected  *planmodifier.ObjectResponse
 	}{
 		"condition-false": {
@@ -161,8 +161,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.ObjectUnknown(objectType.AttrTypes),
 				ConfigValue: types.ObjectNull(objectType.AttrTypes),
 			},
-			condition: func(ctx context.Context, req planmodifier.ObjectRequest) bool {
-				return false
+			condition: func(ctx context.Context, req planmodifier.ObjectRequest, resp *objectplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = false
 			},
 			expected: &planmodifier.ObjectResponse{
 				PlanValue: types.ObjectUnknown(objectType.AttrTypes),
@@ -181,8 +181,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.ObjectUnknown(objectType.AttrTypes),
 				ConfigValue: types.ObjectNull(objectType.AttrTypes),
 			},
-			condition: func(ctx context.Context, req planmodifier.ObjectRequest) bool {
-				return true
+			condition: func(ctx context.Context, req planmodifier.ObjectRequest, resp *objectplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = true
 			},
 			expected: &planmodifier.ObjectResponse{
 				PlanValue: types.ObjectValueMust(objectType.AttrTypes, map[string]attr.Value{
@@ -204,20 +204,23 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.ObjectUnknown(objectType.AttrTypes),
 				ConfigValue: types.ObjectNull(objectType.AttrTypes),
 			},
-			condition: func(ctx context.Context, req planmodifier.ObjectRequest) bool {
+			condition: func(ctx context.Context, req planmodifier.ObjectRequest, resp *objectplanmodifiers.UseStateForUnknownIfFuncResponse) {
 				if req.StateValue.IsNull() {
-					return false
+					resp.UseState = false
+					return
 				}
 				attrs := req.StateValue.Attributes()
 				nameAttr, exists := attrs["name"]
 				if !exists {
-					return false
+					resp.UseState = false
+					return
 				}
 				nameStr, ok := nameAttr.(types.String)
 				if !ok {
-					return false
+					resp.UseState = false
+					return
 				}
-				return !nameStr.IsNull() && nameStr.ValueString() != ""
+				resp.UseState = !nameStr.IsNull() && nameStr.ValueString() != ""
 			},
 			expected: &planmodifier.ObjectResponse{
 				PlanValue: types.ObjectValueMust(objectType.AttrTypes, map[string]attr.Value{
@@ -239,20 +242,23 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.ObjectUnknown(objectType.AttrTypes),
 				ConfigValue: types.ObjectNull(objectType.AttrTypes),
 			},
-			condition: func(ctx context.Context, req planmodifier.ObjectRequest) bool {
+			condition: func(ctx context.Context, req planmodifier.ObjectRequest, resp *objectplanmodifiers.UseStateForUnknownIfFuncResponse) {
 				if req.StateValue.IsNull() {
-					return false
+					resp.UseState = false
+					return
 				}
 				attrs := req.StateValue.Attributes()
 				nameAttr, exists := attrs["name"]
 				if !exists {
-					return false
+					resp.UseState = false
+					return
 				}
 				nameStr, ok := nameAttr.(types.String)
 				if !ok {
-					return false
+					resp.UseState = false
+					return
 				}
-				return !nameStr.IsNull() && nameStr.ValueString() != ""
+				resp.UseState = !nameStr.IsNull() && nameStr.ValueString() != ""
 			},
 			expected: &planmodifier.ObjectResponse{
 				PlanValue: types.ObjectUnknown(objectType.AttrTypes),
