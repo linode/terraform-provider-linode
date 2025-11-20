@@ -38,7 +38,7 @@ func TestAccDataSourceVolume_basic(t *testing.T) {
 	})
 }
 
-// Default encryption (Basic template) should be enabled when omitted, in a encryption-capable region 
+// Default encryption (Basic template) should be enabled when omitted, in a encryption-capable region
 func TestAccDataSourceVolume_defaultEncryptionEnabled(t *testing.T) {
 	t.Parallel()
 
@@ -72,36 +72,36 @@ func TestAccDataSourceVolume_defaultEncryptionEnabled(t *testing.T) {
 
 // Explicit encryption enabled (DataWithBlockStorageEncryption template) in an encryption-capable region
 func TestAccDataSourceVolume_withBlockStorageEncryption(t *testing.T) {
-        t.Parallel()
+	t.Parallel()
 
-        volumeName := acctest.RandomWithPrefix("tf_test")
-        resourceName := "data.linode_volume.foobar"
+	volumeName := acctest.RandomWithPrefix("tf_test")
+	resourceName := "data.linode_volume.foobar"
 
-        // Resolve a region with support for Block Storage Encryption
-        targetRegion, err := acceptance.GetRandomRegionWithCaps(
-                []string{"Linodes", "Block Storage Encryption"},
-                "core",
-        )
-        if err != nil {
-                t.Fatal(err)
-        }
+	// Resolve a region with support for Block Storage Encryption
+	targetRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{"Linodes", "Block Storage Encryption"},
+		"core",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-        resource.Test(t, resource.TestCase{
-                PreCheck:                 func() { acceptance.PreCheck(t) },
-                ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-                Steps: []resource.TestStep{
-                        {
-                                Config: tmpl.DataWithBlockStorageEncryption(t, volumeName, targetRegion),
-                                Check: resource.ComposeTestCheckFunc(
-                                        resource.TestCheckResourceAttr(resourceName, "region", targetRegion),
-                                        resource.TestCheckResourceAttr(resourceName, "encryption", "enabled"),
-                                ),
-                        },
-                },
-        })
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataWithBlockStorageEncryption(t, volumeName, targetRegion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "region", targetRegion),
+					resource.TestCheckResourceAttr(resourceName, "encryption", "enabled"),
+				),
+			},
+		},
+	})
 }
 
-// Explicit encryption disabled (DataWithBlockStorageEncryption template) in an encryption-capable region
+// Explicit encryption disabled (DataWithBlockStorageEncryptionDisabled template) in an encryption-capable region
 func TestAccDataSourceVolume_withBlockStorageEncryptionDisabled(t *testing.T) {
 	t.Parallel()
 
