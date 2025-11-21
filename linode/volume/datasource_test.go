@@ -38,7 +38,7 @@ func TestAccDataSourceVolume_basic(t *testing.T) {
 	})
 }
 
-// Default encryption (Basic template) should be enabled when omitted, in a encryption-capable region
+// Default encryption (Basic template) should be enabled when omitted, in an encryption-capable region
 func TestAccDataSourceVolume_defaultEncryptionEnabled(t *testing.T) {
 	t.Parallel()
 
