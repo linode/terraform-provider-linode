@@ -21,16 +21,27 @@ func TestEncryptionAttribute_HasDefaultAndRequiresReplace(t *testing.T) {
 	attr, ok := attrRaw.(schema.StringAttribute)
 	require.True(t, ok, "encryption must be a StringAttribute")
 
-	// Should be Optional + Computed with a default (we set StaticString("enabled")).
+	// Should be Optional + Computed with no schema default; provider preserves state when omitted.
 	require.True(t, attr.Optional, "encryption should be Optional")
 	require.True(t, attr.Computed, "encryption should be Computed")
-	require.NotNil(t, attr.Default, "encryption should have a default value")
+	require.Nil(t, attr.Default, "encryption should not have a schema default")
+
+	// Must preserve state when config omits the field.
+	expectedUseStateType := reflect.TypeOf(stringplanmodifier.UseStateForUnknown())
+	foundUseState := false
+	for _, pm := range attr.PlanModifiers {
+		if reflect.TypeOf(pm) == expectedUseStateType {
+			foundUseState = true
+			break
+		}
+	}
+	require.True(t, foundUseState, "encryption should have UseStateForUnknown plan modifier")
 
 	// Must require replacement when changed.
-	expectedPMType := reflect.TypeOf(stringplanmodifier.RequiresReplace())
+	expectedReplaceType := reflect.TypeOf(stringplanmodifier.RequiresReplace())
 	foundReplace := false
 	for _, pm := range attr.PlanModifiers {
-		if reflect.TypeOf(pm) == expectedPMType {
+		if reflect.TypeOf(pm) == expectedReplaceType {
 			foundReplace = true
 			break
 		}

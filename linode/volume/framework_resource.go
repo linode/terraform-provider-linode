@@ -216,10 +216,27 @@ func (r *Resource) CreateVolume(
 	size := helper.FrameworkSafeInt64ToInt(data.Size.ValueInt64(), diags)
 
 	createOpts := linodego.VolumeCreateOptions{
-		Label:      data.Label.ValueString(),
-		Region:     data.Region.ValueString(),
-		Size:       size,
-		Encryption: data.Encryption.ValueString(),
+		Label:  data.Label.ValueString(),
+		Region: data.Region.ValueString(),
+		Size:   size,
+	}
+
+	// Respect explicit user setting first
+	if !data.Encryption.IsNull() && !data.Encryption.IsUnknown() && data.Encryption.ValueString() != "" {
+		createOpts.Encryption = data.Encryption.ValueString()
+	} else {
+		// Derive default for new volumes in regions that support Block Storage Encryption
+		if regionID := data.Region.ValueString(); regionID != "" {
+			region, err := client.GetRegion(ctx, regionID)
+			if err == nil {
+				for _, cap := range region.Capabilities {
+					if cap == "Block Storage Encryption" {
+						createOpts.Encryption = "enabled"
+						break
+					}
+				}
+			}
+		}
 	}
 
 	diags.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
