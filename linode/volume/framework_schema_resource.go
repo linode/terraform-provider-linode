@@ -118,12 +118,14 @@ var frameworkResourceSchema = schema.Schema{
 			Validators: []validator.String{
 				stringvalidator.OneOf("enabled", "disabled"),
 			},
-			PlanModifiers: []planmodifier.String{
-				// Preserve existing state when config omits the field
-				stringplanmodifier.UseStateForUnknown(),
-				// Changing encryption requires replacement
-				stringplanmodifier.RequiresReplace(),
-			},
+            PlanModifiers: []planmodifier.String{
+                // Preserve existing state when config omits the field (updates)
+                stringplanmodifier.UseStateForUnknown(),
+                // On create and when omitted, make the plan show encryption = "enabled"
+                DefaultEnabledOnCreate(),
+                // Changing encryption requires replacement
+                stringplanmodifier.RequiresReplace(),
+            },
 		},
 	},
 }

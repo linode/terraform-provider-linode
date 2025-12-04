@@ -48,6 +48,17 @@ func TestEncryptionAttribute_HasDefaultAndRequiresReplace(t *testing.T) {
 	}
 	require.True(t, foundReplace, "encryption should have a RequiresReplace plan modifier")
 
+	// Should show default "enabled" on create when omitted.
+	expectedDefaultOnCreateType := reflect.TypeOf(DefaultEnabledOnCreate())
+	foundDefaultOnCreate := false
+	for _, pm := range attr.PlanModifiers {
+		if reflect.TypeOf(pm) == expectedDefaultOnCreateType {
+			foundDefaultOnCreate = true
+			break
+		}
+	}
+	require.True(t, foundDefaultOnCreate, "encryption should have DefaultEnabledOnCreate plan modifier")
+
 	// Should have validators (e.g., OneOf("enabled","disabled")). We don't assert exact type, just presence.
 	require.NotEmpty(t, attr.Validators, "encryption should have validators (e.g., OneOf)")
 }

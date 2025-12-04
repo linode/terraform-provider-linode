@@ -221,23 +221,13 @@ func (r *Resource) CreateVolume(
 		Size:   size,
 	}
 
-	// Respect explicit user setting first
-	if !data.Encryption.IsNull() && !data.Encryption.IsUnknown() && data.Encryption.ValueString() != "" {
-		createOpts.Encryption = data.Encryption.ValueString()
-	} else {
-		// Derive default for new volumes in regions that support Block Storage Encryption
-		if regionID := data.Region.ValueString(); regionID != "" {
-			region, err := client.GetRegion(ctx, regionID)
-			if err == nil {
-				for _, cap := range region.Capabilities {
-					if cap == "Block Storage Encryption" {
-						createOpts.Encryption = "enabled"
-						break
-					}
-				}
-			}
-		}
-	}
+    // Respect explicit user setting first
+    if !data.Encryption.IsNull() && !data.Encryption.IsUnknown() && data.Encryption.ValueString() != "" {
+        createOpts.Encryption = data.Encryption.ValueString()
+    } else {
+        // Default to enabled on create when encryption is omitted, without region capability checks.
+        createOpts.Encryption = "enabled"
+    }
 
 	diags.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
 	if diags.HasError() {
