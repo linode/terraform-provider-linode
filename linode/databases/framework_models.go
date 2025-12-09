@@ -63,7 +63,7 @@ func (model *DatabaseFilterModel) parseDatabases(
 		m.Encrypted = types.BoolValue(db.Encrypted)
 		m.Engine = types.StringValue(db.Engine)
 		m.HostPrimary = types.StringValue(db.Hosts.Primary)
-		m.HostSecondary = types.StringValue(db.Hosts.Secondary)
+		m.HostSecondary = types.StringValue(db.Hosts.Standby)
 		m.InstanceURI = types.StringValue(db.InstanceURI)
 		m.Label = types.StringValue(db.Label)
 		m.Region = types.StringValue(db.Region)
