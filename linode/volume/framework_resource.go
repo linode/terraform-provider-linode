@@ -221,13 +221,13 @@ func (r *Resource) CreateVolume(
 		Size:   size,
 	}
 
-    // Respect explicit user setting first
-    if !data.Encryption.IsNull() && !data.Encryption.IsUnknown() && data.Encryption.ValueString() != "" {
-        createOpts.Encryption = data.Encryption.ValueString()
-    } else {
-        // Default to enabled on create when encryption is omitted, without region capability checks.
-        createOpts.Encryption = "enabled"
-    }
+	// Respect explicit user setting first
+	if !data.Encryption.IsNull() && !data.Encryption.IsUnknown() && data.Encryption.ValueString() != "" {
+		createOpts.Encryption = data.Encryption.ValueString()
+	} else {
+		// Default to enabled on create when encryption is omitted, without region capability checks.
+		createOpts.Encryption = "enabled"
+	}
 
 	diags.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
 	if diags.HasError() {

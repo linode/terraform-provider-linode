@@ -16,16 +16,16 @@ import (
 
 // Default encryption (omitted) should be enabled (provider derives default at create-time)
 func TestAccResourceVolume_defaultEncryptionEnabled_Derived(t *testing.T) {
-	 t.Parallel()
+	t.Parallel()
 
-	 volumeName := acctest.RandomWithPrefix("tf_test")
-	 resName := "linode_volume.foobar"
+	volumeName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_volume.foobar"
 
-	 // Choose a random core region without checking capabilities
-	 targetRegion, err := acceptance.GetRandomRegionWithCaps(nil, "core")
-	 if err != nil {
-		 t.Fatal(err)
-	 }
+	// Choose a random core region without checking capabilities
+	targetRegion, err := acceptance.GetRandomRegionWithCaps(nil, "core")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	volume := linodego.Volume{}
 	resource.Test(t, resource.TestCase{
@@ -48,16 +48,16 @@ func TestAccResourceVolume_defaultEncryptionEnabled_Derived(t *testing.T) {
 
 // Explicit encryption enabled (resource test)
 func TestAccResourceVolume_encryptionExplicitEnabled(t *testing.T) {
-	 t.Parallel()
+	t.Parallel()
 
-	 volumeName := acctest.RandomWithPrefix("tf_test")
-	 resName := "linode_volume.foobar"
+	volumeName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_volume.foobar"
 
-	 // Choose a random core region without checking capabilities
-	 targetRegion, err := acceptance.GetRandomRegionWithCaps(nil, "core")
-	 if err != nil {
-		 t.Fatal(err)
-	 }
+	// Choose a random core region without checking capabilities
+	targetRegion, err := acceptance.GetRandomRegionWithCaps(nil, "core")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	volume := linodego.Volume{}
 	resource.Test(t, resource.TestCase{
@@ -78,16 +78,16 @@ func TestAccResourceVolume_encryptionExplicitEnabled(t *testing.T) {
 
 // Explicit encryption disabled (resource test)
 func TestAccResourceVolume_encryptionExplicitDisabled(t *testing.T) {
-	 t.Parallel()
+	t.Parallel()
 
-	 volumeName := acctest.RandomWithPrefix("tf_test")
-	 resName := "linode_volume.foobar"
+	volumeName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_volume.foobar"
 
-	 // Choose a random core region without checking capabilities
-	 targetRegion, err := acceptance.GetRandomRegionWithCaps(nil, "core")
-	 if err != nil {
-		 t.Fatal(err)
-	 }
+	// Choose a random core region without checking capabilities
+	targetRegion, err := acceptance.GetRandomRegionWithCaps(nil, "core")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	volume := linodego.Volume{}
 	resource.Test(t, resource.TestCase{
@@ -113,7 +113,7 @@ func TestAccResourceVolume_encryptionChangeForcesReplace(t *testing.T) {
 	volumeName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_volume.foobar"
 
-targetRegion, err := acceptance.GetRandomRegionWithCaps(nil, "core")
+	targetRegion, err := acceptance.GetRandomRegionWithCaps(nil, "core")
 	if err != nil {
 		t.Fatal(err)
 	}
