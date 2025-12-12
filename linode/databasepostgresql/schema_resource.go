@@ -165,9 +165,9 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "The primary host for the Managed Database.",
 		Computed:    true,
 	},
-	"host_secondary": {
+	"host_standby": {
 		Type:        schema.TypeString,
-		Description: "The secondary host for the Managed Database.",
+		Description: "The standby/private network host for the Managed Database.",
 		Computed:    true,
 	},
 	"port": {

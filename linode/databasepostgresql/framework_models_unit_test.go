@@ -29,8 +29,8 @@ func TestParsePostgresDatabase(t *testing.T) {
 		ReplicationCommitType: "local",
 		ReplicationType:       "async",
 		Hosts: linodego.DatabaseHost{
-			Primary:   "lin-0000-000-pgsql-primary.servers.linodedb.net",
-			Secondary: "lin-0000-000-pgsql-primary-private.servers.linodedb.net",
+			Primary: "lin-0000-000-pgsql-primary.servers.linodedb.net",
+			Standby: "lin-0000-000-pgsql-primary-private.servers.linodedb.net",
 		},
 		Updates: linodego.DatabaseMaintenanceWindow{
 			DayOfWeek:   1,
@@ -59,7 +59,7 @@ func TestParsePostgresDatabase(t *testing.T) {
 	assert.Contains(t, data.AllowList.String(), "192.0.1.0/24")
 
 	assert.Equal(t, types.StringValue("lin-0000-000-pgsql-primary.servers.linodedb.net"), data.HostPrimary)
-	assert.Equal(t, types.StringValue("lin-0000-000-pgsql-primary-private.servers.linodedb.net"), data.HostSecondary)
+	assert.Equal(t, types.StringValue("lin-0000-000-pgsql-primary-private.servers.linodedb.net"), data.HostStandby)
 
 	assert.Contains(t, data.Updates.String(), "monday")
 	assert.Contains(t, data.Updates.String(), "3")

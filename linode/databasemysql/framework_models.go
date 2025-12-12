@@ -25,7 +25,7 @@ type DataSourceModel struct {
 	Created         types.String `tfsdk:"created"`
 	Engine          types.String `tfsdk:"engine"`
 	HostPrimary     types.String `tfsdk:"host_primary"`
-	HostSecondary   types.String `tfsdk:"host_secondary"`
+	HostStandby     types.String `tfsdk:"host_standby"`
 	RootPassword    types.String `tfsdk:"root_password"`
 	Status          types.String `tfsdk:"status"`
 	Updated         types.String `tfsdk:"updated"`
@@ -42,7 +42,7 @@ func (data *DataSourceModel) parseMySQLDatabase(
 	data.Status = types.StringValue(string(db.Status))
 	data.Label = types.StringValue(string(db.Label))
 	data.HostPrimary = types.StringValue(string(db.Hosts.Primary))
-	data.HostSecondary = types.StringValue(string(db.Hosts.Secondary))
+	data.HostStandby = types.StringValue(string(db.Hosts.Standby))
 	data.Region = types.StringValue(string(db.Region))
 	data.Type = types.StringValue(string(db.Type))
 	data.Engine = types.StringValue(string(db.Engine))

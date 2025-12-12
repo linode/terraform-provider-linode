@@ -60,7 +60,7 @@ func TestAccDataSourceDatabaseMySQL_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttrSet(resName, "host_primary"),
-					resource.TestCheckResourceAttrSet(resName, "host_secondary"),
+					resource.TestCheckResourceAttrSet(resName, "host_standby"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
 					resource.TestCheckResourceAttr(resName, "status", "active"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
