@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -2211,7 +2212,7 @@ func TestAccResourceInstance_requestQuantity(t *testing.T) {
 	rootPass := acctest.RandString(64)
 
 	acceptance.ModifyProviderMeta(provider,
-		func(ctx context.Context, config *helper.ProviderMeta) error {
+		func(ctx context.Context, _ *schema.ResourceData, config *helper.ProviderMeta) error {
 			config.Client.OnBeforeRequest(func(request *linodego.Request) error {
 				if startTime.IsZero() {
 					startTime = time.Now()
@@ -2709,6 +2710,136 @@ func TestAccResourceInstance_diskEncryption(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_interfaceGenerationLegacy(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ExplicitInterfaceGeneration(
+					t,
+					instanceName,
+					testRegion,
+					true,
+					linodego.GenerationLegacyConfig,
+					nil,
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(instanceName),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("type"),
+						knownvalue.StringExact("g6-nanode-1"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("image"),
+						knownvalue.StringExact(acceptance.TestImageLatest),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("region"),
+						knownvalue.StringExact(testRegion),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("interface_generation"),
+						knownvalue.StringExact(string(linodego.GenerationLegacyConfig)),
+					),
+				},
+			},
+
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "firewall_id"},
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_interfaceGenerationLinode(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ExplicitInterfaceGeneration(
+					t,
+					instanceName,
+					testRegion,
+					true,
+					linodego.GenerationLinode,
+					linodego.Pointer(true),
+				),
+				ExpectError: regexp.MustCompile(
+					"The Linode must have at least 1 interface defined to boot",
+				),
+			},
+			{
+				Config: tmpl.ExplicitInterfaceGeneration(
+					t,
+					instanceName,
+					testRegion,
+					false,
+					linodego.GenerationLinode,
+					linodego.Pointer(true),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(instanceName),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("type"),
+						knownvalue.StringExact("g6-nanode-1"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("image"),
+						knownvalue.StringExact(acceptance.TestImageLatest),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("region"),
+						knownvalue.StringExact(testRegion),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("interface_generation"),
+						knownvalue.StringExact(string(linodego.GenerationLinode)),
+					),
+				},
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "firewall_id", "network_helper"},
+			},
+		},
+	})
+}
+
 func TestAccResourceInstance_interfaceVPCIPv6(t *testing.T) {
 	t.Parallel()
 
@@ -2982,10 +3113,19 @@ func TestAccResourceInstance_configInterfaceVPCIPv6(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:            resName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "interface", "firewall_id"},
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"backups",
+					"root_pass",
+					"authorized_keys",
+					"image",
+					"resize_disk",
+					"migration_type",
+					"interface",
+					"firewall_id",
+				},
 			},
 		},
 	})

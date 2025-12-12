@@ -28,12 +28,10 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"ip_addresses": schema.ListNestedBlock{
+		"ip_addresses": schema.ListNestedAttribute{
 			Description: "The returned list of Images.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"address": schema.StringAttribute{
 						Description: "The IP address.",
@@ -68,6 +66,10 @@ var frameworkDatasourceSchema = schema.Schema{
 						Description: "The ID of the Linode this address currently belongs to.",
 						Computed:    true,
 					},
+					"interface_id": schema.Int64Attribute{
+						Description: "The ID of the interface this address is assigned to.",
+						Computed:    true,
+					},
 					"region": schema.StringAttribute{
 						Description: "The Region this IP address resides in.",
 						Computed:    true,
@@ -84,5 +86,8 @@ var frameworkDatasourceSchema = schema.Schema{
 				},
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }

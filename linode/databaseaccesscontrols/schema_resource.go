@@ -3,7 +3,7 @@ package databaseaccesscontrols
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 )
 
 var resourceSchema = map[string]*schema.Schema{
@@ -20,7 +20,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Required:    true,
 		ForceNew:    true,
 		ValidateDiagFunc: validation.ToDiagFunc(
-			validation.StringInSlice(helper.ValidDatabaseTypes, true)),
+			validation.StringInSlice(databaseshared.ValidDatabaseTypes, true)),
 	},
 
 	"allow_list": {

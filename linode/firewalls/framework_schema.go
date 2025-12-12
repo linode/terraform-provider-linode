@@ -18,28 +18,26 @@ var filterConfig = frameworkfilter.Config{
 	"updated": {APIFilterable: false, TypeFunc: helper.FilterTypeString, AllowOrderOverride: true},
 }
 
-var firewallDeviceObject = schema.NestedBlockObject{
-	Attributes: map[string]schema.Attribute{
-		"id": schema.Int64Attribute{
-			Description: "The unique ID of the Firewall Device.",
-			Computed:    true,
-		},
-		"entity_id": schema.Int64Attribute{
-			Description: "The ID of the underlying entity this device references (i.e. the Linode's ID).",
-			Computed:    true,
-		},
-		"type": schema.StringAttribute{
-			Description: "The type of Firewall Device.",
-			Computed:    true,
-		},
-		"label": schema.StringAttribute{
-			Description: "The label of the underlying entity this device references.",
-			Computed:    true,
-		},
-		"url": schema.StringAttribute{
-			Description: "The URL of the underlying entity this device references.",
-			Computed:    true,
-		},
+var firewallDeviceAttributes = map[string]schema.Attribute{
+	"id": schema.Int64Attribute{
+		Description: "The unique ID of the Firewall Device.",
+		Computed:    true,
+	},
+	"entity_id": schema.Int64Attribute{
+		Description: "The ID of the underlying entity this device references (i.e. the Linode's ID).",
+		Computed:    true,
+	},
+	"type": schema.StringAttribute{
+		Description: "The type of Firewall Device.",
+		Computed:    true,
+	},
+	"label": schema.StringAttribute{
+		Description: "The label of the underlying entity this device references.",
+		Computed:    true,
+	},
+	"url": schema.StringAttribute{
+		Description: "The URL of the underlying entity this device references.",
+		Computed:    true,
 	},
 }
 
@@ -74,71 +72,81 @@ var FirewallRuleObject = schema.NestedBlockObject{
 	},
 }
 
-var firewallObject = schema.NestedBlockObject{
-	Attributes: map[string]schema.Attribute{
-		"id": schema.Int64Attribute{
-			Description: "The unique ID assigned to this Firewall.",
-			Computed:    true,
-		},
-		"label": schema.StringAttribute{
-			Computed: true,
-			Description: "The label for the Firewall. For display purposes only. If no label is provided, a " +
-				"default will be assigned.",
-		},
-		"tags": schema.SetAttribute{
-			Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
-			ElementType: types.StringType,
-			Computed:    true,
-		},
-		"disabled": schema.BoolAttribute{
-			Description: "If true, the Firewall is inactive.",
-			Computed:    true,
-		},
-		"inbound_policy": schema.StringAttribute{
-			Description: "The default behavior for inbound traffic.",
-			Computed:    true,
-		},
-		"outbound_policy": schema.StringAttribute{
-			Description: "The default behavior for outbound traffic.",
-			Computed:    true,
-		},
-		"linodes": schema.SetAttribute{
-			ElementType: types.Int64Type,
-			Description: "The IDs of Linodes assigned to this Firewall.",
-			Computed:    true,
-		},
-		"nodebalancers": schema.SetAttribute{
-			ElementType: types.Int64Type,
-			Description: "The IDs of NodeBalancers assigned to this Firewall..",
-			Computed:    true,
-		},
-		"status": schema.StringAttribute{
-			Description: "The status of the firewall.",
-			Computed:    true,
-		},
-		"created": schema.StringAttribute{
-			CustomType:  timetypes.RFC3339Type{},
-			Description: "When this Firewall was created.",
-			Computed:    true,
-		},
-		"updated": schema.StringAttribute{
-			CustomType:  timetypes.RFC3339Type{},
-			Description: "When this Firewall was last updated.",
-			Computed:    true,
+var firewallAttributes = map[string]schema.Attribute{
+	"id": schema.Int64Attribute{
+		Description: "The unique ID assigned to this Firewall.",
+		Computed:    true,
+	},
+	"label": schema.StringAttribute{
+		Computed: true,
+		Description: "The label for the Firewall. For display purposes only. If no label is provided, a " +
+			"default will be assigned.",
+	},
+	"tags": schema.SetAttribute{
+		Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
+		ElementType: types.StringType,
+		Computed:    true,
+	},
+	"disabled": schema.BoolAttribute{
+		Description: "If true, the Firewall is inactive.",
+		Computed:    true,
+	},
+	"inbound_policy": schema.StringAttribute{
+		Description: "The default behavior for inbound traffic.",
+		Computed:    true,
+	},
+	"outbound_policy": schema.StringAttribute{
+		Description: "The default behavior for outbound traffic.",
+		Computed:    true,
+	},
+	"linodes": schema.SetAttribute{
+		ElementType: types.Int64Type,
+		Description: "The IDs of Linodes assigned to this Firewall.",
+		Computed:    true,
+	},
+	"nodebalancers": schema.SetAttribute{
+		ElementType: types.Int64Type,
+		Description: "The IDs of NodeBalancers assigned to this Firewall.",
+		Computed:    true,
+	},
+	"interfaces": schema.SetAttribute{
+		ElementType: types.Int64Type,
+		Description: "The IDs of Interfaces assigned to this Firewall.",
+		Computed:    true,
+	},
+	"status": schema.StringAttribute{
+		Description: "The status of the firewall.",
+		Computed:    true,
+	},
+	"created": schema.StringAttribute{
+		CustomType:  timetypes.RFC3339Type{},
+		Description: "When this Firewall was created.",
+		Computed:    true,
+	},
+	"updated": schema.StringAttribute{
+		CustomType:  timetypes.RFC3339Type{},
+		Description: "When this Firewall was last updated.",
+		Computed:    true,
+	},
+	"inbound": schema.ListNestedAttribute{
+		Description: "A set of firewall rules that specify what inbound network traffic is allowed.",
+		Computed:    true,
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: FirewallRuleObject.Attributes,
 		},
 	},
-	Blocks: map[string]schema.Block{
-		"inbound": schema.ListNestedBlock{
-			Description:  "A set of firewall rules that specify what inbound network traffic is allowed.",
-			NestedObject: FirewallRuleObject,
+	"outbound": schema.ListNestedAttribute{
+		Description: "A set of firewall rules that specify what outbound network traffic is allowed.",
+		Computed:    true,
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: FirewallRuleObject.Attributes,
 		},
-		"outbound": schema.ListNestedBlock{
-			Description:  "A set of firewall rules that specify what outbound network traffic is allowed.",
-			NestedObject: FirewallRuleObject,
-		},
-		"devices": schema.ListNestedBlock{
-			Description:  "The devices associated with this firewall.",
-			NestedObject: firewallDeviceObject,
+	},
+	"devices": schema.ListNestedAttribute{
+		Description: "The devices associated with this firewall.",
+		Computed:    true,
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: firewallDeviceAttributes,
 		},
 	},
 }
@@ -151,12 +159,15 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),
+		"firewalls": schema.ListNestedAttribute{
+			Description: "The returned list of Firewalls.",
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: firewallAttributes,
+			},
+		},
 	},
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
-		"firewalls": schema.ListNestedBlock{
-			Description:  "The returned list of Firewalls.",
-			NestedObject: firewallObject,
-		},
 	},
 }

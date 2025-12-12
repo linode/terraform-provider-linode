@@ -2,6 +2,7 @@ package acceptance
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -17,6 +18,8 @@ import (
 	"text/template"
 	"time"
 
+	fwDiag "github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -26,6 +29,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/version"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -366,7 +370,10 @@ func CheckListContains(resName, path, value string) resource.TestCheckFunc {
 }
 
 func CheckLKEClusterDestroy(s *terraform.State) error {
-	client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
+	client, err := GetTestClient()
+	if err != nil {
+		return err
+	}
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_lke_cluster" {
@@ -395,7 +402,11 @@ func CheckLKEClusterDestroy(s *terraform.State) error {
 }
 
 func CheckVolumeDestroy(s *terraform.State) error {
-	client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
+	client, err := GetTestClient()
+	if err != nil {
+		return err
+	}
+
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_volume" {
 			continue
@@ -425,7 +436,10 @@ func CheckVolumeDestroy(s *terraform.State) error {
 
 func CheckVolumeExists(name string, volume *linodego.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
+		client, err := GetTestClient()
+		if err != nil {
+			return err
+		}
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -454,7 +468,10 @@ func CheckVolumeExists(name string, volume *linodego.Volume) resource.TestCheckF
 
 func CheckFirewallExists(name string, firewall *linodego.Firewall) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
+		client, err := GetTestClient()
+		if err != nil {
+			return err
+		}
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -483,7 +500,10 @@ func CheckFirewallExists(name string, firewall *linodego.Firewall) resource.Test
 
 func CheckEventAbsent(name string, entityType linodego.EntityType, action linodego.EventAction) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
+		client, err := GetTestClient()
+		if err != nil {
+			return err
+		}
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -499,7 +519,7 @@ func CheckEventAbsent(name string, entityType linodego.EntityType, action linode
 			return fmt.Errorf("error parsing %v to int", rs.Primary.ID)
 		}
 
-		event, err := helper.GetLatestEvent(context.Background(), &client, id, entityType, action)
+		event, err := helper.GetLatestEvent(context.Background(), client, id, entityType, action)
 		if err != nil {
 			return err
 		}
@@ -566,9 +586,9 @@ func CreateTestProvider() (*schema.Provider, map[string]*schema.Provider) {
 	return provider, providerMap
 }
 
-type ProviderMetaModifier func(ctx context.Context, config *helper.ProviderMeta) error
+type ProviderMetaModifier func(ctx context.Context, data *schema.ResourceData, config *helper.ProviderMeta) error
 
-func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier) {
+func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier) *schema.Provider {
 	oldConfigure := provider.ConfigureContextFunc
 
 	provider.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
@@ -577,12 +597,14 @@ func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier
 			return nil, err
 		}
 
-		if err := modifier(ctx, config.(*helper.ProviderMeta)); err != nil {
+		if err := modifier(ctx, data, config.(*helper.ProviderMeta)); err != nil {
 			return nil, diag.FromErr(err)
 		}
 
 		return config, nil
 	}
+
+	return provider
 }
 
 func GetEndpointType(e linodego.ObjectStorageEndpoint) string {
@@ -761,4 +783,64 @@ func GetTestClient() (*linodego.Client, error) {
 	}
 
 	return client, nil
+}
+
+func GetTestClientAlternateToken(tokenName string) (*linodego.Client, error) {
+	token := os.Getenv(tokenName)
+	if token == "" {
+		return nil, fmt.Errorf("%s must be set for acceptance tests", tokenName)
+	}
+
+	apiVersion := os.Getenv("LINODE_API_VERSION")
+	if apiVersion == "" {
+		apiVersion = "v4beta"
+	}
+
+	config := &helper.Config{
+		AccessToken: token,
+		APIVersion:  apiVersion,
+		APIURL:      os.Getenv("LINODE_URL"),
+	}
+
+	client, err := config.Client(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
+
+func GetFrameworkTestClient(
+	t *testing.T,
+	httpClientModifiers []helper.HTTPClientModifier,
+) *linodego.Client {
+	token := os.Getenv("LINODE_TOKEN")
+	require.NotEmptyf(t, token, "LINODE_TOKEN must be set for acceptance tests")
+
+	apiVersion := cmp.Or(os.Getenv("LINODE_API_VERSION"), "v4beta")
+
+	var diags fwDiag.Diagnostics
+
+	apiURL := types.StringNull()
+
+	if linodeURL, ok := os.LookupEnv("LINODE_URL"); ok {
+		apiURL = types.StringValue(linodeURL)
+	}
+
+	client := TestAccFrameworkProvider.InitLinodeClient(
+		t.Context(),
+		&helper.FrameworkProviderModel{
+			AccessToken: types.StringValue(token),
+			APIURL:      apiURL,
+			APIVersion:  types.StringValue(apiVersion),
+		},
+		helper.GetFrameworkVersion(),
+		httpClientModifiers,
+		&diags,
+	)
+	if diags.HasError() {
+		t.Fatal(diags.Errors())
+	}
+
+	return client
 }

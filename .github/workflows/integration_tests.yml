@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -55,11 +55,13 @@ jobs:
         run: |
           case "${{ matrix.user }}" in 
             "USER_1")
-              echo "TEST_SUITE=acceptance,backup,domain,domainrecord,domains,domainzonefile,helper,instance,provider" >> $GITHUB_ENV
+              echo "TEST_SUITE=acceptance,backup,consumerimagesharegroup,consumerimagesharegroupimageshares,consumerimagesharegrouptoken,consumerimagesharegrouptokens,producerimagesharegroup,producerimagesharegroupimageshares,producerimagesharegroupmember,producerimagesharegroupmembers,producerimagesharegroups,domain,domainrecord,domains,domainzonefile,helper,instance,provider" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_1 }}" >> $GITHUB_ENV
+              echo "LINODE_PRODUCER_TOKEN=${{ secrets.LINODE_TOKEN_USER_1 }}" >> $GITHUB_ENV
+              echo "LINODE_CONSUMER_TOKEN=${{ secrets.LINODE_TOKEN_USER_2 }}" >> $GITHUB_ENV
               ;;
             "USER_2")
-              echo "TEST_SUITE=databasemysqlv2,firewall,firewalldevice,firewalls,image,images,instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,nb,nbconfig,nbconfigs,nbnode,nbs,nbvpc,nbvpcs,sshkey,sshkeys,vlan,volume,volumes,vpc,vpcs,vpcsubnets,vpcips" >> $GITHUB_ENV
+              echo "TEST_SUITE=databasemysqlv2,firewall,firewallsettings,firewalltemplate,firewalltemplates,firewalldevice,firewalls,image,images,instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,nb,nbconfig,nbconfigs,nbnode,nbs,nbvpc,nbvpcs,sshkey,sshkeys,vlan,volume,volumes,vpc,vpcs,vpcsubnets,vpcips" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_2 }}" >> $GITHUB_ENV
               ;;
             "USER_3")
@@ -67,7 +69,7 @@ jobs:
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_3 }}" >> $GITHUB_ENV
               ;;
             "USER_4")
-              echo "TEST_SUITE=lke,lkeclusters,lkenodepool,lkeversions,obj,objbucket,placementgroup,placementgroups,placementgorupassignment,token,user,users" >> $GITHUB_ENV
+              echo "TEST_SUITE=linodeinterface,lke,lkeclusters,lkenodepool,lkeversions,obj,objbucket,placementgroup,placementgroups,placementgorupassignment,token,user,users" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_4 }}" >> $GITHUB_ENV
               ;;
           esac
@@ -80,10 +82,12 @@ jobs:
           make TEST_SUITE="${{ env.TEST_SUITE }}" PARALLEL="${{ github.event.inputs.parallel_value || '5' }}" test-int | go-junit-report -set-exit-code -iocopy -out $REPORT_FILENAME
         env:
           LINODE_TOKEN: ${{ env.LINODE_TOKEN }}
+          LINODE_PRODUCER_TOKEN: ${{ env.LINODE_PRODUCER_TOKEN }}
+          LINODE_CONSUMER_TOKEN: ${{ env.LINODE_CONSUMER_TOKEN }}
 
       - name: Upload Test Report as Artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-report-${{ matrix.user }}
           if-no-files-found: ignore
@@ -97,7 +101,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -156,7 +160,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -170,7 +174,7 @@ jobs:
         run: pip3 install requests wheel boto3==1.35.99
 
       - name: Download test report
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
 
       - name: Get .xml reports from separate Artifacts into root folder
         run: rsync -av test-report-USER_*/* .

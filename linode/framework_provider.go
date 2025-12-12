@@ -16,6 +16,10 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/backup"
 	"github.com/linode/terraform-provider-linode/v3/linode/childaccount"
 	"github.com/linode/terraform-provider-linode/v3/linode/childaccounts"
+	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegroup"
+	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegroupimageshares"
+	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegrouptoken"
+	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegrouptokens"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/v3/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysql"
@@ -32,6 +36,9 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalldevice"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalls"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewallsettings"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewalltemplate"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewalltemplates"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/image"
 	"github.com/linode/terraform-provider-linode/v3/linode/images"
@@ -46,6 +53,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/ipv6ranges"
 	"github.com/linode/terraform-provider-linode/v3/linode/kernel"
 	"github.com/linode/terraform-provider-linode/v3/linode/kernels"
+	"github.com/linode/terraform-provider-linode/v3/linode/linodeinterface"
 	"github.com/linode/terraform-provider-linode/v3/linode/lke"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkeclusters"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
@@ -75,6 +83,11 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/placementgroup"
 	"github.com/linode/terraform-provider-linode/v3/linode/placementgroupassignment"
 	"github.com/linode/terraform-provider-linode/v3/linode/placementgroups"
+	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroup"
+	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroupimageshares"
+	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroupmember"
+	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroupmembers"
+	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroups"
 	"github.com/linode/terraform-provider-linode/v3/linode/profile"
 	"github.com/linode/terraform-provider-linode/v3/linode/rdns"
 	"github.com/linode/terraform-provider-linode/v3/linode/region"
@@ -252,6 +265,11 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		networkingipassignment.NewResource,
 		obj.NewResource,
 		databasemysqlv2.NewResource,
+		producerimagesharegroup.NewResource,
+		producerimagesharegroupmember.NewResource,
+		consumerimagesharegrouptoken.NewResource,
+		firewallsettings.NewResource,
+		linodeinterface.NewResource,
 	}
 }
 
@@ -332,5 +350,17 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		objendpoints.NewDataSource,
 		objquota.NewDataSource,
 		objquotas.NewDataSource,
+		firewalltemplate.NewDataSource,
+		firewalltemplates.NewDataSource,
+		firewallsettings.NewDataSource,
+		producerimagesharegroup.NewDataSource,
+		producerimagesharegroups.NewDataSource,
+		producerimagesharegroupimageshares.NewDataSource,
+		producerimagesharegroupmember.NewDataSource,
+		producerimagesharegroupmembers.NewDataSource,
+		consumerimagesharegrouptoken.NewDataSource,
+		consumerimagesharegrouptokens.NewDataSource,
+		consumerimagesharegroup.NewDataSource,
+		consumerimagesharegroupimageshares.NewDataSource,
 	}
 }

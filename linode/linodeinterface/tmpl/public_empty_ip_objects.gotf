@@ -1,0 +1,19 @@
+{{ define "interface_public_empty_ip_objects" }}
+
+resource "linode_instance" "test" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+    type = "g6-nanode-1"
+    interface_generation = "linode"
+}
+
+resource "linode_interface" "test" {
+    linode_id = linode_instance.test.id
+    
+    public = {
+        ipv4 = {}
+        ipv6 = {}
+    }
+}
+
+{{ end }}

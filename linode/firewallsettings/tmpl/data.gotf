@@ -1,0 +1,6 @@
+{{ define "data_linode_firewall_settings" }}
+
+data "linode_firewall_settings" "{{ .DataSourceName }}" {
+}
+
+{{ end }}

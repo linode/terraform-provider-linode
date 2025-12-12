@@ -42,7 +42,7 @@ var DataSourceSchema = schema.Schema{
 			ElementType: types.StringType,
 		},
 		"status": schema.StringAttribute{
-			Description: "This region’s current operational status.",
+			Description: "This region's current operational status.",
 			Computed:    true,
 		},
 		"placement_group_limits": schema.ListAttribute{
@@ -56,20 +56,20 @@ var DataSourceSchema = schema.Schema{
 			AttributeTypes: MonitorsAttrTypes,
 		},
 	},
-	Blocks: map[string]schema.Block{
-		"resolvers": schema.ListNestedBlock{
-			NestedObject: schema.NestedBlockObject{
-				Attributes: map[string]schema.Attribute{
-					"ipv4": schema.StringAttribute{
-						Description: "The IPv4 addresses for this region’s DNS resolvers, separated by commas.",
-						Computed:    true,
-					},
-					"ipv6": schema.StringAttribute{
-						Description: "The IPv6 addresses for this region’s DNS resolvers, separated by commas.",
-						Computed:    true,
-					},
+	"resolvers": schema.ListNestedAttribute{
+		Computed: true,
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"ipv4": schema.StringAttribute{
+					Description: "The IPv4 addresses for this region's DNS resolvers, separated by commas.",
+					Computed:    true,
+				},
+				"ipv6": schema.StringAttribute{
+					Description: "The IPv6 addresses for this region's DNS resolvers, separated by commas.",
+					Computed:    true,
 				},
 			},
 		},
+	},
 	},
 }
