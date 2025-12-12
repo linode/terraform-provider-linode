@@ -27,7 +27,7 @@ type DatabaseModel struct {
 	Encrypted       types.Bool     `tfsdk:"encrypted"`
 	Engine          types.String   `tfsdk:"engine"`
 	HostPrimary     types.String   `tfsdk:"host_primary"`
-	HostSecondary   types.String   `tfsdk:"host_secondary"`
+	HostStandby     types.String   `tfsdk:"host_standby"`
 	InstanceURI     types.String   `tfsdk:"instance_uri"`
 	Label           types.String   `tfsdk:"label"`
 	PrivateNetwork  types.Object   `tfsdk:"private_network"`
@@ -63,7 +63,7 @@ func (model *DatabaseFilterModel) parseDatabases(
 		m.Encrypted = types.BoolValue(db.Encrypted)
 		m.Engine = types.StringValue(db.Engine)
 		m.HostPrimary = types.StringValue(db.Hosts.Primary)
-		m.HostSecondary = types.StringValue(db.Hosts.Secondary)
+		m.HostStandby = types.StringValue(db.Hosts.Standby)
 		m.InstanceURI = types.StringValue(db.InstanceURI)
 		m.Label = types.StringValue(db.Label)
 		m.Region = types.StringValue(db.Region)

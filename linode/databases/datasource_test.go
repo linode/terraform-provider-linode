@@ -64,7 +64,7 @@ func TestAccDataSourceDatabases_byAttr(t *testing.T) {
 
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.host_primary"),
-					resource.TestCheckResourceAttrSet(resourceName, "databases.0.host_secondary"),
+					resource.TestCheckResourceAttrSet(resourceName, "databases.0.host_standby"),
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.id"),
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.instance_uri"),
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.status"),
