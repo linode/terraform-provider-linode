@@ -156,8 +156,8 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The primary host for the Managed Database.",
 			Computed:    true,
 		},
-		"host_secondary": schema.StringAttribute{
-			Description: "The secondary/private host for the Managed Database.",
+		"host_standby": schema.StringAttribute{
+			Description: "The standby/private host for the Managed Database.",
 			Computed:    true,
 		},
 		"members": schema.MapAttribute{

@@ -72,7 +72,7 @@ Each engine will be stored in the `databases` attribute and will export the foll
 
 * `host_primary` - The primary host for the Managed Database.
 
-* `host_secondary` - The secondary/private network host for the Managed Database.
+* `host_standby` - The standby/private network host for the Managed Database.
 
 * `id` - The ID of the Managed Database.
 

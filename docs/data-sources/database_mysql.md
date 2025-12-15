@@ -49,7 +49,7 @@ The `linode_database_mysql` data source exports the following attributes:
 
 * `host_primary` - The primary host for the Managed Database.
 
-* `host_secondary` - The secondary/private network host for the Managed Database.
+* `host_standby` - The standby/private network host for the Managed Database.
 
 * `label` - A unique, user-defined string referring to the Managed Database.
 

@@ -38,8 +38,8 @@ var (
 		SSLConnection: true,
 		ClusterSize:   3,
 		Hosts: linodego.DatabaseHost{
-			Primary:   "1.2.3.4",
-			Secondary: "4.3.2.1",
+			Primary: "1.2.3.4",
+			Standby: "4.3.2.1",
 		},
 		Updates: linodego.DatabaseMaintenanceWindow{
 			DayOfWeek: 1,
@@ -109,7 +109,7 @@ func TestModel_Flatten(t *testing.T) {
 	require.Equal(t, int64(12345), model.ForkSource.ValueInt64())
 	require.Equal(t, currentTimeFWValue, model.ForkRestoreTime)
 	require.Equal(t, "1.2.3.4", model.HostPrimary.ValueString())
-	require.Equal(t, "4.3.2.1", model.HostSecondary.ValueString())
+	require.Equal(t, "4.3.2.1", model.HostStandby.ValueString())
 	require.Equal(t, "foobar", model.RootUsername.ValueString())
 	require.Equal(t, "barfoo", model.RootPassword.ValueString())
 	require.Equal(t, currentTimeFWValue, model.Created)

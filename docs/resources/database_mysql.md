@@ -109,7 +109,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `host_primary` - The primary host for the Managed Database.
 
-* `host_secondary` - The secondary/private network host for the Managed Database.
+* `host_standby` - The standby/private network host for the Managed Database.
 
 * `root_password` - The randomly-generated root password for the Managed Database instance.
 

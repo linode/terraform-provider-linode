@@ -14,16 +14,16 @@ var filterConfig = frameworkfilter.Config{
 	"type":    {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"version": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 
-	"engine":         {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"allow_list":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"cluster_size":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
-	"created":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"encrypted":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
-	"host_primary":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"host_secondary": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"id":             {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
-	"instance_uri":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"updated":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"engine":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"allow_list":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"cluster_size": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"created":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"encrypted":    {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
+	"host_primary": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"host_standby": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"id":           {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"instance_uri": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"updated":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDataSourceSchema = schema.Schema{
@@ -69,8 +69,8 @@ var frameworkDataSourceSchema = schema.Schema{
 						Description: "The primary host for the Managed Database.",
 						Computed:    true,
 					},
-					"host_secondary": schema.StringAttribute{
-						Description: "The secondary/private host for the Managed Database.",
+					"host_standby": schema.StringAttribute{
+						Description: "The standby/private host for the Managed Database.",
 						Computed:    true,
 					},
 					"instance_uri": schema.StringAttribute{

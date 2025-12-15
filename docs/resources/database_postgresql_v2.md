@@ -285,7 +285,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `host_primary` - The primary host for the Managed Database.
 
-* `host_secondary` - The secondary/private host for the managed database.
+* `host_standby` - The standby host for the Managed Database.
 
 * `pending_updates` - A set of pending updates.
 

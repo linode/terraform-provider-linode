@@ -74,8 +74,8 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The primary host for the Managed Database.",
 			Computed:    true,
 		},
-		"host_secondary": schema.StringAttribute{
-			Description: "The secondary host for the Managed Database.",
+		"host_standby": schema.StringAttribute{
+			Description: "The standby host for the Managed Database.",
 			Computed:    true,
 		},
 		"root_password": schema.StringAttribute{
