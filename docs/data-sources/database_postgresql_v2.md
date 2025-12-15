@@ -49,7 +49,7 @@ The `linode_database_postgresql_v2` data source exports the following attributes
 
 * `host_primary` - The primary host for the Managed Database.
 
-* `host_standby` - The standby/private host for the managed database.
+* `host_standby` - The standby/private host for the Managed Database.
 
 * `label` - A unique, user-defined string referring to the Managed Database.
 
