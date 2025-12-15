@@ -3,6 +3,7 @@
 package regions
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -27,6 +28,10 @@ func TestParseRegions(t *testing.T) {
 				MaximumLinodesPerPG:   6,
 				MaximumPGsPerCustomer: 11,
 			},
+			Monitors: linodego.RegionMonitors{
+				Alerts:  []string{"Managed Databases"},
+				Metrics: []string{"Managed Databases"},
+			},
 		},
 		{
 			ID:           "ap-west",
@@ -43,12 +48,16 @@ func TestParseRegions(t *testing.T) {
 				MaximumLinodesPerPG:   5,
 				MaximumPGsPerCustomer: 10,
 			},
+			Monitors: linodego.RegionMonitors{
+				Alerts:  []string{"Managed Databases"},
+				Metrics: []string{"Managed Databases"},
+			},
 		},
 	}
 
 	model := &RegionFilterModel{}
 
-	model.parseRegions(regions)
+	model.parseRegions(context.Background(), regions)
 
 	assert.Len(t, model.Regions, len(regions))
 
@@ -77,5 +86,13 @@ func TestParseRegions(t *testing.T) {
 			types.Int64Value(int64(expectedRegion.PlacementGroupLimits.MaximumLinodesPerPG)),
 			model.Regions[i].PlacementGroupLimits[0].MaximumLinodesPerPG,
 		)
+
+		monitorVal, diag := types.ListValueFrom(context.Background(), types.StringType, []string{"Managed Databases"})
+		if diag != nil {
+			t.Error(diag.Errors())
+		}
+
+		assert.Equal(t, monitorVal, model.Regions[i].Monitors.Attributes()["metrics"])
+		assert.Equal(t, monitorVal, model.Regions[i].Monitors.Attributes()["alerts"])
 	}
 }

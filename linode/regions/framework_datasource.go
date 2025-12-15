@@ -56,7 +56,7 @@ func (r *DataSource) Read(
 		return
 	}
 
-	data.parseRegions(helper.AnySliceToTyped[linodego.Region](result))
+	data.parseRegions(ctx, helper.AnySliceToTyped[linodego.Region](result))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
