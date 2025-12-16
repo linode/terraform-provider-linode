@@ -11,6 +11,9 @@ import (
 	"github.com/linode/linodego"
 )
 
+// HTTPClientModifier is the signature for functions used to modify an HTTP client before use.
+type HTTPClientModifier func(client *http.Client) error
+
 // AddRootCAToTransport applies the cert file at the given path to the given *http.Transport
 func AddRootCAToTransport(cert string, transport *http.Transport) error {
 	certData, err := os.ReadFile(filepath.Clean(cert))

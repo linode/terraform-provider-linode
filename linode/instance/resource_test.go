@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -2211,7 +2212,7 @@ func TestAccResourceInstance_requestQuantity(t *testing.T) {
 	rootPass := acctest.RandString(64)
 
 	acceptance.ModifyProviderMeta(provider,
-		func(ctx context.Context, config *helper.ProviderMeta) error {
+		func(ctx context.Context, _ *schema.ResourceData, config *helper.ProviderMeta) error {
 			config.Client.OnBeforeRequest(func(request *linodego.Request) error {
 				if startTime.IsZero() {
 					startTime = time.Now()

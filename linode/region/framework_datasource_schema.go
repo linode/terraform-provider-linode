@@ -13,6 +13,11 @@ var ObjectTypePGLimits = types.ObjectType{
 	},
 }
 
+var MonitorsAttrTypes = map[string]attr.Type{
+	"alerts":  types.ListType{ElemType: types.StringType},
+	"metrics": types.ListType{ElemType: types.StringType},
+}
+
 var DataSourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"country": schema.StringAttribute{
@@ -37,7 +42,7 @@ var DataSourceSchema = schema.Schema{
 			ElementType: types.StringType,
 		},
 		"status": schema.StringAttribute{
-			Description: "This region’s current operational status.",
+			Description: "This region's current operational status.",
 			Computed:    true,
 		},
 		"placement_group_limits": schema.ListAttribute{
@@ -45,17 +50,21 @@ var DataSourceSchema = schema.Schema{
 			Computed:    true,
 			ElementType: ObjectTypePGLimits,
 		},
-	},
-	Blocks: map[string]schema.Block{
-		"resolvers": schema.ListNestedBlock{
-			NestedObject: schema.NestedBlockObject{
+		"monitors": schema.ObjectAttribute{
+			Description:    "The monitoring services available in a region.",
+			Computed:       true,
+			AttributeTypes: MonitorsAttrTypes,
+		},
+		"resolvers": schema.ListNestedAttribute{
+			Computed: true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"ipv4": schema.StringAttribute{
-						Description: "The IPv4 addresses for this region’s DNS resolvers, separated by commas.",
+						Description: "The IPv4 addresses for this region's DNS resolvers, separated by commas.",
 						Computed:    true,
 					},
 					"ipv6": schema.StringAttribute{
-						Description: "The IPv6 addresses for this region’s DNS resolvers, separated by commas.",
+						Description: "The IPv6 addresses for this region's DNS resolvers, separated by commas.",
 						Computed:    true,
 					},
 				},

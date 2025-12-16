@@ -72,3 +72,65 @@ func CheckPostgresDatabaseExists(name string, db *linodego.PostgresDatabase) res
 		return nil
 	}
 }
+
+func CheckMySQLDatabaseV2Destroy(s *terraform.State) error {
+	client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_database_mysql_v2" {
+			continue
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("failed to parse %v as int", rs.Primary.ID)
+		}
+
+		if id == 0 {
+			return fmt.Errorf("should not have Linode ID 0")
+		}
+
+		_, err = client.GetMySQLDatabase(context.Background(), id)
+
+		if err == nil {
+			return fmt.Errorf("should not find database ID %d existing after delete", id)
+		}
+
+		if apiErr, ok := err.(*linodego.Error); ok && !linodego.IsNotFound(apiErr) {
+			return fmt.Errorf("failed to get database ID %d: %s", id, err)
+		}
+	}
+
+	return nil
+}
+
+func CheckPostgreSQLDatabaseV2Destroy(s *terraform.State) error {
+	client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_database_postgresql_v2" {
+			continue
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("failed to parse %v as int", rs.Primary.ID)
+		}
+
+		if id == 0 {
+			return fmt.Errorf("should not have Linode ID 0")
+		}
+
+		_, err = client.GetPostgresDatabase(context.Background(), id)
+
+		if err == nil {
+			return fmt.Errorf("should not find database ID %d existing after delete", id)
+		}
+
+		if apiErr, ok := err.(*linodego.Error); ok && !linodego.IsNotFound(apiErr) {
+			return fmt.Errorf("failed to get database ID %d: %s", id, err)
+		}
+	}
+
+	return nil
+}

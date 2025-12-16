@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 )
 
 type DataSourceModel struct {
@@ -42,7 +42,7 @@ func (data *DataSourceModel) parseMySQLDatabase(
 	data.Status = types.StringValue(string(db.Status))
 	data.Label = types.StringValue(string(db.Label))
 	data.HostPrimary = types.StringValue(string(db.Hosts.Primary))
-	data.HostSecondary = types.StringValue(string(db.Hosts.Secondary))
+	data.HostSecondary = types.StringValue(string(db.Hosts.Standby))
 	data.Region = types.StringValue(string(db.Region))
 	data.Type = types.StringValue(string(db.Type))
 	data.Engine = types.StringValue(string(db.Engine))
@@ -61,9 +61,9 @@ func (data *DataSourceModel) parseMySQLDatabase(
 	data.Created = types.StringValue(db.Created.Format(time.RFC3339))
 	data.Updated = types.StringValue(db.Updated.Format(time.RFC3339))
 
-	data.EngineID = types.StringValue(helper.CreateLegacyDatabaseEngineSlug(db.Engine, db.Version))
+	data.EngineID = types.StringValue(databaseshared.CreateLegacyDatabaseEngineSlug(db.Engine, db.Version))
 
-	updates, diags := helper.FlattenDatabaseMaintenanceWindow(ctx, db.Updates)
+	updates, diags := databaseshared.FlattenDatabaseMaintenanceWindow(ctx, db.Updates)
 	if diags.HasError() {
 		return diags
 	}

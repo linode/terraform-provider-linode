@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 )
 
 var frameworkDatasourceSchema = schema.Schema{
@@ -94,7 +94,7 @@ var frameworkDatasourceSchema = schema.Schema{
 		"updates": schema.ListAttribute{
 			Description: "Configuration settings for automated patch update maintenance for the Managed Database.",
 			Computed:    true,
-			ElementType: helper.UpdateObjectType,
+			ElementType: databaseshared.UpdateObjectType,
 		},
 		"root_username": schema.StringAttribute{
 			Description: "The root username for the Managed Database instance.",

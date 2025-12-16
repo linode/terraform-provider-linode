@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlv2"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/unit"
 	"github.com/stretchr/testify/require"
 )
@@ -34,8 +35,8 @@ var (
 		SSLConnection: true,
 		ClusterSize:   3,
 		Hosts: linodego.DatabaseHost{
-			Primary:   "1.2.3.4",
-			Secondary: "4.3.2.1",
+			Primary: "1.2.3.4",
+			Standby: "4.3.2.1",
 		},
 		Updates: linodego.DatabaseMaintenanceWindow{
 			DayOfWeek: 1,
@@ -86,7 +87,7 @@ func TestModel_Flatten(t *testing.T) {
 
 	model.Flatten(context.Background(), &testDB, &testDBSSL, &testDBCreds, false)
 
-	updates := unit.FrameworkObjectAs[databasepostgresqlv2.ModelUpdates](t, model.Updates)
+	updates := unit.FrameworkObjectAs[databaseshared.ModelUpdates](t, model.Updates)
 
 	require.Equal(t, "12345", model.ID.ValueString())
 

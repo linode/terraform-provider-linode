@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 )
 
 var resourceSchema = map[string]*schema.Schema{
@@ -104,7 +104,7 @@ var resourceSchema = map[string]*schema.Schema{
 					Description: "The day to perform maintenance.",
 					Required:    true,
 					ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
-						if _, err := helper.ExpandDayOfWeek(i.(string)); err != nil {
+						if _, err := databaseshared.ExpandDayOfWeek(i.(string)); err != nil {
 							return diag.FromErr(err)
 						}
 

@@ -1,0 +1,8 @@
+{{ define "producer_image_share_group_basic" }}
+
+resource "linode_producer_image_share_group" "foobar" {
+    label = "{{.Label}}"
+    description = "{{.Description}}"
+}
+
+{{ end }}

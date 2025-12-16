@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
 
@@ -62,7 +63,7 @@ func (model *DatabaseFilterModel) parseDatabases(
 		m.Encrypted = types.BoolValue(db.Encrypted)
 		m.Engine = types.StringValue(db.Engine)
 		m.HostPrimary = types.StringValue(db.Hosts.Primary)
-		m.HostSecondary = types.StringValue(db.Hosts.Secondary)
+		m.HostSecondary = types.StringValue(db.Hosts.Standby)
 		m.InstanceURI = types.StringValue(db.InstanceURI)
 		m.Label = types.StringValue(db.Label)
 		m.Region = types.StringValue(db.Region)
@@ -85,15 +86,7 @@ func (model *DatabaseFilterModel) parseDatabases(
 		}
 
 		if db.PrivateNetwork != nil {
-			privateNetworkObject, rd := types.ObjectValueFrom(
-				ctx,
-				privateNetworkAttributes,
-				&ModelPrivateNetwork{
-					VPCID:        types.Int64Value(int64(db.PrivateNetwork.VPCID)),
-					SubnetID:     types.Int64Value(int64(db.PrivateNetwork.SubnetID)),
-					PublicAccess: types.BoolValue(db.PrivateNetwork.PublicAccess),
-				},
-			)
+			privateNetworkObject, rd := databaseshared.FlattenPrivateNetwork(ctx, *db.PrivateNetwork)
 			d.Append(rd...)
 			m.PrivateNetwork = privateNetworkObject
 		}
