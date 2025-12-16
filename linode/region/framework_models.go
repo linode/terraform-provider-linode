@@ -1,6 +1,9 @@
 package region
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -28,9 +31,19 @@ type RegionModel struct {
 	Capabilities         []types.String         `tfsdk:"capabilities"`
 	Resolvers            []RegionResolversModel `tfsdk:"resolvers"`
 	PlacementGroupLimits []RegionPGLimitsModel  `tfsdk:"placement_group_limits"`
+	Monitors             types.Object           `tfsdk:"monitors"`
 }
 
-func (m *RegionModel) ParseRegion(region *linodego.Region) {
+// RegionMonitors contains the monitoring configuration for a region
+type RegionMonitors struct {
+	Alerts  types.List `tfsdk:"alerts"`
+	Metrics types.List `tfsdk:"metrics"`
+}
+
+func (m *RegionModel) ParseRegion(
+	ctx context.Context,
+	region *linodego.Region,
+) diag.Diagnostics {
 	m.ID = types.StringValue(region.ID)
 	m.Label = types.StringValue(region.Label)
 	m.Status = types.StringValue(region.Status)
@@ -56,4 +69,28 @@ func (m *RegionModel) ParseRegion(region *linodego.Region) {
 			},
 		}
 	}
+
+	var monitorsModel RegionMonitors
+	alerts, err := types.ListValueFrom(ctx, types.StringType, region.Monitors.Alerts)
+	if err != nil {
+		return err
+	}
+
+	monitorsModel.Alerts = alerts
+
+	metrics, err := types.ListValueFrom(ctx, types.StringType, region.Monitors.Metrics)
+	if err != nil {
+		return err
+	}
+
+	monitorsModel.Metrics = metrics
+
+	monitors, err := types.ObjectValueFrom(ctx, MonitorsAttrTypes, &monitorsModel)
+	if err != nil {
+		return err
+	}
+
+	m.Monitors = monitors
+
+	return nil
 }
