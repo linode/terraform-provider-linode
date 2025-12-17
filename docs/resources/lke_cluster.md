@@ -131,7 +131,7 @@ resource "linode_lke_cluster" "my-cluster" {
         type  = "g6-standard-2"
         count = 2
         label = "db-pool"
-        firewall_id = 12345 # id of the firewall to associate with this node pool
+        firewall_id = 12345
     }
 }
 ```
