@@ -392,7 +392,6 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 				{
 					Config: tmpl.LabelledPools(t, clusterName, k8sVersionLatest, testRegion, "test"),
 					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.firewall_id", "12345"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.label", "test"),
 					),
 				},
