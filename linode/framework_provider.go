@@ -334,6 +334,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nbconfigs.NewDataSource,
 		ipv6ranges.NewDataSource,
 		domains.NewDataSource,
+		linodeinterface.NewDataSource,
 		lke.NewDataSource,
 		lkeclusters.NewDataSource,
 		lketypes.NewDataSource,
