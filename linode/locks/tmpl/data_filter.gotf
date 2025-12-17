@@ -4,7 +4,6 @@ resource "linode_instance" "test" {
   label = "{{ .Label }}"
   region = "{{ .Region }}"
   type = "g6-nanode-1"
-  image = "linode/alpine3.19"
 }
 
 resource "linode_lock" "test" {

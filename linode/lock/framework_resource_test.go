@@ -18,7 +18,6 @@ import (
 )
 
 func TestAccResourceLock_basic(t *testing.T) {
-	acceptance.OptInTest(t)
 	t.Parallel()
 
 	instanceName := "linode_instance.test"
@@ -60,7 +59,6 @@ func TestAccResourceLock_basic(t *testing.T) {
 }
 
 func TestAccResourceLock_withSubresources(t *testing.T) {
-	acceptance.OptInTest(t)
 	t.Parallel()
 
 	instanceName := "linode_instance.test"
