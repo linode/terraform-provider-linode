@@ -7,12 +7,11 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"id": {APIFilterable: false, TypeFunc: helper.FilterTypeInt},
-
+	"id":           {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
+	"lock_type":    {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"entity_id":    {APIFilterable: false, TypeFunc: helper.FilterTypeInt},
 	"entity_type":  {APIFilterable: false, TypeFunc: helper.FilterTypeString},
 	"entity_label": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
-	"lock_type":    {APIFilterable: false, TypeFunc: helper.FilterTypeString},
 }
 
 var lockAttributes = map[string]schema.Attribute{
