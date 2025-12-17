@@ -60,6 +60,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/lketypes"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkeversion"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkeversions"
+	"github.com/linode/terraform-provider-linode/v3/linode/lock"
+	"github.com/linode/terraform-provider-linode/v3/linode/locks"
 	"github.com/linode/terraform-provider-linode/v3/linode/maintenancepolicies"
 	"github.com/linode/terraform-provider-linode/v3/linode/nb"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbconfig"
@@ -246,6 +248,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		instancesharedips.NewResource,
 		ipv6range.NewResource,
 		lkenodepool.NewResource,
+		lock.NewResource,
 		nb.NewResource,
 		nbconfig.NewResource,
 		nbnode.NewResource,
@@ -288,6 +291,8 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		networktransferprices.NewDataSource,
 		lkeversion.NewDataSource,
 		lkeversions.NewDataSource,
+		lock.NewDataSource,
+		locks.NewDataSource,
 		regions.NewDataSource,
 		ipv6range.NewDataSource,
 		objbucket.NewDataSource,
