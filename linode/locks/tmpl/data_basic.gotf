@@ -12,6 +12,8 @@ resource "linode_lock" "test" {
   lock_type   = "{{ .LockType }}"
 }
 
-data "linode_locks" "test" {}
+data "linode_locks" "test" {
+  depends_on = [ linode_lock.test ]
+}
 
 {{ end }}
