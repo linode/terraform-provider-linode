@@ -13,9 +13,10 @@ resource "linode_lock" "test" {
 }
 
 data "linode_locks" "test" {
+  depends_on = [ linode_lock.test ]
   filter {
-    name = "entity_type"
-    values = ["linode"]
+    name = "lock_type"
+    values = ["{{ .LockType }}"]
   }
 }
 

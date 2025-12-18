@@ -16,28 +16,13 @@ For more information, see the Linode APIv4 docs (TBD).
 
 ## Example Usage
 
-Get information about all Linode Locks with a certain entity type:
-
-```hcl
-data "linode_locks" "linode_locks" {
-  filter {
-    name = "entity_type"
-    values = ["linode"]
-  }
-}
-
-output "lock_ids" {
-  value = data.linode_locks.linode_locks.locks.*.id
-}
-```
-
-Get information about a specific lock by entity ID:
+Get all locks in a type:
 
 ```hcl
 data "linode_locks" "my_instance_locks" {
   filter {
-    name = "entity_id"
-    values = ["12345"]
+    name = "lock_type"
+    values = ["cannot_delete"]
   }
 }
 ```
@@ -72,7 +57,13 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-Each Linode lock will be stored in the `locks` attribute and will export the following attributes:
+In addition to all arguments above, the following attributes are exported:
+
+* `locks` - A list of Linode Locks that match the filter criteria.
+
+### Lock Attributes
+
+Each lock in the `locks` list exports the following attributes:
 
 * `id` - The unique ID of the Lock.
 
@@ -89,11 +80,5 @@ Each Linode lock will be stored in the `locks` attribute and will export the fol
 ## Filterable Fields
 
 * `id`
-
-* `entity_id`
-
-* `entity_type`
-
-* `entity_label`
 
 * `lock_type`

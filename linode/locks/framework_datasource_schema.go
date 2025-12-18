@@ -7,11 +7,8 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"id":           {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
-	"lock_type":    {APIFilterable: true, TypeFunc: helper.FilterTypeString},
-	"entity_id":    {APIFilterable: false, TypeFunc: helper.FilterTypeInt},
-	"entity_type":  {APIFilterable: false, TypeFunc: helper.FilterTypeString},
-	"entity_label": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
+	"id":        {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
+	"lock_type": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 }
 
 var lockAttributes = map[string]schema.Attribute{
@@ -50,14 +47,15 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
-		"locks": schema.ListNestedBlock{
+		"locks": schema.ListNestedAttribute{
 			Description: "The returned list of Locks.",
-			NestedObject: schema.NestedBlockObject{
+			Computed:    true,
+			NestedObject: schema.NestedAttributeObject{
 				Attributes: lockAttributes,
 			},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 	},
 }

@@ -21,11 +21,11 @@ func DataBasic(t testing.TB, label, region string) string {
 		})
 }
 
-func DataFilter(t testing.TB, label, region string) string {
+func DataFilter(t testing.TB, label, region, lockType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"locks_data_filter", TemplateData{
 			Label:    label,
 			Region:   region,
-			LockType: "cannot_delete",
+			LockType: lockType,
 		})
 }
