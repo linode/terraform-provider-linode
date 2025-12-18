@@ -2,11 +2,16 @@ package images
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+)
+
+const (
+	DefaultImageListTimeout = 30 * time.Minute
 )
 
 type DataSource struct {
@@ -76,6 +81,10 @@ func listImages(
 	tflog.Trace(ctx, "client.ListImages", map[string]any{
 		"filter": filter,
 	})
+
+	// add a timeout because listing a large number of images could take abnormally long time
+	ctx, cancel := context.WithTimeout(ctx, DefaultImageListTimeout)
+	defer cancel()
 
 	images, err := client.ListImages(ctx, &linodego.ListOptions{
 		Filter: filter,
