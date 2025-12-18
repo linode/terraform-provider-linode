@@ -5,6 +5,7 @@ package lock_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"testing"
 
@@ -17,6 +18,17 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/lock/tmpl"
 )
 
+var testRegion string
+
+func init() {
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
+}
+
 func TestAccResourceLock_basic(t *testing.T) {
 	t.Parallel()
 
@@ -26,10 +38,6 @@ func TestAccResourceLock_basic(t *testing.T) {
 	var instance linodego.Instance
 
 	label := acctest.RandomWithPrefix("tf_test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps(nil, "core")
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
@@ -67,10 +75,6 @@ func TestAccResourceLock_withSubresources(t *testing.T) {
 	var instance linodego.Instance
 
 	label := acctest.RandomWithPrefix("tf_test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps(nil, "core")
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,

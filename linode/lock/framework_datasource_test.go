@@ -7,17 +7,22 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/lock/tmpl"
 )
 
 const (
-	testRegion       = "us-ord"
 	testLockDataName = "data.linode_lock.test"
 )
 
 func TestAccDataSourceLock_basic(t *testing.T) {
 	t.Parallel()
+
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	instanceLabel := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{

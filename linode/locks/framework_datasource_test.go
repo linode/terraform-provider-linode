@@ -3,6 +3,7 @@
 package locks_test
 
 import (
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -10,14 +11,25 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/locks/tmpl"
 )
 
 const (
-	testRegion        = "us-ord"
 	testLocksDataName = "data.linode_locks.test"
 )
+
+var testRegion string
+
+func init() {
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
+}
 
 func TestAccDataSourceLocks_basic(t *testing.T) {
 	t.Parallel()
