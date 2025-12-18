@@ -152,7 +152,7 @@ func (m *Model) Flatten(
 		preserveKnown,
 	)
 	m.HostPrimary = helper.KeepOrUpdateString(m.HostPrimary, db.Hosts.Primary, preserveKnown)
-	m.HostSecondary = helper.KeepOrUpdateString(m.HostSecondary, db.Hosts.Secondary, preserveKnown)
+	m.HostSecondary = helper.KeepOrUpdateString(m.HostSecondary, db.Hosts.Standby, preserveKnown)
 	m.Label = helper.KeepOrUpdateString(m.Label, db.Label, preserveKnown)
 	m.OldestRestoreTime = helper.KeepOrUpdateValue(m.OldestRestoreTime, timetypes.NewRFC3339TimePointerValue(db.OldestRestoreTime), preserveKnown)
 	m.Platform = helper.KeepOrUpdateString(m.Platform, string(db.Platform), preserveKnown)
