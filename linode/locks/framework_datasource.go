@@ -1,17 +1,12 @@
-package images
+package locks
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-)
-
-const (
-	DefaultImageListTimeout = 30 * time.Minute
 )
 
 type DataSource struct {
@@ -22,8 +17,9 @@ func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
-				Name:   "linode_images",
-				Schema: &frameworkDatasourceSchema,
+				Name:          "linode_locks",
+				Schema:        &frameworkDatasourceSchema,
+				IsEarlyAccess: true,
 			},
 		),
 	}
@@ -36,7 +32,7 @@ func (d *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data."+d.Config.Name)
 
-	var data ImageFilterModel
+	var data LockFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -51,47 +47,34 @@ func (d *DataSource) Read(
 	data.ID = id
 
 	result, diag := filterConfig.GetAndFilter(
-		ctx, d.Meta.Client, data.Filters, listImages,
+		ctx, d.Meta.Client, data.Filters, listLocks,
 		data.Order, data.OrderBy)
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	if data.Latest.ValueBool() {
-		result, diag = filterConfig.GetLatestCreated(result, "Created")
-		if diag != nil {
-			resp.Diagnostics.Append(diag)
-			return
-		}
-	}
-
-	resp.Diagnostics.Append(data.parseImages(ctx, helper.AnySliceToTyped[linodego.Image](result))...)
+	resp.Diagnostics.Append(
+		data.parseLocks(helper.AnySliceToTyped[linodego.Lock](result))...,
+	)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func listImages(
+func listLocks(
 	ctx context.Context,
 	client *linodego.Client,
 	filter string,
 ) ([]any, error) {
-	tflog.Trace(ctx, "client.ListImages", map[string]any{
-		"filter": filter,
-	})
-
-	// add a timeout because listing a large number of images could take abnormally long time
-	ctx, cancel := context.WithTimeout(ctx, DefaultImageListTimeout)
-	defer cancel()
-
-	images, err := client.ListImages(ctx, &linodego.ListOptions{
+	locks, err := client.ListLocks(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return helper.TypedSliceToAny(images), nil
+	return helper.TypedSliceToAny(locks), nil
 }
