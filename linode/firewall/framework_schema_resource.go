@@ -25,7 +25,7 @@ var ruleNestedObject = schema.NestedBlockObject{
 			Description: "Used to identify this rule. For display purposes only.",
 			Required:    true,
 			Validators: []validator.String{
-				stringvalidator.LengthBetween(3, 32),
+				stringvalidator.LengthBetween(3, 64),
 			},
 		},
 		"action": schema.StringAttribute{
@@ -106,7 +106,7 @@ var frameworkResourceSchema = schema.Schema{
 				" If no label is provided, a default will be assigned.",
 			Required: true,
 			Validators: []validator.String{
-				stringvalidator.LengthBetween(3, 32),
+				stringvalidator.LengthBetween(3, 64),
 			},
 		},
 		"tags": schema.SetAttribute{
