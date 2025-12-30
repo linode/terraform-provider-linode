@@ -245,8 +245,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.InterfaceGeneration = linodego.InterfaceGeneration(interfaceGeneration.(string))
 	}
 
-	if networkHelper, networkHelperOk := d.GetOk("network_helper"); networkHelperOk {
-		createOpts.NetworkHelper = linodego.Pointer(networkHelper.(bool))
+	if !d.GetRawConfig().GetAttr("network_helper").IsNull() {
+		createOpts.NetworkHelper = linodego.Pointer(d.Get("network_helper").(bool))
 	}
 
 	if _, metadataOk := d.GetOk("metadata.0"); metadataOk {
