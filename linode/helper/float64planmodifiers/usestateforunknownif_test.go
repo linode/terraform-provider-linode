@@ -112,7 +112,7 @@ func TestUseStateForUnknownIfNotNull(t *testing.T) {
 func TestUseStateForUnknownIf(t *testing.T) {
 	testCases := map[string]struct {
 		request   planmodifier.Float64Request
-		condition func(context.Context, planmodifier.Float64Request) bool
+		condition float64planmodifiers.UseStateForUnknownIfFunc
 		expected  *planmodifier.Float64Response
 	}{
 		"condition-false": {
@@ -125,8 +125,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.Float64Unknown(),
 				ConfigValue: types.Float64Null(),
 			},
-			condition: func(ctx context.Context, req planmodifier.Float64Request) bool {
-				return false
+			condition: func(ctx context.Context, req planmodifier.Float64Request, resp *float64planmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = false
 			},
 			expected: &planmodifier.Float64Response{
 				PlanValue: types.Float64Unknown(),
@@ -142,8 +142,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.Float64Unknown(),
 				ConfigValue: types.Float64Null(),
 			},
-			condition: func(ctx context.Context, req planmodifier.Float64Request) bool {
-				return true
+			condition: func(ctx context.Context, req planmodifier.Float64Request, resp *float64planmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = true
 			},
 			expected: &planmodifier.Float64Response{
 				PlanValue: types.Float64Value(12.3),
@@ -159,8 +159,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.Float64Unknown(),
 				ConfigValue: types.Float64Null(),
 			},
-			condition: func(ctx context.Context, req planmodifier.Float64Request) bool {
-				return !req.StateValue.IsNull() && req.StateValue.ValueFloat64() > 0
+			condition: func(ctx context.Context, req planmodifier.Float64Request, resp *float64planmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = !req.StateValue.IsNull() && req.StateValue.ValueFloat64() > 0
 			},
 			expected: &planmodifier.Float64Response{
 				PlanValue: types.Float64Value(12.3),
@@ -176,8 +176,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.Float64Unknown(),
 				ConfigValue: types.Float64Null(),
 			},
-			condition: func(ctx context.Context, req planmodifier.Float64Request) bool {
-				return !req.StateValue.IsNull() && req.StateValue.ValueFloat64() > 0
+			condition: func(ctx context.Context, req planmodifier.Float64Request, resp *float64planmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = !req.StateValue.IsNull() && req.StateValue.ValueFloat64() > 0
 			},
 			expected: &planmodifier.Float64Response{
 				PlanValue: types.Float64Unknown(),
