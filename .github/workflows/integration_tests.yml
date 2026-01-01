@@ -174,7 +174,7 @@ jobs:
         run: pip3 install requests wheel boto3==1.35.99
 
       - name: Download test report
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
 
       - name: Get .xml reports from separate Artifacts into root folder
         run: rsync -av test-report-USER_*/* .
