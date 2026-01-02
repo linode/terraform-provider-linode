@@ -61,6 +61,8 @@ func TestAccDataSourceRegion_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "resolvers.0.ipv6"),
 					resource.TestCheckResourceAttrSet(resourceName, "placement_group_limits.0.maximum_pgs_per_customer"),
 					resource.TestCheckResourceAttrSet(resourceName, "placement_group_limits.0.maximum_linodes_per_pg"),
+					resource.TestCheckResourceAttrSet(resourceName, "monitors.alerts.0"),
+					resource.TestCheckResourceAttrSet(resourceName, "monitors.metrics.0"),
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "capabilities.#", 0),
 				),
 			},

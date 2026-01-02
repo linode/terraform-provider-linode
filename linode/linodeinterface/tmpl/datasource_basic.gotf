@@ -1,0 +1,30 @@
+{{ define "interface_datasource_basic" }}
+
+resource "linode_instance" "test" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+    type = "g6-nanode-1"
+    interface_generation = "linode"
+}
+
+resource "linode_interface" "test" {
+    linode_id = linode_instance.test.id
+    
+    public = {
+        ipv4 = {
+            addresses = [
+                {
+                    address = "auto"
+                    primary = true
+                }
+            ]
+        }
+    }
+}
+
+data "linode_interface" "test" {
+    id = linode_interface.test.id
+    linode_id = linode_instance.test.id
+}
+
+{{ end }}

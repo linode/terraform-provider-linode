@@ -171,3 +171,11 @@ func VPCWithIPv61(t testing.TB, label, region, subnetIPv4 string) string {
 			SubnetIPv4: subnetIPv4,
 		})
 }
+
+func DataSourceBasic(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"interface_datasource_basic", TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}

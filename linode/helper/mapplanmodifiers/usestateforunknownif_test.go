@@ -113,7 +113,7 @@ func TestUseStateForUnknownIfNotNull(t *testing.T) {
 func TestUseStateForUnknownIf(t *testing.T) {
 	testCases := map[string]struct {
 		request   planmodifier.MapRequest
-		condition func(context.Context, planmodifier.MapRequest) bool
+		condition mapplanmodifiers.UseStateForUnknownIfFunc
 		expected  *planmodifier.MapResponse
 	}{
 		"condition-false": {
@@ -126,8 +126,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.MapUnknown(types.StringType),
 				ConfigValue: types.MapNull(types.StringType),
 			},
-			condition: func(ctx context.Context, req planmodifier.MapRequest) bool {
-				return false
+			condition: func(ctx context.Context, req planmodifier.MapRequest, resp *mapplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = false
 			},
 			expected: &planmodifier.MapResponse{
 				PlanValue: types.MapUnknown(types.StringType),
@@ -143,8 +143,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.MapUnknown(types.StringType),
 				ConfigValue: types.MapNull(types.StringType),
 			},
-			condition: func(ctx context.Context, req planmodifier.MapRequest) bool {
-				return true
+			condition: func(ctx context.Context, req planmodifier.MapRequest, resp *mapplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = true
 			},
 			expected: &planmodifier.MapResponse{
 				PlanValue: types.MapValueMust(types.StringType, map[string]attr.Value{"key": types.StringValue("state")}),
@@ -160,9 +160,9 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.MapUnknown(types.StringType),
 				ConfigValue: types.MapNull(types.StringType),
 			},
-			condition: func(ctx context.Context, req planmodifier.MapRequest) bool {
+			condition: func(ctx context.Context, req planmodifier.MapRequest, resp *mapplanmodifiers.UseStateForUnknownIfFuncResponse) {
 				elements := req.StateValue.Elements()
-				return !req.StateValue.IsNull() && len(elements) > 0
+				resp.UseState = !req.StateValue.IsNull() && len(elements) > 0
 			},
 			expected: &planmodifier.MapResponse{
 				PlanValue: types.MapValueMust(types.StringType, map[string]attr.Value{"key": types.StringValue("value")}),
@@ -178,9 +178,9 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.MapUnknown(types.StringType),
 				ConfigValue: types.MapNull(types.StringType),
 			},
-			condition: func(ctx context.Context, req planmodifier.MapRequest) bool {
+			condition: func(ctx context.Context, req planmodifier.MapRequest, resp *mapplanmodifiers.UseStateForUnknownIfFuncResponse) {
 				elements := req.StateValue.Elements()
-				return !req.StateValue.IsNull() && len(elements) > 0
+				resp.UseState = !req.StateValue.IsNull() && len(elements) > 0
 			},
 			expected: &planmodifier.MapResponse{
 				PlanValue: types.MapUnknown(types.StringType),
