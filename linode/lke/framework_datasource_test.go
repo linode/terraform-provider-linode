@@ -3,10 +3,14 @@
 package lke_test
 
 import (
+	"context"
+	"fmt"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/lke/tmpl"
 )
@@ -185,6 +189,22 @@ func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 	//	k8sVersionEnterprise = enterpriseVersions[0].ID
 	//}
 
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatalf("failed to get client: %s", err)
+	}
+
+	firewall, err := client.CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
+		Label: "tftest-enterprise-upgrade-" + acctest.RandString(5),
+		Rules: linodego.FirewallRuleSet{
+			InboundPolicy:  "ACCEPT",
+			OutboundPolicy: "ACCEPT",
+		},
+	})
+	if err != nil {
+		t.Errorf("failed creating firewall: %v", err)
+	}
+
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf-test")
 		resource.Test(t, resource.TestCase{
@@ -193,7 +213,7 @@ func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.DataEnterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "on_recycle"),
+					Config: tmpl.DataEnterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "on_recycle", firewall.ID),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(dataSourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "region", enterpriseRegion),
@@ -203,6 +223,7 @@ func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 						resource.TestCheckResourceAttr(dataSourceClusterName, "tags.#", "1"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.#", "1"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.type", "g6-standard-1"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.firewall_id", fmt.Sprintf("%d", firewall.ID)),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.count", "3"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.k8s_version", k8sVersionEnterprise),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.update_strategy", "on_recycle"),
@@ -216,4 +237,6 @@ func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 			},
 		})
 	})
+
+	client.DeleteFirewall(context.Background(), firewall.ID)
 }

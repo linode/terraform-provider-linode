@@ -219,8 +219,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			label = linodego.Pointer(poolSpec["label"].(string))
 		}
 
+		var firewallId *int
+		if poolSpec["firewall_id"] != 0 {
+			firewallId = linodego.Pointer(poolSpec["firewall_id"].(int))
+		}
+
 		createOpts.NodePools = append(createOpts.NodePools, linodego.LKENodePoolCreateOptions{
 			Label:      label,
+			FirewallID: firewallId,
 			Type:       poolSpec["type"].(string),
 			Tags:       helper.ExpandStringSet(poolSpec["tags"].(*schema.Set)),
 			Taints:     expandNodePoolTaints(helper.ExpandObjectSet(poolSpec["taint"].(*schema.Set))),
