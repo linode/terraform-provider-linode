@@ -108,6 +108,16 @@ func Enterprise(t testing.TB, name, version, region, updateStrategy string) stri
 		"lke_cluster_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, UpdateStrategy: updateStrategy})
 }
 
+func EnterpriseNoPools(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_no_pools", TemplateData{Label: name, K8sVersion: version, Region: region, Tier: "enterprise"})
+}
+
+func StandardNoPools(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_no_pools", TemplateData{Label: name, K8sVersion: version, Region: region, Tier: "standard"})
+}
+
 func DataBasic(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_basic", TemplateData{Label: name, K8sVersion: version, Region: region})
