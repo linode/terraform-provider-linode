@@ -3515,7 +3515,7 @@ func TestAccResourceInstance_withLock(t *testing.T) {
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:       tmpl.WithLock(t, label, testRegion, lockType),
+				Config: tmpl.WithLock(t, label, testRegion, lockType),
 			},
 			{
 				RefreshState: true,
