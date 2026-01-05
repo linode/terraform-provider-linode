@@ -109,9 +109,20 @@ func Enterprise(t testing.TB, name, version, region, updateStrategy string) stri
 		"lke_cluster_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, UpdateStrategy: updateStrategy})
 }
 
+<<<<<<< Updated upstream
 func EnterpriseFirewall(t testing.TB, name, version, region string, firewall_id int) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, FirewallID: firewall_id})
+=======
+func EnterpriseNoPools(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_no_pools", TemplateData{Label: name, K8sVersion: version, Region: region, Tier: "enterprise"})
+}
+
+func StandardNoPools(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_no_pools", TemplateData{Label: name, K8sVersion: version, Region: region, Tier: "standard"})
+>>>>>>> Stashed changes
 }
 
 func DataBasic(t testing.TB, name, version, region string) string {

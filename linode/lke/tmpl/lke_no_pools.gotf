@@ -1,0 +1,10 @@
+{{ define "lke_no_pools" }}
+
+resource "linode_lke_cluster" "test" {
+    label       = "{{.Label}}"
+    region      = "{{ .Region }}"
+    k8s_version = "{{.K8sVersion}}"
+    tier = "{{.Tier}}"
+}
+
+{{ end }}
