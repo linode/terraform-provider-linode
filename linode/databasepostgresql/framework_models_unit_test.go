@@ -29,8 +29,8 @@ func TestParsePostgresDatabase(t *testing.T) {
 		ReplicationCommitType: "local",
 		ReplicationType:       "async",
 		Hosts: linodego.DatabaseHost{
-			Primary:   "lin-0000-000-pgsql-primary.servers.linodedb.net",
-			Secondary: "lin-0000-000-pgsql-primary-private.servers.linodedb.net",
+			Primary: "lin-0000-000-pgsql-primary.servers.linodedb.net",
+			Standby: "lin-0000-000-pgsql-primary-private.servers.linodedb.net",
 		},
 		Updates: linodego.DatabaseMaintenanceWindow{
 			DayOfWeek:   1,
