@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -61,7 +61,7 @@ jobs:
               echo "LINODE_CONSUMER_TOKEN=${{ secrets.LINODE_TOKEN_USER_2 }}" >> $GITHUB_ENV
               ;;
             "USER_2")
-              echo "TEST_SUITE=databasemysqlv2,firewall,firewallsettings,firewalltemplate,firewalltemplates,firewalldevice,firewalls,image,images,instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,nb,nbconfig,nbconfigs,nbnode,nbs,nbvpc,nbvpcs,sshkey,sshkeys,vlan,volume,volumes,vpc,vpcs,vpcsubnets,vpcips" >> $GITHUB_ENV
+              echo "TEST_SUITE=databasemysqlv2,firewall,firewallsettings,firewalltemplate,firewalltemplates,firewalldevice,firewalls,image,images,instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,lock,locks,nb,nbconfig,nbconfigs,nbnode,nbs,nbvpc,nbvpcs,sshkey,sshkeys,vlan,volume,volumes,vpc,vpcs,vpcsubnets,vpcips" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_2 }}" >> $GITHUB_ENV
               ;;
             "USER_3")
@@ -101,7 +101,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -160,7 +160,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: 'recursive'

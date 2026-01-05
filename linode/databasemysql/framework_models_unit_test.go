@@ -18,8 +18,8 @@ func TestParseMySQLDatabase(t *testing.T) {
 		Status: "active",
 		Label:  "example-db",
 		Hosts: linodego.DatabaseHost{
-			Primary:   "lin-123-456-mysql-mysql-primary.servers.linodedb.net",
-			Secondary: "lin-123-456-mysql-primary-private.servers.linodedb.net",
+			Primary: "lin-123-456-mysql-mysql-primary.servers.linodedb.net",
+			Standby: "lin-123-456-mysql-primary-private.servers.linodedb.net",
 		},
 		Region:          "us-east",
 		Type:            "g6-dedicated-2",

@@ -1,0 +1,19 @@
+{{ define "lock_data_basic" }}
+
+resource "linode_instance" "test" {
+  label = "{{ .Label }}"
+  region = "{{ .Region }}"
+  type = "g6-nanode-1"
+}
+
+resource "linode_lock" "test" {
+  entity_id   = linode_instance.test.id
+  entity_type = "linode"
+  lock_type   = "{{ .LockType }}"
+}
+
+data "linode_lock" "test" {
+  id = linode_lock.test.id
+}
+
+{{ end }}
