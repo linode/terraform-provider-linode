@@ -129,6 +129,11 @@ var resourceSchema = map[string]*schema.Schema{
 					Description: "A Linode Type for all of the nodes in the Node Pool.",
 					Required:    true,
 				},
+				"firewall_id": {
+					Type:        schema.TypeInt,
+					Description: "The ID of the Firewall to attach to nodes in this node pool.",
+					Optional:    true,
+				},
 				"labels": {
 					Type: schema.TypeMap,
 					Elem: &schema.Schema{

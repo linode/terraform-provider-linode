@@ -15,11 +15,13 @@ import (
 
 func TestParseNodePool(t *testing.T) {
 	poolLabelName := "test-pool"
+	poolFirewallId := 12345
 	lkeNodePool := linodego.LKENodePool{
 		ID:             123,
 		Count:          3,
 		Label:          &poolLabelName,
 		Type:           "g6-standard-2",
+		FirewallID:     &poolFirewallId,
 		DiskEncryption: linodego.InstanceDiskEncryptionEnabled,
 		Disks: []linodego.LKENodePoolDisk{
 			{Size: 50, Type: "ssd"},
@@ -48,6 +50,7 @@ func TestParseNodePool(t *testing.T) {
 	assert.Equal(t, int64(3), nodePoolModel.Count.ValueInt64())
 	assert.Equal(t, "g6-standard-2", nodePoolModel.Type.ValueString())
 	assert.Equal(t, "enabled", nodePoolModel.DiskEncryption.ValueString())
+	assert.Equal(t, int64(12345), nodePoolModel.FirewallID.ValueInt64())
 	assert.Len(t, nodePoolModel.Nodes.Elements(), 3)
 
 	tags := make([]string, len(nodePoolModel.Tags.Elements()))
@@ -77,7 +80,7 @@ func TestSetNodePoolCreateOptions(t *testing.T) {
 	assert.Equal(t, "test-pool", *createOpts.Label)
 	assert.Contains(t, createOpts.Tags, "production")
 	assert.Contains(t, createOpts.Tags, "web-server")
-
+	assert.Equal(t, 12345, *createOpts.FirewallID)
 	assert.True(t, createOpts.Autoscaler.Enabled)
 	assert.Equal(t, 1, createOpts.Autoscaler.Min)
 	assert.Equal(t, 5, createOpts.Autoscaler.Max)
@@ -99,6 +102,7 @@ func TestSetNodePoolUpdateOptions(t *testing.T) {
 	assert.True(t, shouldUpdate)
 	assert.Equal(t, 3, updateOpts.Count)
 	assert.Equal(t, "test-pool", *updateOpts.Label)
+	assert.Equal(t, 12345, *updateOpts.FirewallID)
 	assert.Contains(t, *updateOpts.Tags, "production")
 	assert.Contains(t, *updateOpts.Tags, "web-server")
 
@@ -119,12 +123,13 @@ func createNodePoolModel() *NodePoolModel {
 	})
 
 	nodePoolModel := NodePoolModel{
-		ClusterID: types.Int64Value(1),
-		Count:     types.Int64Value(3),
-		Label:     types.StringValue("test-pool"),
-		Type:      types.StringValue("g6-standard-2"),
-		Nodes:     *nodes,
-		Tags:      tags,
+		ClusterID:  types.Int64Value(1),
+		Count:      types.Int64Value(3),
+		Label:      types.StringValue("test-pool"),
+		FirewallID: types.Int64Value(12345),
+		Type:       types.StringValue("g6-standard-2"),
+		Nodes:      *nodes,
+		Tags:       tags,
 		Autoscaler: []NodePoolAutoscalerModel{
 			{
 				Min: types.Int64Value(1),
