@@ -88,6 +88,7 @@ func TestAccResourceVolume_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "size"),
 					resource.TestCheckResourceAttr(resName, "label", volumeName),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "encryption", "enabled"),
 					resource.TestCheckResourceAttr(resName, "linode_id", "0"),
 					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),

@@ -14,38 +14,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/volume/tmpl"
 )
 
-// Default encryption (omitted) should be enabled (provider derives default at create-time)
-func TestAccResourceVolume_defaultEncryptionEnabled_Derived(t *testing.T) {
-	t.Parallel()
-
-	volumeName := acctest.RandomWithPrefix("tf_test")
-	resName := "linode_volume.foobar"
-
-	// Choose a random core region without checking capabilities
-	targetRegion, err := acceptance.GetRandomRegionWithCaps(nil, "core")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	volume := linodego.Volume{}
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckVolumeDestroy,
-		Steps: []resource.TestStep{
-			{
-				// Basic template omits encryption
-				Config: tmpl.Basic(t, volumeName, targetRegion),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckVolumeExists(resName, &volume),
-					resource.TestCheckResourceAttr(resName, "region", targetRegion),
-					resource.TestCheckResourceAttr(resName, "encryption", "enabled"),
-				),
-			},
-		},
-	})
-}
-
 // Explicit encryption enabled (resource test)
 func TestAccResourceVolume_encryptionExplicitEnabled(t *testing.T) {
 	t.Parallel()
