@@ -452,6 +452,7 @@ func (m *Model) CopyFrom(other *Model, preserveKnown bool) {
 	m.ForkRestoreTime = helper.KeepOrUpdateValue(m.ForkRestoreTime, other.ForkRestoreTime, preserveKnown)
 	m.HostPrimary = helper.KeepOrUpdateValue(m.HostPrimary, other.HostPrimary, preserveKnown)
 	m.HostSecondary = helper.KeepOrUpdateValue(m.HostSecondary, other.HostSecondary, preserveKnown)
+	m.HostStandby = helper.KeepOrUpdateValue(m.HostStandby, other.HostStandby, preserveKnown)
 	m.Label = helper.KeepOrUpdateValue(m.Label, other.Label, preserveKnown)
 	m.Members = helper.KeepOrUpdateValue(m.Members, other.Members, preserveKnown)
 	m.OldestRestoreTime = helper.KeepOrUpdateValue(m.OldestRestoreTime, other.OldestRestoreTime, preserveKnown)
