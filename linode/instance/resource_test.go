@@ -3523,7 +3523,7 @@ func TestAccResourceInstance_withLock(t *testing.T) {
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", label),
 					resource.TestCheckResourceAttr(resName, "locks.#", "1"),
-					resource.TestCheckResourceAttr(resName, "locks.0", lockType),
+					resource.TestCheckTypeSetElemAttr(resName, "locks.*", lockType),
 				),
 			},
 		},

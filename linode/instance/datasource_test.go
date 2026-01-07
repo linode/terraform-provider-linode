@@ -349,7 +349,7 @@ func TestAccDataSourceInstances_withLock(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
 					resource.TestCheckResourceAttr(resName, "instances.0.label", label),
 					resource.TestCheckResourceAttr(resName, "instances.0.locks.#", "1"),
-					resource.TestCheckResourceAttr(resName, "instances.0.locks.0", lockType),
+					resource.TestCheckTypeSetElemAttr(resName, "instances.0.locks.*", lockType),
 				),
 			},
 		},
