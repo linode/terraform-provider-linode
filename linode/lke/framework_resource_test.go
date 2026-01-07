@@ -739,6 +739,22 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 	//	log.Fatal(err)
 	//}
 
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatalf("failed to get client: %s", err)
+	}
+
+	firewall, err := client.CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
+		Label: "tftest-enterprise-upgrade-" + acctest.RandString(5),
+		Rules: linodego.FirewallRuleSet{
+			InboundPolicy:  "ACCEPT",
+			OutboundPolicy: "ACCEPT",
+		},
+	})
+	if err != nil {
+		t.Errorf("failed creating firewall: %v", err)
+	}
+
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf-test")
 		resource.Test(t, resource.TestCase{
@@ -782,6 +798,21 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.k8s_version", k8sVersionEnterprise),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.update_strategy", "rolling_update"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
+					),
+				},
+				{
+					Config: tmpl.EnterpriseFirewall(t, clusterName, k8sVersionEnterprise, enterpriseRegion, firewall.ID),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.firewall_id", fmt.Sprintf("%d", firewall.ID)),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.k8s_version", k8sVersionEnterprise),
 					),
 				},
 			},

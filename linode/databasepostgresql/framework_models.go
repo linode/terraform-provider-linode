@@ -44,7 +44,7 @@ func (data *DataSourceModel) parsePostgresDatabase(
 	data.Status = types.StringValue(string(db.Status))
 	data.Label = types.StringValue(string(db.Label))
 	data.HostPrimary = types.StringValue(string(db.Hosts.Primary))
-	data.HostSecondary = types.StringValue(string(db.Hosts.Secondary))
+	data.HostSecondary = types.StringValue(string(db.Hosts.Standby))
 	data.Region = types.StringValue(string(db.Region))
 	data.Type = types.StringValue(string(db.Type))
 	data.Engine = types.StringValue(string(db.Engine))

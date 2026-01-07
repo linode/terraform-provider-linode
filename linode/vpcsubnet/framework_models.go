@@ -83,7 +83,7 @@ func FlattenSubnetLinodes(
 	return &linodesList, diags
 }
 
-func (m *BaseModel) CopyFrom(ctx context.Context, other BaseModel, preserveKnown bool) {
+func (m *BaseModel) CopyFrom(other BaseModel, preserveKnown bool) {
 	m.ID = helper.KeepOrUpdateValue(m.ID, other.ID, preserveKnown)
 	m.VPCId = helper.KeepOrUpdateValue(m.VPCId, other.VPCId, preserveKnown)
 
@@ -138,8 +138,8 @@ type ResourceModelIPv6 struct {
 	AllocatedRange types.String                          `tfsdk:"allocated_range"`
 }
 
-func (m *ResourceModel) CopyFrom(ctx context.Context, other ResourceModel, preserveKnown bool) {
-	m.BaseModel.CopyFrom(ctx, other.BaseModel, preserveKnown)
+func (m *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
+	m.BaseModel.CopyFrom(other.BaseModel, preserveKnown)
 	m.IPv6 = helper.KeepOrUpdateValue(m.IPv6, other.IPv6, preserveKnown)
 }
 
@@ -187,8 +187,8 @@ type DataSourceModelIPv6 struct {
 	Range customtypes.LinodeAutoAllocRangeValue `tfsdk:"range"`
 }
 
-func (m *DataSourceModel) CopyFrom(ctx context.Context, other DataSourceModel, preserveKnown bool) {
-	m.BaseModel.CopyFrom(ctx, other.BaseModel, preserveKnown)
+func (m *DataSourceModel) CopyFrom(other DataSourceModel, preserveKnown bool) {
+	m.BaseModel.CopyFrom(other.BaseModel, preserveKnown)
 	m.IPv6 = helper.KeepOrUpdateValue(m.IPv6, other.IPv6, preserveKnown)
 }
 

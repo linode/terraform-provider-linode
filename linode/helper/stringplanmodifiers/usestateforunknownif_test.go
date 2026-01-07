@@ -112,7 +112,7 @@ func TestUseStateForUnknownIfNotNull(t *testing.T) {
 func TestUseStateForUnknownIf(t *testing.T) {
 	testCases := map[string]struct {
 		request   planmodifier.StringRequest
-		condition func(context.Context, planmodifier.StringRequest) bool
+		condition stringplanmodifiers.UseStateForUnknownIfFunc
 		expected  *planmodifier.StringResponse
 	}{
 		"condition-false": {
@@ -125,8 +125,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.StringUnknown(),
 				ConfigValue: types.StringNull(),
 			},
-			condition: func(ctx context.Context, req planmodifier.StringRequest) bool {
-				return false
+			condition: func(ctx context.Context, req planmodifier.StringRequest, resp *stringplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = false
 			},
 			expected: &planmodifier.StringResponse{
 				PlanValue: types.StringUnknown(),
@@ -142,8 +142,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.StringUnknown(),
 				ConfigValue: types.StringNull(),
 			},
-			condition: func(ctx context.Context, req planmodifier.StringRequest) bool {
-				return true
+			condition: func(ctx context.Context, req planmodifier.StringRequest, resp *stringplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = true
 			},
 			expected: &planmodifier.StringResponse{
 				PlanValue: types.StringValue("state-value"),
@@ -159,8 +159,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.StringUnknown(),
 				ConfigValue: types.StringNull(),
 			},
-			condition: func(ctx context.Context, req planmodifier.StringRequest) bool {
-				return !req.StateValue.IsNull() && req.StateValue.ValueString() != ""
+			condition: func(ctx context.Context, req planmodifier.StringRequest, resp *stringplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = !req.StateValue.IsNull() && req.StateValue.ValueString() != ""
 			},
 			expected: &planmodifier.StringResponse{
 				PlanValue: types.StringValue("non-empty"),
@@ -176,8 +176,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.StringUnknown(),
 				ConfigValue: types.StringNull(),
 			},
-			condition: func(ctx context.Context, req planmodifier.StringRequest) bool {
-				return !req.StateValue.IsNull() && req.StateValue.ValueString() != ""
+			condition: func(ctx context.Context, req planmodifier.StringRequest, resp *stringplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = !req.StateValue.IsNull() && req.StateValue.ValueString() != ""
 			},
 			expected: &planmodifier.StringResponse{
 				PlanValue: types.StringUnknown(),
@@ -199,6 +199,111 @@ func TestUseStateForUnknownIf(t *testing.T) {
 
 			if !resp.PlanValue.Equal(testCase.expected.PlanValue) {
 				t.Errorf("expected %s, got %s", testCase.expected.PlanValue, resp.PlanValue)
+			}
+		})
+	}
+}
+
+func TestUseStateForUnknownIf_Diagnostics(t *testing.T) {
+	testCases := map[string]struct {
+		request             planmodifier.StringRequest
+		condition           stringplanmodifiers.UseStateForUnknownIfFunc
+		expectedPlan        types.String
+		expectedDiagCount   int
+		expectedDiagSummary string
+	}{
+		"condition-adds-warning": {
+			request: planmodifier.StringRequest{
+				State: tfsdk.State{
+					Raw: tftypes.NewValue(tftypes.Object{}, map[string]tftypes.Value{}),
+				},
+				StateValue:  types.StringValue("state-value"),
+				PlanValue:   types.StringUnknown(),
+				ConfigValue: types.StringNull(),
+			},
+			condition: func(ctx context.Context, req planmodifier.StringRequest, resp *stringplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.Diagnostics.AddWarning("Test Warning", "This is a test warning from condition")
+				resp.UseState = true
+			},
+			expectedPlan:        types.StringValue("state-value"),
+			expectedDiagCount:   1,
+			expectedDiagSummary: "Test Warning",
+		},
+		"condition-adds-error": {
+			request: planmodifier.StringRequest{
+				State: tfsdk.State{
+					Raw: tftypes.NewValue(tftypes.Object{}, map[string]tftypes.Value{}),
+				},
+				StateValue:  types.StringValue("state-value"),
+				PlanValue:   types.StringUnknown(),
+				ConfigValue: types.StringNull(),
+			},
+			condition: func(ctx context.Context, req planmodifier.StringRequest, resp *stringplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.Diagnostics.AddError("Test Error", "This is a test error from condition")
+				resp.UseState = false
+			},
+			expectedPlan:        types.StringUnknown(),
+			expectedDiagCount:   1,
+			expectedDiagSummary: "Test Error",
+		},
+		"condition-adds-multiple-diagnostics": {
+			request: planmodifier.StringRequest{
+				State: tfsdk.State{
+					Raw: tftypes.NewValue(tftypes.Object{}, map[string]tftypes.Value{}),
+				},
+				StateValue:  types.StringValue("state-value"),
+				PlanValue:   types.StringUnknown(),
+				ConfigValue: types.StringNull(),
+			},
+			condition: func(ctx context.Context, req planmodifier.StringRequest, resp *stringplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.Diagnostics.AddWarning("Warning 1", "First warning")
+				resp.Diagnostics.AddWarning("Warning 2", "Second warning")
+				resp.UseState = true
+			},
+			expectedPlan:      types.StringValue("state-value"),
+			expectedDiagCount: 2,
+		},
+		"no-diagnostics": {
+			request: planmodifier.StringRequest{
+				State: tfsdk.State{
+					Raw: tftypes.NewValue(tftypes.Object{}, map[string]tftypes.Value{}),
+				},
+				StateValue:  types.StringValue("state-value"),
+				PlanValue:   types.StringUnknown(),
+				ConfigValue: types.StringNull(),
+			},
+			condition: func(ctx context.Context, req planmodifier.StringRequest, resp *stringplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = true
+			},
+			expectedPlan:      types.StringValue("state-value"),
+			expectedDiagCount: 0,
+		},
+	}
+
+	for name, testCase := range testCases {
+		name, testCase := name, testCase
+
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			req := testCase.request
+			resp := &planmodifier.StringResponse{
+				PlanValue: req.PlanValue,
+			}
+			stringplanmodifiers.UseStateForUnknownIf(testCase.condition).PlanModifyString(context.Background(), req, resp)
+
+			if !resp.PlanValue.Equal(testCase.expectedPlan) {
+				t.Errorf("expected plan value %s, got %s", testCase.expectedPlan, resp.PlanValue)
+			}
+
+			if len(resp.Diagnostics) != testCase.expectedDiagCount {
+				t.Errorf("expected %d diagnostics, got %d", testCase.expectedDiagCount, len(resp.Diagnostics))
+			}
+
+			if testCase.expectedDiagSummary != "" && len(resp.Diagnostics) > 0 {
+				if resp.Diagnostics[0].Summary() != testCase.expectedDiagSummary {
+					t.Errorf("expected diagnostic summary %q, got %q", testCase.expectedDiagSummary, resp.Diagnostics[0].Summary())
+				}
 			}
 		})
 	}
