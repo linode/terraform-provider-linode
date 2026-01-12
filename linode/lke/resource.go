@@ -55,7 +55,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_lke_cluster")
 
@@ -65,7 +65,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("Error parsing Linode LKE Cluster ID: %s", err)
 	}
 
-	declaredPools, ok := d.Get("pool").([]interface{})
+	declaredPools, ok := d.Get("pool").([]any)
 	if !ok {
 		return diag.Errorf("failed to parse linode lke cluster pools: %d", id)
 	}
@@ -146,18 +146,18 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	p := flattenLKENodePools(matchedPools)
 
 	d.Set("pool", p)
-	d.Set("control_plane", []map[string]interface{}{flattenedControlPlane})
+	d.Set("control_plane", []map[string]any{flattenedControlPlane})
 
 	return nil
 }
 
-func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Create linode_lke_cluster")
 
 	client := meta.(*helper.ProviderMeta).Client
 
-	controlPlane := d.Get("control_plane").([]interface{})
+	controlPlane := d.Get("control_plane").([]any)
 
 	createOpts := linodego.LKEClusterCreateOptions{
 		Label:      d.Get("label").(string),
@@ -186,7 +186,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if len(controlPlane) > 0 {
-		expandedControlPlane, diags := expandControlPlaneOptions(controlPlane[0].(map[string]interface{}))
+		expandedControlPlane, diags := expandControlPlaneOptions(controlPlane[0].(map[string]any))
 		if diags.HasError() {
 			return diags
 		}
@@ -194,8 +194,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.ControlPlane = &expandedControlPlane
 	}
 
-	for _, nodePool := range d.Get("pool").([]interface{}) {
-		poolSpec := nodePool.(map[string]interface{})
+	for _, nodePool := range d.Get("pool").([]any) {
+		poolSpec := nodePool.(map[string]any)
 
 		autoscaler := expandLinodeLKEClusterAutoscalerFromPool(poolSpec)
 
@@ -290,7 +290,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_lke_cluster")
 
@@ -311,9 +311,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		updateOpts.K8sVersion = d.Get("k8s_version").(string)
 	}
 
-	controlPlane := d.Get("control_plane").([]interface{})
+	controlPlane := d.Get("control_plane").([]any)
 	if len(controlPlane) > 0 {
-		expandedControlPlane, diags := expandControlPlaneOptions(controlPlane[0].(map[string]interface{}))
+		expandedControlPlane, diags := expandControlPlaneOptions(controlPlane[0].(map[string]any))
 		if diags.HasError() {
 			return diags
 		}
@@ -440,7 +440,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_lke_cluster")
 

@@ -158,7 +158,7 @@ func Provider() *schema.Provider {
 		},
 	}
 
-	provider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	provider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
 		terraformVersion := provider.TerraformVersion
 		if terraformVersion == "" {
 			// Terraform 0.12 introduced this field to the protocol
@@ -259,7 +259,7 @@ func handleDefault(config *helper.Config, d *schema.ResourceData) diag.Diagnosti
 
 func providerConfigure(
 	ctx context.Context, d *schema.ResourceData, terraformVersion string,
-) (interface{}, diag.Diagnostics) {
+) (any, diag.Diagnostics) {
 	config := &helper.Config{
 		SkipInstanceReadyPoll:  d.Get("skip_instance_ready_poll").(bool),
 		SkipInstanceDeletePoll: d.Get("skip_instance_delete_poll").(bool),

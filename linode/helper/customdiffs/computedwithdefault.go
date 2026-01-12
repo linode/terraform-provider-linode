@@ -12,7 +12,7 @@ import (
 // This is hacky but allows us to avoid a breaking change on fields using
 // CaseInsensitiveSet (computed) when not specifying a field.
 func ComputedWithDefault[T any](field string, defaultValue T) schema.CustomizeDiffFunc {
-	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+	return func(ctx context.Context, diff *schema.ResourceDiff, i any) error {
 		if !diff.GetRawConfig().GetAttr(field).IsNull() {
 			return nil
 		}

@@ -62,7 +62,7 @@ func S3Connection(ctx context.Context, endpoint, accessKey, secretKey string) (*
 func S3ConnectionFromData(
 	ctx context.Context,
 	d *schema.ResourceData,
-	meta interface{},
+	meta any,
 	accessKey, secretKey string,
 ) (*s3.Client, error) {
 	tflog.Debug(ctx, "Creating Object Storage client from resource data")
@@ -77,7 +77,7 @@ func S3ConnectionFromData(
 	return S3Connection(ctx, endpoint, accessKey, secretKey)
 }
 
-func ComputeS3Endpoint(ctx context.Context, d *schema.ResourceData, meta interface{}) (string, error) {
+func ComputeS3Endpoint(ctx context.Context, d *schema.ResourceData, meta any) (string, error) {
 	tflog.Debug(ctx, "Getting Object Storage bucket from resource data")
 	regionOrCluster := GetRegionOrCluster(d)
 	bucketLabel := d.Get("label").(string)

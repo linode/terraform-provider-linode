@@ -4,11 +4,10 @@ import (
 	"github.com/linode/linodego"
 )
 
-func flattenGrantsEntities(entities []linodego.GrantedEntity) []interface{} {
-	var result []interface{}
+func flattenGrantsEntities(entities []linodego.GrantedEntity) []any {
+	var result []any
 
 	for _, entity := range entities {
-		entity := entity
 		// Filter out entities without any permissions set.
 		// This is necessary because Linode will automatically
 		// create empty entities that will trigger false diffs.
@@ -22,8 +21,8 @@ func flattenGrantsEntities(entities []linodego.GrantedEntity) []interface{} {
 	return result
 }
 
-func flattenGrantsEntity(entity *linodego.GrantedEntity) map[string]interface{} {
-	result := make(map[string]interface{})
+func flattenGrantsEntity(entity *linodego.GrantedEntity) map[string]any {
+	result := make(map[string]any)
 
 	result["id"] = entity.ID
 	result["permissions"] = entity.Permissions
@@ -31,8 +30,8 @@ func flattenGrantsEntity(entity *linodego.GrantedEntity) map[string]interface{} 
 	return result
 }
 
-func flattenGrantsGlobal(global *linodego.GlobalUserGrants) map[string]interface{} {
-	result := make(map[string]interface{})
+func flattenGrantsGlobal(global *linodego.GlobalUserGrants) map[string]any {
+	result := make(map[string]any)
 
 	result["account_access"] = global.AccountAccess
 	result["add_domains"] = global.AddDomains

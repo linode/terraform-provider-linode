@@ -68,7 +68,7 @@ func initOptInTests() {
 		return
 	}
 
-	for _, testName := range strings.Split(optInTestsValue, ",") {
+	for testName := range strings.SplitSeq(optInTestsValue, ",") {
 		optInTests[testName] = struct{}{}
 	}
 }
@@ -308,7 +308,7 @@ func CheckResourceAttrListContains(resName, path, desiredValue string) resource.
 			return fmt.Errorf("attribute %s does not exist", path)
 		}
 
-		for i := 0; i < length; i++ {
+		for i := range length {
 			if rs.Primary.Attributes[path+"."+strconv.Itoa(i)] == desiredValue {
 				return nil
 			}
@@ -330,7 +330,7 @@ func LoopThroughStringList(resName, path string, listValidateFunc ListAttrValida
 			return fmt.Errorf("attribute %s does not exist", path)
 		}
 
-		for i := 0; i < length; i++ {
+		for i := range length {
 			err := listValidateFunc(resName, path+"."+strconv.Itoa(i), s)
 			if err != nil {
 				return fmt.Errorf("Value not found:%s", err)
@@ -354,7 +354,7 @@ func CheckListContains(resName, path, value string) resource.TestCheckFunc {
 			return fmt.Errorf("attribute %s does not exist", path)
 		}
 
-		for i := 0; i < length; i++ {
+		for i := range length {
 			foundValue, ok := rs.Primary.Attributes[path+"."+strconv.Itoa(i)]
 			if !ok {
 				return fmt.Errorf("index %d does not exist in attributes", i)
@@ -546,7 +546,7 @@ func AnyOfTestCheckFunc(funcs ...resource.TestCheckFunc) resource.TestCheckFunc 
 	}
 }
 
-func ExecuteTemplate(t testing.TB, templateName string, data interface{}) string {
+func ExecuteTemplate(t testing.TB, templateName string, data any) string {
 	t.Helper()
 
 	var b bytes.Buffer
@@ -591,7 +591,7 @@ type ProviderMetaModifier func(ctx context.Context, data *schema.ResourceData, c
 func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier) *schema.Provider {
 	oldConfigure := provider.ConfigureContextFunc
 
-	provider.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	provider.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (any, diag.Diagnostics) {
 		config, err := oldConfigure(ctx, data)
 		if err != nil {
 			return nil, err

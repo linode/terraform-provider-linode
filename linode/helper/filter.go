@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -33,14 +34,14 @@ type FilterConfig map[string]FilterAttribute
 
 // FilterTypeFunc is a function that takes in a filter name and value,
 // and returns the value converted to the correct filter type.
-type FilterTypeFunc func(value string) (interface{}, error)
+type FilterTypeFunc func(value string) (any, error)
 
 // FilterListFunc wraps a linodego list function.
 type FilterListFunc func(context.Context, *schema.ResourceData,
-	*linodego.Client, *linodego.ListOptions) ([]interface{}, error)
+	*linodego.Client, *linodego.ListOptions) ([]any, error)
 
 // FilterFlattenFunc flattens an object into a map[string]interface{}.
-type FilterFlattenFunc func(object interface{}) map[string]interface{}
+type FilterFlattenFunc func(object any) map[string]any
 
 // FilterAttribute stores various configuration options about a single
 // filterable field.
@@ -109,20 +110,20 @@ func (f FilterConfig) OrderSchema() *schema.Schema {
 
 // ConstructFilterString constructs a Linode filter JSON string from each filter element in the schema
 func (f FilterConfig) ConstructFilterString(d *schema.ResourceData) (string, error) {
-	filters := d.Get("filter").([]interface{})
-	resultMap := make(map[string]interface{})
+	filters := d.Get("filter").([]any)
+	resultMap := make(map[string]any)
 
 	if len(filters) < 1 {
 		return "{}", nil
 	}
 
-	var rootFilter []interface{}
+	var rootFilter []any
 
 	for _, filter := range filters {
-		filter := filter.(map[string]interface{})
+		filter := filter.(map[string]any)
 
 		name := filter["name"].(string)
-		values := filter["values"].([]interface{})
+		values := filter["values"].([]any)
 		matchBy := filter["match_by"].(string)
 
 		// Defer this logic to the client
@@ -135,7 +136,7 @@ func (f FilterConfig) ConstructFilterString(d *schema.ResourceData) (string, err
 			continue
 		}
 
-		subFilter := make([]interface{}, len(values))
+		subFilter := make([]any, len(values))
 
 		for i, value := range values {
 			value, err := f[name].TypeFunc(value.(string))
@@ -143,13 +144,13 @@ func (f FilterConfig) ConstructFilterString(d *schema.ResourceData) (string, err
 				return "", err
 			}
 
-			valueFilter := make(map[string]interface{})
+			valueFilter := make(map[string]any)
 			valueFilter[name] = value
 
 			subFilter[i] = valueFilter
 		}
 
-		rootFilter = append(rootFilter, map[string]interface{}{
+		rootFilter = append(rootFilter, map[string]any{
 			"+or": subFilter,
 		})
 	}
@@ -176,12 +177,12 @@ func (f FilterConfig) ConstructFilterString(d *schema.ResourceData) (string, err
 // FilterResults filters the given results on the client-side filters present in the resource.
 func (f FilterConfig) FilterResults(
 	d *schema.ResourceData,
-	items []interface{},
-) ([]map[string]interface{}, error) {
-	result := make([]map[string]interface{}, 0)
+	items []any,
+) ([]map[string]any, error) {
+	result := make([]map[string]any, 0)
 
 	for _, item := range items {
-		item := item.(map[string]interface{})
+		item := item.(map[string]any)
 
 		match, err := f.itemMatchesFilter(d, item)
 		if err != nil {
@@ -202,10 +203,10 @@ func (f FilterConfig) FilterResults(
 func (f FilterConfig) FilterDataSource(
 	ctx context.Context,
 	d *schema.ResourceData,
-	meta interface{},
+	meta any,
 	listFunc FilterListFunc,
 	flattenFunc FilterFlattenFunc,
-) ([]map[string]interface{}, error) {
+) ([]map[string]any, error) {
 	client := meta.(*ProviderMeta).Client
 
 	filterID, err := f.GetFilterID(d)
@@ -230,7 +231,7 @@ func (f FilterConfig) FilterDataSource(
 		return nil, fmt.Errorf("failed to list linode items: %s", err)
 	}
 
-	itemsFlattened := make([]interface{}, len(items))
+	itemsFlattened := make([]any, len(items))
 	for i, image := range items {
 		itemsFlattened[i] = flattenFunc(image)
 	}
@@ -270,7 +271,7 @@ func (f FilterConfig) GetValidFilters(apiOnly bool) []string {
 
 // ValidateDiagFunc should be plugged into the `filter` field of a filterable data source.
 func (f FilterConfig) ValidateDiagFunc(apiOnly bool) schema.SchemaValidateDiagFunc {
-	return func(i interface{}, path cty.Path) diag.Diagnostics {
+	return func(i any, path cty.Path) diag.Diagnostics {
 		val := i.(string)
 
 		cfg, ok := f[val]
@@ -291,7 +292,7 @@ func (f FilterConfig) ValidateDiagFunc(apiOnly bool) schema.SchemaValidateDiagFu
 
 // GetFilterID creates a unique ID specific to the current filter data source
 func (f FilterConfig) GetFilterID(d *schema.ResourceData) (string, error) {
-	idMap := map[string]interface{}{
+	idMap := map[string]any{
 		"filter":   d.Get("filter"),
 		"order":    d.Get("order"),
 		"order_by": d.Get("order_by"),
@@ -307,22 +308,22 @@ func (f FilterConfig) GetFilterID(d *schema.ResourceData) (string, error) {
 }
 
 // FilterLatest returns only the latest element in the given slice only if `latest` == true.
-func (f FilterConfig) FilterLatest(d *schema.ResourceData, items []map[string]interface{}) []map[string]interface{} {
+func (f FilterConfig) FilterLatest(d *schema.ResourceData, items []map[string]any) []map[string]any {
 	if !d.Get("latest").(bool) {
 		return items
 	}
 
 	if item := f.GetLatestCreated(items); item != nil {
-		return []map[string]interface{}{item}
+		return []map[string]any{item}
 	}
 
-	return []map[string]interface{}{}
+	return []map[string]any{}
 }
 
 // GetLatestCreated returns only the latest element in the given slice.
-func (f FilterConfig) GetLatestCreated(data []map[string]interface{}) map[string]interface{} {
+func (f FilterConfig) GetLatestCreated(data []map[string]any) map[string]any {
 	var latestCreated time.Time
-	var latestEntity map[string]interface{}
+	var latestEntity map[string]any
 
 	for _, image := range data {
 		created, ok := image["created"]
@@ -348,8 +349,8 @@ func (f FilterConfig) GetLatestCreated(data []map[string]interface{}) map[string
 
 // FilterLatestVersion returns only the latest element in the given slice only if `latest` == true.
 func (f FilterConfig) FilterLatestVersion(d *schema.ResourceData,
-	items []map[string]interface{},
-) ([]map[string]interface{}, error) {
+	items []map[string]any,
+) ([]map[string]any, error) {
 	if !d.Get("latest").(bool) {
 		return items, nil
 	}
@@ -360,17 +361,17 @@ func (f FilterConfig) FilterLatestVersion(d *schema.ResourceData,
 	}
 
 	if item != nil {
-		return []map[string]interface{}{item}, nil
+		return []map[string]any{item}, nil
 	}
 
-	return []map[string]interface{}{}, nil
+	return []map[string]any{}, nil
 }
 
 // GetLatestVersion returns only the latest version string (e.g. `8.0.26`) in the given slice.
-func (f FilterConfig) GetLatestVersion(data []map[string]interface{}) (map[string]interface{}, error) {
+func (f FilterConfig) GetLatestVersion(data []map[string]any) (map[string]any, error) {
 	var latestVersion []int
 
-	var latestEntity map[string]interface{}
+	var latestEntity map[string]any
 
 	for _, entity := range data {
 		version, ok := entity["version"]
@@ -418,15 +419,15 @@ func (f FilterConfig) GetLatestVersion(data []map[string]interface{}) (map[strin
 
 func (f FilterConfig) itemMatchesFilter(
 	d *schema.ResourceData,
-	item map[string]interface{},
+	item map[string]any,
 ) (bool, error) {
-	filters := d.Get("filter").([]interface{})
+	filters := d.Get("filter").([]any)
 
 	for _, filter := range filters {
-		filter := filter.(map[string]interface{})
+		filter := filter.(map[string]any)
 
 		name := filter["name"].(string)
-		values := filter["values"].([]interface{})
+		values := filter["values"].([]any)
 		matchBy := filter["match_by"].(string)
 
 		itemValue, ok := item[name]
@@ -450,7 +451,7 @@ func (f FilterConfig) itemMatchesFilter(
 func (f FilterConfig) validateFilter(
 	matchBy, name string,
 	values []string,
-	itemValue interface{},
+	itemValue any,
 ) (bool, error) {
 	// Handles slice types and recursive validation
 	recursiveValidate := func() (bool, error) {
@@ -495,7 +496,7 @@ func (f FilterConfig) validateFilter(
 
 	cfg := f[name]
 
-	valuesNormalized := make([]interface{}, len(values))
+	valuesNormalized := make([]any, len(values))
 	for i := range valuesNormalized {
 		n, err := cfg.TypeFunc(values[i])
 		if err != nil {
@@ -517,7 +518,7 @@ func (f FilterConfig) validateFilter(
 	return true, nil
 }
 
-func validateFilterExact(values []interface{}, result interface{}) (bool, error) {
+func validateFilterExact(values []any, result any) (bool, error) {
 	for _, value := range values {
 		if reflect.DeepEqual(result, value) {
 			return true, nil
@@ -527,7 +528,7 @@ func validateFilterExact(values []interface{}, result interface{}) (bool, error)
 	return false, nil
 }
 
-func validateFilterSubstring(name string, values []interface{}, result interface{}) (bool, error) {
+func validateFilterSubstring(name string, values []any, result any) (bool, error) {
 	itemValueStr, ok := result.(string)
 	if !ok {
 		return false, fmt.Errorf("\"%s\" is not a string (type %s) and cannot be filtered on substring",
@@ -543,7 +544,7 @@ func validateFilterSubstring(name string, values []interface{}, result interface
 	return false, nil
 }
 
-func validateFilterRegex(name string, values []interface{}, result interface{}) (bool, error) {
+func validateFilterRegex(name string, values []any, result any) (bool, error) {
 	itemValueStr, ok := result.(string)
 	if !ok {
 		return false, fmt.Errorf("\"%s\" is not a string (type %s) and cannot be filtered on regex",
@@ -585,10 +586,8 @@ func normalizeItemValue(value any) any {
 func validateItemValueType(value any) error {
 	kind := reflect.TypeOf(value).Kind()
 
-	for _, v := range validFilterValueTypes {
-		if kind == v {
-			return nil
-		}
+	if slices.Contains(validFilterValueTypes, kind) {
+		return nil
 	}
 
 	return fmt.Errorf("The underlying type (%v) for this filterable field is not supported. "+
@@ -597,20 +596,20 @@ func validateItemValueType(value any) error {
 		kind)
 }
 
-func FilterTypeString(value string) (interface{}, error) {
+func FilterTypeString(value string) (any, error) {
 	return value, nil
 }
 
-func FilterTypeInt(value string) (interface{}, error) {
+func FilterTypeInt(value string) (any, error) {
 	return strconv.Atoi(value)
 }
 
-func FilterTypeBool(value string) (interface{}, error) {
+func FilterTypeBool(value string) (any, error) {
 	return strconv.ParseBool(value)
 }
 
-func FlattenToInterfaceSlice[T any](list []T) []interface{} {
-	result := make([]interface{}, len(list))
+func FlattenToInterfaceSlice[T any](list []T) []any {
+	result := make([]any, len(list))
 	for i, v := range list {
 		result[i] = v
 	}
@@ -618,6 +617,6 @@ func FlattenToInterfaceSlice[T any](list []T) []interface{} {
 	return result
 }
 
-func ListResultToInterface[T any](list []T, err error) ([]interface{}, error) {
+func ListResultToInterface[T any](list []T, err error) ([]any, error) {
 	return FlattenToInterfaceSlice(list), err
 }

@@ -10,7 +10,7 @@ import (
 // This function wraps the given testing.T and handles errors accordingly.
 // This should only be used for flapping API tests.
 func RunTestWithRetries(t testing.TB, maxAttempts int, f func(t *WrappedT)) {
-	for i := 0; i < maxAttempts; i++ {
+	for i := range maxAttempts {
 		wrappedT := &WrappedT{
 			TB:     t,
 			failed: atomic.Bool{},

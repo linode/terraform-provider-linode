@@ -26,7 +26,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	dbID, dbType, err := parseID(d.Id())
@@ -52,7 +52,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	dbID := d.Get("database_id").(int)
 	dbType := d.Get("database_type").(string)
 
@@ -61,7 +61,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return updateResource(ctx, d, meta)
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	dbID, dbType, err := parseID(d.Id())
@@ -85,7 +85,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	dbID, dbType, err := parseID(d.Id())

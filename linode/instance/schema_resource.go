@@ -516,7 +516,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "A set of IPv4 addresses to share with this Linode.",
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
-			ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+			ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics {
 				ip := net.ParseIP(i.(string))
 				if ip == nil {
 					return diag.Errorf("invalid ipv4 address: %s", i)

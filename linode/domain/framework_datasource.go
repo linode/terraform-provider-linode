@@ -85,7 +85,7 @@ func (d *DataSource) getDomainByDomain(ctx context.Context, domain string) (*lin
 		"domain": domain,
 	})
 
-	filter, err := json.Marshal(map[string]interface{}{"domain": domain})
+	filter, err := json.Marshal(map[string]any{"domain": domain})
 	if err != nil {
 		return nil, diag.NewErrorDiagnostic(
 			"Failed to marshal domain filter",

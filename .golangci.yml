@@ -4,6 +4,8 @@ run:
 
 linters:
   default: standard
+  enable:
+    - modernize
   settings:
     dupl:
       threshold: 100

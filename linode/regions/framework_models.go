@@ -25,7 +25,6 @@ func (model *RegionFilterModel) parseRegions(
 	result := make([]regionResource.RegionModel, len(regions))
 
 	for i, region := range regions {
-		region := region
 		model := regionResource.RegionModel{}
 		model.ParseRegion(ctx, &region)
 		result[i] = model
