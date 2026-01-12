@@ -256,7 +256,7 @@ func (f FilterConfig) FilterDataSource(
 
 // GetValidFilters returns a slice of valid filters for the filter config.
 func (f FilterConfig) GetValidFilters(apiOnly bool) []string {
-	result := make([]string, 0)
+	result := make([]string, 0, len(f))
 
 	for k, v := range f {
 		if apiOnly && !v.APIFilterable {

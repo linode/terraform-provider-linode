@@ -715,13 +715,9 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 		return false
 	})
 
-	result := make([]string, len(filteredRegions))
-
-	for i, r := range filteredRegions {
-		result[i] = r.ID
-	}
-
-	return result, nil
+	return helper.MapSlice(filteredRegions, func(r linodego.Region) string {
+		return r.ID
+	}), nil
 }
 
 // GetRandomRegionWithCaps gets a random region given a list of region capabilities.
@@ -766,10 +762,7 @@ func GetTestClient() (*linodego.Client, error) {
 		return nil, fmt.Errorf("LINODE_TOKEN must be set for acceptance tests")
 	}
 
-	apiVersion := os.Getenv("LINODE_API_VERSION")
-	if apiVersion == "" {
-		apiVersion = "v4beta"
-	}
+	apiVersion := cmp.Or(os.Getenv("LINODE_API_VERSION"), "v4beta")
 
 	config := &helper.Config{
 		AccessToken: token,
@@ -791,10 +784,7 @@ func GetTestClientAlternateToken(tokenName string) (*linodego.Client, error) {
 		return nil, fmt.Errorf("%s must be set for acceptance tests", tokenName)
 	}
 
-	apiVersion := os.Getenv("LINODE_API_VERSION")
-	if apiVersion == "" {
-		apiVersion = "v4beta"
-	}
+	apiVersion := cmp.Or(os.Getenv("LINODE_API_VERSION"), "v4beta")
 
 	config := &helper.Config{
 		AccessToken: token,
