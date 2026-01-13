@@ -554,7 +554,7 @@ func customDiffValidatePoolForStandardTier(ctx context.Context, diff *schema.Res
 	pool := diff.GetRawConfig().GetAttr("pool")
 
 	// If tier is not set or is set to "standard", at least one pool is required
-	tierIsStandard := tier.IsNull() || (!tier.IsNull() && tier.AsString() == TierStandard)
+	tierIsStandard := tier.IsNull() || tier.AsString() == TierStandard
 
 	if tierIsStandard {
 		// Check if pool is null or empty
