@@ -67,6 +67,11 @@ func TestAccDataSourceVPCSubnets_basic_smoke(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("databases"),
+						knownvalue.ListSizeExact(0),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
 						tfjsonpath.New("vpc_subnets").
 							AtSliceIndex(0).
 							AtMapKey("linodes").
