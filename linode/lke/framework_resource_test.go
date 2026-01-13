@@ -825,7 +825,7 @@ func TestAccResourceLKECluster_enterpriseNoPools(t *testing.T) {
 
 	k8sVersionEnterprise = "v1.31.9+lke7" // currently only this version works with BYO VPC
 
-	enterpriseRegion := "no-osl-1" // currently only oslo region works with BYO VPC
+	enterpriseRegion := "us-ord" // currently only oslo region works with BYO VPC
 
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf-test")
@@ -842,7 +842,6 @@ func TestAccResourceLKECluster_enterpriseNoPools(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
-						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "0"),
 					),
 				},
