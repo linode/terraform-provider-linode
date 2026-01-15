@@ -51,6 +51,7 @@ func TestAccResourceVPCSubnet_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
+					resource.TestCheckResourceAttr(resName, "databases.#", "0"),
 				),
 			},
 			{

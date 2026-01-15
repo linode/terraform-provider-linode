@@ -29,6 +29,22 @@ var LinodeObjectType = types.ObjectType{
 	},
 }
 
+var IPV6RangeObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"range": types.StringType,
+	},
+}
+
+var DatabaseObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"id":         types.Int64Type,
+		"ipv4_range": types.StringType,
+		"ipv6_ranges": types.ListType{
+			ElemType: IPV6RangeObjectType,
+		},
+	},
+}
+
 var ResourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"range": schema.StringAttribute{
@@ -104,6 +120,13 @@ var frameworkResourceSchema = schema.Schema{
 		"linodes": schema.ListAttribute{
 			Computed:    true,
 			ElementType: LinodeObjectType,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"databases": schema.ListAttribute{
+			Computed:    true,
+			ElementType: DatabaseObjectType,
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.UseStateForUnknown(),
 			},

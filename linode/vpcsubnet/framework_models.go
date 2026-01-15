@@ -18,13 +18,14 @@ Shared Implementation
 */
 
 type BaseModel struct {
-	ID      types.String      `tfsdk:"id"`
-	VPCId   types.Int64       `tfsdk:"vpc_id"`
-	Label   types.String      `tfsdk:"label"`
-	IPv4    types.String      `tfsdk:"ipv4"`
-	Linodes types.List        `tfsdk:"linodes"`
-	Created timetypes.RFC3339 `tfsdk:"created"`
-	Updated timetypes.RFC3339 `tfsdk:"updated"`
+	ID        types.String      `tfsdk:"id"`
+	VPCId     types.Int64       `tfsdk:"vpc_id"`
+	Label     types.String      `tfsdk:"label"`
+	IPv4      types.String      `tfsdk:"ipv4"`
+	Linodes   types.List        `tfsdk:"linodes"`
+	Created   timetypes.RFC3339 `tfsdk:"created"`
+	Updated   timetypes.RFC3339 `tfsdk:"updated"`
+	Databases types.List        `tfsdk:"databases"`
 }
 
 func FlattenSubnetLinodeInterface(iface linodego.VPCSubnetLinodeInterface) (types.Object, diag.Diagnostics) {
@@ -32,6 +33,14 @@ func FlattenSubnetLinodeInterface(iface linodego.VPCSubnetLinodeInterface) (type
 		"id":        types.Int64Value(int64(iface.ID)),
 		"config_id": types.Int64PointerValue(helper.IntPtrToInt64Ptr(iface.ConfigID)),
 		"active":    types.BoolValue(iface.Active),
+	})
+}
+
+func FlattenSubnetDatabaseIPv6Range(
+	ipv6Range linodego.VPCIPv6Range,
+) (types.Object, diag.Diagnostics) {
+	return types.ObjectValue(IPV6RangeObjectType.AttrTypes, map[string]attr.Value{
+		"range": types.StringValue(ipv6Range.Range),
 	})
 }
 
@@ -83,6 +92,55 @@ func FlattenSubnetLinodes(
 	return &linodesList, diags
 }
 
+func FlattenSubnetDatabase(
+	ctx context.Context,
+	db linodego.VPCSubnetDatabase,
+) (*types.Object, diag.Diagnostics) {
+	result := map[string]attr.Value{
+		"id":         types.Int64Value(int64(db.ID)),
+		"ipv4_range": types.StringPointerValue(db.IPv4Range),
+	}
+
+	ipv6Ranges := make([]types.Object, len(db.IPv6Ranges))
+
+	for i, ipv6Range := range db.IPv6Ranges {
+		ipv6RangeObj, d := FlattenSubnetDatabaseIPv6Range(linodego.VPCIPv6Range{Range: ipv6Range})
+		if d.HasError() {
+			return nil, d
+		}
+
+		ipv6Ranges[i] = ipv6RangeObj
+	}
+
+	ipv6RangesList, d := types.ListValueFrom(ctx, IPV6RangeObjectType, ipv6Ranges)
+	if d.HasError() {
+		return nil, d
+	}
+
+	result["ipv6_ranges"] = ipv6RangesList
+
+	resultObject, d := types.ObjectValue(LinodeObjectType.AttrTypes, result)
+	return &resultObject, d
+}
+
+func FlattenSubnetDatabases(
+	ctx context.Context,
+	subnetDatabases []linodego.VPCSubnetDatabase,
+) (*types.List, diag.Diagnostics) {
+	result := make([]types.Object, len(subnetDatabases))
+
+	for i, db := range subnetDatabases {
+		dbObj, diags := FlattenSubnetDatabase(ctx, db)
+		if diags.HasError() {
+			return nil, diags
+		}
+		result[i] = *dbObj
+	}
+
+	dbsList, diags := types.ListValueFrom(ctx, DatabaseObjectType, result)
+	return &dbsList, diags
+}
+
 func (m *BaseModel) CopyFrom(other BaseModel, preserveKnown bool) {
 	m.ID = helper.KeepOrUpdateValue(m.ID, other.ID, preserveKnown)
 	m.VPCId = helper.KeepOrUpdateValue(m.VPCId, other.VPCId, preserveKnown)
@@ -92,6 +150,7 @@ func (m *BaseModel) CopyFrom(other BaseModel, preserveKnown bool) {
 	m.Label = helper.KeepOrUpdateValue(m.Label, other.Label, preserveKnown)
 	m.Linodes = helper.KeepOrUpdateValue(m.Linodes, other.Linodes, preserveKnown)
 	m.IPv4 = helper.KeepOrUpdateValue(m.IPv4, other.IPv4, preserveKnown)
+	m.Databases = helper.KeepOrUpdateValue(m.Databases, other.Databases, preserveKnown)
 }
 
 func (d *BaseModel) FlattenSubnet(
@@ -120,6 +179,12 @@ func (d *BaseModel) FlattenSubnet(
 	d.Label = helper.KeepOrUpdateString(d.Label, subnet.Label, preserveKnown)
 
 	d.IPv4 = helper.KeepOrUpdateString(d.IPv4, subnet.IPv4, preserveKnown)
+
+	dbsList, diags := FlattenSubnetDatabases(ctx, subnet.Databases)
+	if diags.HasError() {
+		return diags
+	}
+	d.Databases = helper.KeepOrUpdateValue(d.Databases, *dbsList, preserveKnown)
 
 	return nil
 }

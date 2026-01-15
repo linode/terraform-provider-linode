@@ -26,13 +26,14 @@ type Model struct {
 // NOTE: This is redefined because of divergence between this model and the
 // singular data source's model. We should investigate using composition in the future.
 type ModelVPCSubnet struct {
-	ID      types.Int64       `tfsdk:"id"`
-	Label   types.String      `tfsdk:"label"`
-	IPv4    types.String      `tfsdk:"ipv4"`
-	IPv6    types.List        `tfsdk:"ipv6"`
-	Linodes types.List        `tfsdk:"linodes"`
-	Created timetypes.RFC3339 `tfsdk:"created"`
-	Updated timetypes.RFC3339 `tfsdk:"updated"`
+	ID        types.Int64       `tfsdk:"id"`
+	Label     types.String      `tfsdk:"label"`
+	IPv4      types.String      `tfsdk:"ipv4"`
+	IPv6      types.List        `tfsdk:"ipv6"`
+	Linodes   types.List        `tfsdk:"linodes"`
+	Created   timetypes.RFC3339 `tfsdk:"created"`
+	Updated   timetypes.RFC3339 `tfsdk:"updated"`
+	Databases types.List        `tfsdk:"databases"`
 }
 
 func (model *Model) FlattenSubnets(
@@ -99,6 +100,26 @@ func (model *Model) FlattenSubnets(
 				timetypes.NewRFC3339TimePointerValue(subnet.Updated),
 				preserveKnown,
 			)
+
+			databases := make([]types.Object, len(subnet.Databases))
+
+			for i, db := range subnet.Databases {
+				dbObj, d := vpcsubnet.FlattenSubnetDatabase(ctx, db)
+				diags.Append(d...)
+				if diags.HasError() {
+					return s
+				}
+
+				databases[i] = *dbObj
+			}
+
+			databasesList, d := types.ListValueFrom(ctx, vpcsubnet.DatabaseObjectType, databases)
+			diags.Append(d...)
+			if diags.HasError() {
+				return s
+			}
+
+			s.Databases = helper.KeepOrUpdateValue(s.Databases, databasesList, preserveKnown)
 
 			return s
 		},
