@@ -6,6 +6,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"maps"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -100,6 +102,20 @@ func TestAccResourceObjectKey_all_regions(t *testing.T) {
 
 	resName := "linode_object_storage_key.foobar"
 	objectStorageKeyLabel := acctest.RandomWithPrefix("tf_test")
+	client := acceptance.GetFrameworkTestClient(t, []helper.HTTPClientModifier{})
+
+	endpoints, err := client.ListObjectStorageEndpoints(context.Background(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Extract unique regions from endpoints
+	regionSet := make(helper.StringSet)
+	for _, endpoint := range endpoints {
+		regionSet[endpoint.Region] = helper.ExistsInSet
+	}
+
+	regions := slices.Collect(maps.Keys(regionSet))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -107,12 +123,12 @@ func TestAccResourceObjectKey_all_regions(t *testing.T) {
 		CheckDestroy:             checkObjectKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.AllRegions(t, objectStorageKeyLabel),
+				Config: tmpl.AllRegions(t, objectStorageKeyLabel, regions),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resName,
 						tfjsonpath.New("regions"),
-						knownvalue.SetSizeExact(21),
+						knownvalue.SetSizeExact(len(regions)),
 					),
 					statecheck.ExpectKnownValue(
 						resName,
