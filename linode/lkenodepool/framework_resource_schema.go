@@ -45,6 +45,9 @@ var resourceSchema = schema.Schema{
 			Description: "The ID of the Firewall to attach to nodes in this node pool.",
 			Optional:    true,
 			Computed:    true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
 		},
 		"node_count": schema.Int64Attribute{
 			Validators: []validator.Int64{
