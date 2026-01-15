@@ -25,7 +25,7 @@ resource "linode_lke_node_pool" "foobar" {
 
     label = "{{.Label}}"
     {{- if .FirewallID }}
-        firewall_id = {{ .FirewallID }}
+        firewall_id = "{{ .FirewallID }}"
     {{- end }}
     node_count = 2
     type  = "{{ .PoolNodeType }}"
