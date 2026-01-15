@@ -15,8 +15,6 @@ func RunBatch(ctx context.Context, toExecute ...BatchFunction) error {
 	eg, ctx := errgroup.WithContext(ctx)
 
 	for _, f := range toExecute {
-		// Shadow the function so it can be used in the goroutine
-		f := f
 		eg.Go(func() error { return f(ctx) })
 	}
 

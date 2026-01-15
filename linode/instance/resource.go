@@ -46,7 +46,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_instance")
 
@@ -148,7 +148,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("specs", flatSpecs)
 	d.Set("alerts", flatAlerts)
 
-	var placementGroupMap map[string]interface{}
+	var placementGroupMap map[string]any
 	flattenedGroups := flattenInstancePlacementGroup(*instance)
 	if len(flattenedGroups) > 0 {
 		placementGroupMap = flattenedGroups[0]
@@ -156,7 +156,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		if compliantOnly, ok := d.GetOk("placement_group.0.compliant_only"); ok {
 			placementGroupMap["compliant_only"] = compliantOnly.(bool)
 		}
-		d.Set("placement_group", []map[string]interface{}{placementGroupMap})
+		d.Set("placement_group", []map[string]any{placementGroupMap})
 	} else {
 		d.Set("placement_group", nil)
 	}
@@ -187,7 +187,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Create linode_instance")
 
@@ -233,12 +233,12 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if interfaces, interfacesOk := d.GetOk("interface"); interfacesOk {
-		interfaces := interfaces.([]interface{})
+		interfaces := interfaces.([]any)
 
 		createOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 		for i, ni := range interfaces {
-			createOpts.Interfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
+			createOpts.Interfaces[i] = helper.ExpandConfigInterface(ni.(map[string]any))
 		}
 	}
 
@@ -269,14 +269,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	// If we don't have disks and we don't have configs, use the single API call approach
 	if !disksOk && !configsOk {
-		for _, key := range d.Get("authorized_keys").([]interface{}) {
+		for _, key := range d.Get("authorized_keys").([]any) {
 			if key == nil {
 				return diag.Errorf("invalid input for authorized_keys: keys cannot be empty or null")
 			}
 
 			createOpts.AuthorizedKeys = append(createOpts.AuthorizedKeys, key.(string))
 		}
-		for _, user := range d.Get("authorized_users").([]interface{}) {
+		for _, user := range d.Get("authorized_users").([]any) {
 			if user == nil {
 				return diag.Errorf("invalid input for authorized_users: users cannot be empty or null")
 			}
@@ -306,7 +306,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.StackScriptID = d.Get("stackscript_id").(int)
 
 		if stackscriptDataRaw, ok := d.GetOk("stackscript_data"); ok {
-			stackscriptData, ok := stackscriptDataRaw.(map[string]interface{})
+			stackscriptData, ok := stackscriptDataRaw.(map[string]any)
 			if !ok {
 				return diag.Errorf("Error parsing stackscript_data: expected map[string]interface{}")
 			}
@@ -403,11 +403,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 		tflog.Debug(ctx, "Instance is ready, provisioning disks")
 
-		diskSpecs := d.Get("disk").([]interface{})
+		diskSpecs := d.Get("disk").([]any)
 		diskIDLabelMap = make(map[string]int, len(diskSpecs))
 
 		for _, diskSpec := range diskSpecs {
-			diskSpec := diskSpec.(map[string]interface{})
+			diskSpec := diskSpec.(map[string]any)
 
 			instanceDisk, err := createInstanceDisk(ctx, client, *instance, diskSpec, d)
 			if err != nil {
@@ -418,7 +418,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if configsOk {
-		configSpecs := d.Get("config").([]interface{})
+		configSpecs := d.Get("config").([]any)
 		detacher := makeVolumeDetacher(client, d)
 
 		configIDMap, err := createInstanceConfigsFromSet(ctx, client, instance.ID, configSpecs, diskIDLabelMap, detacher)
@@ -562,7 +562,7 @@ func adjustSwapSizeIfNeeded(
 	return true, nil
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_instance")
 
@@ -777,7 +777,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
 
 	if d.HasChange("interface") {
-		interfaces := d.Get("interface").([]interface{})
+		interfaces := d.Get("interface").([]any)
 
 		expandedInterfaces := helper.ExpandConfigInterfaces(ctx, interfaces)
 		config, err := client.GetInstanceConfig(ctx, id, bootConfig)
@@ -906,7 +906,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_instance")
 

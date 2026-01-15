@@ -109,7 +109,7 @@ func (r *Resource) Create(
 		Images:      images,
 	}
 
-	tflog.Debug(ctx, "client.CreateStackscript(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.CreateStackscript(...)", map[string]any{
 		"options": createOpts,
 	})
 
@@ -298,7 +298,7 @@ func (r *Resource) updateStackScript(
 		return
 	}
 
-	tflog.Debug(ctx, "client.UpdateStackscript(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.UpdateStackscript(...)", map[string]any{
 		"options": updateOpts,
 	})
 

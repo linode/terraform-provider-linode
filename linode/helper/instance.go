@@ -25,7 +25,7 @@ var bootEvents = []linodego.EventAction{linodego.ActionLinodeBoot, linodego.Acti
 
 // set bootConfig = 0 if using existing boot config
 func RebootInstance(ctx context.Context, d *schema.ResourceData, linodeID int,
-	meta interface{}, bootConfig int,
+	meta any, bootConfig int,
 ) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	ctx, cancel := context.WithTimeout(
@@ -263,7 +263,7 @@ func ExpandInterfaceIPv6CreateOptions(ipv6 any) *linodego.InstanceConfigInterfac
 	return result
 }
 
-func ExpandConfigInterface(ifaceMap map[string]interface{}) linodego.InstanceConfigInterfaceCreateOptions {
+func ExpandConfigInterface(ifaceMap map[string]any) linodego.InstanceConfigInterfaceCreateOptions {
 	purpose := linodego.ConfigInterfacePurpose(ifaceMap["purpose"].(string))
 	result := linodego.InstanceConfigInterfaceCreateOptions{
 		Purpose: purpose,
@@ -302,7 +302,7 @@ func ExpandConfigInterface(ifaceMap map[string]interface{}) linodego.InstanceCon
 		if ifaceMap["ip_ranges"] != nil {
 			// this is for keep result.IPRanges as a nil value rather than a value of empty slice
 			// when there is not a range.
-			if ranges := ifaceMap["ip_ranges"].([]interface{}); len(ranges) > 0 {
+			if ranges := ifaceMap["ip_ranges"].([]any); len(ranges) > 0 {
 				result.IPRanges = ExpandStringList(ranges)
 			}
 		}

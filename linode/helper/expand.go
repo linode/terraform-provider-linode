@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ExpandStringList(list []interface{}) []string {
+func ExpandStringList(list []any) []string {
 	slice := make([]string, 0, len(list))
 	for _, s := range list {
 		if val, ok := s.(string); ok && val != "" {

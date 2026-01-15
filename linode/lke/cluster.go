@@ -116,10 +116,7 @@ func ReconcileLKENodePoolSpecs(
 		}
 	}
 
-	maxUpdateIndex := len(oldSpecs)
-	if maxUpdateIndex > len(newSpecs) {
-		maxUpdateIndex = len(newSpecs)
-	}
+	maxUpdateIndex := min(len(oldSpecs), len(newSpecs))
 
 	for i, newSpec := range newSpecs[:maxUpdateIndex] {
 		oldSpec := oldSpecs[i]
@@ -333,7 +330,7 @@ func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, p
 
 // This cannot currently be handled efficiently by a DiffSuppressFunc
 // See: https://github.com/hashicorp/terraform-plugin-sdk/issues/477
-func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, declaredPools []interface{}) ([]linodego.LKENodePool, error) {
+func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, declaredPools []any) ([]linodego.LKENodePool, error) {
 	tflog.Info(ctx, "Enter matchPoolsWithSchema helper function")
 	result := make([]linodego.LKENodePool, len(declaredPools))
 
@@ -467,15 +464,15 @@ func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, dec
 	return result, nil
 }
 
-func expandLinodeLKEClusterAutoscalerFromPool(pool map[string]interface{}) *linodego.LKENodePoolAutoscaler {
-	scalersSpec, ok := pool["autoscaler"].([]interface{})
+func expandLinodeLKEClusterAutoscalerFromPool(pool map[string]any) *linodego.LKENodePoolAutoscaler {
+	scalersSpec, ok := pool["autoscaler"].([]any)
 
 	// Return nil if the autoscaler isn't defined
 	if !ok || len(scalersSpec) < 1 {
 		return nil
 	}
 
-	scalerSpec := scalersSpec[0].(map[string]interface{})
+	scalerSpec := scalersSpec[0].(map[string]any)
 	return &linodego.LKENodePoolAutoscaler{
 		Enabled: true,
 		Min:     scalerSpec["min"].(int),
@@ -483,9 +480,9 @@ func expandLinodeLKEClusterAutoscalerFromPool(pool map[string]interface{}) *lino
 	}
 }
 
-func expandLinodeLKENodePoolSpecs(pool []interface{}, preserveNoTarget bool) (poolSpecs []NodePoolSpec) {
+func expandLinodeLKENodePoolSpecs(pool []any, preserveNoTarget bool) (poolSpecs []NodePoolSpec) {
 	for _, spec := range pool {
-		specMap := spec.(map[string]interface{})
+		specMap := spec.(map[string]any)
 		autoscaler := expandLinodeLKEClusterAutoscalerFromPool(specMap)
 		if autoscaler == nil {
 			autoscaler = &linodego.LKENodePoolAutoscaler{
@@ -538,23 +535,23 @@ func expandLinodeLKENodePoolSpecs(pool []interface{}, preserveNoTarget bool) (po
 	return poolSpecs
 }
 
-func flattenLKENodePools(pools []linodego.LKENodePool) []map[string]interface{} {
-	flattened := make([]map[string]interface{}, len(pools))
+func flattenLKENodePools(pools []linodego.LKENodePool) []map[string]any {
+	flattened := make([]map[string]any, len(pools))
 	for i, pool := range pools {
 
-		nodes := make([]map[string]interface{}, len(pool.Linodes))
+		nodes := make([]map[string]any, len(pool.Linodes))
 		for i, node := range pool.Linodes {
-			nodes[i] = map[string]interface{}{
+			nodes[i] = map[string]any{
 				"id":          node.ID,
 				"instance_id": node.InstanceID,
 				"status":      node.Status,
 			}
 		}
 
-		var autoscaler []map[string]interface{}
+		var autoscaler []map[string]any
 
 		if pool.Autoscaler.Enabled {
-			autoscaler = []map[string]interface{}{
+			autoscaler = []map[string]any{
 				{
 					"min": pool.Autoscaler.Min,
 					"max": pool.Autoscaler.Max,
@@ -562,7 +559,7 @@ func flattenLKENodePools(pools []linodego.LKENodePool) []map[string]interface{} 
 			}
 		}
 
-		flattened[i] = map[string]interface{}{
+		flattened[i] = map[string]any{
 			"id":              pool.ID,
 			"label":           pool.Label,
 			"count":           pool.Count,
@@ -595,7 +592,7 @@ func flattenNodePoolTaints(taints []linodego.LKENodePoolTaint) []map[string]stri
 	return result
 }
 
-func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane, aclResp *linodego.LKEClusterControlPlaneACLResponse) map[string]interface{} {
+func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane, aclResp *linodego.LKEClusterControlPlaneACLResponse) map[string]any {
 	flattened := make(map[string]any)
 	if aclResp != nil {
 		acl := aclResp.ACL
@@ -620,7 +617,7 @@ func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane,
 	return flattened
 }
 
-func expandControlPlaneOptions(controlPlane map[string]interface{}) (
+func expandControlPlaneOptions(controlPlane map[string]any) (
 	result linodego.LKEClusterControlPlaneOptions,
 	diags diag.Diagnostics,
 ) {
@@ -641,7 +638,7 @@ func expandControlPlaneOptions(controlPlane map[string]interface{}) (
 	if value, ok := controlPlane["acl"]; ok {
 		v := value.([]any)
 		if len(v) > 0 {
-			result.ACL, diags = expandACLOptions(v[0].(map[string]interface{}))
+			result.ACL, diags = expandACLOptions(v[0].(map[string]any))
 			if diags.HasError() {
 				return result, diags
 			}
@@ -651,7 +648,7 @@ func expandControlPlaneOptions(controlPlane map[string]interface{}) (
 	return result, diags
 }
 
-func expandACLOptions(aclOptions map[string]interface{}) (*linodego.LKEClusterControlPlaneACLOptions, diag.Diagnostics) {
+func expandACLOptions(aclOptions map[string]any) (*linodego.LKEClusterControlPlaneACLOptions, diag.Diagnostics) {
 	var result linodego.LKEClusterControlPlaneACLOptions
 
 	if value, ok := aclOptions["enabled"]; ok {
@@ -660,9 +657,9 @@ func expandACLOptions(aclOptions map[string]interface{}) (*linodego.LKEClusterCo
 	}
 
 	if value, ok := aclOptions["addresses"]; ok {
-		v := value.([]interface{})
+		v := value.([]any)
 		if len(v) > 0 {
-			result.Addresses = expandACLAddressOptions(v[0].(map[string]interface{}))
+			result.Addresses = expandACLAddressOptions(v[0].(map[string]any))
 		}
 	}
 
@@ -676,7 +673,7 @@ func expandACLOptions(aclOptions map[string]interface{}) (*linodego.LKEClusterCo
 	return &result, nil
 }
 
-func expandACLAddressOptions(addressOptions map[string]interface{}) *linodego.LKEClusterControlPlaneACLAddressesOptions {
+func expandACLAddressOptions(addressOptions map[string]any) *linodego.LKEClusterControlPlaneACLAddressesOptions {
 	var result linodego.LKEClusterControlPlaneACLAddressesOptions
 
 	if value, ok := addressOptions["ipv4"]; ok {
@@ -704,7 +701,7 @@ func filterExternalPools(ctx context.Context, externalPoolTags []string, pools [
 	for _, pool := range pools {
 		tag := poolHasAnyOfTags(pool, tagSet)
 		if tag != nil {
-			tflog.Info(ctx, "Excluding pool from management by this resource", map[string]interface{}{
+			tflog.Info(ctx, "Excluding pool from management by this resource", map[string]any{
 				"pool_id": pool.ID,
 				"tag":     tag,
 				"reason":  "Pool tagged to be managed by a separate linode_lke_node_pool resource",

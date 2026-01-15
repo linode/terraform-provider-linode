@@ -27,7 +27,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func importResource(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func importResource(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	tflog.Debug(ctx, "Import linode_instance_config", map[string]any{
 		"id": d.Id(),
 	})

@@ -42,7 +42,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -89,12 +89,12 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("updated", db.Updated.Format(time.RFC3339))
 	d.Set("root_username", creds.Username)
 	d.Set("version", db.Version)
-	d.Set("updates", []interface{}{databaseshared.FlattenMaintenanceWindow(db.Updates)})
+	d.Set("updates", []any{databaseshared.FlattenMaintenanceWindow(db.Updates)})
 
 	return nil
 }
 
-func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	p, err := client.NewEventPollerWithoutEntity(linodego.EntityDatabase, linodego.ActionDatabaseCreate)
@@ -140,10 +140,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to wait for database active: %s", err)
 	}
 
-	updateList := d.Get("updates").([]interface{})
+	updateList := d.Get("updates").([]any)
 
 	if !d.GetRawConfig().GetAttr("updates").IsNull() && len(updateList) > 0 {
-		updates, err := databaseshared.ExpandMaintenanceWindow(updateList[0].(map[string]interface{}))
+		updates, err := databaseshared.ExpandMaintenanceWindow(updateList[0].(map[string]any))
 		if err != nil {
 			return diag.Errorf("failed to read maintenance window config: %s", err)
 		}
@@ -172,7 +172,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.Atoi(d.Id())
@@ -199,8 +199,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		var updates *linodego.MySQLDatabaseMaintenanceWindow
 
 		updatesRaw := d.Get("updates")
-		if updatesRaw != nil && len(updatesRaw.([]interface{})) > 0 {
-			expanded, err := databaseshared.ExpandMaintenanceWindow(updatesRaw.([]interface{})[0].(map[string]interface{}))
+		if updatesRaw != nil && len(updatesRaw.([]any)) > 0 {
+			expanded, err := databaseshared.ExpandMaintenanceWindow(updatesRaw.([]any)[0].(map[string]any))
 			if err != nil {
 				return diag.Errorf("failed to update maintenance window: %s", err)
 			}
@@ -239,7 +239,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {

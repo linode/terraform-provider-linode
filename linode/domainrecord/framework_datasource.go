@@ -104,7 +104,7 @@ func (d *DataSource) Read(
 		}
 		record = rec
 	} else if data.Name.ValueString() != "" {
-		filter, _ := json.Marshal(map[string]interface{}{"name": data.Name.ValueString()})
+		filter, _ := json.Marshal(map[string]any{"name": data.Name.ValueString()})
 
 		ctx = tflog.SetField(ctx, "record_name", data.Name.ValueString())
 

@@ -50,7 +50,7 @@ func DataSource() *schema.Resource {
 	}
 }
 
-func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readDataSource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	tflog.Debug(ctx, "Read data.linode_instances")
 
 	client := meta.(*helper.ProviderMeta).Client
@@ -75,9 +75,8 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	instanceIDMap := make(map[int]linodego.Instance, len(instances))
 
 	// Create a list of filterable instance maps
-	flattenedInstances := make([]interface{}, len(instances))
+	flattenedInstances := make([]any, len(instances))
 	for i, instance := range instances {
-		instance := instance
 		instanceIDMap[instance.ID] = instance
 
 		instanceMap, err := flattenInstanceSimple(&instance)
