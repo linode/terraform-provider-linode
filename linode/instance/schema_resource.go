@@ -344,6 +344,12 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "A list of capabilities of this Linode instance.",
 	},
+	"locks": {
+		Type:        schema.TypeSet,
+		Elem:        &schema.Schema{Type: schema.TypeString},
+		Computed:    true,
+		Description: "A list of locks applied to this Linode.",
+	},
 	"boot_config_label": {
 		Type:        schema.TypeString,
 		Description: "The Label of the Instance Config that should be used to boot the Linode instance.",
