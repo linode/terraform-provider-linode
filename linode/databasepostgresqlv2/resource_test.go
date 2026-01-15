@@ -373,6 +373,7 @@ func TestAccResource_complex(t *testing.T) {
 					resource.TestCheckNoResourceAttr(resName, "fork_restore_time"),
 					resource.TestCheckNoResourceAttr(resName, "fork_source"),
 					resource.TestCheckResourceAttrSet(resName, "host_primary"),
+					resource.TestCheckResourceAttrSet(resName, "host_standby"),
 					resource.TestCheckResourceAttr(resName, "label", label),
 					resource.TestCheckResourceAttrSet(resName, "members.%"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),

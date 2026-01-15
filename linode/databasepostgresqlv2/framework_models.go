@@ -37,6 +37,7 @@ type Model struct {
 	EngineID      types.String      `tfsdk:"engine_id"`
 	HostPrimary   types.String      `tfsdk:"host_primary"`
 	HostSecondary types.String      `tfsdk:"host_secondary"`
+	HostStandby   types.String      `tfsdk:"host_standby"`
 	Label         types.String      `tfsdk:"label"`
 	Members       types.Map         `tfsdk:"members"`
 	Platform      types.String      `tfsdk:"platform"`
@@ -172,6 +173,7 @@ func (m *Model) Flatten(
 	)
 	m.HostPrimary = helper.KeepOrUpdateString(m.HostPrimary, db.Hosts.Primary, preserveKnown)
 	m.HostSecondary = helper.KeepOrUpdateString(m.HostSecondary, db.Hosts.Standby, preserveKnown)
+	m.HostStandby = helper.KeepOrUpdateString(m.HostStandby, db.Hosts.Standby, preserveKnown)
 	m.Label = helper.KeepOrUpdateString(m.Label, db.Label, preserveKnown)
 	m.OldestRestoreTime = helper.KeepOrUpdateValue(m.OldestRestoreTime, timetypes.NewRFC3339TimePointerValue(db.OldestRestoreTime), preserveKnown)
 	m.Platform = helper.KeepOrUpdateString(m.Platform, string(db.Platform), preserveKnown)
@@ -450,6 +452,7 @@ func (m *Model) CopyFrom(other *Model, preserveKnown bool) {
 	m.ForkRestoreTime = helper.KeepOrUpdateValue(m.ForkRestoreTime, other.ForkRestoreTime, preserveKnown)
 	m.HostPrimary = helper.KeepOrUpdateValue(m.HostPrimary, other.HostPrimary, preserveKnown)
 	m.HostSecondary = helper.KeepOrUpdateValue(m.HostSecondary, other.HostSecondary, preserveKnown)
+	m.HostStandby = helper.KeepOrUpdateValue(m.HostStandby, other.HostStandby, preserveKnown)
 	m.Label = helper.KeepOrUpdateValue(m.Label, other.Label, preserveKnown)
 	m.Members = helper.KeepOrUpdateValue(m.Members, other.Members, preserveKnown)
 	m.OldestRestoreTime = helper.KeepOrUpdateValue(m.OldestRestoreTime, other.OldestRestoreTime, preserveKnown)
