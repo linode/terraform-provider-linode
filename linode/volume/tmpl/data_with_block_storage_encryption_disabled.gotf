@@ -1,0 +1,14 @@
+{{ define "volume_data_with_block_storage_encryption_disabled" }}
+
+resource "linode_volume" "foobar" {
+    label = "{{.Label}}"
+    region = "{{ .Region }}"
+    tags = ["tf_test"]
+    encryption = "disabled"
+}
+
+data "linode_volume" "foobar" {
+    id = "${linode_volume.foobar.id}"
+}
+
+{{ end }}
