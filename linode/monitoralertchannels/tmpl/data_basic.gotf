@@ -1,0 +1,12 @@
+{{ define "nbs_data_basic" }}
+
+{{ template "nbs_data_base" . }}
+
+data "linode_nodebalancers" "nbs" {
+    filter {
+        name = "label"
+        values = [linode_nodebalancer.foobar.0.label]
+    }
+}
+
+{{ end }}

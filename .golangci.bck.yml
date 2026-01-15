@@ -1,0 +1,30 @@
+# GolangCI-Lint configuration
+# See https://github.com/golangci/golangci-lint#configuration
+
+run:
+  tests: false
+  timeout: 2m
+
+linters-settings:
+  revive:
+    rules:
+      - name: unused-parameter
+        severity: warning
+        disabled: true
+  errcheck:
+    exclude-functions:
+      - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceData).Set
+      - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceDiff).SetNewComputed
+
+  gomoddirectives:
+    replace-allow-list:
+      - github.com/linode/linodego
+
+  govet:
+    disable:
+      - shadow
+  dupl:
+    threshold: 100
+
+linters:
+  fast: false

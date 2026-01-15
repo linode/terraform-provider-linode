@@ -1,0 +1,12 @@
+{{ define "alert_definitions_data_filter" }}
+
+{{ template "alert_definitions_data_base" . }}
+
+data "linode_monitor_alert_definitions" "foobar" {
+    filter {
+        name = "label"
+        values = ["{{ .Label }}"]
+    }
+}
+
+{{ end }}
