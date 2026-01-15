@@ -20,22 +20,3 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
-
-  # extended-support/v2
-  - package-ecosystem: "gomod"
-    target-branch: extended-support/v2
-    directory: "/"
-    schedule:
-      interval: "monthly"
-    ignore:
-      - dependency-name: "github.com/linode/terraform-provider-linode/linode"
-  - package-ecosystem: "gomod"
-    target-branch: extended-support/v2
-    directory: "/tools"
-    schedule:
-      interval: "monthly"
-  - package-ecosystem: "github-actions"
-    target-branch: extended-support/v2
-    directory: "/"
-    schedule:
-      interval: "monthly"
