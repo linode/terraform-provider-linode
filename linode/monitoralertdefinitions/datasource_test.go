@@ -109,8 +109,8 @@ func TestAccDataSourceAlertDefinitions_filter(t *testing.T) {
 			{
 				Config: tmpl.DataFilter(t, alertLabel, channelID),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckResourceAttrGreaterThan(resourceName, "alert_definitions.#", 0),
-					acceptance.CheckResourceAttrContains(resourceName, "alert_definitions.0.label", alertLabel),
+					acceptance.CheckResourceAttrGreaterThan(resName, "alert_definitions.#", 0),
+					acceptance.CheckResourceAttrContains(resName, "alert_definitions.0.label", alertLabel),
 				),
 			},
 		},

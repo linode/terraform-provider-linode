@@ -17,7 +17,7 @@ Creating a basic Monitor Alert Definition:
 resource "linode_monitor_alert_definition" "test" {
     service_type = "dbaas"
     description  = "An alert definition for ansible test"
-    label        = "test-alert-definition
+    label        = "test-alert-definition"
     severity     = 1
     channel_ids  = [10000]
     wait_for     = true

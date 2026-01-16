@@ -48,26 +48,6 @@ var alertChannelDataSourceNestedObj = schema.NestedAttributeObject{
 	},
 }
 
-//
-//var TriggerConditionsDataSourceObj = map[string]schema.Attribute{
-//	"criteria_condition": schema.StringAttribute{
-//		Computed:    true,
-//		Description: "The logical operation applied. Currently only 'ALL' allowed.",
-//	},
-//	"evaluation_period_seconds": schema.Int64Attribute{
-//		Computed:    true,
-//		Description: "Time period over which data is collected before evaluating the threshold.",
-//	},
-//	"polling_interval_seconds": schema.Int64Attribute{
-//		Computed:    true,
-//		Description: "Frequency at which the metric is checked.",
-//	},
-//	"trigger_occurrences": schema.Int64Attribute{
-//		Computed:    true,
-//		Description: "Minimum consecutive polling periods for threshold breach.",
-//	},
-//}
-
 var ruleDataSourceNestedObj = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"aggregate_function": schema.StringAttribute{
@@ -189,12 +169,12 @@ var AlertDefinitionAttributes = map[string]schema.Attribute{
 	},
 	"created": schema.StringAttribute{
 		Computed:    true,
-		Description: "When this NodeBalancer was created.",
+		Description: "When this Alert Definition was created.",
 		CustomType:  timetypes.RFC3339Type{},
 	},
 	"updated": schema.StringAttribute{
 		Computed:    true,
-		Description: "When this NodeBalancer was last updated.",
+		Description: "When this Alert Definition was last updated.",
 		CustomType:  timetypes.RFC3339Type{},
 	},
 	"created_by": schema.StringAttribute{
