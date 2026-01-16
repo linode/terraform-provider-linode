@@ -3502,3 +3502,30 @@ func TestAccResourceInstance_deleteWithReservedIP(t *testing.T) {
 		},
 	})
 }
+
+func TestAccResourceInstance_withLock(t *testing.T) {
+	var instance linodego.Instance
+	label := acctest.RandomWithPrefix("tf_test")
+	lockType := "cannot_delete"
+	resName := "linode_instance.my-inst"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.WithLock(t, label, testRegion, lockType),
+			},
+			{
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", label),
+					resource.TestCheckResourceAttr(resName, "locks.#", "1"),
+					resource.TestCheckTypeSetElemAttr(resName, "locks.*", lockType),
+				),
+			},
+		},
+	})
+}
