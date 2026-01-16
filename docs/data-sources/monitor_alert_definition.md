@@ -95,4 +95,4 @@ The following attributes are exported in each `alert_channels` block:
 * `id` - The unique identifier assigned to the alert channel.
 * `label` - The label of the alert channel.
 * `type` - The type of alert channel.
-* `url` - The URL of the alert channel. 
+* `url` - The URL of the alert channel.
