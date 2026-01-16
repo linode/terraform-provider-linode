@@ -100,7 +100,12 @@ func (data ResourceModel) GetObjectStorageKeys(
 	}
 
 	if config.ObjUseTempKeys.ValueBool() {
-		objKey := fwCreateTempKeys(ctx, client, data.Bucket.ValueString(), data.GetRegionOrCluster(ctx), permissions, nil, diags)
+		clusterOrRegion := data.GetRegionOrCluster(ctx, diags)
+		if diags.HasError() {
+			return nil, nil
+		}
+
+		objKey := fwCreateTempKeys(ctx, client, data.Bucket.ValueString(), clusterOrRegion, permissions, nil, diags)
 		if diags.HasError() {
 			return nil, nil
 		}
@@ -129,7 +134,10 @@ func (plan *ResourceModel) ComputeEndpointIfUnknown(ctx context.Context, client 
 	}
 
 	bucketName := plan.Bucket.ValueString()
-	regionOrCluster := plan.GetRegionOrCluster(ctx)
+	regionOrCluster := plan.GetRegionOrCluster(ctx, diags)
+	if diags.HasError() {
+		return
+	}
 
 	bucket, err := client.GetObjectStorageBucket(ctx, regionOrCluster, bucketName)
 	if err != nil {
@@ -153,9 +161,14 @@ func (data *ResourceModel) GenerateObjectStorageObjectID(apply bool, preserveKno
 	return id
 }
 
-func (data ResourceModel) GetRegionOrCluster(ctx context.Context) string {
+func (data ResourceModel) GetRegionOrCluster(ctx context.Context, diags *diag.Diagnostics) string {
 	if !data.Region.IsNull() && !data.Region.IsUnknown() {
 		return data.Region.ValueString()
+	} else {
+		diags.AddWarning(
+			"Cluster is Deprecated",
+			"Cluster is deprecated for Linode Object Storage services, please consider switch to using region.",
+		)
 	}
 
 	return data.Cluster.ValueString()
