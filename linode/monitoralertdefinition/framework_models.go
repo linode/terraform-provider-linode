@@ -298,9 +298,10 @@ func (data *AlertDefinitionResourceModel) flattenResourceModel(
 		data.RuleCriteria = *ruleCriteria
 	}
 
-	triggerConditions := helper.KeepOrUpdateSingleNestedAttributes(
+	triggerConditions := helper.KeepOrUpdateSingleNestedAttributesWithTypes(
 		ctx,
 		data.TriggerConditions,
+		triggerConditionsObjectType.AttrTypes,
 		preserveKnown,
 		&diags,
 		func(triggerConditionsModel *TriggerConditionsModel, _ *bool, preserveKnown bool, _ *diag.Diagnostics) {

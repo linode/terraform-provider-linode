@@ -45,7 +45,7 @@ func TestAlertDefinitionModel_FlattenAlertDefinition(t *testing.T) {
 	}
 
 	triggerConditions := linodego.TriggerConditions{
-		CriteriaCondition:       "AND",
+		CriteriaCondition:       "ALL",
 		EvaluationPeriodSeconds: 60,
 		PollingIntervalSeconds:  30,
 		TriggerOccurrences:      2,
@@ -54,12 +54,10 @@ func TestAlertDefinitionModel_FlattenAlertDefinition(t *testing.T) {
 	alertDef := &linodego.AlertDefinition{
 		ID:                42,
 		ServiceType:       "monitoring",
-		ChannelIDs:        []int{1},
 		Description:       "High CPU usage",
 		EntityIDs:         []string{"123", "456"},
 		Label:             "CPU Alert",
 		Status:            "active",
-		WaitFor:           true,
 		Severity:          2,
 		RuleCriteria:      ruleCriteria,
 		TriggerConditions: triggerConditions,
@@ -73,8 +71,8 @@ func TestAlertDefinitionModel_FlattenAlertDefinition(t *testing.T) {
 		Class:             "system",
 	}
 
-	var model AlertDefinitionModel
-	diags := model.FlattenAlertDefinition(ctx, alertDef, false)
+	var model AlertDefinitionResourceModel
+	diags := model.flattenResourceModel(ctx, alertDef, false)
 
 	assert.False(t, diags.HasError(), "Diagnostics should not have errors")
 	assert.Equal(t, types.Int64Value(42), model.ID)
