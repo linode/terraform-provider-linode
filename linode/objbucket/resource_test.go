@@ -720,6 +720,25 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 	})
 }
 
+func TestAccResourceBucket_invalid_region(t *testing.T) {
+	t.Parallel()
+
+	label := "tf-acc-bucket-invalid-region-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	invalidRegion := "us-mia-1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.Basic(t, label, invalidRegion),
+				ExpectError: regexp.MustCompile(fmt.Sprintf("Region '%s' is not valid for Object Storage", invalidRegion)),
+			},
+		},
+	})
+}
+
 func checkBucketExists(s *terraform.State) error {
 	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
