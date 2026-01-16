@@ -146,6 +146,21 @@ func createResource(
 	tflog.Debug(ctx, "Create linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
+	if region, ok := d.GetOk("region"); ok {
+		valid, suggestedRegions, err := validateRegion(ctx, region.(string), &client)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if !valid {
+			errorMsg := fmt.Sprintf("Region '%s' is not valid for Object Storage.", region.(string))
+			if len(suggestedRegions) > 0 {
+				errorMsg += fmt.Sprintf(" Suggested regions: %s", strings.Join(suggestedRegions, ", "))
+			}
+			return diag.Errorf("%s", errorMsg)
+		}
+	}
+
 	label := d.Get("label").(string)
 	acl := d.Get("acl").(string)
 
@@ -201,6 +216,21 @@ func updateResource(
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
+
+	if region, ok := d.GetOk("region"); ok {
+		valid, suggestedRegions, err := validateRegion(ctx, region.(string), &client)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if !valid {
+			errorMsg := fmt.Sprintf("Region '%s' is not valid for Object Storage.", region.(string))
+			if len(suggestedRegions) > 0 {
+				errorMsg += fmt.Sprintf(" Suggested regions: %s", strings.Join(suggestedRegions, ", "))
+			}
+			return diag.Errorf("%s", errorMsg)
+		}
+	}
 
 	if d.HasChanges("acl", "cors_enabled") {
 		tflog.Debug(ctx, "'acl' changes detected, will update bucket access")
