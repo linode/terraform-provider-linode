@@ -1,0 +1,37 @@
+{{ define "alert_definition_basic" }}
+
+resource "linode_monitor_alert_definition" "test" {
+    service_type = "dbaas"
+    description  = "An alert definition for ansible test"
+    label        = "{{ .Label }}"
+    severity     = 1
+    channel_ids  = ["{{ .AlertChannel }}"]
+    wait_for     = true
+
+    trigger_conditions = {
+        criteria_condition        = "ALL"
+        evaluation_period_seconds = 300
+        polling_interval_seconds  = 300
+        trigger_occurrences       = "{{ .TriggerOccurrences }}"
+    }
+
+    rule_criteria = {
+        rules = [
+            {
+                aggregate_function = "{{ .AggregateFunction }}"
+                dimension_filters = [
+                  {
+                    dimension_label = "node_type"
+                    operator        = "eq"
+                    value           = "primary"
+                  }
+                ]
+                metric    = "memory_usage"
+                operator  = "gt"
+                threshold = 90.0
+            }
+        ]
+    }
+}
+
+{{ end }}
