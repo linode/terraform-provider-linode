@@ -26,6 +26,7 @@ type TemplateData struct {
 	Labels           map[string]string
 	AuditLogsEnabled bool
 	Tier             string
+	FirewallID       int
 }
 
 func Basic(t testing.TB, name, version, region string) string {
@@ -108,14 +109,19 @@ func Enterprise(t testing.TB, name, version, region, updateStrategy string) stri
 		"lke_cluster_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, UpdateStrategy: updateStrategy})
 }
 
+func EnterpriseFirewall(t testing.TB, name, version, region string, firewall_id int) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, FirewallID: firewall_id})
+}
+
 func DataBasic(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_basic", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
-func DataEnterprise(t testing.TB, name, version, region, updateStrategy string) string {
+func DataEnterprise(t testing.TB, name, version, region, updateStrategy string, firewall_id int) string {
 	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_data_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, UpdateStrategy: updateStrategy})
+		"lke_cluster_data_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, UpdateStrategy: updateStrategy, FirewallID: firewall_id})
 }
 
 func DataAutoscaler(t testing.TB, name, version, region string) string {

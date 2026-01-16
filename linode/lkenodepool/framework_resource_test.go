@@ -411,7 +411,6 @@ func TestAccResourceNodePool_taints_labels(t *testing.T) {
 
 func TestAccResourceNodePoolEnterprise_basic(t *testing.T) {
 	t.Parallel()
-
 	resName := "linode_lke_node_pool.foobar"
 	clusterLabel := acctest.RandomWithPrefix("tf_test_")
 	poolTag := acctest.RandomWithPrefix("tf_test_")
@@ -480,6 +479,77 @@ func TestAccResourceNodePoolEnterprise_basic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccResourceNodePoolEnterprise_withFirewall(t *testing.T) {
+	t.Parallel()
+	resName := "linode_lke_node_pool.foobar"
+	clusterLabel := acctest.RandomWithPrefix("tf_test_")
+	poolTag := acctest.RandomWithPrefix("tf_test_")
+
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatalf("failed to get client: %s", err)
+	}
+
+	versions, err := client.ListLKETierVersions(context.Background(), "enterprise", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(versions) < 1 {
+		t.Skip("No enterprise k8s versions found for test. Skipping now...")
+	}
+
+	enterpriseK8sVersion := versions[0].ID
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise"}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	firewall, err := client.CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
+		Label: "tftest-enterprise-upgrade-" + acctest.RandString(5),
+		Rules: linodego.FirewallRuleSet{
+			InboundPolicy:  "ACCEPT",
+			OutboundPolicy: "ACCEPT",
+		},
+	})
+	if err != nil {
+		t.Errorf("failed creating firewall: %v", err)
+	}
+
+	templateData := createTemplateData()
+	templateData.ClusterLabel = clusterLabel
+	templateData.PoolTag = poolTag
+	templateData.K8sVersion = enterpriseK8sVersion
+	templateData.Region = region
+	templateData.FirewallID = linodego.Pointer(firewall.ID)
+	templateData.UpdateStrategy = "on_recycle"
+	createConfig := createEnterpriseResourceConfig(t, &templateData)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkNodePoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: createConfig,
+				Check: resource.ComposeTestCheckFunc(
+					checkNodePoolExists,
+					resource.TestCheckResourceAttr(resName, "firewall_id", fmt.Sprintf("%d", firewall.ID)),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+
+	client.DeleteFirewall(context.Background(), firewall.ID)
 }
 
 func TestAccResourceNodePool_disableAutoscalingExplicitNodeCount(t *testing.T) {

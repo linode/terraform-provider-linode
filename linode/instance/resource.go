@@ -130,6 +130,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("group", instance.Group)
 	d.Set("tags", instance.Tags)
 	d.Set("capabilities", instance.Capabilities)
+	d.Set("locks", instance.Locks)
 	d.Set("booted", isInstanceBooted(instance))
 	d.Set("host_uuid", instance.HostUUID)
 	d.Set("has_user_data", instance.HasUserData)
@@ -245,8 +246,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.InterfaceGeneration = linodego.InterfaceGeneration(interfaceGeneration.(string))
 	}
 
-	if networkHelper, networkHelperOk := d.GetOk("network_helper"); networkHelperOk {
-		createOpts.NetworkHelper = linodego.Pointer(networkHelper.(bool))
+	if !d.GetRawConfig().GetAttr("network_helper").IsNull() {
+		createOpts.NetworkHelper = linodego.Pointer(d.Get("network_helper").(bool))
 	}
 
 	if _, metadataOk := d.GetOk("metadata.0"); metadataOk {

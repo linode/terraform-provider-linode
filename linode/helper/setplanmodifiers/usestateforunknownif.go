@@ -126,9 +126,12 @@ func (m useStateForUnknownIfModifier) PlanModifySet(
 		return
 	}
 
-	ifFuncResp := &UseStateForUnknownIfFuncResponse{}
+	var ifFuncResp UseStateForUnknownIfFuncResponse
+	m.conditionFunc(ctx, req, &ifFuncResp)
 
-	if m.conditionFunc(ctx, req, ifFuncResp); !ifFuncResp.UseState {
+	resp.Diagnostics.Append(ifFuncResp.Diagnostics...)
+
+	if !ifFuncResp.UseState {
 		return
 	}
 

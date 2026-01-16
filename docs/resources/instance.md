@@ -154,6 +154,8 @@ The following arguments are supported:
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
+* `locks` - (Read-Only) A list of locks applied to this Linode.
+
 * `maintenance_policy` - (Optional) The maintenance policy of this Linode instance. Examples are `"linode/migrate"` and `"linode/power_off_on"`. Defaults to the default maintenance policy of the account. (**Note: v4beta only.**)
 
 * `private_ip` - (Optional) If true, the created Linode will have private networking enabled, allowing use of the 192.168.128.0/17 network within the Linode's region. It can be enabled on an existing Linode but it can't be disabled.
@@ -408,6 +410,8 @@ This Linode Instance resource exports the following attributes:
 * `has_user_data` - Whether this Instance was created with user-data.
 
 * `lke_cluster_id` - If applicable, the ID of the LKE cluster this instance is a part of.
+
+* `locks` - A list of locks applied to this Linode.
 
 * `specs.0.disk` -  The amount of storage space, in GB. this Linode has access to. A typical Linode will divide this space between a primary disk with an image deployed to it, and a swap disk, usually 512 MB. This is the default configuration created when deploying a Linode with an image through POST /linode/instances.
 

@@ -113,7 +113,7 @@ func TestUseStateForUnknownIfNotNull(t *testing.T) {
 func TestUseStateForUnknownIf(t *testing.T) {
 	testCases := map[string]struct {
 		request   planmodifier.ListRequest
-		condition func(context.Context, planmodifier.ListRequest) bool
+		condition listplanmodifiers.UseStateForUnknownIfFunc
 		expected  *planmodifier.ListResponse
 	}{
 		"condition-false": {
@@ -126,8 +126,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.ListUnknown(types.StringType),
 				ConfigValue: types.ListNull(types.StringType),
 			},
-			condition: func(ctx context.Context, req planmodifier.ListRequest) bool {
-				return false
+			condition: func(ctx context.Context, req planmodifier.ListRequest, resp *listplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = false
 			},
 			expected: &planmodifier.ListResponse{
 				PlanValue: types.ListUnknown(types.StringType),
@@ -143,8 +143,8 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.ListUnknown(types.StringType),
 				ConfigValue: types.ListNull(types.StringType),
 			},
-			condition: func(ctx context.Context, req planmodifier.ListRequest) bool {
-				return true
+			condition: func(ctx context.Context, req planmodifier.ListRequest, resp *listplanmodifiers.UseStateForUnknownIfFuncResponse) {
+				resp.UseState = true
 			},
 			expected: &planmodifier.ListResponse{
 				PlanValue: types.ListValueMust(types.StringType, []attr.Value{types.StringValue("state")}),
@@ -160,9 +160,9 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.ListUnknown(types.StringType),
 				ConfigValue: types.ListNull(types.StringType),
 			},
-			condition: func(ctx context.Context, req planmodifier.ListRequest) bool {
+			condition: func(ctx context.Context, req planmodifier.ListRequest, resp *listplanmodifiers.UseStateForUnknownIfFuncResponse) {
 				elements := req.StateValue.Elements()
-				return !req.StateValue.IsNull() && len(elements) > 0
+				resp.UseState = !req.StateValue.IsNull() && len(elements) > 0
 			},
 			expected: &planmodifier.ListResponse{
 				PlanValue: types.ListValueMust(types.StringType, []attr.Value{types.StringValue("item")}),
@@ -178,9 +178,9 @@ func TestUseStateForUnknownIf(t *testing.T) {
 				PlanValue:   types.ListUnknown(types.StringType),
 				ConfigValue: types.ListNull(types.StringType),
 			},
-			condition: func(ctx context.Context, req planmodifier.ListRequest) bool {
+			condition: func(ctx context.Context, req planmodifier.ListRequest, resp *listplanmodifiers.UseStateForUnknownIfFuncResponse) {
 				elements := req.StateValue.Elements()
-				return !req.StateValue.IsNull() && len(elements) > 0
+				resp.UseState = !req.StateValue.IsNull() && len(elements) > 0
 			},
 			expected: &planmodifier.ListResponse{
 				PlanValue: types.ListUnknown(types.StringType),

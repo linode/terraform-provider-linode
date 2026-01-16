@@ -26,6 +26,7 @@ type TemplateData struct {
 	Taints            []TaintData
 	Labels            map[string]string
 	Label             string
+	FirewallID        *int
 	UpdateStrategy    string
 }
 
