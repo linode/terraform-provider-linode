@@ -40,6 +40,7 @@ func Resource() *schema.Resource {
 		},
 		CustomizeDiff: customdiff.All(
 			customDiffValidateOptionalCount,
+			customDiffValidatePoolForStandardTier,
 			linodediffs.ComputedWithDefault("tags", []string{}),
 			linodediffs.CaseInsensitiveSet("tags"),
 			helper.SDKv2ValidateFieldRequiresAPIVersion(
@@ -539,6 +540,27 @@ func customDiffValidateOptionalCount(ctx context.Context, diff *schema.ResourceD
 			"%s: `count` must be defined when no autoscaler is defined",
 			strings.Join(invalidPools, ", "),
 		)
+	}
+
+	return nil
+}
+
+// customDiffValidatePoolForStandardTier ensures that at least one pool
+// is defined when tier is "standard" or not set (defaults to standard).
+//
+// For enterprise tier clusters, pools are optional and can be empty.
+func customDiffValidatePoolForStandardTier(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	tier := diff.GetRawConfig().GetAttr("tier")
+	pool := diff.GetRawConfig().GetAttr("pool")
+
+	// If tier is not set or is set to "standard", at least one pool is required
+	tierIsStandard := tier.IsNull() || tier.AsString() == TierStandard
+
+	if tierIsStandard {
+		// Check if pool is null or empty
+		if pool.IsNull() || pool.LengthInt() == 0 {
+			return fmt.Errorf("at least one pool is required for standard tier clusters")
+		}
 	}
 
 	return nil

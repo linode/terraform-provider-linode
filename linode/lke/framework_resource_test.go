@@ -820,6 +820,56 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 	})
 }
 
+func TestAccResourceLKECluster_enterpriseNoPools(t *testing.T) {
+	t.Parallel()
+
+	k8sVersionEnterprise = "v1.31.9+lke7" // currently only this version works with BYO VPC
+
+	enterpriseRegion := "us-ord" // currently only oslo region works with BYO VPC
+
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf-test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.EnterpriseNoPools(t, clusterName, k8sVersionEnterprise, enterpriseRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "0"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "vpc_id"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "subnet_id"),
+					),
+				},
+			},
+		})
+	})
+}
+
+func TestAccResourceLKECluster_standardNoPools(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf-test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.StandardNoPools(t, clusterName, k8sVersionLatest, testRegion),
+				ExpectError: regexp.MustCompile("at least one pool is required for standard tier clusters"),
+			},
+		},
+	})
+}
+
 func TestAccResourceLKECluster_apl(t *testing.T) {
 	t.Parallel()
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {

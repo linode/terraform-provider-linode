@@ -114,6 +114,16 @@ func EnterpriseFirewall(t testing.TB, name, version, region string, firewall_id 
 		"lke_cluster_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, FirewallID: firewall_id})
 }
 
+func EnterpriseNoPools(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_no_pools", TemplateData{Label: name, K8sVersion: version, Region: region, Tier: "enterprise"})
+}
+
+func StandardNoPools(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_no_pools", TemplateData{Label: name, K8sVersion: version, Region: region, Tier: "standard"})
+}
+
 func DataBasic(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_basic", TemplateData{Label: name, K8sVersion: version, Region: region})
