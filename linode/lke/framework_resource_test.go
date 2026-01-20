@@ -823,7 +823,7 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 func TestAccResourceLKECluster_enterpriseNoPools(t *testing.T) {
 	t.Parallel()
 
-	k8sVersionEnterprise = "v1.31.9+lke7" // currently only this version works with BYO VPC
+	k8sVersionEnterprise = "v1.31.9+lke7"
 
 	enterpriseRegion := "us-ord"
 
