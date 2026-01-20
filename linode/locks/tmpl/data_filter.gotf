@@ -1,0 +1,23 @@
+{{ define "locks_data_filter" }}
+
+resource "linode_instance" "test" {
+  label = "{{ .Label }}"
+  region = "{{ .Region }}"
+  type = "g6-nanode-1"
+}
+
+resource "linode_lock" "test" {
+  entity_id   = linode_instance.test.id
+  entity_type = "linode"
+  lock_type   = "{{ .LockType }}"
+}
+
+data "linode_locks" "test" {
+  depends_on = [ linode_lock.test ]
+  filter {
+    name = "lock_type"
+    values = ["{{ .LockType }}"]
+  }
+}
+
+{{ end }}

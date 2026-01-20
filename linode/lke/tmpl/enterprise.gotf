@@ -27,6 +27,7 @@ resource "linode_lke_cluster" "test" {
         count = 3
         tags  = ["test"]
         k8s_version = "{{.K8sVersion}}"
+        firewall_id = "{{.FirewallID}}"
         update_strategy = "{{.UpdateStrategy}}"
     }
 

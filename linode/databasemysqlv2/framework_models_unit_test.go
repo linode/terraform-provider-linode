@@ -38,8 +38,8 @@ var (
 		SSLConnection: true,
 		ClusterSize:   3,
 		Hosts: linodego.DatabaseHost{
-			Primary:   "1.2.3.4",
-			Secondary: "4.3.2.1",
+			Primary: "1.2.3.4",
+			Standby: "4.3.2.1",
 		},
 		Updates: linodego.DatabaseMaintenanceWindow{
 			DayOfWeek: 1,

@@ -33,6 +33,7 @@ type TemplateData struct {
 	InterfaceGeneration linodego.InterfaceGeneration
 	NetworkHelper       *bool
 	MaintenancePolicy   string
+	LockType            string
 }
 
 func Basic(t testing.TB, label, pubKey, region string, rootPass string) string {
@@ -881,4 +882,22 @@ resource "linode_networking_ip" "test" {
 	reserved = true
 }
 `, region)
+}
+
+func WithLock(t testing.TB, label, region, lockType string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_with_lock", TemplateData{
+			Label:    label,
+			Region:   region,
+			LockType: lockType,
+		})
+}
+
+func DataWithLock(t testing.TB, label, region, lockType string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_with_lock", TemplateData{
+			Label:    label,
+			Region:   region,
+			LockType: lockType,
+		})
 }

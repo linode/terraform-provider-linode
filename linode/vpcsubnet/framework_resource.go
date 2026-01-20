@@ -241,9 +241,8 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-	} else {
-		req.State.GetAttribute(ctx, path.Root("updated"), &plan.Updated)
 	}
+	plan.CopyFrom(state, true)
 
 	// Workaround for Crossplane issue where ID is not
 	// properly populated in plan

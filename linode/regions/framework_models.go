@@ -1,6 +1,8 @@
 package regions
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
@@ -16,13 +18,16 @@ type RegionFilterModel struct {
 }
 
 // parseRegions parses the given list of regions into the `regions` model attribute.
-func (model *RegionFilterModel) parseRegions(regions []linodego.Region) {
+func (model *RegionFilterModel) parseRegions(
+	ctx context.Context,
+	regions []linodego.Region,
+) {
 	result := make([]regionResource.RegionModel, len(regions))
 
 	for i, region := range regions {
 		region := region
 		model := regionResource.RegionModel{}
-		model.ParseRegion(&region)
+		model.ParseRegion(ctx, &region)
 		result[i] = model
 	}
 

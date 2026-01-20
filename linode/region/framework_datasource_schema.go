@@ -13,6 +13,11 @@ var ObjectTypePGLimits = types.ObjectType{
 	},
 }
 
+var MonitorsAttrTypes = map[string]attr.Type{
+	"alerts":  types.ListType{ElemType: types.StringType},
+	"metrics": types.ListType{ElemType: types.StringType},
+}
+
 var DataSourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"country": schema.StringAttribute{
@@ -44,6 +49,11 @@ var DataSourceSchema = schema.Schema{
 			Description: "Information about placement groups limits for this region.",
 			Computed:    true,
 			ElementType: ObjectTypePGLimits,
+		},
+		"monitors": schema.ObjectAttribute{
+			Description:    "The monitoring services available in a region.",
+			Computed:       true,
+			AttributeTypes: MonitorsAttrTypes,
 		},
 		"resolvers": schema.ListNestedAttribute{
 			Computed: true,
