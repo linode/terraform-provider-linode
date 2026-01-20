@@ -1,0 +1,13 @@
+{{ define "instance_with_lock" }}
+resource "linode_lock" "my-lock" {
+  entity_id   = linode_instance.my-inst.id
+  entity_type = "linode"
+  lock_type   = "{{ .LockType }}"
+}
+
+resource "linode_instance" "my-inst" {
+  label  = "{{ .Label }}"
+  region = "{{ .Region }}"
+  type   = "g6-nanode-1"
+}
+{{ end }}
