@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"hash/crc32"
 	"io"
-	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -71,12 +70,6 @@ func getObjKeysFromProvider(
 	return keys, keys.Ok()
 }
 
-func isCluster(regionOrCluster string) bool {
-	pattern := `^[a-z]{2}-[a-z]+-[0-9]+$`
-	re := regexp.MustCompile(pattern)
-	return re.MatchString(regionOrCluster)
-}
-
 // fwCreateTempKeys creates temporary Object Storage Keys to use.
 // The temporary keys are scoped only to the target cluster and bucket with limited permissions.
 // Keys only exist for the duration of the apply time.
@@ -92,14 +85,6 @@ func fwCreateTempKeys(
 	tempBucketAccess := linodego.ObjectStorageKeyBucketAccess{
 		BucketName:  bucketLabel,
 		Permissions: permissions,
-	}
-
-	if isCluster(regionOrCluster) {
-		tflog.Warn(ctx, "Cluster is deprecated for Linode Object Storage service, please consider switch to using region.")
-		tempBucketAccess.Cluster = regionOrCluster
-	} else {
-		tflog.Info(ctx, fmt.Sprintf("%q Is Region", regionOrCluster))
-		tempBucketAccess.Region = regionOrCluster
 	}
 
 	createOpts := linodego.ObjectStorageKeyCreateOptions{
@@ -163,13 +148,6 @@ func createTempKeys(
 	tempBucketAccess := linodego.ObjectStorageKeyBucketAccess{
 		BucketName:  bucketLabel,
 		Permissions: permissions,
-	}
-
-	if isCluster(regionOrCluster) {
-		tflog.Warn(ctx, "Cluster is deprecated for Linode Object Storage service, please consider switch to using region.")
-		tempBucketAccess.Cluster = regionOrCluster
-	} else {
-		tempBucketAccess.Region = regionOrCluster
 	}
 
 	// Bucket key labels are a maximum of 50 characters - if the bucket name is

@@ -256,7 +256,7 @@ func updateResource(
 		})
 
 		config := meta.(*helper.ProviderMeta).Config
-		regionOrCluster := helper.GetRegionOrCluster(d)
+		regionOrCluster := helper.GetRegionOrCluster(ctx, d)
 
 		bucketLabel := d.Get("label").(string)
 
@@ -472,7 +472,7 @@ func updateBucketAccess(
 	ctx context.Context, d *schema.ResourceData, client linodego.Client,
 ) error {
 	tflog.Debug(ctx, "entering updateBucketAccess")
-	regionOrCluster := helper.GetRegionOrCluster(d)
+	regionOrCluster := helper.GetRegionOrCluster(ctx, d)
 	label := d.Get("label").(string)
 
 	updateOpts := linodego.ObjectStorageBucketUpdateAccessOptions{}
@@ -496,7 +496,7 @@ func updateBucketCert(
 	ctx context.Context, d *schema.ResourceData, client linodego.Client,
 ) error {
 	tflog.Debug(ctx, "entering updateBucketCert")
-	regionOrCluster := helper.GetRegionOrCluster(d)
+	regionOrCluster := helper.GetRegionOrCluster(ctx, d)
 	label := d.Get("label").(string)
 	oldCert, newCert := d.GetChange("cert")
 	hasOldCert := len(oldCert.([]any)) != 0
