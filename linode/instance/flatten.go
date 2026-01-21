@@ -48,6 +48,7 @@ func flattenInstance(
 	result["group"] = instance.Group
 	result["tags"] = instance.Tags
 	result["capabilities"] = instance.Capabilities
+	result["locks"] = instance.Locks
 	result["image"] = instance.Image
 	result["interface_generation"] = instance.InterfaceGeneration
 	result["host_uuid"] = instance.HostUUID
