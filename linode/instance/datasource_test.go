@@ -330,3 +330,28 @@ func TestAccDataSourceInstance_interfaceVPCIPv6(t *testing.T) {
 		},
 	})
 }
+
+func TestAccDataSourceInstances_withLock(t *testing.T) {
+	t.Parallel()
+
+	resName := "data.linode_instances.test"
+	label := acctest.RandomWithPrefix("tf_test")
+	lockType := "cannot_delete"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataWithLock(t, label, testRegion, lockType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
+					resource.TestCheckResourceAttr(resName, "instances.0.label", label),
+					resource.TestCheckResourceAttr(resName, "instances.0.locks.#", "1"),
+					resource.TestCheckTypeSetElemAttr(resName, "instances.0.locks.*", lockType),
+				),
+			},
+		},
+	})
+}
