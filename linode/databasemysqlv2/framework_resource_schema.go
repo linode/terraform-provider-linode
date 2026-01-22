@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -154,14 +155,20 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The primary host for the Managed Database.",
 			Computed:    true,
 			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifiers.UseStateForUnknownUnlessTheseChanged(
+					path.MatchRoot("private_network"),
+					path.MatchRoot("type"),
+				),
 			},
 		},
 		"host_secondary": schema.StringAttribute{
 			Description: "The secondary/private host for the Managed Database.",
 			Computed:    true,
 			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifiers.UseStateForUnknownUnlessTheseChanged(
+					path.MatchRoot("private_network"),
+					path.MatchRoot("type"),
+				),
 			},
 		},
 		"members": schema.MapAttribute{
