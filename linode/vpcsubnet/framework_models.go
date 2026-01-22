@@ -119,7 +119,7 @@ func FlattenSubnetDatabase(
 
 	result["ipv6_ranges"] = ipv6RangesList
 
-	resultObject, d := types.ObjectValue(LinodeObjectType.AttrTypes, result)
+	resultObject, d := types.ObjectValue(DatabaseObjectType.AttrTypes, result)
 	return &resultObject, d
 }
 
