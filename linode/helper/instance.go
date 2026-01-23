@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"time"
 
 	fwdiag "github.com/hashicorp/terraform-plugin-framework/diag"
@@ -505,4 +506,19 @@ func WaitForInstanceNonTransientStatus(
 	}
 
 	return instance.Status, nil
+}
+
+// LinodeIsLockedWithCannotDeleteSubresources checks if a Linode instance
+// has the CannotDeleteWithSubresources lock type.
+func LinodeIsLockedWithCannotDeleteSubresources(
+	ctx context.Context,
+	client *linodego.Client,
+	linodeID int,
+) (locked bool, err error) {
+	linode, err := client.GetInstance(ctx, linodeID)
+	if err != nil {
+		return
+	}
+
+	return slices.Contains(linode.Locks, linodego.LockTypeCannotDeleteWithSubresources), nil
 }
