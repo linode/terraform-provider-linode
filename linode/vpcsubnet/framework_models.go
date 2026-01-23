@@ -28,6 +28,16 @@ type BaseModel struct {
 	Databases types.List        `tfsdk:"databases"`
 }
 
+type SubnetDatabaseIPv6RangeModel struct {
+	Range types.String `tfsdk:"range"`
+}
+
+type SubnetDatabaseModel struct {
+	ID         types.Int64  `tfsdk:"id"`
+	IPv4Range  types.String `tfsdk:"ipv4_range"`
+	IPv6Ranges types.List   `tfsdk:"ipv6_ranges"`
+}
+
 func FlattenSubnetLinodeInterface(iface linodego.VPCSubnetLinodeInterface) (types.Object, diag.Diagnostics) {
 	return types.ObjectValue(LinodeInterfaceObjectType.AttrTypes, map[string]attr.Value{
 		"id":        types.Int64Value(int64(iface.ID)),
@@ -36,12 +46,12 @@ func FlattenSubnetLinodeInterface(iface linodego.VPCSubnetLinodeInterface) (type
 	})
 }
 
-func FlattenSubnetDatabaseIPv6Range(
-	ipv6Range linodego.VPCIPv6Range,
-) (types.Object, diag.Diagnostics) {
-	return types.ObjectValue(IPV6RangeObjectType.AttrTypes, map[string]attr.Value{
-		"range": types.StringValue(ipv6Range.Range),
-	})
+func flattenSubnetDatabaseIPv6Range(
+	ipv6Range string,
+) SubnetDatabaseIPv6RangeModel {
+	return SubnetDatabaseIPv6RangeModel{
+		Range: types.StringValue(ipv6Range),
+	}
 }
 
 func FlattenSubnetLinode(
@@ -96,31 +106,35 @@ func FlattenSubnetDatabase(
 	ctx context.Context,
 	db linodego.VPCSubnetDatabase,
 ) (*types.Object, diag.Diagnostics) {
-	result := map[string]attr.Value{
-		"id":         types.Int64Value(int64(db.ID)),
-		"ipv4_range": types.StringPointerValue(db.IPv4Range),
+	ipv6RangeModels := helper.MapSlice(
+		db.IPv6Ranges,
+		func(r string) SubnetDatabaseIPv6RangeModel {
+			return flattenSubnetDatabaseIPv6Range(r)
+		},
+	)
+
+	ipv6RangesList, diags := types.ListValueFrom(
+		ctx,
+		IPV6RangeObjectType,
+		ipv6RangeModels,
+	)
+	if diags.HasError() {
+		return nil, diags
 	}
 
-	ipv6Ranges := make([]types.Object, len(db.IPv6Ranges))
-
-	for i, ipv6Range := range db.IPv6Ranges {
-		ipv6RangeObj, d := FlattenSubnetDatabaseIPv6Range(linodego.VPCIPv6Range{Range: ipv6Range})
-		if d.HasError() {
-			return nil, d
-		}
-
-		ipv6Ranges[i] = ipv6RangeObj
+	model := SubnetDatabaseModel{
+		ID:         types.Int64Value(int64(db.ID)),
+		IPv4Range:  types.StringPointerValue(db.IPv4Range),
+		IPv6Ranges: ipv6RangesList,
 	}
 
-	ipv6RangesList, d := types.ListValueFrom(ctx, IPV6RangeObjectType, ipv6Ranges)
-	if d.HasError() {
-		return nil, d
-	}
+	obj, diags := types.ObjectValueFrom(
+		ctx,
+		DatabaseObjectType.AttrTypes,
+		model,
+	)
 
-	result["ipv6_ranges"] = ipv6RangesList
-
-	resultObject, d := types.ObjectValue(DatabaseObjectType.AttrTypes, result)
-	return &resultObject, d
+	return &obj, diags
 }
 
 func FlattenSubnetDatabases(
