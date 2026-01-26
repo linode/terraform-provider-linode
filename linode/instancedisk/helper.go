@@ -152,7 +152,7 @@ func runDiskOperation(
 
 	if len(disks) == 0 {
 		// Skip reboot if no disks are attached
-		tflog.Info(ctx, "Skipping reboot: instance has no disks attached", map[string]interface{}{
+		tflog.Info(ctx, "Skipping reboot: instance has no disks attached", map[string]any{
 			"linode_id": linodeID,
 		})
 		return resultDiag

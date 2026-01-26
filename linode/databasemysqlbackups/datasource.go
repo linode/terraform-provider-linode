@@ -17,7 +17,7 @@ func DataSource() *schema.Resource {
 	}
 }
 
-func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readDataSource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	results, err := filterConfig.FilterDataSource(ctx, d, meta, listBackups, flattenBackup)
 	if err != nil {
 		return nil
@@ -33,7 +33,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 func listBackups(
 	ctx context.Context, d *schema.ResourceData, client *linodego.Client,
 	options *linodego.ListOptions,
-) ([]interface{}, error) {
+) ([]any, error) {
 	dbID := d.Get("database_id").(int)
 
 	backups, err := client.ListMySQLDatabaseBackups(ctx, dbID, options)
@@ -41,7 +41,7 @@ func listBackups(
 		return nil, err
 	}
 
-	result := make([]interface{}, len(backups))
+	result := make([]any, len(backups))
 
 	for i, v := range backups {
 		result[i] = v
@@ -50,10 +50,10 @@ func listBackups(
 	return result, nil
 }
 
-func flattenBackup(data interface{}) map[string]interface{} {
+func flattenBackup(data any) map[string]any {
 	backup := data.(linodego.MySQLDatabaseBackup)
 
-	result := make(map[string]interface{})
+	result := make(map[string]any)
 
 	result["id"] = backup.ID
 	result["label"] = backup.Label

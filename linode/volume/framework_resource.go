@@ -235,7 +235,7 @@ func (r *Resource) CreateVolume(
 		createOpts.LinodeID = linodeID
 	}
 
-	tflog.Debug(ctx, "client.CreateVolume(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.CreateVolume(...)", map[string]any{
 		"options": createOpts,
 	})
 
@@ -364,7 +364,7 @@ func HandleResize(
 	volumeID, newSize, timeoutSeconds int,
 	diags *diag.Diagnostics,
 ) *linodego.Volume {
-	tflog.Debug(ctx, "Resize volume", map[string]interface{}{
+	tflog.Debug(ctx, "Resize volume", map[string]any{
 		"volume_id": volumeID,
 		"new_size":  newSize,
 	})
@@ -464,7 +464,7 @@ func (r *Resource) Update(
 	}
 
 	if doUpdate {
-		tflog.Debug(ctx, "client.UpdateVolume(...)", map[string]interface{}{
+		tflog.Debug(ctx, "client.UpdateVolume(...)", map[string]any{
 			"options": updateOpts,
 		})
 
@@ -512,7 +512,7 @@ func (r *Resource) Update(
 				ConfigID: 0,
 			}
 
-			tflog.Debug(ctx, "client.AttachVolume(...)", map[string]interface{}{
+			tflog.Debug(ctx, "client.AttachVolume(...)", map[string]any{
 				"options": attachOptions,
 			})
 
