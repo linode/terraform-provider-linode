@@ -27,7 +27,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func importResource(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func importResource(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	if !strings.Contains(d.Id(), ",") {
 		return nil, fmt.Errorf("failed to parse argument: %v", d.Id())
 	}
@@ -61,7 +61,7 @@ func importResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return results, nil
 }
 
-func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_domain_record")
 
@@ -135,7 +135,7 @@ func domainRecordFromResourceData(d *schema.ResourceData) *linodego.DomainRecord
 	}
 }
 
-func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	tflog.Debug(ctx, "Create linode_domain_record")
 
 	client := meta.(*helper.ProviderMeta).Client
@@ -171,7 +171,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_domain_record")
 
@@ -208,7 +208,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_domain_record")
 

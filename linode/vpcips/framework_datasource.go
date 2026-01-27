@@ -68,7 +68,7 @@ func (r *DataSource) Read(
 	}
 
 	if !data.VPCID.IsNull() {
-		tflog.Debug(ctx, "Filtering IPs for specific VPC", map[string]interface{}{
+		tflog.Debug(ctx, "Filtering IPs for specific VPC", map[string]any{
 			"vpc_id": vpcID,
 		})
 

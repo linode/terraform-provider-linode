@@ -92,7 +92,7 @@ func fwCreateTempKeys(
 		BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{tempBucketAccess},
 	}
 
-	tflog.Debug(ctx, "client.CreateObjectStorageKey(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.CreateObjectStorageKey(...)", map[string]any{
 		"options": createOpts,
 	})
 
@@ -162,7 +162,7 @@ func createTempKeys(
 		BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{tempBucketAccess},
 	}
 
-	tflog.Debug(ctx, "client.CreateObjectStorageKey(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.CreateObjectStorageKey(...)", map[string]any{
 		"options": createOpts,
 	})
 
@@ -199,12 +199,12 @@ func cleanUpTempKeys(
 	client *linodego.Client,
 	keyId int,
 ) {
-	tflog.Trace(ctx, "Clean up temporary keys: client.DeleteObjectStorageKey(...)", map[string]interface{}{
+	tflog.Trace(ctx, "Clean up temporary keys: client.DeleteObjectStorageKey(...)", map[string]any{
 		"key_id": keyId,
 	})
 
 	if err := client.DeleteObjectStorageKey(ctx, keyId); err != nil {
-		tflog.Warn(ctx, "Failed to clean up temporary object storage keys", map[string]interface{}{
+		tflog.Warn(ctx, "Failed to clean up temporary object storage keys", map[string]any{
 			"details": err,
 		})
 	}

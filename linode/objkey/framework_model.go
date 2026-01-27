@@ -2,6 +2,7 @@ package objkey
 
 import (
 	"context"
+	"maps"
 	"slices"
 	"strconv"
 
@@ -76,19 +77,12 @@ func (plan ResourceModel) GetCreateOptions(ctx context.Context) (opts linodego.O
 }
 
 func getObjectStorageKeyRegionIDsSet(regions []linodego.ObjectStorageKeyRegion) []string {
-	regionIDs := make([]string, len(regions))
-	for i, r := range regions {
-		regionIDs[i] = r.ID
+	regionSet := make(helper.StringSet)
+	for _, r := range regions {
+		regionSet[r.ID] = helper.ExistsInSet
 	}
 
-	// Deduplicate regions
-	//
-	// Considering migrating to `someMap.Keys()` when upgrading to Go 1.23
-	// https://pkg.go.dev/maps@master#Keys
-	slices.Sort(regionIDs)
-	regionIDs = slices.Compact(regionIDs)
-
-	return regionIDs
+	return slices.Collect(maps.Keys(regionSet))
 }
 
 func getRegionDetails(regions []linodego.ObjectStorageKeyRegion) []RegionDetail {
