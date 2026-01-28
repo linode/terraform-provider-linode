@@ -69,3 +69,8 @@ func DataWithBlockStorageEncryption(t *testing.T, volume, region string) string 
 	return acceptance.ExecuteTemplate(t,
 		"volume_data_with_block_storage_encryption", TemplateData{Label: volume, Region: region})
 }
+
+func DataWithBlockStorageEncryptionDisabled(t *testing.T, volume, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"volume_data_with_block_storage_encryption_disabled", TemplateData{Label: volume, Region: region})
+}
