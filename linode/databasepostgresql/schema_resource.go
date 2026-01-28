@@ -103,7 +103,7 @@ var resourceSchema = map[string]*schema.Schema{
 					Type:        schema.TypeString,
 					Description: "The day to perform maintenance.",
 					Required:    true,
-					ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+					ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics {
 						if _, err := databaseshared.ExpandDayOfWeek(i.(string)); err != nil {
 							return diag.FromErr(err)
 						}

@@ -344,6 +344,12 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "A list of capabilities of this Linode instance.",
 	},
+	"locks": {
+		Type:        schema.TypeSet,
+		Elem:        &schema.Schema{Type: schema.TypeString},
+		Computed:    true,
+		Description: "A list of locks applied to this Linode.",
+	},
 	"boot_config_label": {
 		Type:        schema.TypeString,
 		Description: "The Label of the Instance Config that should be used to boot the Linode instance.",
@@ -516,7 +522,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "A set of IPv4 addresses to share with this Linode.",
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
-			ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+			ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics {
 				ip := net.ParseIP(i.(string))
 				if ip == nil {
 					return diag.Errorf("invalid ipv4 address: %s", i)

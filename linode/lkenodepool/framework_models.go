@@ -149,9 +149,9 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 	)
 	p.Type = pool.Type.ValueString()
 	p.Label = pool.Label.ValueStringPointer()
-	if !pool.FirewallID.IsNull() && pool.FirewallID.ValueInt64() != 0 {
-		firewall_id := int(pool.FirewallID.ValueInt64())
-		p.FirewallID = &firewall_id
+	if !pool.FirewallID.IsUnknown() && !pool.FirewallID.IsNull() {
+		id := pool.FirewallID.ValueInt64()
+		p.FirewallID = linodego.Pointer(int(id))
 	}
 
 	if !pool.Tags.IsNull() {
@@ -204,9 +204,12 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 		shouldUpdate = true
 	}
 
-	if state.FirewallID != pool.FirewallID {
-		firewall_id := int(pool.FirewallID.ValueInt64())
-		p.FirewallID = &firewall_id
+	if !state.FirewallID.Equal(pool.FirewallID) {
+		if !pool.FirewallID.IsUnknown() && !pool.FirewallID.IsNull() {
+			id := pool.FirewallID.ValueInt64()
+			p.FirewallID = linodego.Pointer(int(id))
+		}
+		// else: do NOT set p.FirewallID at all
 		shouldUpdate = true
 	}
 

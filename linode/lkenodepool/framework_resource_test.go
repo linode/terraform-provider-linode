@@ -524,7 +524,7 @@ func TestAccResourceNodePoolEnterprise_withFirewall(t *testing.T) {
 	templateData.PoolTag = poolTag
 	templateData.K8sVersion = enterpriseK8sVersion
 	templateData.Region = region
-	templateData.FirewallID = firewall.ID
+	templateData.FirewallID = linodego.Pointer(firewall.ID)
 	templateData.UpdateStrategy = "on_recycle"
 	createConfig := createEnterpriseResourceConfig(t, &templateData)
 
