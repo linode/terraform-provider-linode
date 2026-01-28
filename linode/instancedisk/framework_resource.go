@@ -207,7 +207,16 @@ func (r *Resource) Read(
 		return
 	}
 
+	// Only populate Image if state.Image is null and the parent instance has an image set
+	if state.Image.IsNull() {
+		instance, err := client.GetInstance(ctx, linodeID)
+		if err == nil && instance.Image != "" {
+			state.Image = types.StringValue(instance.Image)
+		}
+	}
+
 	state.FlattenDisk(disk, false)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
