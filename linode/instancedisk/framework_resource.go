@@ -210,7 +210,12 @@ func (r *Resource) Read(
 	// Only populate Image if state.Image is null and the parent instance has an image set
 	if state.Image.IsNull() {
 		instance, err := client.GetInstance(ctx, linodeID)
-		if err == nil && instance.Image != "" {
+		if err != nil {
+			tflog.Debug(ctx, "Failed to fetch parent instance for disk image fallback", map[string]any{
+				"linode_id": linodeID,
+				"error":     err.Error(),
+			})
+		} else if instance.Image != "" {
 			state.Image = types.StringValue(instance.Image)
 		}
 	}
