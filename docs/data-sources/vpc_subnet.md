@@ -54,7 +54,7 @@ In addition to all arguments above, the following attributes are exported:
 
     * `active` - Whether the Interface is actively in use.
 
-* `databases` - A list of Managed Databases that added to this subnet.
+* `databases` - A list of Managed databases assigned to the VPC Subnet.
 
   * `id` - ID of a managed database assigned to the VPC Subnet.
 

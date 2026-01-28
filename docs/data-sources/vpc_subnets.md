@@ -67,7 +67,7 @@ Each Linode VPC subnet will be stored in the `vpc_subnets` attribute and will ex
 
     * `active` - Whether the Interface is actively in use.
 
-* `databases` - A list of Managed Databases that added to this subnet.
+* `databases` - A list of Managed databases assigned to the VPC Subnet.
 
   * `id` - ID of a managed database assigned to the VPC Subnet.
 
