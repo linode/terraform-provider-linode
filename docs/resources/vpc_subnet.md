@@ -84,6 +84,12 @@ In addition to all the arguments above, the following attributes are exported.
     * `config_id` - ID of Linode Config that the interface is associated with. `null` for a Linode Interface.
     * `active` - Whether the Interface is actively in use.
 
+* `databases` - A list of Managed Databases that added to this subnet.
+  * `id` - ID of a managed database assigned to the VPC Subnet.
+  * `ipv4_range` - IPv4 range assigned to the database.
+  * `ipv6_ranges` - A list of IPv6 ranges assigned to the database.
+    * `range` - An IPv6 address range in CIDR notation.
+
 * `created` - The date and time when the VPC was created.
 
 * `updated` - The date and time when the VPC was last updated.
