@@ -55,6 +55,10 @@ func (r *Resource) Create(
 		return
 	}
 
+	if plan.Image.IsUnknown() {
+		plan.Image = types.StringNull()
+	}
+
 	helper.SetLogFieldBulk(ctx, map[string]any{"linode_id": plan.LinodeID})
 	createTimeout, diags := plan.Timeouts.Create(ctx, DefaultVolumeCreateTimeout)
 	resp.Diagnostics.Append(diags...)
@@ -207,18 +211,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	// Only populate Image if state.Image is null and the parent instance has an image set
-	if state.Image.IsNull() {
-		instance, err := client.GetInstance(ctx, linodeID)
-		if err != nil {
-			tflog.Debug(ctx, "Failed to fetch parent instance for disk image fallback", map[string]any{
-				"linode_id": linodeID,
-				"error":     err.Error(),
-			})
-		} else if instance.Image != "" {
-			state.Image = types.StringValue(instance.Image)
-		}
-	}
+	state.PopulateImageFromParentInstance(ctx, client, linodeID)
 
 	state.FlattenDisk(disk, false)
 
@@ -236,6 +229,10 @@ func (r *Resource) Update(
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if plan.Image.IsUnknown() {
+		plan.Image = types.StringNull()
+	}
 
 	ctx = populateLogAttributes(ctx, state)
 
