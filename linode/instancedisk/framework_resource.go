@@ -332,7 +332,7 @@ func (r *Resource) Delete(
 	if locked {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Can't Delete Disk %d in Linode %d", id, linodeID),
-			"The resource lock on the Linode prohibits deletion "+
+			"the resource lock on the Linode prohibits deletion "+
 				"of its subresources, which includes this disk.",
 		)
 		return
