@@ -279,9 +279,8 @@ var resourceSchema = map[string]*schema.Schema{
 				},
 			},
 		},
-		MinItems:    1,
-		Required:    true,
-		Description: "A node pool in the cluster.",
+		Optional:    true,
+		Description: "A node pool in the cluster. At least one pool is required for standard tier clusters.",
 	},
 	"control_plane": {
 		Type:        schema.TypeList,

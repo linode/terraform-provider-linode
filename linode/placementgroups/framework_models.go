@@ -21,7 +21,6 @@ func (model *PlacementGroupFilterModel) ParsePlacementGroups(
 	pgModels := make([]placementgroup.PlacementGroupDataSourceModel, len(pgs))
 
 	for i, pg := range pgs {
-		pg := pg
 		var pgModel placementgroup.PlacementGroupDataSourceModel
 		pgModel.ID = types.Int64Value(int64(pg.ID))
 		pgModel.ParsePlacementGroup(&pg)

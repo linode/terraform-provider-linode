@@ -68,6 +68,10 @@ var frameworkDataSourceSchema = schema.Schema{
 						Computed:    true,
 						ElementType: vpcsubnet.LinodeObjectType,
 					},
+					"databases": schema.ListAttribute{
+						Computed:    true,
+						ElementType: vpcsubnet.DatabaseObjectType,
+					},
 				},
 			},
 		},

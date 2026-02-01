@@ -51,5 +51,9 @@ var frameworkDatasourceSchema = schema.Schema{
 			Computed:    true,
 			ElementType: LinodeObjectType,
 		},
+		"databases": schema.ListAttribute{
+			Computed:    true,
+			ElementType: DatabaseObjectType,
+		},
 	},
 }
