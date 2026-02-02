@@ -159,6 +159,7 @@ var frameworkResourceSchema = schema.Schema{
 			Description:        "The secondary/private host for the Managed Database.",
 			Computed:           true,
 			DeprecationMessage: "Use host_standby instead.",
+			PlanModifiers:      databaseshared.HostStringPlanModifiers,
 		},
 		"host_standby": schema.StringAttribute{
 			Description:   "The standby host for the Managed Database.",
