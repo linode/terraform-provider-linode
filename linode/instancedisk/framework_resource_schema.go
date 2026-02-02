@@ -86,6 +86,7 @@ var frameworkResourceSchema = schema.Schema{
 			Computed:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"root_pass": schema.StringAttribute{
