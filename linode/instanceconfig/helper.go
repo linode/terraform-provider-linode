@@ -96,13 +96,33 @@ func createDevice(deviceMap map[string]any) linodego.InstanceConfigDevice {
 	return device
 }
 
-func expandDevicesBlock(devicesBlock any) *linodego.InstanceConfigDeviceMap {
+func setDeviceMapField(target *linodego.InstanceConfigDeviceMap, deviceKey string, device linodego.InstanceConfigDevice) error {
+	if target == nil {
+		return nil
+	}
+
+	structVal := reflect.ValueOf(target).Elem()
+	lookupKey := strings.ToUpper(strings.TrimSpace(deviceKey))
+	field := structVal.FieldByName(lookupKey)
+
+	if !field.IsValid() {
+		return fmt.Errorf("unknown device %q (no matching field on InstanceConfigDeviceMap)", deviceKey)
+	}
+	if !field.CanSet() {
+		return fmt.Errorf("cannot set device %q (field exists but is unsettable)", deviceKey)
+	}
+
+	field.Set(reflect.ValueOf(&device))
+	return nil
+}
+
+func expandDevicesBlock(devicesBlock any) (*linodego.InstanceConfigDeviceMap, error) {
 	var result linodego.InstanceConfigDeviceMap
 
 	devices := devicesBlock.(*schema.Set).List()
 
 	if len(devices) <= 0 {
-		return nil
+		return nil, nil
 	}
 
 	seenDevices := make(map[string]bool)
@@ -118,26 +138,23 @@ func expandDevicesBlock(devicesBlock any) *linodego.InstanceConfigDeviceMap {
 				seenDevices[deviceName.(string)] = true
 			}
 
-			field := reflect.Indirect(
-				reflect.ValueOf(&result),
-			).FieldByName(
-				strings.ToUpper(deviceName.(string)),
-			)
-
-			field.Set(reflect.ValueOf(&linodeGoDevice))
+			err := setDeviceMapField(&result, deviceName.(string), linodeGoDevice)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	return &result
+	return &result, nil
 }
 
-func expandDevicesNamedBlock(devicesNamedBlock any) *linodego.InstanceConfigDeviceMap {
+func expandDevicesNamedBlock(devicesNamedBlock any) (*linodego.InstanceConfigDeviceMap, error) {
 	var result linodego.InstanceConfigDeviceMap
 
 	deviceMapSlice := devicesNamedBlock.([]any)
 
 	if len(deviceMapSlice) < 1 {
-		return nil
+		return nil, nil
 	}
 
 	devices := deviceMapSlice[0].(map[string]any)
@@ -151,12 +168,13 @@ func expandDevicesNamedBlock(devicesNamedBlock any) *linodego.InstanceConfigDevi
 		currentDevice := currentDeviceSlice[0].(map[string]any)
 		linodeGoDevice := createDevice(currentDevice)
 
-		// Get the corresponding struct field and set it to the correct device
-		field := reflect.Indirect(reflect.ValueOf(&result)).FieldByName(strings.ToUpper(k))
-		field.Set(reflect.ValueOf(&linodeGoDevice))
+		err := setDeviceMapField(&result, k, linodeGoDevice)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return &result
+	return &result, nil
 }
 
 func expandHelpers(helpersRaw any) *linodego.InstanceConfigHelpers {
