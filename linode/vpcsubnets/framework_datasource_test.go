@@ -72,6 +72,11 @@ func TestAccDataSourceVPCSubnets_basic_smoke(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("nodebalancers"),
+						knownvalue.ListSizeExact(0),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
 						tfjsonpath.New("vpc_subnets").
 							AtSliceIndex(0).
 							AtMapKey("linodes").
@@ -105,7 +110,7 @@ func TestAccDataSourceVPCSubnets_dualStack(t *testing.T) {
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
 	// TODO (VPC Dual Stack): Remove region hardcoding
-	targetRegion := "no-osl-1"
+	targetRegion := "nl-ams"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
