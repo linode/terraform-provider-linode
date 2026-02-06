@@ -77,12 +77,24 @@ In addition to all the arguments above, the following attributes are exported.
 
 * `id` - The ID of the VPC Subnet.
 
-* `linodes` - A list of Linode that added to this subnet.
+* `linodes` - A list of Linodes added to this subnet.
   * `id` - ID of the Linode
   * `interfaces` - A list of networking interfaces objects.
     * `id` - ID of the interface.
     * `config_id` - ID of Linode Config that the interface is associated with. `null` for a Linode Interface.
     * `active` - Whether the Interface is actively in use.
+
+* `databases` - A list of Managed databases assigned to the VPC Subnet.
+  * `id` - ID of a managed database assigned to the VPC Subnet.
+  * `ipv4_range` - IPv4 range assigned to the database.
+  * `ipv6_ranges` - A list of IPv6 ranges assigned to the database.
+    * `range` - An IPv6 address range in CIDR notation.
+
+* `nodebalancers` - A list of NodeBalancers assigned to the VPC Subnet.
+  * `id` - ID of a NodeBalancer assigned to the VPC Subnet.
+  * `ipv4_range` - IPv4 range assigned to the NodeBalancer.
+  * `ipv6_ranges` - A list of IPv6 ranges assigned to the NodeBalancer.
+    * `range` - An IPv6 address range in CIDR notation.
 
 * `created` - The date and time when the VPC was created.
 
