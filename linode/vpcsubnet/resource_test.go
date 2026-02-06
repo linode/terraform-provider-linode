@@ -64,6 +64,49 @@ func TestAccResourceVPCSubnet_basic(t *testing.T) {
 	})
 }
 
+func TestAccResourceVPCSubnet_nodebalancer(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc_subnet.foobar"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+	fmt.Printf("Using region %s for VPC subnet tests\n", testRegion)
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.BasicWithNodebalancer(t, subnetLabel, "10.0.0.0/24", testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkVPCSubnetExists,
+					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+					resource.TestCheckResourceAttr(resName, "databases.#", "0"),
+				),
+			},
+			{
+				Config: tmpl.UpdatesWithNodebalancer(t, subnetLabel, "10.0.0.0/24", testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkVPCSubnetExists,
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", subnetLabel)),
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttrSet(resName, "updated"),
+					resource.TestCheckResourceAttr(resName, "nodebalancers.#", "1"),
+					resource.TestCheckResourceAttr(resName, "nodebalancers.0.ipv4_range", "10.0.0.4/30"),
+					resource.TestCheckResourceAttrSet(resName, "nodebalancers.0.id"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
 func TestAccResourceVPCSubnet_update(t *testing.T) {
 	t.Parallel()
 	resName := "linode_vpc_subnet.foobar"
