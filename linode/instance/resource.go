@@ -586,11 +586,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if d.HasChange("root_pass") {
 		newPass := d.Get("root_pass").(string)
 
-		wasRunning := instance.Status == linodego.InstanceRunning
+		isRunning := instance.Status == linodego.InstanceRunning
 		booted := d.Get("booted").(bool)
 		bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
 
-		if wasRunning {
+		if isRunning {
 			if skipImplicitReboots {
 				return diag.Errorf(
 					"cannot update root_pass while Linode %d is running when skip_implicit_reboots is enabled",
@@ -612,7 +612,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 
 		// Restore power only if it was running and booted isn't explicitly false
-		if wasRunning && (bootedNull || booted) {
+		if isRunning && (bootedNull || booted) {
 			if err := helper.BootInstanceSync(
 				ctx,
 				&client,
