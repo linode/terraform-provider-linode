@@ -1,5 +1,3 @@
-//go:build integration || instancedisk
-
 package instancedisk_test
 
 import (

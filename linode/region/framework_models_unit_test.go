@@ -1,5 +1,3 @@
-//go:build unit
-
 package region
 
 import (

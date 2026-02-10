@@ -1,5 +1,3 @@
-//go:build integration || vpcips
-
 package vpcips_test
 
 import (

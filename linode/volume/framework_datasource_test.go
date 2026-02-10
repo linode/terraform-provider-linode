@@ -1,5 +1,3 @@
-//go:build integration || volume
-
 package volume_test
 
 import (

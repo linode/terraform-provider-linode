@@ -1,5 +1,3 @@
-//go:build integration || stackscripts
-
 package stackscripts_test
 
 import (

@@ -1,5 +1,3 @@
-//go:build integration || firewalltemplate
-
 package firewalltemplate_test
 
 import (

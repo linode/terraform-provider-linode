@@ -1,5 +1,3 @@
-//go:build integration || vpc
-
 package vpc_test
 
 import (

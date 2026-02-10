@@ -1,5 +1,3 @@
-//go:build integration || instanceconfig
-
 package instanceconfig_test
 
 import (

@@ -1,5 +1,3 @@
-//go:build integration || nbtypes
-
 package nbtypes_test
 
 import (

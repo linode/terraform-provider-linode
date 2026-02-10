@@ -1,5 +1,3 @@
-//go:build integration || networkingip
-
 package networkingip_test
 
 import (

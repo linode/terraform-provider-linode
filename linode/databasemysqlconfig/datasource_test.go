@@ -1,5 +1,3 @@
-//go:build integration || databasemysqlconfig
-
 package databasemysqlconfig_test
 
 import (

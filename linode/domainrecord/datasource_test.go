@@ -1,5 +1,3 @@
-//go:build integration || domainrecord
-
 package domainrecord_test
 
 import (

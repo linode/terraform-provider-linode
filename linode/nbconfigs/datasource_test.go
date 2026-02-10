@@ -1,5 +1,3 @@
-//go:build integration || nbconfigs
-
 package nbconfigs_test
 
 import (

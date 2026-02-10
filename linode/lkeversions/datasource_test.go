@@ -1,5 +1,3 @@
-//go:build integration || lkeversions
-
 package lkeversions_test
 
 import (

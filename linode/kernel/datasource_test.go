@@ -1,5 +1,3 @@
-//go:build integration || kernal
-
 package kernel_test
 
 import (

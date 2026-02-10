@@ -1,5 +1,3 @@
-//go:build integration || instancereservedipassignment
-
 package instancereservedipassignment_test
 
 import (

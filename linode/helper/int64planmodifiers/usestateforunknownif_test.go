@@ -1,5 +1,3 @@
-//go:build unit
-
 package int64planmodifiers_test
 
 import (

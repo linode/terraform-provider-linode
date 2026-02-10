@@ -1,5 +1,3 @@
-//go:build integration || users
-
 package users_test
 
 import (

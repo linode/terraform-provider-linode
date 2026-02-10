@@ -1,5 +1,3 @@
-//go:build integration || nb
-
 package nb_test
 
 import (

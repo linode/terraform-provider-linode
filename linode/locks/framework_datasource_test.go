@@ -1,5 +1,3 @@
-//go:build integration || locks
-
 package locks_test
 
 import (
