@@ -1,5 +1,3 @@
-//go:build integration && parent_child
-
 package childaccounts_test
 
 import (

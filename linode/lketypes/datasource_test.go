@@ -1,5 +1,3 @@
-//go:build integration || lketypes
-
 package lketypes_test
 
 import (

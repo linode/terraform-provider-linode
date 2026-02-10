@@ -1,5 +1,3 @@
-//go:build integration || firewallsettings
-
 package firewallsettings_test
 
 import (

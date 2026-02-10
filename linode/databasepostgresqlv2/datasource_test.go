@@ -1,5 +1,3 @@
-//go:build integration || databasepostgresqlv2
-
 package databasepostgresqlv2_test
 
 import (

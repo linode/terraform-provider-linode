@@ -1,5 +1,3 @@
-//go:build unit
-
 package helper_test
 
 import (

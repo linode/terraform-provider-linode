@@ -1,5 +1,3 @@
-//go:build integration || instanceip
-
 package instanceip_test
 
 import (

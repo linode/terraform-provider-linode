@@ -1,5 +1,3 @@
-//go:build integration || obj
-
 package obj_test
 
 import (

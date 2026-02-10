@@ -1,5 +1,3 @@
-//go:build integration || image
-
 package image_test
 
 import (

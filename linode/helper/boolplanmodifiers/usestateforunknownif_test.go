@@ -1,5 +1,3 @@
-//go:build unit
-
 package boolplanmodifiers_test
 
 import (

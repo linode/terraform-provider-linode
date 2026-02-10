@@ -1,5 +1,3 @@
-//go:build integration || account || act_tests
-
 package account_test
 
 import (

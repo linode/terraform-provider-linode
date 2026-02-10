@@ -1,5 +1,3 @@
-//go:build integration || rdns
-
 package rdns_test
 
 import (

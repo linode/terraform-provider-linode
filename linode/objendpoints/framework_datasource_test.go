@@ -1,5 +1,3 @@
-//go:build integration || objendpoints
-
 package objendpoints_test
 
 import (

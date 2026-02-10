@@ -1,5 +1,3 @@
-//go:build integration || vpcsubnet
-
 package vpcsubnet_test
 
 import (

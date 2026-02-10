@@ -1,5 +1,3 @@
-//go:build integration || instance
-
 package instance_test
 
 import (
