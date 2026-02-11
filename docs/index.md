@@ -36,20 +36,6 @@ resource "linode_instance" "foobar" {
 }
 ```
 
-Terraform 0.12 and earlier:
-
-```terraform
-# Configure the Linode Provider
-provider "linode" {
-  # token = "..."
-}
-
-# Create a Linode
-resource "linode_instance" "foobar" {
-  # ...
-}
-```
-
 ## Configuration Reference
 
 The following keys can be used to configure the provider.
