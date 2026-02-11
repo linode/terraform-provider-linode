@@ -566,7 +566,7 @@ func CreateTempFile(t testing.TB, name, content string) *os.File {
 	}
 
 	t.Cleanup(func() {
-		if err := os.Remove(file.Name()); err != nil {
+		if err := os.Remove(file.Name()); err != nil { //#nosec G703
 			t.Fatalf("failed to remove test file: %s", err)
 		}
 	})
