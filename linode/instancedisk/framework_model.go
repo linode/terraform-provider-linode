@@ -1,11 +1,13 @@
 package instancedisk
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -71,4 +73,27 @@ func (data *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	data.Updated = helper.KeepOrUpdateValue(data.Updated, other.Updated, preserveKnown)
 	data.Status = helper.KeepOrUpdateValue(data.Status, other.Status, preserveKnown)
 	data.DiskEncryption = helper.KeepOrUpdateValue(data.DiskEncryption, other.DiskEncryption, preserveKnown)
+}
+
+func (data *ResourceModel) PopulateImageFromParentInstance(
+	ctx context.Context,
+	client *linodego.Client,
+	linodeID int,
+) {
+	if !data.Image.IsNull() {
+		return
+	}
+
+	instance, err := client.GetInstance(ctx, linodeID)
+	if err != nil {
+		tflog.Debug(ctx, "Failed to fetch parent instance for disk image fallback", map[string]any{
+			"linode_id": linodeID,
+			"error":     err.Error(),
+		})
+		return
+	}
+
+	if instance.Image != "" {
+		data.Image = types.StringValue(instance.Image)
+	}
 }

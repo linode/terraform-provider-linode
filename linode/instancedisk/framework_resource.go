@@ -55,6 +55,10 @@ func (r *Resource) Create(
 		return
 	}
 
+	if plan.Image.IsUnknown() {
+		plan.Image = types.StringNull()
+	}
+
 	helper.SetLogFieldBulk(ctx, map[string]any{"linode_id": plan.LinodeID})
 	createTimeout, diags := plan.Timeouts.Create(ctx, DefaultVolumeCreateTimeout)
 	resp.Diagnostics.Append(diags...)
@@ -207,7 +211,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	state.PopulateImageFromParentInstance(ctx, client, linodeID)
+
 	state.FlattenDisk(disk, false)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -222,6 +229,10 @@ func (r *Resource) Update(
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if plan.Image.IsUnknown() {
+		plan.Image = types.StringNull()
+	}
 
 	ctx = populateLogAttributes(ctx, state)
 
