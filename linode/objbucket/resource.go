@@ -206,8 +206,10 @@ func updateResource(
 	tflog.Debug(ctx, "Update linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
-	if diags := validateRegionIfPresent(ctx, d, &client); diags != nil {
-		return diags
+	if d.HasChange("region") {
+		if diags := validateRegionIfPresent(ctx, d, &client); diags != nil {
+			return diags
+		}
 	}
 
 	if d.HasChanges("acl", "cors_enabled") {
