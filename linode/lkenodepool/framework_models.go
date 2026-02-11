@@ -95,7 +95,8 @@ func (data *nodePoolDataSourceModel) parseLKENodePool(
 		return diags
 	}
 
-	linodes, diags := flattenLKENodePoolLinodeList(nodePool.Linodes)
+	var linodes *types.List
+	linodes, diags = flattenLKENodePoolLinodeList(nodePool.Linodes)
 	if diags.HasError() {
 		return diags
 	}

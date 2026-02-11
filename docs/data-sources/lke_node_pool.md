@@ -1,12 +1,12 @@
 ---
 page_title: "Linode: linode_lke_node_pool"
 description: |-
-  Provides details about specific LKE Cluster Node Pool.
+  Provides details about a specific LKE Cluster Node Pool.
 ---
 
 # Data Source: linode\_lke\_node\_pool
 
-Provides details about specific LKE Cluster Node Pool.
+Provides details about a specific LKE Cluster Node Pool.
 For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-lke-node-pool).
 
 ## Example Usage

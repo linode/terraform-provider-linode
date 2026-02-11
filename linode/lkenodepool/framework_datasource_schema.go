@@ -75,7 +75,7 @@ var frameworkDataSourceSchema = schema.Schema{
 			Computed:    true,
 		},
 		"nodes": schema.ListNestedAttribute{
-			Description: "Status information for the nodes that are members of this node pool." +
+			Description: "Status information for the nodes that are members of this node pool. " +
 				"If a Linode has not been provisioned for a given node slot, the 'instance_id' is null",
 			Computed: true,
 			NestedObject: schema.NestedAttributeObject{
