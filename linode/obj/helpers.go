@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"hash/crc32"
 	"io"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -70,6 +71,17 @@ func getObjKeysFromProvider(
 	return keys, keys.Ok()
 }
 
+// isCluster function can't guarantee the correctness of the cluster or region determination,
+// because there are new regions with names ending with a number, such as 'jp-tyo-3'.
+// However, it should work well because API tolerates using regions as clusters.
+// We will be able to retire all these region vs cluster handling after removing cluster support
+// in the next version of this provider.
+func isCluster(regionOrCluster string) bool {
+	pattern := `^[a-z]{2}-[a-z]+-[0-9]+$`
+	re := regexp.MustCompile(pattern)
+	return re.MatchString(regionOrCluster)
+}
+
 // fwCreateTempKeys creates temporary Object Storage Keys to use.
 // The temporary keys are scoped only to the target cluster and bucket with limited permissions.
 // Keys only exist for the duration of the apply time.
@@ -85,6 +97,12 @@ func fwCreateTempKeys(
 	tempBucketAccess := linodego.ObjectStorageKeyBucketAccess{
 		BucketName:  bucketLabel,
 		Permissions: permissions,
+	}
+
+	if isCluster(regionOrCluster) {
+		tempBucketAccess.Cluster = regionOrCluster
+	} else {
+		tempBucketAccess.Region = regionOrCluster
 	}
 
 	createOpts := linodego.ObjectStorageKeyCreateOptions{
@@ -148,6 +166,12 @@ func createTempKeys(
 	tempBucketAccess := linodego.ObjectStorageKeyBucketAccess{
 		BucketName:  bucketLabel,
 		Permissions: permissions,
+	}
+
+	if isCluster(regionOrCluster) {
+		tempBucketAccess.Cluster = regionOrCluster
+	} else {
+		tempBucketAccess.Region = regionOrCluster
 	}
 
 	// Bucket key labels are a maximum of 50 characters - if the bucket name is
