@@ -368,7 +368,7 @@ func (fp *FrameworkProvider) terraformUserAgent(
 		add = strings.TrimSpace(add)
 		if len(add) > 0 {
 			userAgent += " " + add
-			log.Printf("[DEBUG] Using modified User-Agent: %s", userAgent)
+			log.Printf("[DEBUG] Using modified User-Agent: %s", userAgent) //#nosec G706
 		}
 	}
 

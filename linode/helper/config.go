@@ -154,7 +154,7 @@ func terraformUserAgent(version string) string {
 		add = strings.TrimSpace(add)
 		if len(add) > 0 {
 			ua += " " + add
-			log.Printf("[DEBUG] Using modified User-Agent: %s", ua)
+			log.Printf("[DEBUG] Using modified User-Agent: %s", ua) //#nosec G706
 		}
 	}
 
