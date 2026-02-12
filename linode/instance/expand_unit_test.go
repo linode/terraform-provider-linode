@@ -10,15 +10,15 @@ import (
 )
 
 func TestExpandInstanceConfigDeviceMap(t *testing.T) {
-	deviceMapInput := map[string]interface{}{
-		"sda": []interface{}{
-			map[string]interface{}{
+	deviceMapInput := map[string]any{
+		"sda": []any{
+			map[string]any{
 				"disk_id":   124458,
 				"volume_id": nil,
 			},
 		},
-		"sdb": []interface{}{
-			map[string]interface{}{
+		"sdb": []any{
+			map[string]any{
 				"disk_id":   124459,
 				"volume_id": nil,
 			},
@@ -60,12 +60,12 @@ func TestExpandInstanceConfigDeviceMap(t *testing.T) {
 func TestExpandInstanceConfigDevice(t *testing.T) {
 	tests := []struct {
 		name string
-		m    map[string]interface{}
+		m    map[string]any
 		want *linodego.InstanceConfigDevice
 	}{
 		{
 			name: "Valid DiskID",
-			m: map[string]interface{}{
+			m: map[string]any{
 				"disk_id": 123,
 			},
 			want: &linodego.InstanceConfigDevice{
@@ -74,7 +74,7 @@ func TestExpandInstanceConfigDevice(t *testing.T) {
 		},
 		{
 			name: "Valid VolumeID",
-			m: map[string]interface{}{
+			m: map[string]any{
 				"volume_id": 456,
 			},
 			want: &linodego.InstanceConfigDevice{
@@ -83,7 +83,7 @@ func TestExpandInstanceConfigDevice(t *testing.T) {
 		},
 		{
 			name: "Invalid IDs",
-			m: map[string]interface{}{
+			m: map[string]any{
 				"disk_id":   0,
 				"volume_id": -1,
 			},
@@ -91,7 +91,7 @@ func TestExpandInstanceConfigDevice(t *testing.T) {
 		},
 		{
 			name: "No IDs",
-			m:    map[string]interface{}{},
+			m:    map[string]any{},
 			want: nil,
 		},
 	}
@@ -113,14 +113,14 @@ func TestExpandInstanceConfigDevice(t *testing.T) {
 func TestExpandInstanceACLPAlertsOpts(t *testing.T) {
 	tests := []struct {
 		name string
-		in   map[string]interface{}
+		in   map[string]any
 		want *linodego.InstanceACLPAlertsOptions
 	}{
 		{
 			name: "Valid system_alerts and user_alerts",
-			in: map[string]interface{}{
-				"system_alerts": []interface{}{1, 2},
-				"user_alerts":   []interface{}{3, 4},
+			in: map[string]any{
+				"system_alerts": []any{1, 2},
+				"user_alerts":   []any{3, 4},
 			},
 			want: func() *linodego.InstanceACLPAlertsOptions {
 				return &linodego.InstanceACLPAlertsOptions{
@@ -131,9 +131,9 @@ func TestExpandInstanceACLPAlertsOpts(t *testing.T) {
 		},
 		{
 			name: "Empty system_alerts and user_alerts",
-			in: map[string]interface{}{
-				"system_alerts": []interface{}{},
-				"user_alerts":   []interface{}{},
+			in: map[string]any{
+				"system_alerts": []any{},
+				"user_alerts":   []any{},
 			},
 			want: func() *linodego.InstanceACLPAlertsOptions {
 				return &linodego.InstanceACLPAlertsOptions{
@@ -144,7 +144,7 @@ func TestExpandInstanceACLPAlertsOpts(t *testing.T) {
 		},
 		{
 			name: "Absent system_alerts and user_alerts",
-			in:   map[string]interface{}{},
+			in:   map[string]any{},
 			want: &linodego.InstanceACLPAlertsOptions{},
 		},
 	}
@@ -166,19 +166,19 @@ func TestExpandInstanceACLPAlertsOpts(t *testing.T) {
 func TestExpandInstanceAlertsUpdateOpts(t *testing.T) {
 	tests := []struct {
 		name string
-		in   map[string]interface{}
+		in   map[string]any
 		want *linodego.InstanceAlert
 	}{
 		{
 			name: "Valid legacy and ACLP alerts",
-			in: map[string]interface{}{
+			in: map[string]any{
 				"cpu":            90,
 				"io":             1000,
 				"network_in":     10,
 				"network_out":    11,
 				"transfer_quota": 80,
-				"system_alerts":  []interface{}{7, 8},
-				"user_alerts":    []interface{}{100},
+				"system_alerts":  []any{7, 8},
+				"user_alerts":    []any{100},
 			},
 			want: func() *linodego.InstanceAlert {
 				return &linodego.InstanceAlert{
@@ -194,9 +194,9 @@ func TestExpandInstanceAlertsUpdateOpts(t *testing.T) {
 		},
 		{
 			name: "Only ACLP alerts provided",
-			in: map[string]interface{}{
-				"system_alerts": []interface{}{1},
-				"user_alerts":   []interface{}{},
+			in: map[string]any{
+				"system_alerts": []any{1},
+				"user_alerts":   []any{},
 			},
 			want: func() *linodego.InstanceAlert {
 				return &linodego.InstanceAlert{
@@ -207,7 +207,7 @@ func TestExpandInstanceAlertsUpdateOpts(t *testing.T) {
 		},
 		{
 			name: "No alerts provided",
-			in:   map[string]interface{}{},
+			in:   map[string]any{},
 			want: &linodego.InstanceAlert{},
 		},
 	}

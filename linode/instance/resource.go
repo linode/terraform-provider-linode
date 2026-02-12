@@ -308,7 +308,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		if stackscriptDataRaw, ok := d.GetOk("stackscript_data"); ok {
 			stackscriptData, ok := stackscriptDataRaw.(map[string]any)
 			if !ok {
-				return diag.Errorf("Error parsing stackscript_data: expected map[string]interface{}")
+				return diag.Errorf("Error parsing stackscript_data: expected map[string]any")
 			}
 			createOpts.StackScriptData = make(map[string]string, len(stackscriptData))
 			for name, value := range stackscriptData {
@@ -320,7 +320,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	if alertsRaw, ok := d.GetOk("alerts.0"); ok {
-		alerts := alertsRaw.(map[string]interface{})
+		alerts := alertsRaw.(map[string]any)
 		createOpts.Alerts = expandInstanceACLPAlertsOpts(alerts)
 	}
 
@@ -370,7 +370,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if alerts, alertsOk := d.GetOk("alerts.0"); alertsOk {
 		doUpdate = true
-		updateOpts.Alerts = expandInstanceAlertsUpdateOpts(alerts.(map[string]interface{}))
+		updateOpts.Alerts = expandInstanceAlertsUpdateOpts(alerts.(map[string]any))
 	}
 
 	if doUpdate {
@@ -608,7 +608,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		simpleUpdate = true
 	}
 	if d.HasChange("alerts") {
-		updateOpts.Alerts = expandInstanceAlertsUpdateOpts(d.Get("alerts.0").(map[string]interface{}))
+		updateOpts.Alerts = expandInstanceAlertsUpdateOpts(d.Get("alerts.0").(map[string]any))
 		simpleUpdate = true
 	}
 
