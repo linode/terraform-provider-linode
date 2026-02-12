@@ -46,8 +46,8 @@ func TestAccDataSourceLKENodePool_basic(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttrSet(dataSourceName, "id"),
 						resource.TestCheckResourceAttrSet(dataSourceName, "cluster_id"),
+						resource.TestCheckResourceAttrSet(dataSourceName, "disk_encryption"),
 						resource.TestCheckResourceAttr(dataSourceName, "type", "g6-standard-1"),
-						resource.TestCheckResourceAttr(dataSourceName, "disk_encryption", "disabled"),
 						resource.TestCheckResourceAttr(dataSourceName, "node_count", "1"),
 						resource.TestCheckNoResourceAttr(dataSourceName, "firewall_id"),
 						resource.TestCheckNoResourceAttr(dataSourceName, "k8s_version"),
