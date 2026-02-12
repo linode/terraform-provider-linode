@@ -3,21 +3,22 @@
 package instance
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/linode/linodego"
 )
 
 func TestExpandInstanceConfigDeviceMap(t *testing.T) {
-	deviceMapInput := map[string]interface{}{
-		"sda": []interface{}{
-			map[string]interface{}{
+	deviceMapInput := map[string]any{
+		"sda": []any{
+			map[string]any{
 				"disk_id":   124458,
 				"volume_id": nil,
 			},
 		},
-		"sdb": []interface{}{
-			map[string]interface{}{
+		"sdb": []any{
+			map[string]any{
 				"disk_id":   124459,
 				"volume_id": nil,
 			},
@@ -59,12 +60,12 @@ func TestExpandInstanceConfigDeviceMap(t *testing.T) {
 func TestExpandInstanceConfigDevice(t *testing.T) {
 	tests := []struct {
 		name string
-		m    map[string]interface{}
+		m    map[string]any
 		want *linodego.InstanceConfigDevice
 	}{
 		{
 			name: "Valid DiskID",
-			m: map[string]interface{}{
+			m: map[string]any{
 				"disk_id": 123,
 			},
 			want: &linodego.InstanceConfigDevice{
@@ -73,7 +74,7 @@ func TestExpandInstanceConfigDevice(t *testing.T) {
 		},
 		{
 			name: "Valid VolumeID",
-			m: map[string]interface{}{
+			m: map[string]any{
 				"volume_id": 456,
 			},
 			want: &linodego.InstanceConfigDevice{
@@ -82,7 +83,7 @@ func TestExpandInstanceConfigDevice(t *testing.T) {
 		},
 		{
 			name: "Invalid IDs",
-			m: map[string]interface{}{
+			m: map[string]any{
 				"disk_id":   0,
 				"volume_id": -1,
 			},
@@ -90,7 +91,7 @@ func TestExpandInstanceConfigDevice(t *testing.T) {
 		},
 		{
 			name: "No IDs",
-			m:    map[string]interface{}{},
+			m:    map[string]any{},
 			want: nil,
 		},
 	}
@@ -104,6 +105,122 @@ func TestExpandInstanceConfigDevice(t *testing.T) {
 				if got.DiskID != tt.want.DiskID || got.VolumeID != tt.want.VolumeID {
 					t.Errorf("expandInstanceConfigDevice() = %v, want %v", got, tt.want)
 				}
+			}
+		})
+	}
+}
+
+func TestExpandInstanceACLPAlertsOpts(t *testing.T) {
+	tests := []struct {
+		name string
+		in   map[string]any
+		want *linodego.InstanceACLPAlertsOptions
+	}{
+		{
+			name: "Valid system_alerts and user_alerts",
+			in: map[string]any{
+				"system_alerts": []any{1, 2},
+				"user_alerts":   []any{3, 4},
+			},
+			want: func() *linodego.InstanceACLPAlertsOptions {
+				return &linodego.InstanceACLPAlertsOptions{
+					SystemAlerts: []int{1, 2},
+					UserAlerts:   []int{3, 4},
+				}
+			}(),
+		},
+		{
+			name: "Empty system_alerts and user_alerts",
+			in: map[string]any{
+				"system_alerts": []any{},
+				"user_alerts":   []any{},
+			},
+			want: func() *linodego.InstanceACLPAlertsOptions {
+				return &linodego.InstanceACLPAlertsOptions{
+					SystemAlerts: []int{},
+					UserAlerts:   []int{},
+				}
+			}(),
+		},
+		{
+			name: "Absent system_alerts and user_alerts",
+			in:   map[string]any{},
+			want: &linodego.InstanceACLPAlertsOptions{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := expandInstanceACLPAlertsOpts(tt.in)
+			if got == nil {
+				t.Fatalf("expected non-nil result")
+			}
+
+			if !reflect.DeepEqual(tt.want, got) {
+				t.Fatalf("unexpected result. want: %v got: %v", tt.want, got)
+			}
+		})
+	}
+}
+
+func TestExpandInstanceAlertsUpdateOpts(t *testing.T) {
+	tests := []struct {
+		name string
+		in   map[string]any
+		want *linodego.InstanceAlert
+	}{
+		{
+			name: "Valid legacy and ACLP alerts",
+			in: map[string]any{
+				"cpu":            90,
+				"io":             1000,
+				"network_in":     10,
+				"network_out":    11,
+				"transfer_quota": 80,
+				"system_alerts":  []any{7, 8},
+				"user_alerts":    []any{100},
+			},
+			want: func() *linodego.InstanceAlert {
+				return &linodego.InstanceAlert{
+					CPU:           90,
+					IO:            1000,
+					NetworkIn:     10,
+					NetworkOut:    11,
+					TransferQuota: 80,
+					SystemAlerts:  []int{7, 8},
+					UserAlerts:    []int{100},
+				}
+			}(),
+		},
+		{
+			name: "Only ACLP alerts provided",
+			in: map[string]any{
+				"system_alerts": []any{1},
+				"user_alerts":   []any{},
+			},
+			want: func() *linodego.InstanceAlert {
+				return &linodego.InstanceAlert{
+					SystemAlerts: []int{1},
+					UserAlerts:   []int{},
+				}
+			}(),
+		},
+		{
+			name: "No alerts provided",
+			in:   map[string]any{},
+			want: &linodego.InstanceAlert{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := expandInstanceAlertsUpdateOpts(tt.in)
+			if got == nil {
+				t.Fatalf("expected non-nil result")
+			}
+
+			if !reflect.DeepEqual(tt.want, got) {
+				t.Fatalf("unexpected result. want: %v got: %v", tt.want, got)
 			}
 		})
 	}

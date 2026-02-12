@@ -12,7 +12,7 @@ import (
 )
 
 // Test helper functions
-func isEqual(a, b []map[string]interface{}) bool {
+func isEqual(a, b []map[string]any) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -28,7 +28,7 @@ func isEqual(a, b []map[string]interface{}) bool {
 	return true
 }
 
-func areMapsEqual(a, b map[string]interface{}) bool {
+func areMapsEqual(a, b map[string]any) bool {
 	return reflect.DeepEqual(a, b)
 }
 
@@ -45,6 +45,8 @@ func TestFlattenInstanceAlerts(t *testing.T) {
 			NetworkIn:     10,
 			NetworkOut:    10,
 			TransferQuota: 80,
+			SystemAlerts:  []int{7, 8},
+			UserAlerts:    []int{100},
 		},
 		Backups: &linodego.InstanceBackup{
 			Available: true,
@@ -72,13 +74,15 @@ func TestFlattenInstanceAlerts(t *testing.T) {
 	}
 	alerts := flattenInstanceAlerts(instance)
 
-	expectedAlerts := []map[string]int{
+	expectedAlerts := []map[string]any{
 		{
 			"cpu":            180,
 			"io":             10000,
 			"network_in":     10,
 			"network_out":    10,
 			"transfer_quota": 80,
+			"system_alerts":  []int{7, 8},
+			"user_alerts":    []int{100},
 		},
 	}
 
@@ -106,11 +110,11 @@ func TestFlattenInstanceBackups(t *testing.T) {
 
 	backups := flattenInstanceBackups(instance)
 
-	expectedBackups := []map[string]interface{}{
+	expectedBackups := []map[string]any{
 		{
 			"available": true,
 			"enabled":   true,
-			"schedule": []map[string]interface{}{
+			"schedule": []map[string]any{
 				{
 					"day":    "Saturday",
 					"window": "W22",
@@ -137,7 +141,7 @@ func TestFlattenInstanceDisks(t *testing.T) {
 
 	disks, swapSize := flattenInstanceDisks(instanceDisks)
 
-	expectedDisks := []map[string]interface{}{
+	expectedDisks := []map[string]any{
 		{
 			"id":         25674,
 			"size":       48640,
@@ -160,7 +164,7 @@ func TestFlattenInstanceConfigDevice(t *testing.T) {
 		DiskID: 1,
 	}
 	resultDisk := flattenInstanceConfigDevice(deviceWithDisk, diskLabelIDMap)
-	expectedResultDisk := []map[string]interface{}{
+	expectedResultDisk := []map[string]any{
 		{
 			"disk_id":    1,
 			"disk_label": "DiskLabel1",
@@ -174,7 +178,7 @@ func TestFlattenInstanceConfigDevice(t *testing.T) {
 		VolumeID: 3,
 	}
 	resultVolume := flattenInstanceConfigDevice(deviceWithVolume, diskLabelIDMap)
-	expectedResultVolume := []map[string]interface{}{
+	expectedResultVolume := []map[string]any{
 		{
 			"volume_id": 3,
 		},
@@ -244,7 +248,7 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 		},
 	}
 
-	expectedConfigs := []map[string]interface{}{
+	expectedConfigs := []map[string]any{
 		{
 			"id":           1,
 			"root_device":  "/dev/sda",
@@ -263,51 +267,51 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 					"devtmpfs_automount": false,
 				},
 			},
-			"devices": []map[string]interface{}{
+			"devices": []map[string]any{
 				{
-					"sda": []map[string]interface{}{
+					"sda": []map[string]any{
 						{
 							"disk_id":    124458,
 							"disk_label": "disk_label",
 						},
 					},
-					"sdb": []map[string]interface{}{
+					"sdb": []map[string]any{
 						{
 							"disk_id":    124458,
 							"disk_label": "disk_label",
 						},
 					},
-					"sdc": []map[string]interface{}{
+					"sdc": []map[string]any{
 						{
 							"disk_id":    124458,
 							"disk_label": "disk_label",
 						},
 					},
-					"sdd": []map[string]interface{}{
+					"sdd": []map[string]any{
 						{
 							"disk_id":    124458,
 							"disk_label": "disk_label",
 						},
 					},
-					"sde": []map[string]interface{}{
+					"sde": []map[string]any{
 						{
 							"disk_id":    124458,
 							"disk_label": "disk_label",
 						},
 					},
-					"sdf": []map[string]interface{}{
+					"sdf": []map[string]any{
 						{
 							"disk_id":    124458,
 							"disk_label": "disk_label",
 						},
 					},
-					"sdg": []map[string]interface{}{
+					"sdg": []map[string]any{
 						{
 							"disk_id":    124458,
 							"disk_label": "disk_label",
 						},
 					},
-					"sdh": []map[string]interface{}{
+					"sdh": []map[string]any{
 						{
 							"disk_id":    124458,
 							"disk_label": "disk_label",

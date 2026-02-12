@@ -983,6 +983,83 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_withACLPAlerts(t *testing.T) {
+	t.Parallel()
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Errorf("Error getting client: %s", err)
+	}
+
+	alerts, err := client.ListMonitorAlertDefinitions(context.Background(), "linode", nil)
+	if err != nil {
+		t.Errorf("Error listing monitor alert definitions: %s", err)
+	}
+
+	if len(alerts) == 0 {
+		t.Skip("No ACLP alerts found, skipping test")
+	}
+
+	systemAlert := alerts[0].ID
+
+	// This test can occasionally fail while running the entire test suite in parallel
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.WithAlerts(t, instanceName, testRegion, systemAlert),
+					Check:  acceptance.CheckInstanceExists(resName, &instance),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("label"),
+							knownvalue.StringExact(instanceName),
+						),
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("group"),
+							knownvalue.StringExact("tf_test"),
+						),
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("alerts").AtSliceIndex(0).AtMapKey("system_alerts"),
+							knownvalue.ListSizeExact(1),
+						),
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("alerts").AtSliceIndex(0).AtMapKey("system_alerts").AtSliceIndex(0),
+							knownvalue.Int64Exact(int64(systemAlert)),
+						),
+					},
+				},
+				{
+					Config: tmpl.AlertsUpdates(t, instanceName, testRegion),
+					Check:  acceptance.CheckInstanceExists(resName, &instance),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("label"),
+							knownvalue.StringExact(fmt.Sprintf("%s_r", instanceName)),
+						),
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("alerts").AtSliceIndex(0).AtMapKey("system_alerts"),
+							knownvalue.ListSizeExact(0),
+						),
+					},
+				},
+			},
+		})
+	})
+}
+
 func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 	t.Parallel()
 

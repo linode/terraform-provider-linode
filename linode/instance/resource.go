@@ -308,7 +308,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		if stackscriptDataRaw, ok := d.GetOk("stackscript_data"); ok {
 			stackscriptData, ok := stackscriptDataRaw.(map[string]any)
 			if !ok {
-				return diag.Errorf("Error parsing stackscript_data: expected map[string]interface{}")
+				return diag.Errorf("Error parsing stackscript_data: expected map[string]any")
 			}
 			createOpts.StackScriptData = make(map[string]string, len(stackscriptData))
 			for name, value := range stackscriptData {
@@ -317,6 +317,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 	} else {
 		createOpts.Booted = linodego.Pointer(false) // necessary to prepare disks and configs
+	}
+
+	if alertsRaw, ok := d.GetOk("alerts.0"); ok {
+		alerts := alertsRaw.(map[string]any)
+		createOpts.Alerts = expandInstanceACLPAlertsOpts(alerts)
 	}
 
 	createPoller, err := client.NewEventPollerWithoutEntity(linodego.EntityLinode, linodego.ActionLinodeCreate)
@@ -363,16 +368,9 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		updateOpts.WatchdogEnabled = &watchdogEnabled
 	}
 
-	if _, alertsOk := d.GetOk("alerts.0"); alertsOk {
+	if alerts, alertsOk := d.GetOk("alerts.0"); alertsOk {
 		doUpdate = true
-		updateOpts.Alerts = &linodego.InstanceAlert{}
-
-		// TODO(displague) only set specified alerts
-		updateOpts.Alerts.CPU = d.Get("alerts.0.cpu").(int)
-		updateOpts.Alerts.IO = d.Get("alerts.0.io").(int)
-		updateOpts.Alerts.NetworkIn = d.Get("alerts.0.network_in").(int)
-		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.network_out").(int)
-		updateOpts.Alerts.TransferQuota = d.Get("alerts.0.transfer_quota").(int)
+		updateOpts.Alerts = expandInstanceAlertsUpdateOpts(alerts.(map[string]any))
 	}
 
 	if doUpdate {
@@ -610,12 +608,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		simpleUpdate = true
 	}
 	if d.HasChange("alerts") {
-		updateOpts.Alerts = &linodego.InstanceAlert{}
-		updateOpts.Alerts.CPU = d.Get("alerts.0.cpu").(int)
-		updateOpts.Alerts.IO = d.Get("alerts.0.io").(int)
-		updateOpts.Alerts.NetworkIn = d.Get("alerts.0.network_in").(int)
-		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.network_out").(int)
-		updateOpts.Alerts.TransferQuota = d.Get("alerts.0.transfer_quota").(int)
+		updateOpts.Alerts = expandInstanceAlertsUpdateOpts(d.Get("alerts.0").(map[string]any))
 		simpleUpdate = true
 	}
 
