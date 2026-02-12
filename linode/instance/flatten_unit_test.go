@@ -45,6 +45,8 @@ func TestFlattenInstanceAlerts(t *testing.T) {
 			NetworkIn:     10,
 			NetworkOut:    10,
 			TransferQuota: 80,
+			SystemAlerts:  []int{7, 8},
+			UserAlerts:    []int{100},
 		},
 		Backups: &linodego.InstanceBackup{
 			Available: true,
@@ -72,13 +74,15 @@ func TestFlattenInstanceAlerts(t *testing.T) {
 	}
 	alerts := flattenInstanceAlerts(instance)
 
-	expectedAlerts := []map[string]int{
+	expectedAlerts := []map[string]any{
 		{
 			"cpu":            180,
 			"io":             10000,
 			"network_in":     10,
 			"network_out":    10,
 			"transfer_quota": 80,
+			"system_alerts":  []int{7, 8},
+			"user_alerts":    []int{100},
 		},
 	}
 

@@ -42,3 +42,68 @@ func expandInstanceConfigDevice(m map[string]interface{}) *linodego.InstanceConf
 	}
 	return dev
 }
+
+func expandInstanceACLPAlertsOpts(m map[string]interface{}) *linodego.InstanceACLPAlertsOptions {
+	var alertsACLPOpts linodego.InstanceACLPAlertsOptions
+
+	if v, ok := m["system_alerts"]; ok {
+		l := v.([]interface{})
+		systemAlerts := make([]int, 0, len(l))
+		for _, raw := range l {
+			systemAlerts = append(systemAlerts, raw.(int))
+		}
+		alertsACLPOpts.SystemAlerts = systemAlerts
+	}
+
+	if v, ok := m["user_alerts"]; ok {
+		l := v.([]interface{})
+		userAlerts := make([]int, 0, len(l))
+		for _, raw := range l {
+			userAlerts = append(userAlerts, raw.(int))
+		}
+		alertsACLPOpts.UserAlerts = userAlerts
+	}
+
+	return &alertsACLPOpts
+}
+
+func expandInstanceAlertsUpdateOpts(m map[string]interface{}) *linodego.InstanceAlert {
+	var alertsUpdateOpts linodego.InstanceAlert
+
+	// TODO(displague) only set specified alerts
+	if v, ok := m["cpu"]; ok {
+		alertsUpdateOpts.CPU = v.(int)
+	}
+	if v, ok := m["io"]; ok {
+		alertsUpdateOpts.IO = v.(int)
+	}
+	if v, ok := m["network_in"]; ok {
+		alertsUpdateOpts.NetworkIn = v.(int)
+	}
+	if v, ok := m["network_out"]; ok {
+		alertsUpdateOpts.NetworkOut = v.(int)
+	}
+	if v, ok := m["transfer_quota"]; ok {
+		alertsUpdateOpts.TransferQuota = v.(int)
+	}
+
+	if v, ok := m["system_alerts"]; ok {
+		l := v.([]interface{})
+		systemAlerts := make([]int, 0, len(l))
+		for _, raw := range l {
+			systemAlerts = append(systemAlerts, raw.(int))
+		}
+		alertsUpdateOpts.SystemAlerts = systemAlerts
+	}
+
+	if v, ok := m["user_alerts"]; ok {
+		l := v.([]interface{})
+		userAlerts := make([]int, 0, len(l))
+		for _, raw := range l {
+			userAlerts = append(userAlerts, raw.(int))
+		}
+		alertsUpdateOpts.UserAlerts = userAlerts
+	}
+
+	return &alertsUpdateOpts
+}

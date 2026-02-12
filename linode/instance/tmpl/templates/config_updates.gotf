@@ -10,6 +10,7 @@ resource "linode_instance" "foobar" {
 
     alerts {
         cpu = 80
+        system_alerts = [10001]
     }
 
     config {

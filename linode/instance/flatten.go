@@ -90,13 +90,15 @@ func flattenInstance(
 	return result, nil
 }
 
-func flattenInstanceAlerts(instance linodego.Instance) []map[string]int {
-	return []map[string]int{{
+func flattenInstanceAlerts(instance linodego.Instance) []map[string]any {
+	return []map[string]any{{
 		"cpu":            instance.Alerts.CPU,
 		"io":             instance.Alerts.IO,
 		"network_in":     instance.Alerts.NetworkIn,
 		"network_out":    instance.Alerts.NetworkOut,
 		"transfer_quota": instance.Alerts.TransferQuota,
+		"system_alerts":  instance.Alerts.SystemAlerts,
+		"user_alerts":    instance.Alerts.UserAlerts,
 	}}
 }
 

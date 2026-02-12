@@ -14,6 +14,10 @@ resource "linode_instance" "foobar" {
     swap_size = 256
     private_ip = true
     firewall_id = linode_firewall.e2e_test_firewall.id
+
+    alerts{
+        system_alerts = [10000]
+    }
 }
 
 data "linode_instances" "foobar" {

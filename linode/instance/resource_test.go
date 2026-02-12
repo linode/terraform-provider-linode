@@ -962,6 +962,8 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 						resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/sda"),
 						resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "true"),
 						resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "60"),
+						resource.TestCheckResourceAttr(resName, "alerts.0.system_alerts.#", "1"),
+						resource.TestCheckResourceAttr(resName, "alerts.0.system_alerts.0", "10000"),
 					),
 				},
 				{
@@ -976,6 +978,61 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 						resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/sda"),
 						resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "false"),
 						resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "80"),
+						resource.TestCheckResourceAttr(resName, "alerts.0.system_alerts.#", "1"),
+						resource.TestCheckResourceAttr(resName, "alerts.0.system_alerts.0", "10001"),
+					),
+				},
+			},
+		})
+	})
+}
+
+func TestAccResourceInstance_withACLPAlerts(t *testing.T) {
+	t.Parallel()
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Errorf("Error getting client: %s", err)
+	}
+
+	alerts, err := client.ListMonitorAlertDefinitions(context.Background(), "linode", nil)
+	if err != nil {
+		t.Errorf("Error listing monitor alert definitions: %s", err)
+	}
+
+	if len(alerts) == 0 {
+		t.Skip("No ACLP alerts found, skipping test")
+	}
+
+	systemAlert := alerts[0].ID
+
+	// This test can occasionally fail while running the entire test suite in parallel
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.WithAlerts(t, instanceName, testRegion, systemAlert),
+					Check: resource.ComposeTestCheckFunc(
+						acceptance.CheckInstanceExists(resName, &instance),
+						resource.TestCheckResourceAttr(resName, "label", instanceName),
+						resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+						resource.TestCheckResourceAttr(resName, "alerts.0.system_alerts.#", "1"),
+						resource.TestCheckResourceAttr(resName, "alerts.0.system_alerts.0", strconv.Itoa(systemAlert)),
+					),
+				},
+				{
+					Config: tmpl.AlertsUpdates(t, instanceName, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						acceptance.CheckInstanceExists(resName, &instance),
+						resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
+						resource.TestCheckResourceAttr(resName, "alerts.0.system_alerts.#", "0"),
 					),
 				},
 			},

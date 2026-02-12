@@ -698,6 +698,20 @@ var resourceSchema = map[string]*schema.Schema{
 						"If the average disk IO over two hours exceeds this value, we'll send you an alert. " +
 						"If set to 0, this alert is disabled.",
 				},
+				"system_alerts": {
+					Type:        schema.TypeList,
+					Elem:        &schema.Schema{Type: schema.TypeInt},
+					Computed:    true,
+					Optional:    true,
+					Description: "A list of system alerts associated with current instance.",
+				},
+				"user_alerts": {
+					Type:        schema.TypeList,
+					Elem:        &schema.Schema{Type: schema.TypeInt},
+					Computed:    true,
+					Optional:    true,
+					Description: "A list of user alerts associated with current instance.",
+				},
 			},
 		},
 	},
