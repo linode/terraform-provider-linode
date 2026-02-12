@@ -962,8 +962,6 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 						resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/sda"),
 						resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "true"),
 						resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "60"),
-						resource.TestCheckResourceAttr(resName, "alerts.0.system_alerts.#", "1"),
-						resource.TestCheckResourceAttr(resName, "alerts.0.system_alerts.0", "10000"),
 					),
 				},
 				{
@@ -978,8 +976,6 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 						resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/sda"),
 						resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "false"),
 						resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "80"),
-						resource.TestCheckResourceAttr(resName, "alerts.0.system_alerts.#", "1"),
-						resource.TestCheckResourceAttr(resName, "alerts.0.system_alerts.0", "10001"),
 					),
 				},
 			},
@@ -1019,21 +1015,45 @@ func TestAccResourceInstance_withACLPAlerts(t *testing.T) {
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.WithAlerts(t, instanceName, testRegion, systemAlert),
-					Check: resource.ComposeTestCheckFunc(
-						acceptance.CheckInstanceExists(resName, &instance),
-						resource.TestCheckResourceAttr(resName, "label", instanceName),
-						resource.TestCheckResourceAttr(resName, "group", "tf_test"),
-						resource.TestCheckResourceAttr(resName, "alerts.0.system_alerts.#", "1"),
-						resource.TestCheckResourceAttr(resName, "alerts.0.system_alerts.0", strconv.Itoa(systemAlert)),
-					),
+					Check:  acceptance.CheckInstanceExists(resName, &instance),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("label"),
+							knownvalue.StringExact(instanceName),
+						),
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("group"),
+							knownvalue.StringExact("tf_test"),
+						),
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("alerts").AtSliceIndex(0).AtMapKey("system_alerts"),
+							knownvalue.ListSizeExact(1),
+						),
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("alerts").AtSliceIndex(0).AtMapKey("system_alerts").AtSliceIndex(0),
+							knownvalue.Int64Exact(int64(systemAlert)),
+						),
+					},
 				},
 				{
 					Config: tmpl.AlertsUpdates(t, instanceName, testRegion),
-					Check: resource.ComposeTestCheckFunc(
-						acceptance.CheckInstanceExists(resName, &instance),
-						resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
-						resource.TestCheckResourceAttr(resName, "alerts.0.system_alerts.#", "0"),
-					),
+					Check:  acceptance.CheckInstanceExists(resName, &instance),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("label"),
+							knownvalue.StringExact(fmt.Sprintf("%s_r", instanceName)),
+						),
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("alerts").AtSliceIndex(0).AtMapKey("system_alerts"),
+							knownvalue.ListSizeExact(0),
+						),
+					},
 				},
 			},
 		})

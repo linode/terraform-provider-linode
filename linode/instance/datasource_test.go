@@ -3,6 +3,7 @@
 package instance_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -59,9 +60,6 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "instances.0.config.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.config.0.id"),
 					resource.TestCheckResourceAttr(resName, "instances.0.placement_group.#", "0"),
-					resource.TestCheckResourceAttr(resName, "instances.0.alerts.#", "1"),
-					resource.TestCheckResourceAttr(resName, "instances.0.alerts.0.system_alerts.#", "1"),
-					resource.TestCheckTypeSetElemAttr(resName, "instances.0.alerts.0.system_alerts.0", "10000"),
 				),
 			},
 		},
@@ -354,6 +352,71 @@ func TestAccDataSourceInstances_withLock(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "instances.0.locks.#", "1"),
 					resource.TestCheckTypeSetElemAttr(resName, "instances.0.locks.*", lockType),
 				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceInstances_withAlert(t *testing.T) {
+	t.Parallel()
+
+	resName := "data.linode_instances.foobar"
+	label := acctest.RandomWithPrefix("tf_test")
+
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Errorf("Error getting client: %s", err)
+	}
+
+	alerts, err := client.ListMonitorAlertDefinitions(context.Background(), "linode", nil)
+	if err != nil {
+		t.Errorf("Error listing monitor alert definitions: %s", err)
+	}
+
+	if len(alerts) == 0 {
+		t.Skip("No ACLP alerts found, skipping test")
+	}
+
+	systemAlert := alerts[0].ID
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataWithAlerts(t, label, testRegion, systemAlert),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("instances"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("instances").AtSliceIndex(0).AtMapKey("label"),
+						knownvalue.StringExact(label),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("instances").
+							AtSliceIndex(0).
+							AtMapKey("alerts").
+							AtSliceIndex(0).
+							AtMapKey("system_alerts"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("instances").
+							AtSliceIndex(0).
+							AtMapKey("alerts").
+							AtSliceIndex(0).
+							AtMapKey("system_alerts").
+							AtSliceIndex(0),
+						knownvalue.Int64Exact(int64(systemAlert)),
+					),
+				},
 			},
 		},
 	})

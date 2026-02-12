@@ -117,37 +117,33 @@ func TestExpandInstanceACLPAlertsOpts(t *testing.T) {
 		want *linodego.InstanceACLPAlertsOptions
 	}{
 		{
-			name: "both system_alerts and user_alerts",
+			name: "Valid system_alerts and user_alerts",
 			in: map[string]interface{}{
-				"system_alerts": []interface{}{1, 2, 3},
-				"user_alerts":   []interface{}{42, 99},
+				"system_alerts": []interface{}{1, 2},
+				"user_alerts":   []interface{}{3, 4},
 			},
 			want: func() *linodego.InstanceACLPAlertsOptions {
-				sys := []int{1, 2, 3}
-				usr := []int{42, 99}
 				return &linodego.InstanceACLPAlertsOptions{
-					SystemAlerts: &sys,
-					UserAlerts:   &usr,
+					SystemAlerts: []int{1, 2},
+					UserAlerts:   []int{3, 4},
 				}
 			}(),
 		},
 		{
-			name: "empty lists",
+			name: "Empty system_alerts and user_alerts",
 			in: map[string]interface{}{
 				"system_alerts": []interface{}{},
 				"user_alerts":   []interface{}{},
 			},
 			want: func() *linodego.InstanceACLPAlertsOptions {
-				sys := []int{}
-				usr := []int{}
 				return &linodego.InstanceACLPAlertsOptions{
-					SystemAlerts: &sys,
-					UserAlerts:   &usr,
+					SystemAlerts: []int{},
+					UserAlerts:   []int{},
 				}
 			}(),
 		},
 		{
-			name: "missing keys yields nil pointers",
+			name: "Absent system_alerts and user_alerts",
 			in:   map[string]interface{}{},
 			want: &linodego.InstanceACLPAlertsOptions{},
 		},
@@ -161,7 +157,7 @@ func TestExpandInstanceACLPAlertsOpts(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(tt.want, got) {
-				t.Fatalf("unexpected result:\nwant: %#v\n got: %#v", tt.want, got)
+				t.Fatalf("unexpected result. want: %v got: %v", tt.want, got)
 			}
 		})
 	}
@@ -174,7 +170,7 @@ func TestExpandInstanceAlertsUpdateOpts(t *testing.T) {
 		want *linodego.InstanceAlert
 	}{
 		{
-			name: "thresholds and lists",
+			name: "Valid legacy and ACLP alerts",
 			in: map[string]interface{}{
 				"cpu":            90,
 				"io":             1000,
@@ -185,36 +181,32 @@ func TestExpandInstanceAlertsUpdateOpts(t *testing.T) {
 				"user_alerts":    []interface{}{100},
 			},
 			want: func() *linodego.InstanceAlert {
-				sys := []int{7, 8}
-				usr := []int{100}
 				return &linodego.InstanceAlert{
 					CPU:           90,
 					IO:            1000,
 					NetworkIn:     10,
 					NetworkOut:    11,
 					TransferQuota: 80,
-					SystemAlerts:  &sys,
-					UserAlerts:    &usr,
+					SystemAlerts:  []int{7, 8},
+					UserAlerts:    []int{100},
 				}
 			}(),
 		},
 		{
-			name: "only lists",
+			name: "Only ACLP alerts provided",
 			in: map[string]interface{}{
 				"system_alerts": []interface{}{1},
 				"user_alerts":   []interface{}{},
 			},
 			want: func() *linodego.InstanceAlert {
-				sys := []int{1}
-				usr := []int{}
 				return &linodego.InstanceAlert{
-					SystemAlerts: &sys,
-					UserAlerts:   &usr,
+					SystemAlerts: []int{1},
+					UserAlerts:   []int{},
 				}
 			}(),
 		},
 		{
-			name: "missing keys yields zero-values and nil pointers",
+			name: "No alerts provided",
 			in:   map[string]interface{}{},
 			want: &linodego.InstanceAlert{},
 		},
@@ -228,7 +220,7 @@ func TestExpandInstanceAlertsUpdateOpts(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(tt.want, got) {
-				t.Fatalf("unexpected result:\nwant: %#v\n got: %#v", tt.want, got)
+				t.Fatalf("unexpected result. want: %v got: %v", tt.want, got)
 			}
 		})
 	}

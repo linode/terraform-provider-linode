@@ -922,3 +922,13 @@ func DataWithLock(t testing.TB, label, region, lockType string) string {
 			LockType: lockType,
 		})
 }
+
+func DataWithAlerts(t testing.TB, label, region string, systemAlert int) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_with_alerts", TemplateData{
+			Label:       label,
+			Image:       acceptance.TestImageLatest,
+			Region:      region,
+			SystemAlert: systemAlert,
+		})
+}
