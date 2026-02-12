@@ -91,9 +91,9 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `alerts.0.transfer_quota` - The percentage of network transfer that may be used before an alert is triggered. When this value is exceeded, we'll alert you. If this is set to 0 (zero), the alert is disabled.
 
-* `alerts.0.system_alerts` - A list of system alerts associated with current instance.
+* `alerts.0.system_alerts` - A list of system alerts associated with current instance. (**Note: v4beta only and may not currently be available to all users.**)
 
-* `alerts.0.user_alerts` - A list of user alerts associated with current instance.
+* `alerts.0.user_alerts` - A list of user alerts associated with current instance. (**Note: v4beta only and may not currently be available to all users.**)
 
 * `alerts.0.io` - The amount of disk IO operation per second required to trigger an alert. If the average disk IO over two hours exceeds this value, we'll send you an alert. If set to 0, this alert is disabled.
 

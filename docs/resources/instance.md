@@ -180,9 +180,9 @@ The following arguments are supported:
 
 * `alerts.0.io` - (Optional) The amount of disk IO operation per second required to trigger an alert. If the average disk IO over two hours exceeds this value, we'll send you an alert. If set to 0, this alert is disabled.
 
-* `alerts.0.system_alerts` - (Optional) A list of system alerts associated with current instance.
+* `alerts.0.system_alerts` - (Optional) A list of system alerts associated with current instance. (**Note: v4beta only and may not currently be available to all users.**)
 
-* `alerts.0.user_alerts` - (Optional) A list of user alerts associated with current instance.
+* `alerts.0.user_alerts` - (Optional) A list of user alerts associated with current instance. (**Note: v4beta only and may not currently be available to all users.**)
 
 * `backups_enabled` - (Optional) If this field is set to true, the created Linode will automatically be enrolled in the Linode Backup service. This will incur an additional charge. The cost for the Backup service is dependent on the Type of Linode deployed.
 

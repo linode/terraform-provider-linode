@@ -43,11 +43,11 @@ func expandInstanceConfigDevice(m map[string]any) *linodego.InstanceConfigDevice
 	return dev
 }
 
-func expandInstanceACLPAlertsOpts(m map[string]interface{}) *linodego.InstanceACLPAlertsOptions {
+func expandInstanceACLPAlertsOpts(m map[string]any) *linodego.InstanceACLPAlertsOptions {
 	var alertsACLPOpts linodego.InstanceACLPAlertsOptions
 
 	if v, ok := m["system_alerts"]; ok {
-		l := v.([]interface{})
+		l := v.([]any)
 		systemAlerts := make([]int, 0, len(l))
 		for _, raw := range l {
 			systemAlerts = append(systemAlerts, raw.(int))
@@ -56,7 +56,7 @@ func expandInstanceACLPAlertsOpts(m map[string]interface{}) *linodego.InstanceAC
 	}
 
 	if v, ok := m["user_alerts"]; ok {
-		l := v.([]interface{})
+		l := v.([]any)
 		userAlerts := make([]int, 0, len(l))
 		for _, raw := range l {
 			userAlerts = append(userAlerts, raw.(int))
@@ -67,7 +67,7 @@ func expandInstanceACLPAlertsOpts(m map[string]interface{}) *linodego.InstanceAC
 	return &alertsACLPOpts
 }
 
-func expandInstanceAlertsUpdateOpts(m map[string]interface{}) *linodego.InstanceAlert {
+func expandInstanceAlertsUpdateOpts(m map[string]any) *linodego.InstanceAlert {
 	var alertsUpdateOpts linodego.InstanceAlert
 
 	// TODO(displague) only set specified alerts
@@ -88,7 +88,7 @@ func expandInstanceAlertsUpdateOpts(m map[string]interface{}) *linodego.Instance
 	}
 
 	if v, ok := m["system_alerts"]; ok {
-		l := v.([]interface{})
+		l := v.([]any)
 		systemAlerts := make([]int, 0, len(l))
 		for _, raw := range l {
 			systemAlerts = append(systemAlerts, raw.(int))
@@ -97,7 +97,7 @@ func expandInstanceAlertsUpdateOpts(m map[string]interface{}) *linodego.Instance
 	}
 
 	if v, ok := m["user_alerts"]; ok {
-		l := v.([]interface{})
+		l := v.([]any)
 		userAlerts := make([]int, 0, len(l))
 		for _, raw := range l {
 			userAlerts = append(userAlerts, raw.(int))
