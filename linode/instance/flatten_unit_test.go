@@ -239,7 +239,7 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 				},
 			},
 			Helpers:     &linodego.InstanceConfigHelpers{},
-			Interfaces:  []linodego.InstanceConfigany,
+			Interfaces:  []linodego.InstanceConfigInterface{},
 			MemoryLimit: 2048,
 			Kernel:      "linode/latest-64bit",
 			RootDevice:  "/dev/sda",
