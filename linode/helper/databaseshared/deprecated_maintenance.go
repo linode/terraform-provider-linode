@@ -55,8 +55,8 @@ func FlattenDayOfWeek(day linodego.DatabaseDayOfWeek) string {
 	return dayOfWeekKeyToStr[day]
 }
 
-func FlattenMaintenanceWindow(window linodego.MySQLDatabaseMaintenanceWindow) map[string]interface{} {
-	result := make(map[string]interface{})
+func FlattenMaintenanceWindow(window linodego.MySQLDatabaseMaintenanceWindow) map[string]any {
+	result := make(map[string]any)
 
 	result["day_of_week"] = FlattenDayOfWeek(window.DayOfWeek)
 	result["duration"] = window.Duration
@@ -71,7 +71,7 @@ func FlattenMaintenanceWindow(window linodego.MySQLDatabaseMaintenanceWindow) ma
 	return result
 }
 
-func ExpandMaintenanceWindow(window map[string]interface{}) (linodego.DatabaseMaintenanceWindow, error) {
+func ExpandMaintenanceWindow(window map[string]any) (linodego.DatabaseMaintenanceWindow, error) {
 	result := linodego.DatabaseMaintenanceWindow{
 		Duration:    window["duration"].(int),
 		Frequency:   linodego.DatabaseMaintenanceFrequency(window["frequency"].(string)),

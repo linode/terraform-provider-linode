@@ -46,7 +46,7 @@ func CreateOrUpdateSharedIPs(
 		return
 	}
 
-	tflog.Debug(ctx, "client.ShareIPAddresses(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.ShareIPAddresses(...)", map[string]any{
 		"options": createOpts,
 	})
 
@@ -195,7 +195,7 @@ func (r *Resource) Delete(
 		IPs:      []string{},
 	}
 
-	tflog.Debug(ctx, "client.ShareIPAddresses(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.ShareIPAddresses(...)", map[string]any{
 		"options": options,
 	})
 
