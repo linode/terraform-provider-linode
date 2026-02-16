@@ -12,7 +12,6 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/databaseaccesscontrols"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysql"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlbackups"
 	"github.com/linode/terraform-provider-linode/v3/linode/domain"
 	"github.com/linode/terraform-provider-linode/v3/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -139,7 +138,6 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
 			"linode_instances":              instance.DataSource(),
 		},
 
