@@ -22,7 +22,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegrouptokens"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/v3/linode/databaseengines"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlv2"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlconfig"
@@ -301,7 +300,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		objcluster.NewDataSource,
 		domainrecord.NewDataSource,
 		volume.NewDataSource,
-		databasemysql.NewDataSource,
 		domainzonefile.NewDataSource,
 		domain.NewDataSource,
 		user.NewDataSource,

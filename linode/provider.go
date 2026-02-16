@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/databaseaccesscontrols"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/v3/linode/domain"
 	"github.com/linode/terraform-provider-linode/v3/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -138,12 +137,11 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"linode_instances":              instance.DataSource(),
+			"linode_instances": instance.DataSource(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
 			"linode_database_access_controls": databaseaccesscontrols.Resource(),
-			"linode_database_mysql":           databasemysql.Resource(),
 			"linode_domain":                   domain.Resource(),
 			"linode_domain_record":            domainrecord.Resource(),
 			"linode_instance":                 instance.Resource(),
