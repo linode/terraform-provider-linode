@@ -237,6 +237,7 @@ func (m *BaseModel) CopyFrom(other BaseModel, preserveKnown bool) {
 	m.Linodes = helper.KeepOrUpdateValue(m.Linodes, other.Linodes, preserveKnown)
 	m.IPv4 = helper.KeepOrUpdateValue(m.IPv4, other.IPv4, preserveKnown)
 	m.Databases = helper.KeepOrUpdateValue(m.Databases, other.Databases, preserveKnown)
+	m.Nodebalancers = helper.KeepOrUpdateValue(m.Nodebalancers, other.Nodebalancers, preserveKnown)
 }
 
 func (d *BaseModel) FlattenSubnet(
