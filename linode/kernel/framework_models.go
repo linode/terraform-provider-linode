@@ -17,7 +17,7 @@ type DataSourceModel struct {
 	Label        types.String      `tfsdk:"label"`
 	PVOPS        types.Bool        `tfsdk:"pvops"`
 	Version      types.String      `tfsdk:"version"`
-	// deprecated: this field is no longer populated by the API, but it is included here for backward compatibility with existing implementations.
+	// XEN is deprecated. Deprecated: this field is no longer populated by the API, but it is included here for backward compatibility with existing implementations.
 	XEN types.Bool `tfsdk:"xen"`
 }
 
