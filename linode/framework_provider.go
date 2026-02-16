@@ -25,7 +25,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlv2"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresql"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlv2"
 	"github.com/linode/terraform-provider-linode/v3/linode/databases"
@@ -301,7 +300,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		instancenetworking.NewDataSource,
 		objcluster.NewDataSource,
 		domainrecord.NewDataSource,
-		databasepostgresql.NewDataSource,
 		volume.NewDataSource,
 		databasemysql.NewDataSource,
 		domainzonefile.NewDataSource,
