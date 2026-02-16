@@ -92,14 +92,6 @@ var frameworkDataSourceSchema = schema.Schema{
 						Description: "The Region ID for the Managed Database.",
 						Computed:    true,
 					},
-					"replication_type": schema.StringAttribute{
-						Description: "The replication method used for the Managed Database.",
-						Computed:    true,
-					},
-					"ssl_connection": schema.BoolAttribute{
-						Description: "Whether to require SSL credentials to establish a connection to the Managed Database.",
-						Computed:    true,
-					},
 					"status": schema.StringAttribute{
 						Description: "The operating status of the Managed Database.",
 						Computed:    true,
