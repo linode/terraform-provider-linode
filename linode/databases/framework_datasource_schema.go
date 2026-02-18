@@ -80,7 +80,7 @@ var frameworkDataSourceSchema = schema.Schema{
 						Computed:    true,
 					},
 					"instance_uri": schema.StringAttribute{
-						Description: "he API route for the database instance.",
+						Description: "The API route for the database instance.",
 						Computed:    true,
 					},
 					"label": schema.StringAttribute{
