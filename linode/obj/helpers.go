@@ -71,6 +71,11 @@ func getObjKeysFromProvider(
 	return keys, keys.Ok()
 }
 
+// isCluster function can't guarantee the correctness of the cluster or region determination,
+// because there are new regions with names ending with a number, such as 'jp-tyo-3'.
+// However, it should work well because API tolerates using regions as clusters.
+// We will be able to retire all these region vs cluster handling after removing cluster support
+// in the next version of this provider.
 func isCluster(regionOrCluster string) bool {
 	pattern := `^[a-z]{2}-[a-z]+-[0-9]+$`
 	re := regexp.MustCompile(pattern)
@@ -95,10 +100,8 @@ func fwCreateTempKeys(
 	}
 
 	if isCluster(regionOrCluster) {
-		tflog.Warn(ctx, "Cluster is deprecated for Linode Object Storage service, please consider switch to using region.")
 		tempBucketAccess.Cluster = regionOrCluster
 	} else {
-		tflog.Info(ctx, fmt.Sprintf("%q Is Region", regionOrCluster))
 		tempBucketAccess.Region = regionOrCluster
 	}
 
@@ -166,7 +169,6 @@ func createTempKeys(
 	}
 
 	if isCluster(regionOrCluster) {
-		tflog.Warn(ctx, "Cluster is deprecated for Linode Object Storage service, please consider switch to using region.")
 		tempBucketAccess.Cluster = regionOrCluster
 	} else {
 		tempBucketAccess.Region = regionOrCluster

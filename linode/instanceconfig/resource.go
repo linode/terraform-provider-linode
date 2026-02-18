@@ -345,6 +345,19 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
 	}
 
+	locked, err := helper.LinodeIsLockedWithCannotDeleteSubresources(ctx, &client, linodeID)
+	if err != nil {
+		return diag.Errorf("failed to get locks of Linode: %s", err)
+	}
+
+	if locked {
+		return diag.Errorf(
+			"can't delete config %d in Linode %d: the resource lock on the Linode prohibits deletion "+
+				"of its subresources, which includes this config",
+			id, linodeID,
+		)
+	}
+
 	// Shutdown the instance if the config is in use
 	if booted, err := isConfigBooted(ctx, &client, inst, id, d.Get("booted").(bool)); err != nil {
 		return diag.Errorf("failed to check if config is booted: %s", err)
