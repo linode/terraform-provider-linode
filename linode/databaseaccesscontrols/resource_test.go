@@ -127,7 +127,7 @@ func checkMySQLDatabaseExists(s *terraform.State) error {
 	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_database_mysql" {
+		if rs.Type != "linode_database_mysql_v2" {
 			continue
 		}
 
@@ -148,7 +148,7 @@ func checkMySQLDatabaseExists(s *terraform.State) error {
 func checkDestroy(s *terraform.State) error {
 	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_database_mysql" {
+		if rs.Type != "linode_database_mysql_v2" {
 			continue
 		}
 

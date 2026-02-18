@@ -18,11 +18,10 @@ var ValidDatabaseTypes = []string{"postgresql", "mysql"}
 
 var UpdateObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
-		"day_of_week":   types.StringType,
-		"duration":      types.Int64Type,
-		"frequency":     types.StringType,
-		"hour_of_day":   types.Int64Type,
-		"week_of_month": types.Int64Type,
+		"day_of_week": types.StringType,
+		"duration":    types.Int64Type,
+		"frequency":   types.StringType,
+		"hour_of_day": types.Int64Type,
 	},
 }
 
