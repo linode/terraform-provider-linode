@@ -39,6 +39,92 @@ type NodePoolTaintModel struct {
 	Key    types.String `tfsdk:"key"`
 	Value  types.String `tfsdk:"value"`
 }
+type nodePoolDataSourceModel struct {
+	ID             types.Int64                        `tfsdk:"id"`
+	ClusterID      types.Int64                        `tfsdk:"cluster_id"`
+	Count          types.Int64                        `tfsdk:"node_count"`
+	Type           types.String                       `tfsdk:"type"`
+	Tags           types.List                         `tfsdk:"tags"`
+	DiskEncryption types.String                       `tfsdk:"disk_encryption"`
+	Labels         types.Map                          `tfsdk:"labels"`
+	Disks          []nodePoolDiskModel                `tfsdk:"disks"`
+	Nodes          types.List                         `tfsdk:"nodes"`
+	Autoscaler     *dataSourceNodePoolAutoScalerModel `tfsdk:"autoscaler"`
+	Taints         []NodePoolTaintModel               `tfsdk:"taints"`
+	K8sVersion     types.String                       `tfsdk:"k8s_version"`
+	UpdateStrategy types.String                       `tfsdk:"update_strategy"`
+	Label          types.String                       `tfsdk:"label"`
+	FirewallID     types.Int64                        `tfsdk:"firewall_id"`
+}
+type nodePoolDiskModel struct {
+	Size types.Int64  `tfsdk:"size"`
+	Type types.String `tfsdk:"type"`
+}
+
+type dataSourceNodePoolAutoScalerModel struct {
+	Enabled types.Bool  `tfsdk:"enabled"`
+	Min     types.Int64 `tfsdk:"min"`
+	Max     types.Int64 `tfsdk:"max"`
+}
+
+func (data *nodePoolDataSourceModel) parseLKENodePool(
+	ctx context.Context,
+	nodePool *linodego.LKENodePool,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	data.ID = types.Int64Value(int64(nodePool.ID))
+	data.Count = types.Int64Value(int64(nodePool.Count))
+	data.Type = types.StringValue(nodePool.Type)
+	data.DiskEncryption = types.StringValue(string(nodePool.DiskEncryption))
+	data.Label = types.StringPointerValue(nodePool.Label)
+	data.K8sVersion = types.StringPointerValue(nodePool.K8sVersion)
+	data.UpdateStrategy = types.StringPointerValue((*string)(nodePool.UpdateStrategy))
+
+	if nodePool.FirewallID != nil {
+		data.FirewallID = types.Int64Value(int64(*nodePool.FirewallID))
+	}
+
+	data.Tags, diags = types.ListValueFrom(ctx, types.StringType, nodePool.Tags)
+	if diags.HasError() {
+		return diags
+	}
+
+	data.Labels, diags = types.MapValueFrom(ctx, types.StringType, nodePool.Labels)
+	if diags.HasError() {
+		return diags
+	}
+
+	var linodes *types.List
+	linodes, diags = flattenLKENodePoolLinodeList(nodePool.Linodes)
+	if diags.HasError() {
+		return diags
+	}
+	data.Nodes = *linodes
+
+	disks := make([]nodePoolDiskModel, len(nodePool.Disks))
+	for i, d := range nodePool.Disks {
+		disks[i] = nodePoolDiskModel{
+			Size: types.Int64Value(int64(d.Size)),
+			Type: types.StringValue(d.Type),
+		}
+	}
+	data.Disks = disks
+
+	data.Autoscaler = &dataSourceNodePoolAutoScalerModel{
+		Enabled: types.BoolValue(nodePool.Autoscaler.Enabled),
+		Min:     types.Int64Value(int64(nodePool.Autoscaler.Min)),
+		Max:     types.Int64Value(int64(nodePool.Autoscaler.Max)),
+	}
+
+	taints := make([]NodePoolTaintModel, len(nodePool.Taints))
+	for i := range taints {
+		taints[i].FlattenLKENodePoolTaint(nodePool.Taints[i], false)
+	}
+	data.Taints = taints
+
+	return nil
+}
 
 func flattenLKENodePoolLinode(node linodego.LKENodePoolLinode) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := make(map[string]attr.Value)
