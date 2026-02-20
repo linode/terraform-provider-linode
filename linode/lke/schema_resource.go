@@ -133,6 +133,7 @@ var resourceSchema = map[string]*schema.Schema{
 					Type:        schema.TypeInt,
 					Description: "The ID of the Firewall to attach to nodes in this node pool.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"labels": {
 					Type: schema.TypeMap,
