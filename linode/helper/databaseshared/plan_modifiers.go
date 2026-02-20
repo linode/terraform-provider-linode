@@ -15,5 +15,6 @@ var HostStringPlanModifiers = []planmodifier.String{
 	stringplanmodifiers.UseStateForUnknownUnlessTheseChanged(
 		path.MatchRoot("private_network"),
 		path.MatchRoot("type"),
+		path.MatchRoot("cluster_size"),
 	),
 }

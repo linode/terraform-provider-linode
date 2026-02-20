@@ -782,6 +782,9 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resourceClusterName, "stack_type"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "control_plane.0.audit_logs_enabled"),
 					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("pool").AtSliceIndex(0).AtMapKey("firewall_id"), knownvalue.NotNull()),
+					},
 				},
 				{
 					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "rolling_update"),
@@ -799,6 +802,9 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.update_strategy", "rolling_update"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
 					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("pool").AtSliceIndex(0).AtMapKey("firewall_id"), knownvalue.NotNull()),
+					},
 				},
 				{
 					Config: tmpl.EnterpriseFirewall(t, clusterName, k8sVersionEnterprise, enterpriseRegion, firewall.ID),
@@ -814,6 +820,9 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.k8s_version", k8sVersionEnterprise),
 					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("pool").AtSliceIndex(0).AtMapKey("firewall_id"), knownvalue.NotNull()),
+					},
 				},
 			},
 		})
