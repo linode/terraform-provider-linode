@@ -584,49 +584,18 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	// Handle root_pass update (requires Linode to be powered off)
 	if d.HasChange("root_pass") {
-		newPass := d.Get("root_pass").(string)
+		var diags diag.Diagnostics
 
-		isRunning := instance.Status == linodego.InstanceRunning
-		booted := d.Get("booted").(bool)
-		bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
-
-		if isRunning {
-			if skipImplicitReboots {
-				return diag.Errorf(
-					"cannot update root_pass while Linode %d is running when skip_implicit_reboots is enabled",
-					instance.ID,
-				)
-			}
-
-			if err := SafeShutdownInstance(ctx, &client, id, helper.GetDeadlineSeconds(ctx, d)); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
-		if err := client.ResetInstancePassword(
+		instance, diags = updateInstanceRootPass(
 			ctx,
-			instance.ID,
-			linodego.InstancePasswordResetOptions{RootPass: newPass},
-		); err != nil {
-			return diag.Errorf("failed to reset root password: %s", err)
-		}
+			d,
+			client,
+			instance,
+			skipImplicitReboots,
+		)
 
-		// Restore power only if it was running and booted isn't explicitly false
-		if isRunning && (bootedNull || booted) {
-			if err := helper.BootInstanceSync(
-				ctx,
-				&client,
-				id,
-				0,
-				helper.GetDeadlineSeconds(ctx, d),
-			); err != nil {
-				return diag.Errorf("failed to boot instance after root_pass update: %s", err)
-			}
-		}
-
-		instance, err = client.GetInstance(ctx, id)
-		if err != nil {
-			return diag.Errorf("Error fetching data about the current linode: %s", err)
+		if diags != nil {
+			return diags
 		}
 	}
 
@@ -991,4 +960,80 @@ func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.
 	return helper.SetLogFieldBulk(ctx, map[string]any{
 		"linode_id": d.Id(),
 	})
+}
+
+func updateInstanceRootPass(
+	ctx context.Context,
+	d *schema.ResourceData,
+	client linodego.Client,
+	instance *linodego.Instance,
+	skipImplicitReboots bool,
+) (*linodego.Instance, diag.Diagnostics) {
+	id, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return nil, diag.Errorf("Error parsing Linode Instance ID %s as int: %s", d.Id(), err)
+	}
+
+	newPass := d.Get("root_pass").(string)
+
+	isRunning := instance.Status == linodego.InstanceRunning
+	booted := d.Get("booted").(bool)
+	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
+
+	if isRunning {
+		if skipImplicitReboots {
+			return nil, diag.Errorf(
+				"cannot update root_pass while Linode %d is running when skip_implicit_reboots is enabled",
+				instance.ID,
+			)
+		}
+
+		if err := SafeShutdownInstance(
+			ctx,
+			&client,
+			id,
+			helper.GetDeadlineSeconds(ctx, d),
+		); err != nil {
+			return nil, diag.FromErr(err)
+		}
+	}
+
+	if err := client.ResetInstancePassword(
+		ctx,
+		instance.ID,
+		linodego.InstancePasswordResetOptions{
+			RootPass: newPass,
+		},
+	); err != nil {
+		return nil, diag.Errorf(
+			"failed to reset root password: %s",
+			err,
+		)
+	}
+
+	// Restore power only if it was running and booted isn't explicitly false
+	if isRunning && (bootedNull || booted) {
+		if err := helper.BootInstanceSync(
+			ctx,
+			&client,
+			id,
+			0,
+			helper.GetDeadlineSeconds(ctx, d),
+		); err != nil {
+			return nil, diag.Errorf(
+				"failed to boot instance after root_pass update: %s",
+				err,
+			)
+		}
+	}
+
+	instance, err = client.GetInstance(ctx, id)
+	if err != nil {
+		return nil, diag.Errorf(
+			"Error fetching data about the current linode: %s",
+			err,
+		)
+	}
+
+	return instance, nil
 }
