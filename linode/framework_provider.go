@@ -186,6 +186,10 @@ func (p *FrameworkProvider) Schema(
 				Optional:    true,
 				Description: "Skip waiting for a linode_instance resource to finish deleting.",
 			},
+			"skip_lke_cluster_delete_poll": schema.BoolAttribute{
+				Optional:    true,
+				Description: "Skip waiting for all Linode instances in an LKE cluster to be deleted.",
+			},
 			"skip_implicit_reboots": schema.BoolAttribute{
 				Optional:    true,
 				Description: "If true, Linode Instances will not be rebooted on config and interface changes.",

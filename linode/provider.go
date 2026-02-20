@@ -77,6 +77,12 @@ func Provider() *schema.Provider {
 				Description: "Skip waiting for a linode_instance resource to finish deleting.",
 			},
 
+			"skip_lke_cluster_delete_poll": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Skip waiting for all Linode instances in an LKE cluster to be deleted.",
+			},
+
 			"skip_implicit_reboots": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -261,9 +267,10 @@ func providerConfigure(
 	ctx context.Context, d *schema.ResourceData, terraformVersion string,
 ) (any, diag.Diagnostics) {
 	config := &helper.Config{
-		SkipInstanceReadyPoll:  d.Get("skip_instance_ready_poll").(bool),
-		SkipInstanceDeletePoll: d.Get("skip_instance_delete_poll").(bool),
-		SkipImplicitReboots:    d.Get("skip_implicit_reboots").(bool),
+		SkipInstanceReadyPoll:    d.Get("skip_instance_ready_poll").(bool),
+		SkipInstanceDeletePoll:   d.Get("skip_instance_delete_poll").(bool),
+		SkipLKEClusterDeletePoll: d.Get("skip_lke_cluster_delete_poll").(bool),
+		SkipImplicitReboots:      d.Get("skip_implicit_reboots").(bool),
 
 		DisableInternalCache: d.Get("disable_internal_cache").(bool),
 

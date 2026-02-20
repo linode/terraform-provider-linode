@@ -119,6 +119,11 @@ func EnterpriseNoPools(t testing.TB, name, version, region string) string {
 		"lke_no_pools", TemplateData{Label: name, K8sVersion: version, Region: region, Tier: "enterprise"})
 }
 
+func EnterpriseNoPoolsSkipDeletePoll(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_enterprise_no_pools_skip_delete_poll", TemplateData{Label: name, K8sVersion: version, Region: region})
+}
+
 func StandardNoPools(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_no_pools", TemplateData{Label: name, K8sVersion: version, Region: region, Tier: "standard"})

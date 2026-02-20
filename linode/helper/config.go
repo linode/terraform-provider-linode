@@ -40,6 +40,7 @@ type Config struct {
 
 	SkipInstanceReadyPoll        bool
 	SkipInstanceDeletePoll       bool
+	SkipLKEClusterDeletePoll     bool
 	SkipImplicitReboots          bool
 	DisableInternalCache         bool
 	MinRetryDelayMilliseconds    int

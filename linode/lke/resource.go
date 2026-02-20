@@ -445,10 +445,34 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_lke_cluster")
 
-	client := meta.(*helper.ProviderMeta).Client
+	providerMeta := meta.(*helper.ProviderMeta)
+	client := providerMeta.Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed parsing Linode LKE Cluster ID: %s", err)
+	}
+
+	skipDeletePoll := providerMeta.Config.SkipLKEClusterDeletePoll
+
+	// Collect all Linode instance IDs from node pools before deleting the cluster
+	// so we can poll for their deletion afterwards.
+	var instanceIDs []int
+	if !skipDeletePoll {
+		tflog.Trace(ctx, "client.ListLKENodePools(...)")
+		pools, err := client.ListLKENodePools(ctx, id, nil)
+		if err != nil {
+			return diag.Errorf("failed to list node pools for LKE cluster %d: %s", id, err)
+		}
+		for _, pool := range pools {
+			for _, node := range pool.Linodes {
+				if node.InstanceID != 0 {
+					instanceIDs = append(instanceIDs, node.InstanceID)
+				}
+			}
+		}
+		tflog.Debug(ctx, "Collected Linode instance IDs from LKE cluster node pools", map[string]any{
+			"instance_ids": instanceIDs,
+		})
 	}
 
 	tflog.Debug(ctx, "client.DeleteLKECluster(...)")
@@ -457,10 +481,10 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
 	}
 	timeoutSeconds, err := helper.SafeFloat64ToInt(
-		d.Timeout(schema.TimeoutCreate).Seconds(),
+		d.Timeout(schema.TimeoutDelete).Seconds(),
 	)
 	if err != nil {
-		return diag.Errorf("failed to convert float64 creation timeout to int: %s", err)
+		return diag.Errorf("failed to convert float64 deletion timeout to int: %s", err)
 	}
 
 	tflog.Debug(ctx, "Deleted LKE cluster, waiting for all nodes deleted...")
@@ -480,7 +504,84 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.FromErr(err)
 	}
 
+	// Wait for each Linode instance to be fully deleted
+	if !skipDeletePoll {
+		if diags := waitForInstancesDeleted(ctx, &client, instanceIDs, timeoutSeconds); diags.HasError() {
+			return diags
+		}
+	}
+
 	return nil
+}
+
+// waitForInstancesDeleted polls each Linode instance until it returns a 404 (deleted)
+// or the timeout is exceeded.
+func waitForInstancesDeleted(
+	ctx context.Context,
+	client *linodego.Client,
+	instanceIDs []int,
+	timeoutSeconds int,
+) diag.Diagnostics {
+	if len(instanceIDs) == 0 {
+		return nil
+	}
+
+	tflog.Debug(ctx, "Waiting for all Linode instances to be fully deleted", map[string]any{
+		"instance_ids":    instanceIDs,
+		"timeout_seconds": timeoutSeconds,
+	})
+
+	deadline := time.After(time.Duration(timeoutSeconds) * time.Second)
+	ticker := time.NewTicker(3 * time.Second)
+	defer ticker.Stop()
+
+	remaining := make(map[int]struct{}, len(instanceIDs))
+	for _, id := range instanceIDs {
+		remaining[id] = struct{}{}
+	}
+
+	for len(remaining) > 0 {
+		select {
+		case <-ctx.Done():
+			return diag.Errorf(
+				"context cancelled while waiting for Linode instances to be deleted: %v",
+				collectRemainingIDs(remaining),
+			)
+		case <-deadline:
+			return diag.Errorf(
+				"timed out waiting for Linode instances to be deleted: %v",
+				collectRemainingIDs(remaining),
+			)
+		case <-ticker.C:
+			for id := range remaining {
+				_, err := client.GetInstance(ctx, id)
+				if err != nil {
+					if linodego.IsNotFound(err) {
+						tflog.Trace(ctx, "Linode instance deleted", map[string]any{
+							"instance_id": id,
+						})
+						delete(remaining, id)
+						continue
+					}
+					return diag.Errorf(
+						"failed to poll Linode instance %d for deletion: %s", id, err,
+					)
+				}
+			}
+		}
+	}
+
+	tflog.Debug(ctx, "All Linode instances have been deleted")
+	return nil
+}
+
+// collectRemainingIDs extracts the remaining instance IDs from the map for logging.
+func collectRemainingIDs(remaining map[int]struct{}) []int {
+	ids := make([]int, 0, len(remaining))
+	for id := range remaining {
+		ids = append(ids, id)
+	}
+	return ids
 }
 
 func flattenLKEClusterAPIEndpoints(apiEndpoints []linodego.LKEClusterAPIEndpoint) []string {
