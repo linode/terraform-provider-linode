@@ -497,11 +497,9 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if err != nil {
 		// If we're getting a 404, it's safe to say the cluster has been
 		// deleted.
-		if linodego.IsNotFound(err) {
-			return nil
+		if !linodego.IsNotFound(err) {
+			return diag.FromErr(err)
 		}
-
-		return diag.FromErr(err)
 	}
 
 	// Wait for each Linode instance to be fully deleted
