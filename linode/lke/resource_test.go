@@ -862,7 +862,7 @@ func TestAccResourceLKECluster_enterpriseNoPools(t *testing.T) {
 	})
 }
 
-func TestAccResourceLKECluster_enterpriseNoPoolsSkipDeletePoll(t *testing.T) {
+func TestAccResourceLKECluster_enterpriseWithPoolSkipDeletePoll(t *testing.T) {
 	t.Parallel()
 
 	k8sVersionEnterprise = "v1.31.9+lke7"
@@ -877,7 +877,7 @@ func TestAccResourceLKECluster_enterpriseNoPoolsSkipDeletePoll(t *testing.T) {
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.EnterpriseNoPoolsSkipDeletePoll(t, clusterName, k8sVersionEnterprise, enterpriseRegion),
+					Config: tmpl.EnterpriseWithPoolSkipDeletePoll(t, clusterName, k8sVersionEnterprise, enterpriseRegion),
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("label"), knownvalue.StringExact(clusterName)),
 						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("region"), knownvalue.StringExact(enterpriseRegion)),

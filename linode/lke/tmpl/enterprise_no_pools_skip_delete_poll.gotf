@@ -1,4 +1,4 @@
-{{ define "lke_enterprise_no_pools_skip_delete_poll" }}
+{{ define "lke_enterprise_with_pool_skip_delete_poll" }}
 
 provider "linode" {
     skip_lke_cluster_delete_poll = true
