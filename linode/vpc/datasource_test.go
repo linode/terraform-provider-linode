@@ -3,6 +3,7 @@
 package vpc_test
 
 import (
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/vpc/tmpl"
 )
@@ -44,13 +46,20 @@ func TestAccDataSourceVPC_dualStack(t *testing.T) {
 	resourceName := "data.linode_vpc.foo"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+		linodego.CapabilityVPCs,
+		linodego.CapabilityVPCDualStack,
+	}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				// TODO (VPC Dual Stack): Remove region hardcoding
-				Config: tmpl.DataDualStack(t, vpcLabel, "no-osl-1"),
+				Config: tmpl.DataDualStack(t, vpcLabel, targetRegion),
 				// ... existing code ...
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
