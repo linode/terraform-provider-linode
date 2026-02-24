@@ -163,35 +163,27 @@ func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 	t.Parallel()
 
-	enterpriseRegion := "no-osl-1" // currently only oslo region works with BYO VPC
-
-	// TODO: revert to dynamic selection once more regions available
-	//enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
+	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	var k8sVersionEnterprise string
-
-	k8sVersionEnterprise = "v1.31.9+lke5" // currently only this version works with BYO VPC
-
-	// TODO: revert to select versions from the k8s versions list once more versions available
-	//client, err := acceptance.GetTestClient()
-	//
-	//enterpriseVersions, err := client.ListLKETierVersions(context.Background(), "enterprise", nil)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//if len(enterpriseVersions) < 1 {
-	//	t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
-	//} else {
-	//	k8sVersionEnterprise = enterpriseVersions[0].ID
-	//}
 
 	client, err := acceptance.GetTestClient()
 	if err != nil {
 		log.Fatalf("failed to get client: %s", err)
+	}
+	
+	enterpriseVersions, err := client.ListLKETierVersions(context.Background(), "enterprise", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	if len(enterpriseVersions) < 1 {
+		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
+	} else {
+		k8sVersionEnterprise = enterpriseVersions[0].ID
 	}
 
 	firewall, err := client.CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
