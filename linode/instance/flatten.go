@@ -10,8 +10,8 @@ import (
 
 func flattenInstance(
 	ctx context.Context, client *linodego.Client, instance *linodego.Instance,
-) (map[string]interface{}, error) {
-	result := make(map[string]interface{})
+) (map[string]any, error) {
+	result := make(map[string]any)
 
 	id := instance.ID
 
@@ -100,24 +100,24 @@ func flattenInstanceAlerts(instance linodego.Instance) []map[string]int {
 	}}
 }
 
-func flattenInstanceBackups(instance linodego.Instance) []map[string]interface{} {
-	return []map[string]interface{}{{
+func flattenInstanceBackups(instance linodego.Instance) []map[string]any {
+	return []map[string]any{{
 		"available": instance.Backups.Available,
 		"enabled":   instance.Backups.Enabled,
-		"schedule": []map[string]interface{}{{
+		"schedule": []map[string]any{{
 			"day":    instance.Backups.Schedule.Day,
 			"window": instance.Backups.Schedule.Window,
 		}},
 	}}
 }
 
-func flattenInstanceDisks(instanceDisks []linodego.InstanceDisk) (disks []map[string]interface{}, swapSize int) {
+func flattenInstanceDisks(instanceDisks []linodego.InstanceDisk) (disks []map[string]any, swapSize int) {
 	for _, disk := range instanceDisks {
 		// Determine if swap exists and the size.  If it does not exist, swap_size=0
 		if disk.Filesystem == "swap" {
 			swapSize += disk.Size
 		}
-		disks = append(disks, map[string]interface{}{
+		disks = append(disks, map[string]any{
 			"id":         disk.ID,
 			"size":       disk.Size,
 			"label":      disk.Label,
@@ -129,31 +129,31 @@ func flattenInstanceDisks(instanceDisks []linodego.InstanceDisk) (disks []map[st
 
 func flattenInstanceConfigDevice(
 	dev *linodego.InstanceConfigDevice, diskLabelIDMap map[int]string,
-) []map[string]interface{} {
+) []map[string]any {
 	if dev == nil || emptyInstanceConfigDevice(*dev) {
 		return nil
 	}
 
 	if dev.DiskID > 0 {
-		ret := map[string]interface{}{
+		ret := map[string]any{
 			"disk_id": dev.DiskID,
 		}
 		if label, found := diskLabelIDMap[dev.DiskID]; found {
 			ret["disk_label"] = label
 		}
-		return []map[string]interface{}{ret}
+		return []map[string]any{ret}
 	}
-	return []map[string]interface{}{{
+	return []map[string]any{{
 		"volume_id": dev.VolumeID,
 	}}
 }
 
 func flattenInstanceConfigs(
 	instanceConfigs []linodego.InstanceConfig, diskLabelIDMap map[int]string,
-) (configs []map[string]interface{}) {
+) (configs []map[string]any) {
 	for _, config := range instanceConfigs {
 
-		devices := []map[string]interface{}{{
+		devices := []map[string]any{{
 			"sda": flattenInstanceConfigDevice(config.Devices.SDA, diskLabelIDMap),
 			"sdb": flattenInstanceConfigDevice(config.Devices.SDB, diskLabelIDMap),
 			"sdc": flattenInstanceConfigDevice(config.Devices.SDC, diskLabelIDMap),
@@ -167,7 +167,7 @@ func flattenInstanceConfigs(
 		interfaces := helper.FlattenInterfaces(config.Interfaces)
 
 		// Determine if swap exists and the size.  If it does not exist, swap_size=0
-		c := map[string]interface{}{
+		c := map[string]any{
 			"id":           config.ID,
 			"root_device":  config.RootDevice,
 			"kernel":       config.Kernel,
@@ -203,8 +203,8 @@ func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {
 	}}
 }
 
-func flattenInstanceSimple(instance *linodego.Instance) (map[string]interface{}, error) {
-	result := make(map[string]interface{})
+func flattenInstanceSimple(instance *linodego.Instance) (map[string]any, error) {
+	result := make(map[string]any)
 
 	var ips []string
 	for _, ip := range instance.IPv4 {

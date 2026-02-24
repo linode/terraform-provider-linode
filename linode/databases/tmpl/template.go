@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	databasemysqltmpl "github.com/linode/terraform-provider-linode/v3/linode/databasemysql/tmpl"
+	databasemysqlv2tmpl "github.com/linode/terraform-provider-linode/v3/linode/databasemysqlv2/tmpl"
 )
 
 type TemplateData struct {
-	DB     databasemysqltmpl.TemplateData
+	DB     databasemysqlv2tmpl.TemplateData
 	Engine string
 	Label  string
 }
@@ -16,7 +16,7 @@ type TemplateData struct {
 func ByLabel(t testing.TB, engineVersion, instLabel, dsLabel, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"databases_data_by_label", TemplateData{
-			DB:    databasemysqltmpl.TemplateData{Engine: engineVersion, Label: instLabel, Region: region},
+			DB:    databasemysqlv2tmpl.TemplateData{EngineID: engineVersion, Label: instLabel, Region: region},
 			Label: dsLabel,
 		})
 }
@@ -24,7 +24,7 @@ func ByLabel(t testing.TB, engineVersion, instLabel, dsLabel, region string) str
 func ByEngine(t testing.TB, engineVersion, label, engine, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"databases_data_by_engine", TemplateData{
-			DB:     databasemysqltmpl.TemplateData{Engine: engineVersion, Label: label, Region: region},
+			DB:     databasemysqlv2tmpl.TemplateData{EngineID: engineVersion, Label: label, Region: region},
 			Engine: engine,
 		})
 }

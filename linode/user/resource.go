@@ -31,7 +31,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	tflog.Debug(ctx, "Create linode_user")
 
 	client := meta.(*helper.ProviderMeta).Client
@@ -63,7 +63,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_user")
 
@@ -87,7 +87,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 			return diag.Errorf("failed to get user grants (%s): %s", username, err)
 		}
 
-		d.Set("global_grants", []interface{}{flattenGrantsGlobal(&grants.Global)})
+		d.Set("global_grants", []any{flattenGrantsGlobal(&grants.Global)})
 
 		d.Set("domain_grant", flattenGrantsEntities(grants.Domain))
 		d.Set("firewall_grant", flattenGrantsEntities(grants.Firewall))
@@ -109,7 +109,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_user")
 
@@ -143,7 +143,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_user")
 
@@ -158,7 +158,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta any) error {
 	client := meta.(*helper.ProviderMeta).Client
 
 	username := d.Id()
@@ -172,7 +172,7 @@ func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interfac
 	updateOpts := linodego.UserGrantsUpdateOptions{}
 
 	if global, ok := d.GetOk("global_grants"); ok {
-		global := global.([]interface{})[0].(map[string]interface{})
+		global := global.([]any)[0].(map[string]any)
 		updateOpts.Global = expandGrantsGlobal(global)
 	}
 
@@ -197,18 +197,18 @@ func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func expandGrantsEntities(entities []interface{}) []linodego.EntityUserGrant {
+func expandGrantsEntities(entities []any) []linodego.EntityUserGrant {
 	result := make([]linodego.EntityUserGrant, len(entities))
 
 	for i, entity := range entities {
-		entity := entity.(map[string]interface{})
+		entity := entity.(map[string]any)
 		result[i] = expandGrantsEntity(entity)
 	}
 
 	return result
 }
 
-func expandGrantsEntity(entity map[string]interface{}) linodego.EntityUserGrant {
+func expandGrantsEntity(entity map[string]any) linodego.EntityUserGrant {
 	result := linodego.EntityUserGrant{}
 
 	permissions := linodego.GrantPermissionLevel(entity["permissions"].(string))
@@ -219,7 +219,7 @@ func expandGrantsEntity(entity map[string]interface{}) linodego.EntityUserGrant 
 	return result
 }
 
-func expandGrantsGlobal(global map[string]interface{}) linodego.GlobalUserGrants {
+func expandGrantsGlobal(global map[string]any) linodego.GlobalUserGrants {
 	result := linodego.GlobalUserGrants{}
 
 	result.AccountAccess = nil

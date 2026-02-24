@@ -81,6 +81,51 @@ resource "linode_example" "foobar" {
 - `//go:build integration` or `//go:build <resource-name>` - Integration tests (require API token)
 - `//go:build unit` - Unit tests (no API calls)
 
+## Integration Test Style
+
+When writing integration tests, **prefer `ConfigStateChecks` with `statecheck.*` functions** over the legacy `Check` field with `resource.TestCheckResourceAttr` / `resource.ComposeTestCheckFunc`. The `statecheck` API is the modern Terraform testing approach and should be used for all new tests.
+
+**Preferred — `ConfigStateChecks` with `statecheck`:**
+```go
+Steps: []resource.TestStep{
+    {
+        Config: tmpl.Basic(t),
+        ConfigStateChecks: []statecheck.StateCheck{
+            statecheck.ExpectKnownValue(resourceName,
+                tfjsonpath.New("label"), knownvalue.StringExact("my-label")),
+            statecheck.ExpectKnownValue(resourceName,
+                tfjsonpath.New("status"), knownvalue.StringExact("ready")),
+            statecheck.ExpectKnownValue(resourceName,
+                tfjsonpath.New("backups_enabled"), knownvalue.NotNull()),
+        },
+    },
+}
+```
+
+**Legacy — `Check` with `resource.TestCheckResourceAttr` (avoid in new tests):**
+```go
+Steps: []resource.TestStep{
+    {
+        Config: tmpl.Basic(t),
+        Check: resource.ComposeTestCheckFunc(
+            resource.TestCheckResourceAttr(resourceName, "label", "my-label"),
+            resource.TestCheckResourceAttrSet(resourceName, "status"),
+        ),
+    },
+}
+```
+
+Common `statecheck` / `knownvalue` helpers:
+| Function | Purpose |
+|----------|---------|
+| `statecheck.ExpectKnownValue(name, path, check)` | Assert an attribute matches a known value |
+| `knownvalue.StringExact(v)` | Exact string match |
+| `knownvalue.Bool(v)` | Exact bool match |
+| `knownvalue.NotNull()` | Attribute is set (non-null) |
+| `knownvalue.Int64Exact(v)` | Exact int64 match |
+| `tfjsonpath.New("attr")` | Root-level attribute path |
+| `tfjsonpath.New("list").AtSliceIndex(0).AtMapKey("key")` | Nested path |
+
 ## Helper Functions Reference
 
 | Function | Purpose |

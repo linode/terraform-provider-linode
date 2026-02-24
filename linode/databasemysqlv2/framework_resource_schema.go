@@ -151,12 +151,20 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"host_primary": schema.StringAttribute{
-			Description: "The primary host for the Managed Database.",
-			Computed:    true,
+			Description:   "The primary host for the Managed Database.",
+			Computed:      true,
+			PlanModifiers: databaseshared.HostStringPlanModifiers,
 		},
 		"host_secondary": schema.StringAttribute{
-			Description: "The secondary/private host for the Managed Database.",
-			Computed:    true,
+			Description:        "The secondary/private host for the Managed Database.",
+			Computed:           true,
+			DeprecationMessage: "Use host_standby instead.",
+			PlanModifiers:      databaseshared.HostStringPlanModifiers,
+		},
+		"host_standby": schema.StringAttribute{
+			Description:   "The standby host for the Managed Database.",
+			Computed:      true,
+			PlanModifiers: databaseshared.HostStringPlanModifiers,
 		},
 		"members": schema.MapAttribute{
 			ElementType: types.StringType,

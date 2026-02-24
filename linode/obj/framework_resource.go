@@ -50,7 +50,10 @@ func (r *Resource) Create(
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, plan)
+	ctx = populateLogAttributes(ctx, plan, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	plan.ComputeEndpointIfUnknown(ctx, client, &resp.Diagnostics)
 
@@ -137,7 +140,10 @@ func (r *Resource) Read(
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, state)
+	ctx = populateLogAttributes(ctx, state, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// TODO: cleanup when Crossplane fixes it
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
@@ -189,7 +195,11 @@ func (r *Resource) Update(
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, state)
+	ctx = populateLogAttributes(ctx, state, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	client := r.Meta.Client
 	config := r.Meta.Config
 
@@ -250,7 +260,10 @@ func (r *Resource) Delete(
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, state)
+	ctx = populateLogAttributes(ctx, state, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	client := r.Meta.Client
 	config := r.Meta.Config
@@ -291,10 +304,10 @@ func (r *Resource) Delete(
 	}
 }
 
-func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
+func populateLogAttributes(ctx context.Context, model ResourceModel, diags *diag.Diagnostics) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
 		"bucket":            model.Bucket.ValueString(),
-		"region_or_cluster": model.GetRegionOrCluster(ctx),
+		"region_or_cluster": model.GetRegionOrCluster(ctx, diags),
 		"object_key":        model.Key.ValueString(),
 	})
 }

@@ -21,6 +21,7 @@ var filterConfig = frameworkfilter.Config{
 	"encrypted":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
 	"host_primary":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"host_secondary": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"host_standby":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"id":             {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 	"instance_uri":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"updated":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
@@ -70,11 +71,16 @@ var frameworkDataSourceSchema = schema.Schema{
 						Computed:    true,
 					},
 					"host_secondary": schema.StringAttribute{
-						Description: "The secondary/private host for the Managed Database.",
+						Description:        "The secondary/private host for the Managed Database.",
+						Computed:           true,
+						DeprecationMessage: "Use host_standby instead.",
+					},
+					"host_standby": schema.StringAttribute{
+						Description: "The standby host for the Managed Database.",
 						Computed:    true,
 					},
 					"instance_uri": schema.StringAttribute{
-						Description: "he API route for the database instance.",
+						Description: "The API route for the database instance.",
 						Computed:    true,
 					},
 					"label": schema.StringAttribute{
@@ -84,14 +90,6 @@ var frameworkDataSourceSchema = schema.Schema{
 					"private_network": databaseshared.DataSourceAttributePrivateNetwork,
 					"region": schema.StringAttribute{
 						Description: "The Region ID for the Managed Database.",
-						Computed:    true,
-					},
-					"replication_type": schema.StringAttribute{
-						Description: "The replication method used for the Managed Database.",
-						Computed:    true,
-					},
-					"ssl_connection": schema.BoolAttribute{
-						Description: "Whether to require SSL credentials to establish a connection to the Managed Database.",
 						Computed:    true,
 					},
 					"status": schema.StringAttribute{

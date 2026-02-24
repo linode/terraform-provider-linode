@@ -32,9 +32,7 @@ func UseStateForUnknownUnlessTheseChanged(expressions ...path.Expression) planmo
 				for _, mp := range matchedPaths {
 					var state, plan attr.Value
 
-					newDiags = request.Plan.GetAttribute(ctx, mp, &plan)
-
-					resp.Diagnostics.Append(newDiags...)
+					resp.Diagnostics.Append(request.Plan.GetAttribute(ctx, mp, &plan)...)
 					if resp.Diagnostics.HasError() {
 						return
 					}
@@ -43,9 +41,7 @@ func UseStateForUnknownUnlessTheseChanged(expressions ...path.Expression) planmo
 						continue
 					}
 
-					newDiags = request.State.GetAttribute(ctx, mp, &state)
-
-					resp.Diagnostics.Append(newDiags...)
+					resp.Diagnostics.Append(request.State.GetAttribute(ctx, mp, &state)...)
 					if resp.Diagnostics.HasError() {
 						return
 					}

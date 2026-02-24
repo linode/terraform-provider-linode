@@ -146,6 +146,10 @@ func createResource(
 	tflog.Debug(ctx, "Create linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
+	if diags := validateRegionIfPresent(ctx, d, &client); diags != nil {
+		return diags
+	}
+
 	label := d.Get("label").(string)
 	acl := d.Get("acl").(string)
 
@@ -202,6 +206,12 @@ func updateResource(
 	tflog.Debug(ctx, "Update linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
+	if d.HasChange("region") {
+		if diags := validateRegionIfPresent(ctx, d, &client); diags != nil {
+			return diags
+		}
+	}
+
 	if d.HasChanges("acl", "cors_enabled") {
 		tflog.Debug(ctx, "'acl' changes detected, will update bucket access")
 		if err := updateBucketAccess(ctx, d, client); err != nil {
@@ -226,7 +236,7 @@ func updateResource(
 		})
 
 		config := meta.(*helper.ProviderMeta).Config
-		regionOrCluster := helper.GetRegionOrCluster(d)
+		regionOrCluster := helper.GetRegionOrCluster(ctx, d)
 
 		bucketLabel := d.Get("label").(string)
 
@@ -442,7 +452,7 @@ func updateBucketAccess(
 	ctx context.Context, d *schema.ResourceData, client linodego.Client,
 ) error {
 	tflog.Debug(ctx, "entering updateBucketAccess")
-	regionOrCluster := helper.GetRegionOrCluster(d)
+	regionOrCluster := helper.GetRegionOrCluster(ctx, d)
 	label := d.Get("label").(string)
 
 	updateOpts := linodego.ObjectStorageBucketUpdateAccessOptions{}
@@ -466,7 +476,7 @@ func updateBucketCert(
 	ctx context.Context, d *schema.ResourceData, client linodego.Client,
 ) error {
 	tflog.Debug(ctx, "entering updateBucketCert")
-	regionOrCluster := helper.GetRegionOrCluster(d)
+	regionOrCluster := helper.GetRegionOrCluster(ctx, d)
 	label := d.Get("label").(string)
 	oldCert, newCert := d.GetChange("cert")
 	hasOldCert := len(oldCert.([]any)) != 0

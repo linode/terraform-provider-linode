@@ -20,24 +20,23 @@ type ModelPrivateNetwork struct {
 
 // DatabaseModel represents a single Database object.
 type DatabaseModel struct {
-	ID              types.Int64    `tfsdk:"id"`
-	AllowList       []types.String `tfsdk:"allow_list"`
-	ClusterSize     types.Int64    `tfsdk:"cluster_size"`
-	Created         types.String   `tfsdk:"created"`
-	Encrypted       types.Bool     `tfsdk:"encrypted"`
-	Engine          types.String   `tfsdk:"engine"`
-	HostPrimary     types.String   `tfsdk:"host_primary"`
-	HostSecondary   types.String   `tfsdk:"host_secondary"`
-	InstanceURI     types.String   `tfsdk:"instance_uri"`
-	Label           types.String   `tfsdk:"label"`
-	PrivateNetwork  types.Object   `tfsdk:"private_network"`
-	Region          types.String   `tfsdk:"region"`
-	ReplicationType types.String   `tfsdk:"replication_type"`
-	SSLConnection   types.Bool     `tfsdk:"ssl_connection"`
-	Status          types.String   `tfsdk:"status"`
-	Type            types.String   `tfsdk:"type"`
-	Updated         types.String   `tfsdk:"updated"`
-	Version         types.String   `tfsdk:"version"`
+	ID             types.Int64    `tfsdk:"id"`
+	AllowList      []types.String `tfsdk:"allow_list"`
+	ClusterSize    types.Int64    `tfsdk:"cluster_size"`
+	Created        types.String   `tfsdk:"created"`
+	Encrypted      types.Bool     `tfsdk:"encrypted"`
+	Engine         types.String   `tfsdk:"engine"`
+	HostPrimary    types.String   `tfsdk:"host_primary"`
+	HostSecondary  types.String   `tfsdk:"host_secondary"`
+	HostStandby    types.String   `tfsdk:"host_standby"`
+	InstanceURI    types.String   `tfsdk:"instance_uri"`
+	Label          types.String   `tfsdk:"label"`
+	PrivateNetwork types.Object   `tfsdk:"private_network"`
+	Region         types.String   `tfsdk:"region"`
+	Status         types.String   `tfsdk:"status"`
+	Type           types.String   `tfsdk:"type"`
+	Updated        types.String   `tfsdk:"updated"`
+	Version        types.String   `tfsdk:"version"`
 }
 
 // DatabaseFilterModel describes the Terraform resource data model to match the
@@ -64,11 +63,10 @@ func (model *DatabaseFilterModel) parseDatabases(
 		m.Engine = types.StringValue(db.Engine)
 		m.HostPrimary = types.StringValue(db.Hosts.Primary)
 		m.HostSecondary = types.StringValue(db.Hosts.Standby)
+		m.HostStandby = types.StringValue(db.Hosts.Standby)
 		m.InstanceURI = types.StringValue(db.InstanceURI)
 		m.Label = types.StringValue(db.Label)
 		m.Region = types.StringValue(db.Region)
-		m.ReplicationType = types.StringValue(db.ReplicationType)
-		m.SSLConnection = types.BoolValue(db.SSLConnection)
 		m.Status = types.StringValue(string(db.Status))
 		m.Type = types.StringValue(db.Type)
 		m.Version = types.StringValue(db.Version)

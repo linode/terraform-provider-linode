@@ -109,8 +109,12 @@ func (r *Resource) Create(
 		Images:      images,
 	}
 
-	tflog.Debug(ctx, "client.CreateStackscript(...)", map[string]interface{}{
-		"options": createOpts,
+	tflog.Debug(ctx, "client.CreateStackscript(...) ", map[string]any{
+		"label":       createOpts.Label,
+		"description": createOpts.Description,
+		"rev_note":    createOpts.RevNote,
+		"is_public":   createOpts.IsPublic,
+		"images":      createOpts.Images,
 	})
 
 	stackscript, err := client.CreateStackscript(ctx, createOpts)
@@ -298,8 +302,12 @@ func (r *Resource) updateStackScript(
 		return
 	}
 
-	tflog.Debug(ctx, "client.UpdateStackscript(...)", map[string]interface{}{
-		"options": updateOpts,
+	tflog.Debug(ctx, "client.UpdateStackscript(...)", map[string]any{
+		"label":       updateOpts.Label,
+		"description": updateOpts.Description,
+		"rev_note":    updateOpts.RevNote,
+		"is_public":   updateOpts.IsPublic,
+		"images":      updateOpts.Images,
 	})
 
 	stackscript, err := client.UpdateStackscript(ctx, stackScriptID, updateOpts)
