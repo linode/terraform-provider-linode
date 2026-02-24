@@ -20,12 +20,9 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegroupimageshares"
 	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegrouptoken"
 	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegrouptokens"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/v3/linode/databaseengines"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlv2"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresql"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlv2"
 	"github.com/linode/terraform-provider-linode/v3/linode/databases"
@@ -301,9 +298,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		instancenetworking.NewDataSource,
 		objcluster.NewDataSource,
 		domainrecord.NewDataSource,
-		databasepostgresql.NewDataSource,
 		volume.NewDataSource,
-		databasemysql.NewDataSource,
 		domainzonefile.NewDataSource,
 		domain.NewDataSource,
 		user.NewDataSource,
@@ -315,7 +310,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		images.NewDataSource,
 		accountlogin.NewDataSource,
 		accountlogins.NewDataSource,
-		databasebackups.NewDataSource,
 		databases.NewDataSource,
 		databaseengines.NewDataSource,
 		region.NewDataSource,
