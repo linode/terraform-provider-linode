@@ -468,7 +468,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diag.Errorf("failed to list node pools for LKE cluster %d: %s", id, err)
 		}
 		for _, pool := range pools {
-			oldNodes = pool.Linodes
+			oldNodes = append(oldNodes, pool.Linodes...)
 		}
 		tflog.Debug(ctx, "Collected Linode instances from LKE cluster node pools", map[string]any{
 			"nodes": oldNodes,
