@@ -23,7 +23,7 @@ import (
 const (
 	createLKETimeout = 35 * time.Minute
 	updateLKETimeout = 40 * time.Minute
-	deleteLKETimeout = 15 * time.Minute
+	deleteLKETimeout = 20 * time.Minute
 	TierEnterprise   = "enterprise"
 	TierStandard     = "standard"
 )
