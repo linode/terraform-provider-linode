@@ -506,11 +506,8 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	// Wait for each Linode instance to be fully deleted
 	if !skipDeletePoll {
-		ctxWithTimeout, cancel := context.WithTimeout(ctx, time.Duration(timeoutSeconds)*time.Second)
-		defer cancel()
-
 		if err := waitForNodesDeleted(
-			ctxWithTimeout,
+			ctx,
 			client,
 			providerMeta.Config.EventPollMilliseconds,
 			oldNodes,
