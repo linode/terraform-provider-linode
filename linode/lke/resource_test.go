@@ -879,6 +879,32 @@ func TestAccResourceLKECluster_standardNoPools(t *testing.T) {
 	})
 }
 
+func TestAccResourceLKECluster_updateStrategyImplicitTier(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf-test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.TierConditionalWithUpdateStrategy(
+					t,
+					clusterName,
+					k8sVersionLatest,
+					testRegion,
+					"",
+					"rolling_update",
+				),
+				ExpectError: regexp.MustCompile(
+					"`update_strategy` can only be configured when tier is set to \\\"enterprise\\\"",
+				),
+			},
+		},
+	})
+}
+
 func TestAccResourceLKECluster_apl(t *testing.T) {
 	t.Parallel()
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
