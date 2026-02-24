@@ -19,19 +19,22 @@ func (model *regionsVPCAvailabilityModel) parseRegionsVPCAvailability(
 	ctx context.Context,
 	regionsVPCAvailability []linodego.RegionVPCAvailability,
 ) diag.Diagnostics {
+	var diags diag.Diagnostics
 	result := make([]regionvpcavailability.RegionVPCAvailabilityModel, len(regionsVPCAvailability))
 
 	for i, regionVPCAvailability := range regionsVPCAvailability {
 		regionVPCAvailabilityModel := regionvpcavailability.RegionVPCAvailabilityModel{}
-		regionVPCAvailabilityModel.ParseRegionVPCAvailability(ctx, &regionVPCAvailability)
+		diags.Append(regionVPCAvailabilityModel.ParseRegionVPCAvailability(ctx, &regionVPCAvailability)...)
+		if diags.HasError() {
+			return diags
+		}
 		result[i] = regionVPCAvailabilityModel
 	}
 	model.RegionsVPCAvailability = result
 
-	var diags diag.Diagnostics
 	id, err := json.Marshal(regionsVPCAvailability)
 	if err != nil {
-		diags.AddError("Error marshalling json: %s", err.Error())
+		diags.AddError("Error marshalling json", err.Error())
 		return diags
 	}
 	model.ID = types.StringValue(string(id))
