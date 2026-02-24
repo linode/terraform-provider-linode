@@ -461,7 +461,6 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		tflog.Trace(ctx, "client.ListLKENodePools(...)")
 		pools, err := client.ListLKENodePools(ctx, id, nil)
 		if err != nil {
-			// todo: verify it's 404
 			if linodego.IsNotFound(err) {
 				tflog.Warn(ctx, "LKE cluster not found when listing node pools, assuming already deleted")
 				return nil
@@ -479,9 +478,8 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	tflog.Debug(ctx, "client.DeleteLKECluster(...)")
 	err = client.DeleteLKECluster(ctx, id)
 	if err != nil {
-		// todo: verify it's 404
 		if !linodego.IsNotFound(err) {
-			diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
+			return diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
 		}
 	}
 	timeoutSeconds, err := helper.SafeFloat64ToInt(
