@@ -480,7 +480,10 @@ func createInstanceDisk(
 	}
 
 	tflog.Info(ctx, "Creating new instance disk", map[string]any{
-		"options": diskOpts,
+		"label":      diskOpts.Label,
+		"filesystem": diskOpts.Filesystem,
+		"size":       diskOpts.Size,
+		"image":      diskOpts.Image,
 	})
 
 	p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate)
@@ -488,8 +491,11 @@ func createInstanceDisk(
 		return nil, fmt.Errorf("failed to initialize event poller: %s", err)
 	}
 
-	tflog.Debug(ctx, "client.CreateInstanceDisk(...)", map[string]any{
-		"options": diskOpts,
+	tflog.Debug(ctx, "client.CreateInstanceDisk(...) ", map[string]any{
+		"label":      diskOpts.Label,
+		"filesystem": diskOpts.Filesystem,
+		"size":       diskOpts.Size,
+		"image":      diskOpts.Image,
 	})
 
 	instanceDisk, err := client.CreateInstanceDisk(ctx, instance.ID, diskOpts)
