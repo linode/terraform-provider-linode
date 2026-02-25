@@ -901,15 +901,19 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 
 func TestAccResourceInstance_resetRootPass(t *testing.T) {
 	t.Parallel()
+
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
+
 	rootPass := acctest.RandString(64)
 	rootPassUpdated := rootPass + "updated"
 
 	// We cannot compare root_pass directly since it is stored as a sensitive value in state,
 	// so we capture the original value and assert it changes after the update.
 	var originalRootPass string
+
+	var originalInstanceID int
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -921,6 +925,12 @@ func TestAccResourceInstance_resetRootPass(t *testing.T) {
 				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
+
+					func(s *terraform.State) error {
+						originalInstanceID = instance.ID
+						return nil
+					},
+
 					resource.TestCheckResourceAttrWith(resName, "root_pass", func(v string) error {
 						originalRootPass = v
 						return nil
@@ -931,6 +941,18 @@ func TestAccResourceInstance_resetRootPass(t *testing.T) {
 				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPassUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
+
+					func(s *terraform.State) error {
+						if instance.ID != originalInstanceID {
+							return fmt.Errorf(
+								"instance was recreated: original ID %d, new ID %d",
+								originalInstanceID,
+								instance.ID,
+							)
+						}
+						return nil
+					},
+
 					resource.TestCheckResourceAttrWith(resName, "root_pass", func(v string) error {
 						if v == originalRootPass {
 							return fmt.Errorf("root_pass did not change")

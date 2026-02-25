@@ -976,7 +976,12 @@ func updateInstanceRootPass(
 
 	newPass := d.Get("root_pass").(string)
 
-	isRunning := instance.Status == linodego.InstanceRunning
+	status, err := helper.WaitForInstanceNonTransientStatus(ctx, &client, id, helper.GetDeadlineSeconds(ctx, d))
+	if err != nil {
+		return nil, diag.Errorf("Error waiting for Linode instance %d to be in a non-transient state before updating root_pass: %s", id, err)
+	}
+
+	isRunning := status == linodego.InstanceRunning
 	booted := d.Get("booted").(bool)
 	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
 
