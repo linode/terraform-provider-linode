@@ -174,12 +174,12 @@ func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 	if err != nil {
 		log.Fatalf("failed to get client: %s", err)
 	}
-	
+
 	enterpriseVersions, err := client.ListLKETierVersions(context.Background(), "enterprise", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	if len(enterpriseVersions) < 1 {
 		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
 	} else {
