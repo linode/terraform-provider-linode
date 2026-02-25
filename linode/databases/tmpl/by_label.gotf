@@ -1,9 +1,9 @@
 {{ define "databases_data_by_label" }}
 
-{{ template "database_mysql_basic" .DB }}
+{{ template "database_mysql_v2_basic" .DB }}
 
 data "linode_databases" "foobar" {
-    depends_on = [linode_database_mysql.foobar]
+    depends_on = [linode_database_mysql_v2.foobar]
 
     filter {
         name = "label"

@@ -86,6 +86,8 @@ This section outlines commonly used provider configuration options.
 
 * `skip_instance_delete_poll` - (Optional) Skip waiting for a linode_instance resource to finish deleting.
 
+* `skip_lke_cluster_delete_poll` - (Optional) Skip waiting for all Linode instances in an LKE cluster to be deleted.
+
 * `skip_implicit_reboots` - (Optional) If true, Linode Instances will not be rebooted on config and interface changes. (default `false`)
 
 ### Advanced Configuration

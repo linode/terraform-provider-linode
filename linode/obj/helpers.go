@@ -292,16 +292,15 @@ func putObjectWithRetries(
 		select {
 		case <-ticker.C:
 			tflog.Debug(ctx, "putting the object", map[string]any{
-				"PutObjectInput": putInput,
+				"bucket": aws.ToString(putInput.Bucket),
+				"key":    aws.ToString(putInput.Key),
 			})
-
 			if _, err := s3client.PutObject(ctx, putInput); err != nil {
 				tflog.Debug(ctx,
 					fmt.Sprintf(
-						"Failed to put Bucket (%v) Object (%v) with input %v: %s. Retrying...",
+						"Failed to put Bucket (%v) Object (%v): %s. Retrying...",
 						aws.ToString(putInput.Bucket),
 						aws.ToString(putInput.Key),
-						putInput,
 						err.Error(),
 					),
 				)

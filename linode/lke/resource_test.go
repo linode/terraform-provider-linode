@@ -786,6 +786,9 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resourceClusterName, "stack_type"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "control_plane.0.audit_logs_enabled"),
 					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("pool").AtSliceIndex(0).AtMapKey("firewall_id"), knownvalue.NotNull()),
+					},
 				},
 				{
 					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "rolling_update"),
@@ -803,6 +806,9 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.update_strategy", "rolling_update"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
 					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("pool").AtSliceIndex(0).AtMapKey("firewall_id"), knownvalue.NotNull()),
+					},
 				},
 				{
 					Config: tmpl.EnterpriseFirewall(t, clusterName, k8sVersionEnterprise, enterpriseRegion, firewall.ID),
@@ -818,6 +824,9 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.k8s_version", k8sVersionEnterprise),
 					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("pool").AtSliceIndex(0).AtMapKey("firewall_id"), knownvalue.NotNull()),
+					},
 				},
 			},
 		})
@@ -870,6 +879,49 @@ func TestAccResourceLKECluster_enterpriseNoPools(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resourceClusterName, "vpc_id"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "subnet_id"),
 					),
+				},
+			},
+		})
+	})
+}
+
+func TestAccResourceLKECluster_enterpriseWithPoolSkipDeletePoll(t *testing.T) {
+	t.Parallel()
+
+	k8sVersionEnterprise = "v1.31.9+lke7"
+
+	enterpriseRegion := "us-ord"
+
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf-test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.EnterpriseWithPoolSkipDeletePoll(t, clusterName, k8sVersionEnterprise, enterpriseRegion),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("label"), knownvalue.StringExact(clusterName)),
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("region"), knownvalue.StringExact(enterpriseRegion)),
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("k8s_version"), knownvalue.StringExact(k8sVersionEnterprise)),
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("status"), knownvalue.StringExact("ready")),
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("tier"), knownvalue.StringExact("enterprise")),
+						statecheck.ExpectKnownValue(
+							resourceClusterName,
+							tfjsonpath.New("pool").AtSliceIndex(0).AtMapKey("type"),
+							knownvalue.StringExact("g6-standard-1"),
+						),
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("pool").AtSliceIndex(0).AtMapKey("count"), knownvalue.Int64Exact(1)),
+						statecheck.ExpectKnownValue(
+							resourceClusterName,
+							tfjsonpath.New("pool").AtSliceIndex(0).AtMapKey("k8s_version"),
+							knownvalue.StringExact(k8sVersionEnterprise),
+						),
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("kubeconfig"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("vpc_id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceClusterName, tfjsonpath.New("subnet_id"), knownvalue.NotNull()),
+					},
 				},
 			},
 		})

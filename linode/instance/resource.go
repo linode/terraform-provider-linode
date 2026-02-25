@@ -324,8 +324,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.Errorf("failed to initialize event poller: %s", err)
 	}
 
-	tflog.Debug(ctx, "client.CreateInstance(...)", map[string]any{
-		"options": createOpts,
+	tflog.Debug(ctx, "client.CreateInstance(...) ", map[string]any{
+		"label":  createOpts.Label,
+		"region": createOpts.Region,
+		"type":   createOpts.Type,
+		"image":  createOpts.Image,
 	})
 
 	instance, err := client.CreateInstance(ctx, createOpts)
