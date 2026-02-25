@@ -47,8 +47,8 @@ func (r *Resource) Create(
 		Label: plan.Label.ValueString(),
 	}
 
-	tflog.Debug(ctx, "client.ImageShareGroupAddMember(...)", map[string]any{
-		"options": createOpts,
+	tflog.Debug(ctx, "client.ImageShareGroupAddMember(...) ", map[string]any{
+		"label": createOpts.Label,
 	})
 
 	shareGroupID := helper.FrameworkSafeInt64ToInt(plan.ShareGroupID.ValueInt64(), &resp.Diagnostics)

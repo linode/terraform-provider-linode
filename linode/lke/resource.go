@@ -23,7 +23,7 @@ import (
 const (
 	createLKETimeout = 35 * time.Minute
 	updateLKETimeout = 40 * time.Minute
-	deleteLKETimeout = 15 * time.Minute
+	deleteLKETimeout = 20 * time.Minute
 	TierEnterprise   = "enterprise"
 	TierStandard     = "standard"
 )
@@ -445,22 +445,48 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_lke_cluster")
 
-	client := meta.(*helper.ProviderMeta).Client
+	providerMeta := meta.(*helper.ProviderMeta)
+	client := providerMeta.Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed parsing Linode LKE Cluster ID: %s", err)
 	}
 
+	skipDeletePoll := providerMeta.Config.SkipLKEClusterDeletePoll
+
+	// Collect all Linode instance IDs from node pools before deleting the cluster
+	// so we can poll for their deletion afterwards.
+	var oldNodes []linodego.LKENodePoolLinode
+	if !skipDeletePoll {
+		tflog.Trace(ctx, "client.ListLKENodePools(...)")
+		pools, err := client.ListLKENodePools(ctx, id, nil)
+		if err != nil {
+			if linodego.IsNotFound(err) {
+				tflog.Warn(ctx, "LKE cluster not found when listing node pools, assuming already deleted")
+				return nil
+			}
+			return diag.Errorf("failed to list node pools for LKE cluster %d: %s", id, err)
+		}
+		for _, pool := range pools {
+			oldNodes = append(oldNodes, pool.Linodes...)
+		}
+		tflog.Debug(ctx, "Collected Linode instances from LKE cluster node pools", map[string]any{
+			"nodes": oldNodes,
+		})
+	}
+
 	tflog.Debug(ctx, "client.DeleteLKECluster(...)")
 	err = client.DeleteLKECluster(ctx, id)
 	if err != nil {
-		return diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
+		if !linodego.IsNotFound(err) {
+			return diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
+		}
 	}
 	timeoutSeconds, err := helper.SafeFloat64ToInt(
-		d.Timeout(schema.TimeoutCreate).Seconds(),
+		d.Timeout(schema.TimeoutDelete).Seconds(),
 	)
 	if err != nil {
-		return diag.Errorf("failed to convert float64 creation timeout to int: %s", err)
+		return diag.Errorf("failed to convert float64 deletion timeout to int: %s", err)
 	}
 
 	tflog.Debug(ctx, "Deleted LKE cluster, waiting for all nodes deleted...")
@@ -473,11 +499,21 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if err != nil {
 		// If we're getting a 404, it's safe to say the cluster has been
 		// deleted.
-		if linodego.IsNotFound(err) {
-			return nil
+		if !linodego.IsNotFound(err) {
+			return diag.FromErr(err)
 		}
+	}
 
-		return diag.FromErr(err)
+	// Wait for each Linode instance to be fully deleted
+	if !skipDeletePoll {
+		if err := waitForNodesDeleted(
+			ctx,
+			client,
+			providerMeta.Config.EventPollMilliseconds,
+			oldNodes,
+		); err != nil {
+			return diag.Errorf("failed waiting for Linode instances to be deleted: %s", err)
+		}
 	}
 
 	return nil

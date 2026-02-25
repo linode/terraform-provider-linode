@@ -11,9 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/databaseaccesscontrols"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasemysql"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlbackups"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresql"
 	"github.com/linode/terraform-provider-linode/v3/linode/domain"
 	"github.com/linode/terraform-provider-linode/v3/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -75,6 +72,12 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Skip waiting for a linode_instance resource to finish deleting.",
+			},
+
+			"skip_lke_cluster_delete_poll": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Skip waiting for all Linode instances in an LKE cluster to be deleted.",
 			},
 
 			"skip_implicit_reboots": {
@@ -140,14 +143,11 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
-			"linode_instances":              instance.DataSource(),
+			"linode_instances": instance.DataSource(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
 			"linode_database_access_controls": databaseaccesscontrols.Resource(),
-			"linode_database_mysql":           databasemysql.Resource(),
-			"linode_database_postgresql":      databasepostgresql.Resource(),
 			"linode_domain":                   domain.Resource(),
 			"linode_domain_record":            domainrecord.Resource(),
 			"linode_instance":                 instance.Resource(),
@@ -261,9 +261,10 @@ func providerConfigure(
 	ctx context.Context, d *schema.ResourceData, terraformVersion string,
 ) (any, diag.Diagnostics) {
 	config := &helper.Config{
-		SkipInstanceReadyPoll:  d.Get("skip_instance_ready_poll").(bool),
-		SkipInstanceDeletePoll: d.Get("skip_instance_delete_poll").(bool),
-		SkipImplicitReboots:    d.Get("skip_implicit_reboots").(bool),
+		SkipInstanceReadyPoll:    d.Get("skip_instance_ready_poll").(bool),
+		SkipInstanceDeletePoll:   d.Get("skip_instance_delete_poll").(bool),
+		SkipLKEClusterDeletePoll: d.Get("skip_lke_cluster_delete_poll").(bool),
+		SkipImplicitReboots:      d.Get("skip_implicit_reboots").(bool),
 
 		DisableInternalCache: d.Get("disable_internal_cache").(bool),
 
