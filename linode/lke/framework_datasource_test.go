@@ -5,7 +5,6 @@ package lke_test
 import (
 	"context"
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -165,19 +164,19 @@ func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 
 	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	var k8sVersionEnterprise string
 
 	client, err := acceptance.GetTestClient()
 	if err != nil {
-		log.Fatalf("failed to get client: %s", err)
+		t.Fatalf("failed to get client: %s", err)
 	}
 
 	enterpriseVersions, err := client.ListLKETierVersions(context.Background(), "enterprise", nil)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	if len(enterpriseVersions) < 1 {
@@ -194,7 +193,7 @@ func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 		},
 	})
 	if err != nil {
-		t.Errorf("failed creating firewall: %v", err)
+		t.Fatalf("failed creating firewall: %v", err)
 	}
 
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
