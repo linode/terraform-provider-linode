@@ -29,7 +29,7 @@ import (
 )
 
 var (
-	enterpriseRegion 	 string
+	enterpriseRegion     string
 	k8sVersions          []string
 	k8sVersionLatest     string
 	k8sVersionPrevious   string
