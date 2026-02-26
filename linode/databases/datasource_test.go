@@ -68,8 +68,8 @@ func TestAccDataSourceDatabases_byAttr(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.status"),
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.updated"),
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.version"),
-					resource.TestCheckNoResourceAttr(resourceName, "fork_restore_time"),
-					resource.TestCheckNoResourceAttr(resourceName, "fork_source"),
+					resource.TestCheckNoResourceAttr(resourceName, "databases.0.fork_restore_time"),
+					resource.TestCheckNoResourceAttr(resourceName, "databases.0.fork_source"),
 				),
 			},
 			{
