@@ -34,6 +34,7 @@ func TestParseDatabases(t *testing.T) {
 			Source:      12345,
 			RestoreTime: &currentTime,
 		},
+		OldestRestoreTime: &currentTime,
 	}
 
 	mockDB2 := linodego.Database{
@@ -54,6 +55,7 @@ func TestParseDatabases(t *testing.T) {
 			Source:      54321,
 			RestoreTime: &currentTime,
 		},
+		OldestRestoreTime: &currentTime,
 	}
 
 	mockDatabases := []linodego.Database{mockDB1, mockDB2}
@@ -68,6 +70,7 @@ func TestParseDatabases(t *testing.T) {
 	assert.Equal(t, types.StringValue("active"), model.Databases[0].Status)
 	assert.Equal(t, types.StringValue("example-db-1"), model.Databases[0].Label)
 	assert.Equal(t, currentTimeFWValue, model.Databases[0].ForkRestoreTime)
+	assert.Equal(t, currentTimeFWValue, model.Databases[0].OldestRestoreTime)
 	assert.Equal(t, int64(12345), model.Databases[0].ForkSource.ValueInt64())
 
 	// Database 2 Assertions
@@ -75,5 +78,6 @@ func TestParseDatabases(t *testing.T) {
 	assert.Equal(t, types.StringValue("provisioning"), model.Databases[1].Status)
 	assert.Equal(t, types.StringValue("example-db-2"), model.Databases[1].Label)
 	assert.Equal(t, currentTimeFWValue, model.Databases[1].ForkRestoreTime)
+	assert.Equal(t, currentTimeFWValue, model.Databases[1].OldestRestoreTime)
 	assert.Equal(t, int64(54321), model.Databases[1].ForkSource.ValueInt64())
 }

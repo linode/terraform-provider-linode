@@ -64,6 +64,11 @@ var frameworkDataSourceSchema = schema.Schema{
 						Description: "The ID of the database that was forked from.",
 						Computed:    true,
 					},
+					"oldest_restore_time": schema.StringAttribute{
+						Description: "The oldest time to which a database can be restored.",
+						Computed:    true,
+						CustomType:  timetypes.RFC3339Type{},
+					},
 					"created": schema.StringAttribute{
 						Description: "When this Managed Database was created.",
 						Computed:    true,
