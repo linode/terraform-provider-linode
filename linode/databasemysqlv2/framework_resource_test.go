@@ -77,7 +77,7 @@ func sweep(prefix string) error {
 	return nil
 }
 
-func TestAccResource_basic(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_database_mysql_v2.foobar"
@@ -144,7 +144,7 @@ func TestAccResource_basic(t *testing.T) {
 	})
 }
 
-func TestAccResource_resize(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_resize(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_database_mysql_v2.foobar"
@@ -277,7 +277,7 @@ func TestAccResource_resize(t *testing.T) {
 	})
 }
 
-func TestAccResource_complex(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_complex(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_database_mysql_v2.foobar"
@@ -411,7 +411,7 @@ func TestAccResource_complex(t *testing.T) {
 	})
 }
 
-func TestAccResource_fork(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_fork(t *testing.T) {
 	t.Parallel()
 
 	resNameSource := "linode_database_mysql_v2.foobar"
@@ -552,7 +552,7 @@ func TestAccResource_fork(t *testing.T) {
 	})
 }
 
-func TestAccResource_suspension(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_suspension(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_database_mysql_v2.foobar"
@@ -649,7 +649,7 @@ func TestAccResource_suspension(t *testing.T) {
 	})
 }
 
-func TestAccResource_engineConfig(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_engineConfig(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_database_mysql_v2.foobar"
@@ -867,7 +867,7 @@ func TestAccResource_engineConfig(t *testing.T) {
 	})
 }
 
-func TestAccResource_vpc(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_vpc(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_database_mysql_v2.foobar"
@@ -924,7 +924,7 @@ func TestAccResource_vpc(t *testing.T) {
 	})
 }
 
-func TestAccResource_noPendingUpdatesRegression(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_noPendingUpdatesRegression(t *testing.T) {
 	t.Parallel()
 
 	overriddenProvider := acceptance.NewFrameworkProviderWithClient(
