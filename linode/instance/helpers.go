@@ -1343,22 +1343,34 @@ func VPCInterfaceIncluded(
 	return false
 }
 
-func BootInstanceAfterVPCInterfaceUpdate(ctx context.Context, meta *helper.ProviderMeta, instanceID, targetConfigID, deadlineSeconds int) diag.Diagnostics {
-	tflog.Debug(ctx, "Booting instance after VPC interface change applied")
+func BootInstanceAfterOfflineOperation(
+	ctx context.Context,
+	meta *helper.ProviderMeta,
+	instanceID, targetConfigID, deadlineSeconds int,
+	reason string,
+) diag.Diagnostics {
+	tflog.Debug(ctx, fmt.Sprintf("Booting instance after %s", reason))
 	if err := helper.BootInstanceSync(
 		ctx, &meta.Client, instanceID, targetConfigID, deadlineSeconds,
 	); err != nil {
-		return diag.Errorf("failed to boot instance after VPC interface change applied: %s", err)
+		return diag.Errorf("failed to boot instance after %s: %s", reason, err)
 	}
 	return nil
 }
 
-func ShutdownInstanceForVPCInterfaceUpdate(ctx context.Context, client *linodego.Client, skipImplicitReboots bool, instanceID, deadlineSeconds int) error {
+func ShutdownInstanceForOfflineOperation(
+	ctx context.Context,
+	client *linodego.Client,
+	skipImplicitReboots bool,
+	instanceID, deadlineSeconds int,
+	reason string,
+) error {
 	if skipImplicitReboots {
 		return fmt.Errorf(
-			"Adding, removing, and reordering a Linode VPC interface requires the implicit " +
-				"reboot of the Linode, please consider setting 'skip_implicit_reboots' " +
-				"to true in the Linode provider config.",
+			"%s requires the implicit reboot of the Linode, "+
+				"please consider setting 'skip_implicit_reboots' "+
+				"to false in the Linode provider config",
+			reason,
 		)
 	}
 

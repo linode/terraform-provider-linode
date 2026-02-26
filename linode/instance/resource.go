@@ -843,8 +843,17 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 		// Power off if not already offline
 		if settledStatus != linodego.InstanceOffline {
-			if err := ShutdownInstanceForVPCInterfaceUpdate(
-				ctx, &client, skipImplicitReboots, id, helper.GetDeadlineSeconds(ctx, d),
+			offlineReason := "offline-required update"
+			if pendingRootPassReset && pendingInterfaceUpdate {
+				offlineReason = "root password reset and VPC interface update"
+			} else if pendingRootPassReset {
+				offlineReason = "root password reset"
+			} else if pendingInterfaceUpdate {
+				offlineReason = "VPC interface update"
+			}
+
+			if err := ShutdownInstanceForOfflineOperation(
+				ctx, &client, skipImplicitReboots, id, helper.GetDeadlineSeconds(ctx, d), offlineReason,
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -882,10 +891,19 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		// Otherwise, it will stay off or be handled by `handleBootedUpdate`.
 		shouldPowerOn := wasRunning && (bootedNull || booted)
 		if shouldPowerOn {
-			if diag := BootInstanceAfterVPCInterfaceUpdate(
-				ctx, meta.(*helper.ProviderMeta), id, bootConfig, helper.GetDeadlineSeconds(ctx, d),
-			); diag != nil {
-				return diag
+			bootReason := "offline-required update"
+			if pendingRootPassReset && pendingInterfaceUpdate {
+				bootReason = "root password reset and VPC interface update"
+			} else if pendingRootPassReset {
+				bootReason = "root password reset"
+			} else if pendingInterfaceUpdate {
+				bootReason = "VPC interface update"
+			}
+
+			if diags := BootInstanceAfterOfflineOperation(
+				ctx, meta.(*helper.ProviderMeta), id, bootConfig, helper.GetDeadlineSeconds(ctx, d), bootReason,
+			); diags != nil {
+				return diags
 			}
 		}
 
