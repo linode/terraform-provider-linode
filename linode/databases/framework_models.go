@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -37,6 +38,10 @@ type DatabaseModel struct {
 	Type           types.String   `tfsdk:"type"`
 	Updated        types.String   `tfsdk:"updated"`
 	Version        types.String   `tfsdk:"version"`
+
+	// Fork-specific fields
+	ForkSource      types.Int64       `tfsdk:"fork_source"`
+	ForkRestoreTime timetypes.RFC3339 `tfsdk:"fork_restore_time"`
 }
 
 // DatabaseFilterModel describes the Terraform resource data model to match the
@@ -71,6 +76,14 @@ func (model *DatabaseFilterModel) parseDatabases(
 		m.Type = types.StringValue(db.Type)
 		m.Version = types.StringValue(db.Version)
 
+		if db.Fork != nil {
+			m.ForkSource = types.Int64Value(int64(db.Fork.Source))
+			m.ForkRestoreTime = timetypes.NewRFC3339TimePointerValue(db.Fork.RestoreTime)
+		} else {
+			m.ForkSource = types.Int64Null()
+			m.ForkRestoreTime = timetypes.NewRFC3339Null()
+		}
+
 		if db.Created != nil {
 			m.Created = types.StringValue(db.Created.Format(time.RFC3339))
 		} else {
@@ -87,6 +100,8 @@ func (model *DatabaseFilterModel) parseDatabases(
 			privateNetworkObject, rd := databaseshared.FlattenPrivateNetwork(ctx, *db.PrivateNetwork)
 			d.Append(rd...)
 			m.PrivateNetwork = privateNetworkObject
+		} else {
+			m.PrivateNetwork = types.ObjectNull(databaseshared.ObjectTypePrivateNetwork.AttrTypes)
 		}
 
 		return m

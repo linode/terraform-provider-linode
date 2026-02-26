@@ -1,6 +1,7 @@
 package databases
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
@@ -52,6 +53,15 @@ var frameworkDataSourceSchema = schema.Schema{
 					},
 					"cluster_size": schema.Int64Attribute{
 						Description: "The number of Linode Instance nodes deployed to the Managed Database.",
+						Computed:    true,
+					},
+					"fork_restore_time": schema.StringAttribute{
+						Description: "The database timestamp from which it was restored.",
+						Computed:    true,
+						CustomType:  timetypes.RFC3339Type{},
+					},
+					"fork_source": schema.Int64Attribute{
+						Description: "The ID of the database that was forked from.",
 						Computed:    true,
 					},
 					"created": schema.StringAttribute{
