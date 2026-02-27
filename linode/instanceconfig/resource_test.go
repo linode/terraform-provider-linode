@@ -536,6 +536,7 @@ func TestAccResourceInstanceConfig_vpcInterfaceIPv6(t *testing.T) {
 	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
 		linodego.CapabilityLinodes,
 		linodego.CapabilityVPCs,
+		linodego.CapabilityVPCDualStack,
 	}, "core")
 	if err != nil {
 		log.Fatal(err)
