@@ -2914,9 +2914,14 @@ func TestAccResourceInstance_interfaceVPCIPv6(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	// TODO (VPC Dual Stack): Remove region hardcoding
-	targetRegion := "no-osl-1"
-
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+		linodego.CapabilityLinodes,
+		linodego.CapabilityVPCs,
+		linodego.CapabilityVPCDualStack,
+	}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
 	ipv6Path := tfjsonpath.New("interface").
 		AtSliceIndex(0).
 		AtMapKey("ipv6").
@@ -3103,8 +3108,13 @@ func TestAccResourceInstance_configInterfaceVPCIPv6(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	// TODO (VPC Dual Stack): Remove region hardcoding
-	targetRegion := "no-osl-1"
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+		linodego.CapabilityLinodes,
+		linodego.CapabilityVPCs,
+	}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	ipv6Path := tfjsonpath.New("config").
 		AtSliceIndex(0).
