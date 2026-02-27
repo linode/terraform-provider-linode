@@ -138,6 +138,9 @@ func updateDBAllowListByEngine(
 	}
 
 	allowListSlice := helper.AnySliceToTyped[string](allowList.List())
+	if allowListSlice == nil {
+		allowListSlice = []string{}
+	}
 
 	switch engine {
 	case "mysql":

@@ -1,0 +1,20 @@
+{{ define "lke_enterprise_with_pool_skip_delete_poll" }}
+
+provider "linode" {
+    skip_lke_cluster_delete_poll = true
+}
+
+resource "linode_lke_cluster" "test" {
+    label       = "{{ .Label }}"
+    region      = "{{ .Region }}"
+    k8s_version = "{{ .K8sVersion }}"
+    tier        = "enterprise"
+
+    pool {
+        type        = "g6-standard-1"
+        count       = 1
+        k8s_version = "{{ .K8sVersion }}"
+    }
+}
+
+{{ end }}
