@@ -40,8 +40,9 @@ var KernelAttributes = map[string]schema.Attribute{
 		Computed:    true,
 	},
 	"xen": schema.BoolAttribute{
-		Description: "If this Kernel is suitable for Xen Linodes.",
-		Computed:    true,
+		Description:        "If this Kernel is suitable for Xen Linodes.",
+		DeprecationMessage: "This field is no longer populated by the API, but it is included here for backward compatibility with existing implementations.",
+		Computed:           true,
 	},
 }
 
