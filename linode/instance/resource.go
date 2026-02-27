@@ -46,7 +46,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_instance")
 
@@ -148,7 +148,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("specs", flatSpecs)
 	d.Set("alerts", flatAlerts)
 
-	var placementGroupMap map[string]interface{}
+	var placementGroupMap map[string]any
 	flattenedGroups := flattenInstancePlacementGroup(*instance)
 	if len(flattenedGroups) > 0 {
 		placementGroupMap = flattenedGroups[0]
@@ -156,7 +156,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		if compliantOnly, ok := d.GetOk("placement_group.0.compliant_only"); ok {
 			placementGroupMap["compliant_only"] = compliantOnly.(bool)
 		}
-		d.Set("placement_group", []map[string]interface{}{placementGroupMap})
+		d.Set("placement_group", []map[string]any{placementGroupMap})
 	} else {
 		d.Set("placement_group", nil)
 	}
@@ -187,7 +187,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Create linode_instance")
 
@@ -233,12 +233,12 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if interfaces, interfacesOk := d.GetOk("interface"); interfacesOk {
-		interfaces := interfaces.([]interface{})
+		interfaces := interfaces.([]any)
 
 		createOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 		for i, ni := range interfaces {
-			createOpts.Interfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
+			createOpts.Interfaces[i] = helper.ExpandConfigInterface(ni.(map[string]any))
 		}
 	}
 
@@ -269,14 +269,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	// If we don't have disks and we don't have configs, use the single API call approach
 	if !disksOk && !configsOk {
-		for _, key := range d.Get("authorized_keys").([]interface{}) {
+		for _, key := range d.Get("authorized_keys").([]any) {
 			if key == nil {
 				return diag.Errorf("invalid input for authorized_keys: keys cannot be empty or null")
 			}
 
 			createOpts.AuthorizedKeys = append(createOpts.AuthorizedKeys, key.(string))
 		}
-		for _, user := range d.Get("authorized_users").([]interface{}) {
+		for _, user := range d.Get("authorized_users").([]any) {
 			if user == nil {
 				return diag.Errorf("invalid input for authorized_users: users cannot be empty or null")
 			}
@@ -306,7 +306,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.StackScriptID = d.Get("stackscript_id").(int)
 
 		if stackscriptDataRaw, ok := d.GetOk("stackscript_data"); ok {
-			stackscriptData, ok := stackscriptDataRaw.(map[string]interface{})
+			stackscriptData, ok := stackscriptDataRaw.(map[string]any)
 			if !ok {
 				return diag.Errorf("Error parsing stackscript_data: expected map[string]interface{}")
 			}
@@ -324,8 +324,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to initialize event poller: %s", err)
 	}
 
-	tflog.Debug(ctx, "client.CreateInstance(...)", map[string]any{
-		"options": createOpts,
+	tflog.Debug(ctx, "client.CreateInstance(...) ", map[string]any{
+		"label":  createOpts.Label,
+		"region": createOpts.Region,
+		"type":   createOpts.Type,
+		"image":  createOpts.Image,
 	})
 
 	instance, err := client.CreateInstance(ctx, createOpts)
@@ -403,11 +406,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 		tflog.Debug(ctx, "Instance is ready, provisioning disks")
 
-		diskSpecs := d.Get("disk").([]interface{})
+		diskSpecs := d.Get("disk").([]any)
 		diskIDLabelMap = make(map[string]int, len(diskSpecs))
 
 		for _, diskSpec := range diskSpecs {
-			diskSpec := diskSpec.(map[string]interface{})
+			diskSpec := diskSpec.(map[string]any)
 
 			instanceDisk, err := createInstanceDisk(ctx, client, *instance, diskSpec, d)
 			if err != nil {
@@ -418,7 +421,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if configsOk {
-		configSpecs := d.Get("config").([]interface{})
+		configSpecs := d.Get("config").([]any)
 		detacher := makeVolumeDetacher(client, d)
 
 		configIDMap, err := createInstanceConfigsFromSet(ctx, client, instance.ID, configSpecs, diskIDLabelMap, detacher)
@@ -562,7 +565,7 @@ func adjustSwapSizeIfNeeded(
 	return true, nil
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_instance")
 
@@ -581,6 +584,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err != nil {
 		return diag.Errorf("Error fetching data about the current linode: %s", err)
 	}
+
+	// Track whether root_pass needs updating. We defer the actual reset so it can
+	// share a single shutdown/boot cycle with other offline-required operations
+	// (e.g., VPC interface updates) instead of causing an extra power cycle.
+	pendingRootPassReset := d.HasChange("root_pass")
 
 	updateOpts := linodego.InstanceUpdateOptions{}
 	simpleUpdate := false
@@ -776,66 +784,140 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	booted := d.Get("booted").(bool)
 	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
 
-	if d.HasChange("interface") {
-		interfaces := d.Get("interface").([]interface{})
+	// Detect whether the interface update requires a power-off (VPC interface change).
+	// The actual shutdown and interface config application are deferred to the
+	// unified offline-required block below so that all offline-required operations
+	// (root_pass reset, VPC interface updates, etc.) share a single power cycle.
+	var pendingInterfaceUpdate bool
+	var expandedInterfaces []linodego.InstanceConfigInterfaceCreateOptions
+	var interfacePowerOffRequired bool
 
-		expandedInterfaces := helper.ExpandConfigInterfaces(ctx, interfaces)
+	if d.HasChange("interface") {
+		pendingInterfaceUpdate = true
+		interfaces := d.Get("interface").([]any)
+		expandedInterfaces = helper.ExpandConfigInterfaces(ctx, interfaces)
+
 		config, err := client.GetInstanceConfig(ctx, id, bootConfig)
 		if err != nil {
 			return diag.Errorf("failed to get config %d: %s", bootConfig, err)
 		}
 
-		powerOffRequired := VPCInterfaceIncluded(config.Interfaces, expandedInterfaces)
+		interfacePowerOffRequired = VPCInterfaceIncluded(config.Interfaces, expandedInterfaces)
 
-		tflog.Debug(ctx, "Updating instance config for interface changes", map[string]any{
-			"config_id": bootConfig,
-		})
+		if !interfacePowerOffRequired {
+			// Interface change that does NOT require a power cycle can be applied immediately.
+			tflog.Debug(ctx, "Updating instance config for interface changes (no power-off needed)", map[string]any{
+				"config_id": bootConfig,
+			})
 
-		instance, err := client.GetInstance(ctx, id)
+			configUpdateOpts := linodego.InstanceConfigUpdateOptions{
+				Interfaces: expandedInterfaces,
+			}
+
+			if _, err := client.UpdateInstanceConfig(
+				ctx, id, bootConfig, configUpdateOpts,
+			); err != nil {
+				return diag.Errorf("failed to set boot config interfaces: %s", err)
+			}
+
+			rebootInstance = true
+			pendingInterfaceUpdate = false
+		}
+	}
+
+	// All operations that require the instance to be powered off are handled here
+	// in a single shutdown/boot cycle: root_pass reset, VPC interface updates, etc.
+	needsOffline := pendingRootPassReset || (pendingInterfaceUpdate && interfacePowerOffRequired)
+
+	if needsOffline {
+		// Wait for the instance to reach a non-transient state (e.g., not booting,
+		// rebooting, or shutting_down) before checking its status. This ensures we
+		// don't skip shutdown for an instance that is effectively still online.
+		settledStatus, err := helper.WaitForInstanceNonTransientStatus(
+			ctx, &client, id, helper.GetDeadlineSeconds(ctx, d),
+		)
 		if err != nil {
-			return diag.Errorf("Error fetching data about the current linode: %s", err)
+			return diag.Errorf(
+				"Error waiting for Linode instance %d to reach a non-transient state: %s", id, err,
+			)
 		}
 
-		// we should power on Linode after updating of the interfaces if
-		// it's currently on and booted attribute is unset by the user.
-		// Otherwise, it will stay off (if it's already off) or be handled by
-		// `handleBootedUpdate` (if booted is set to an explicit value)
-		shouldPowerOn := bootedNull && powerOffRequired && instance.Status == linodego.InstanceRunning
+		wasRunning := settledStatus == linodego.InstanceRunning
 
-		if powerOffRequired {
-			if err := ShutdownInstanceForVPCInterfaceUpdate(
-				ctx, &client, skipImplicitReboots, id, helper.GetDeadlineSeconds(ctx, d),
+		// Power off if not already offline
+		if settledStatus != linodego.InstanceOffline {
+			offlineReason := "offline-required update"
+			if pendingRootPassReset && pendingInterfaceUpdate {
+				offlineReason = "root password reset and VPC interface update"
+			} else if pendingRootPassReset {
+				offlineReason = "root password reset"
+			} else if pendingInterfaceUpdate {
+				offlineReason = "VPC interface update"
+			}
+
+			if err := ShutdownInstanceForOfflineOperation(
+				ctx, &client, skipImplicitReboots, id, helper.GetDeadlineSeconds(ctx, d), offlineReason,
 			); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
-		// reboot won't be needed if we power off the Linode during update
-		rebootInstance = !powerOffRequired
-		configUpdateOpts := linodego.InstanceConfigUpdateOptions{
-			Interfaces: expandedInterfaces,
-		}
-
-		tflog.Debug(
-			ctx,
-			"client.UpdateInstanceConfig(...)",
-			map[string]any{"options": configUpdateOpts},
-		)
-
-		if _, err := client.UpdateInstanceConfig(
-			ctx, instance.ID, bootConfig, configUpdateOpts,
-		); err != nil {
-			return diag.Errorf("failed to set boot config interfaces: %s", err)
-		}
-
-		if shouldPowerOn {
-			if diag := BootInstanceAfterVPCInterfaceUpdate(
-				ctx, meta.(*helper.ProviderMeta), id, bootConfig, helper.GetDeadlineSeconds(ctx, d),
-			); diag != nil {
-				return diag
+		// Apply root_pass reset while offline
+		if pendingRootPassReset {
+			newPass := d.Get("root_pass").(string)
+			tflog.Debug(ctx, "Resetting root password while instance is offline")
+			if err := client.ResetInstancePassword(
+				ctx, id, linodego.InstancePasswordResetOptions{RootPass: newPass},
+			); err != nil {
+				return diag.Errorf("failed to reset root password: %s", err)
 			}
 		}
 
+		// Apply VPC interface update while offline
+		if pendingInterfaceUpdate && interfacePowerOffRequired {
+			tflog.Debug(ctx, "Updating instance config for interface changes (offline)", map[string]any{
+				"config_id": bootConfig,
+			})
+
+			configUpdateOpts := linodego.InstanceConfigUpdateOptions{
+				Interfaces: expandedInterfaces,
+			}
+
+			if _, err := client.UpdateInstanceConfig(
+				ctx, id, bootConfig, configUpdateOpts,
+			); err != nil {
+				return diag.Errorf("failed to set boot config interfaces: %s", err)
+			}
+		}
+
+		// Boot back up if it was running and booted isn't explicitly false.
+		// Otherwise, it will stay off or be handled by `handleBootedUpdate`.
+		shouldPowerOn := wasRunning && (bootedNull || booted)
+		if shouldPowerOn {
+			bootReason := "offline-required update"
+			if pendingRootPassReset && pendingInterfaceUpdate {
+				bootReason = "root password reset and VPC interface update"
+			} else if pendingRootPassReset {
+				bootReason = "root password reset"
+			} else if pendingInterfaceUpdate {
+				bootReason = "VPC interface update"
+			}
+
+			if diags := BootInstanceAfterOfflineOperation(
+				ctx, meta.(*helper.ProviderMeta), id, bootConfig, helper.GetDeadlineSeconds(ctx, d), bootReason,
+			); diags != nil {
+				return diags
+			}
+		}
+
+		// Refresh instance after the offline operations
+		instance, err = client.GetInstance(ctx, id)
+		if err != nil {
+			return diag.Errorf("Error fetching data about the current linode: %s", err)
+		}
+
+		// reboot won't be needed since we already handled the power cycle
+		rebootInstance = false
 	}
 
 	if d.HasChange("shared_ipv4") {
@@ -906,7 +988,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_instance")
 

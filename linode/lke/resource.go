@@ -23,7 +23,7 @@ import (
 const (
 	createLKETimeout = 35 * time.Minute
 	updateLKETimeout = 40 * time.Minute
-	deleteLKETimeout = 15 * time.Minute
+	deleteLKETimeout = 20 * time.Minute
 	TierEnterprise   = "enterprise"
 	TierStandard     = "standard"
 )
@@ -40,6 +40,7 @@ func Resource() *schema.Resource {
 		},
 		CustomizeDiff: customdiff.All(
 			customDiffValidateOptionalCount,
+			customDiffValidatePoolForStandardTier,
 			linodediffs.ComputedWithDefault("tags", []string{}),
 			linodediffs.CaseInsensitiveSet("tags"),
 			helper.SDKv2ValidateFieldRequiresAPIVersion(
@@ -55,7 +56,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_lke_cluster")
 
@@ -65,7 +66,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("Error parsing Linode LKE Cluster ID: %s", err)
 	}
 
-	declaredPools, ok := d.Get("pool").([]interface{})
+	declaredPools, ok := d.Get("pool").([]any)
 	if !ok {
 		return diag.Errorf("failed to parse linode lke cluster pools: %d", id)
 	}
@@ -146,18 +147,18 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	p := flattenLKENodePools(matchedPools)
 
 	d.Set("pool", p)
-	d.Set("control_plane", []map[string]interface{}{flattenedControlPlane})
+	d.Set("control_plane", []map[string]any{flattenedControlPlane})
 
 	return nil
 }
 
-func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Create linode_lke_cluster")
 
 	client := meta.(*helper.ProviderMeta).Client
 
-	controlPlane := d.Get("control_plane").([]interface{})
+	controlPlane := d.Get("control_plane").([]any)
 
 	createOpts := linodego.LKEClusterCreateOptions{
 		Label:      d.Get("label").(string),
@@ -186,7 +187,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if len(controlPlane) > 0 {
-		expandedControlPlane, diags := expandControlPlaneOptions(controlPlane[0].(map[string]interface{}))
+		expandedControlPlane, diags := expandControlPlaneOptions(controlPlane[0].(map[string]any))
 		if diags.HasError() {
 			return diags
 		}
@@ -194,8 +195,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.ControlPlane = &expandedControlPlane
 	}
 
-	for _, nodePool := range d.Get("pool").([]interface{}) {
-		poolSpec := nodePool.(map[string]interface{})
+	for _, nodePool := range d.Get("pool").([]any) {
+		poolSpec := nodePool.(map[string]any)
 
 		autoscaler := expandLinodeLKEClusterAutoscalerFromPool(poolSpec)
 
@@ -290,7 +291,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_lke_cluster")
 
@@ -311,9 +312,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		updateOpts.K8sVersion = d.Get("k8s_version").(string)
 	}
 
-	controlPlane := d.Get("control_plane").([]interface{})
+	controlPlane := d.Get("control_plane").([]any)
 	if len(controlPlane) > 0 {
-		expandedControlPlane, diags := expandControlPlaneOptions(controlPlane[0].(map[string]interface{}))
+		expandedControlPlane, diags := expandControlPlaneOptions(controlPlane[0].(map[string]any))
 		if diags.HasError() {
 			return diags
 		}
@@ -440,26 +441,52 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_lke_cluster")
 
-	client := meta.(*helper.ProviderMeta).Client
+	providerMeta := meta.(*helper.ProviderMeta)
+	client := providerMeta.Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed parsing Linode LKE Cluster ID: %s", err)
 	}
 
+	skipDeletePoll := providerMeta.Config.SkipLKEClusterDeletePoll
+
+	// Collect all Linode instance IDs from node pools before deleting the cluster
+	// so we can poll for their deletion afterwards.
+	var oldNodes []linodego.LKENodePoolLinode
+	if !skipDeletePoll {
+		tflog.Trace(ctx, "client.ListLKENodePools(...)")
+		pools, err := client.ListLKENodePools(ctx, id, nil)
+		if err != nil {
+			if linodego.IsNotFound(err) {
+				tflog.Warn(ctx, "LKE cluster not found when listing node pools, assuming already deleted")
+				return nil
+			}
+			return diag.Errorf("failed to list node pools for LKE cluster %d: %s", id, err)
+		}
+		for _, pool := range pools {
+			oldNodes = append(oldNodes, pool.Linodes...)
+		}
+		tflog.Debug(ctx, "Collected Linode instances from LKE cluster node pools", map[string]any{
+			"nodes": oldNodes,
+		})
+	}
+
 	tflog.Debug(ctx, "client.DeleteLKECluster(...)")
 	err = client.DeleteLKECluster(ctx, id)
 	if err != nil {
-		return diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
+		if !linodego.IsNotFound(err) {
+			return diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
+		}
 	}
 	timeoutSeconds, err := helper.SafeFloat64ToInt(
-		d.Timeout(schema.TimeoutCreate).Seconds(),
+		d.Timeout(schema.TimeoutDelete).Seconds(),
 	)
 	if err != nil {
-		return diag.Errorf("failed to convert float64 creation timeout to int: %s", err)
+		return diag.Errorf("failed to convert float64 deletion timeout to int: %s", err)
 	}
 
 	tflog.Debug(ctx, "Deleted LKE cluster, waiting for all nodes deleted...")
@@ -472,11 +499,21 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err != nil {
 		// If we're getting a 404, it's safe to say the cluster has been
 		// deleted.
-		if linodego.IsNotFound(err) {
-			return nil
+		if !linodego.IsNotFound(err) {
+			return diag.FromErr(err)
 		}
+	}
 
-		return diag.FromErr(err)
+	// Wait for each Linode instance to be fully deleted
+	if !skipDeletePoll {
+		if err := waitForNodesDeleted(
+			ctx,
+			client,
+			providerMeta.Config.EventPollMilliseconds,
+			oldNodes,
+		); err != nil {
+			return diag.Errorf("failed waiting for Linode instances to be deleted: %s", err)
+		}
 	}
 
 	return nil
@@ -539,6 +576,27 @@ func customDiffValidateOptionalCount(ctx context.Context, diff *schema.ResourceD
 			"%s: `count` must be defined when no autoscaler is defined",
 			strings.Join(invalidPools, ", "),
 		)
+	}
+
+	return nil
+}
+
+// customDiffValidatePoolForStandardTier ensures that at least one pool
+// is defined when tier is "standard" or not set (defaults to standard).
+//
+// For enterprise tier clusters, pools are optional and can be empty.
+func customDiffValidatePoolForStandardTier(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	tier := diff.GetRawConfig().GetAttr("tier")
+	pool := diff.GetRawConfig().GetAttr("pool")
+
+	// If tier is not set or is set to "standard", at least one pool is required
+	tierIsStandard := tier.IsNull() || tier.AsString() == TierStandard
+
+	if tierIsStandard {
+		// Check if pool is null or empty
+		if pool.IsNull() || pool.LengthInt() == 0 {
+			return fmt.Errorf("at least one pool is required for standard tier clusters")
+		}
 	}
 
 	return nil

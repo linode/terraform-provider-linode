@@ -15,7 +15,7 @@ import (
 //
 // NOTE: The target field must be marked as computed.
 func CaseInsensitiveSet(field string) schema.CustomizeDiffFunc {
-	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+	return func(ctx context.Context, diff *schema.ResourceDiff, i any) error {
 		if !diff.HasChange(field) {
 			return nil
 		}

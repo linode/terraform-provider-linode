@@ -32,9 +32,7 @@ func UseStateForUnknownUnlessTheseChanged(expressions ...path.Expression) planmo
 				for _, mp := range matchedPaths {
 					var state, plan attr.Value
 
-					newDiags = request.Plan.GetAttribute(ctx, mp, &plan)
-
-					resp.Diagnostics.Append(newDiags...)
+					resp.Diagnostics.Append(request.Plan.GetAttribute(ctx, mp, &plan)...)
 					if resp.Diagnostics.HasError() {
 						return
 					}
@@ -43,9 +41,7 @@ func UseStateForUnknownUnlessTheseChanged(expressions ...path.Expression) planmo
 						continue
 					}
 
-					newDiags = request.State.GetAttribute(ctx, mp, &state)
-
-					resp.Diagnostics.Append(newDiags...)
+					resp.Diagnostics.Append(request.State.GetAttribute(ctx, mp, &state)...)
 					if resp.Diagnostics.HasError() {
 						return
 					}
@@ -58,16 +54,6 @@ func UseStateForUnknownUnlessTheseChanged(expressions ...path.Expression) planmo
 			}
 
 			resp.UseState = true
-		},
-	)
-}
-
-// UseStateForUnknownIfNotNull is a convenience wrapper to only use the state value
-// in place of unknown values in plans if its value is not null.
-func UseStateForUnknownIfNotNull() planmodifier.String {
-	return UseStateForUnknownIf(
-		func(ctx context.Context, request planmodifier.StringRequest, resp *UseStateForUnknownIfFuncResponse) {
-			resp.UseState = !request.StateValue.IsNull()
 		},
 	)
 }

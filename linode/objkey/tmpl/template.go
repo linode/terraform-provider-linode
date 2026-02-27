@@ -10,6 +10,7 @@ type TemplateData struct {
 	Label   string
 	Cluster string
 	Region  string
+	Regions []string
 }
 
 func Basic(t testing.TB, label string) string {
@@ -32,7 +33,7 @@ func Limited(t testing.TB, label, region string) string {
 		"object_key_limited", TemplateData{Label: label, Region: region})
 }
 
-func AllRegions(t testing.TB, label string) string {
+func AllRegions(t testing.TB, label string, regions []string) string {
 	return acceptance.ExecuteTemplate(t,
-		"object_key_all_regions", TemplateData{Label: label})
+		"object_key_all_regions", TemplateData{Label: label, Regions: regions})
 }

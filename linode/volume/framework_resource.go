@@ -216,10 +216,17 @@ func (r *Resource) CreateVolume(
 	size := helper.FrameworkSafeInt64ToInt(data.Size.ValueInt64(), diags)
 
 	createOpts := linodego.VolumeCreateOptions{
-		Label:      data.Label.ValueString(),
-		Region:     data.Region.ValueString(),
-		Size:       size,
-		Encryption: data.Encryption.ValueString(),
+		Label:  data.Label.ValueString(),
+		Region: data.Region.ValueString(),
+		Size:   size,
+	}
+
+	// Respect explicit user setting first
+	if !data.Encryption.IsNull() && !data.Encryption.IsUnknown() && data.Encryption.ValueString() != "" {
+		createOpts.Encryption = data.Encryption.ValueString()
+	} else {
+		// Default to enabled on create when encryption is omitted, without region capability checks.
+		createOpts.Encryption = "enabled"
 	}
 
 	diags.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
@@ -235,7 +242,7 @@ func (r *Resource) CreateVolume(
 		createOpts.LinodeID = linodeID
 	}
 
-	tflog.Debug(ctx, "client.CreateVolume(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.CreateVolume(...)", map[string]any{
 		"options": createOpts,
 	})
 
@@ -364,7 +371,7 @@ func HandleResize(
 	volumeID, newSize, timeoutSeconds int,
 	diags *diag.Diagnostics,
 ) *linodego.Volume {
-	tflog.Debug(ctx, "Resize volume", map[string]interface{}{
+	tflog.Debug(ctx, "Resize volume", map[string]any{
 		"volume_id": volumeID,
 		"new_size":  newSize,
 	})
@@ -464,7 +471,7 @@ func (r *Resource) Update(
 	}
 
 	if doUpdate {
-		tflog.Debug(ctx, "client.UpdateVolume(...)", map[string]interface{}{
+		tflog.Debug(ctx, "client.UpdateVolume(...)", map[string]any{
 			"options": updateOpts,
 		})
 
@@ -512,7 +519,7 @@ func (r *Resource) Update(
 				ConfigID: 0,
 			}
 
-			tflog.Debug(ctx, "client.AttachVolume(...)", map[string]interface{}{
+			tflog.Debug(ctx, "client.AttachVolume(...)", map[string]any{
 				"options": attachOptions,
 			})
 

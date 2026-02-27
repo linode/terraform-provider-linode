@@ -15,7 +15,7 @@ Grant a Linode access to a database:
 
 ```hcl
 resource "linode_database_access_controls" "my-access" {
-  database_id = linode_database_mysql.my-db.id
+  database_id = linode_database_mysql_v2.my-db.id
   database_type = "mysql"
   
   allow_list = [linode_instance.my-instance.ip_address]
@@ -28,7 +28,7 @@ resource "linode_instance" "my-instance" {
   image = "linode/alpine3.19"
 }
 
-resource "linode_database_mysql" "my-db" {
+resource "linode_database_mysql_v2" "my-db" {
   label = "mydatabase"
   engine_id = "mysql/8.0.30"
   region = "us-southeast"

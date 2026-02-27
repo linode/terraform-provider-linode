@@ -3,27 +3,9 @@
 resource "linode_object_storage_key" "foobar" {
     label = "{{.Label}}"
     regions = [
-        "us-southeast",
-        "us-ord",
-        "us-lax",
-        "us-mia",
-        "us-east",
-        "us-sea",
-        "us-iad",
-        "id-cgk",
-        "in-maa",
-        "jp-osa",
-        "ap-south",
-        "sg-sin-2",
-        "eu-central",
-        "es-mad",
-        "fr-par",
-        "gb-lon",
-        "it-mil",
-        "nl-ams",
-        "se-sto",
-        "au-mel",
-        "br-gru"
+        {{ range $i, $region := .Regions }}
+        "{{ $region }}",
+        {{ end }}
     ]
 }
 
