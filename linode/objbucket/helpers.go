@@ -2,8 +2,10 @@ package objbucket
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -40,4 +42,33 @@ func validateRegion(ctx context.Context, region string, client *linodego.Client)
 	}
 
 	return false, suggestedRegions, nil
+}
+
+// validateRegionIfPresent validates the region specified in the resource data.
+// It checks if the region is valid for Object Storage and returns helpful error
+// messages with suggested regions if validation fails.
+func validateRegionIfPresent(
+	ctx context.Context,
+	d *schema.ResourceData,
+	client *linodego.Client,
+) diag.Diagnostics {
+	region, ok := d.GetOk("region")
+	if !ok {
+		return nil
+	}
+
+	valid, suggestedRegions, err := validateRegion(ctx, region.(string), client)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if !valid {
+		errorMsg := fmt.Sprintf("Region '%s' is not valid for Object Storage.", region.(string))
+		if len(suggestedRegions) > 0 {
+			errorMsg += fmt.Sprintf(" Suggested regions: %s", strings.Join(suggestedRegions, ", "))
+		}
+		return diag.Errorf("%s", errorMsg)
+	}
+
+	return nil
 }

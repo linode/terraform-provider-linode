@@ -13,9 +13,9 @@ resource "linode_vpc_subnet" "foobar" {
 }
 
 resource "linode_lke_cluster" "test" {
-    label       = "{{.Label}}"
+    label       = "{{ .Label }}"
     region      = "{{ .Region }}"
-    k8s_version = "{{.K8sVersion}}"
+    k8s_version = "{{ .K8sVersion }}"
     tags        = ["test"]
     tier = "enterprise"
     vpc_id = linode_vpc.foobar.id
@@ -26,9 +26,15 @@ resource "linode_lke_cluster" "test" {
         type  = "g6-standard-1"
         count = 3
         tags  = ["test"]
-        k8s_version = "{{.K8sVersion}}"
-        firewall_id = "{{.FirewallID}}"
-        update_strategy = "{{.UpdateStrategy}}"
+        k8s_version = "{{ .K8sVersion }}"
+
+        {{ if .FirewallID }}
+            firewall_id = {{ .FirewallID }}
+        {{ end }}
+
+        {{ if .UpdateStrategy }}
+            update_strategy = "{{ .UpdateStrategy }}"
+        {{ end }}
     }
 
     control_plane {

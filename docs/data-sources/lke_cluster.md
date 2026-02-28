@@ -4,7 +4,7 @@ description: |-
   Provides details about an LKE Cluster.
 ---
 
-# Data Source: linode\_lke_cluster
+# Data Source: linode\_lke\_cluster
 
 Provides details about an LKE Cluster.
 For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-lke-cluster).

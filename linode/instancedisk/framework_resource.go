@@ -55,6 +55,10 @@ func (r *Resource) Create(
 		return
 	}
 
+	if plan.Image.IsUnknown() {
+		plan.Image = types.StringNull()
+	}
+
 	helper.SetLogFieldBulk(ctx, map[string]any{"linode_id": plan.LinodeID})
 	createTimeout, diags := plan.Timeouts.Create(ctx, DefaultVolumeCreateTimeout)
 	resp.Diagnostics.Append(diags...)
@@ -207,7 +211,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	state.PopulateImageFromParentInstance(ctx, client, linodeID)
+
 	state.FlattenDisk(disk, false)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -222,6 +229,10 @@ func (r *Resource) Update(
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if plan.Image.IsUnknown() {
+		plan.Image = types.StringNull()
+	}
 
 	ctx = populateLogAttributes(ctx, state)
 
@@ -320,6 +331,21 @@ func (r *Resource) Delete(
 
 	linodeID, id := getLinodeIDAndDiskID(state, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	locked, err := helper.LinodeIsLockedWithCannotDeleteSubresources(ctx, client, linodeID)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to Get Locks of Linode", err.Error())
+		return
+	}
+
+	if locked {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Can't Delete Disk %d in Linode %d", id, linodeID),
+			"the resource lock on the Linode prohibits deletion "+
+				"of its subresources, which includes this disk",
+		)
 		return
 	}
 

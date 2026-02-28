@@ -732,8 +732,10 @@ func TestAccResourceBucket_invalid_region(t *testing.T) {
 		CheckDestroy:             checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      tmpl.Basic(t, label, invalidRegion),
-				ExpectError: regexp.MustCompile(fmt.Sprintf("Region '%s' is not valid for Object Storage", invalidRegion)),
+				Config: tmpl.Basic(t, label, invalidRegion),
+				ExpectError: regexp.MustCompile(
+					regexp.QuoteMeta(fmt.Sprintf("Region '%s' is not valid for Object Storage", invalidRegion)),
+				),
 			},
 		},
 	})

@@ -41,4 +41,4 @@ The Linode Kernel resource exports the following attributes:
 
 * `version` - Linux Kernel version
 
-* `xen` - If this Kernel is suitable for Xen Linodes.
+* `xen` - (Deprecated) This field is no longer populated by the Linode API and will not contain a meaningful value; it is kept only for backward compatibility and should not be relied upon.

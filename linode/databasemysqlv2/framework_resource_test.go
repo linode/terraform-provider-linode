@@ -1,6 +1,6 @@
-//go:build integration || databasepostgresqlv2
+//go:build integration || databasemysqlv2
 
-package databasepostgresqlv2_test
+package databasemysqlv2_test
 
 import (
 	"context"
@@ -16,15 +16,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlv2/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlv2/tmpl"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 )
 
 var testRegion, testEngine string
 
 func init() {
-	resource.AddTestSweepers("linode_database_postgresql_v2", &resource.Sweeper{
-		Name: "linode_database_postgresql_v2",
+	resource.AddTestSweepers("linode_database_mysql_v2", &resource.Sweeper{
+		Name: "linode_database_mysql_v2",
 		F:    sweep,
 	})
 
@@ -43,7 +43,7 @@ func init() {
 	engine, err := databaseshared.ResolveValidDBEngine(
 		context.Background(),
 		*client,
-		string(linodego.DatabaseEngineTypePostgres),
+		string(linodego.DatabaseEngineTypeMySQL),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -60,15 +60,15 @@ func sweep(prefix string) error {
 
 	listOpts := acceptance.SweeperListOptions(prefix, "label")
 
-	dbs, err := client.ListPostgresDatabases(context.Background(), listOpts)
+	dbs, err := client.ListMySQLDatabases(context.Background(), listOpts)
 	if err != nil {
-		return fmt.Errorf("error getting postgres databases: %w", err)
+		return fmt.Errorf("error getting mysql databases: %w", err)
 	}
 	for _, db := range dbs {
 		if !acceptance.ShouldSweep(prefix, db.Label) {
 			continue
 		}
-		err := client.DeletePostgresDatabase(context.Background(), db.ID)
+		err := client.DeleteMySQLDatabase(context.Background(), db.ID)
 		if err != nil {
 			return fmt.Errorf("error destroying %s during sweep: %w", db.Label, err)
 		}
@@ -77,21 +77,21 @@ func sweep(prefix string) error {
 	return nil
 }
 
-func TestAccResource_basic(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_basic(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_database_postgresql_v2.foobar"
+	resName := "linode_database_mysql_v2.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resName, nil),
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 
 					resource.TestCheckResourceAttrSet(resName, "id"),
 
@@ -99,7 +99,7 @@ func TestAccResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "cluster_size", "1"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
-					resource.TestCheckResourceAttr(resName, "engine", "postgresql"),
+					resource.TestCheckResourceAttr(resName, "engine", "mysql"),
 					resource.TestCheckResourceAttr(resName, "engine_id", testEngine),
 					resource.TestCheckNoResourceAttr(resName, "fork_restore_time"),
 					resource.TestCheckNoResourceAttr(resName, "fork_source"),
@@ -126,9 +126,12 @@ func TestAccResource_basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resName, "pending_updates.#", "0"),
 
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_password_encryption", "md5"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_stat_monitor_enable", "false"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pglookout_max_failover_replication_time_lag", "60"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"engine_config_mysql_sql_mode",
+						"ANSI,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,STRICT_ALL_TABLES",
+					),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sql_require_primary_key", "true"),
 				),
 			},
 			{
@@ -141,16 +144,16 @@ func TestAccResource_basic(t *testing.T) {
 	})
 }
 
-func TestAccResource_resize(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_resize(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_database_postgresql_v2.foobar"
+	resName := "linode_database_mysql_v2.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Complex(
@@ -171,7 +174,7 @@ func TestAccResource_resize(t *testing.T) {
 					},
 				),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resName, nil),
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 
 					resource.TestCheckResourceAttrSet(resName, "id"),
 
@@ -179,7 +182,7 @@ func TestAccResource_resize(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "cluster_size", "1"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
-					resource.TestCheckResourceAttr(resName, "engine", "postgresql"),
+					resource.TestCheckResourceAttr(resName, "engine", "mysql"),
 					resource.TestCheckResourceAttr(resName, "engine_id", testEngine),
 					resource.TestCheckNoResourceAttr(resName, "fork_restore_time"),
 					resource.TestCheckNoResourceAttr(resName, "fork_source"),
@@ -227,7 +230,7 @@ func TestAccResource_resize(t *testing.T) {
 					},
 				),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resName, nil),
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 
 					resource.TestCheckResourceAttrSet(resName, "id"),
 
@@ -235,7 +238,7 @@ func TestAccResource_resize(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "cluster_size", "1"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
-					resource.TestCheckResourceAttr(resName, "engine", "postgresql"),
+					resource.TestCheckResourceAttr(resName, "engine", "mysql"),
 					resource.TestCheckResourceAttr(resName, "engine_id", testEngine),
 					resource.TestCheckNoResourceAttr(resName, "fork_restore_time"),
 					resource.TestCheckNoResourceAttr(resName, "fork_source"),
@@ -274,16 +277,16 @@ func TestAccResource_resize(t *testing.T) {
 	})
 }
 
-func TestAccResource_complex(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_complex(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_database_postgresql_v2.foobar"
+	resName := "linode_database_mysql_v2.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Complex(
@@ -304,7 +307,7 @@ func TestAccResource_complex(t *testing.T) {
 					},
 				),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resName, nil),
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 
 					resource.TestCheckResourceAttrSet(resName, "id"),
 
@@ -312,7 +315,7 @@ func TestAccResource_complex(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "cluster_size", "1"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
-					resource.TestCheckResourceAttr(resName, "engine", "postgresql"),
+					resource.TestCheckResourceAttr(resName, "engine", "mysql"),
 					resource.TestCheckResourceAttr(resName, "engine_id", testEngine),
 					resource.TestCheckNoResourceAttr(resName, "fork_restore_time"),
 					resource.TestCheckNoResourceAttr(resName, "fork_source"),
@@ -360,7 +363,7 @@ func TestAccResource_complex(t *testing.T) {
 					},
 				),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resName, nil),
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 
 					resource.TestCheckResourceAttrSet(resName, "id"),
 
@@ -368,11 +371,12 @@ func TestAccResource_complex(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "cluster_size", "3"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
-					resource.TestCheckResourceAttr(resName, "engine", "postgresql"),
+					resource.TestCheckResourceAttr(resName, "engine", "mysql"),
 					resource.TestCheckResourceAttr(resName, "engine_id", testEngine),
 					resource.TestCheckNoResourceAttr(resName, "fork_restore_time"),
 					resource.TestCheckNoResourceAttr(resName, "fork_source"),
 					resource.TestCheckResourceAttrSet(resName, "host_primary"),
+					resource.TestCheckResourceAttrSet(resName, "host_standby"),
 					resource.TestCheckResourceAttr(resName, "label", label),
 					resource.TestCheckResourceAttrSet(resName, "members.%"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
@@ -407,25 +411,25 @@ func TestAccResource_complex(t *testing.T) {
 	})
 }
 
-func TestAccResource_fork(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_fork(t *testing.T) {
 	t.Parallel()
 
-	resNameSource := "linode_database_postgresql_v2.foobar"
-	resNameFork := "linode_database_postgresql_v2.fork"
+	resNameSource := "linode_database_mysql_v2.foobar"
+	resNameFork := "linode_database_mysql_v2.fork"
 
-	var dbSource linodego.PostgresDatabase
+	var dbSource linodego.MySQLDatabase
 
 	label := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resNameSource, &dbSource),
+					acceptance.CheckMySQLDatabaseExists(resNameSource, &dbSource),
 
 					resource.TestCheckResourceAttrSet(resNameSource, "id"),
 
@@ -433,7 +437,7 @@ func TestAccResource_fork(t *testing.T) {
 					resource.TestCheckResourceAttr(resNameSource, "cluster_size", "1"),
 					resource.TestCheckResourceAttrSet(resNameSource, "created"),
 					resource.TestCheckResourceAttr(resNameSource, "encrypted", "true"),
-					resource.TestCheckResourceAttr(resNameSource, "engine", "postgresql"),
+					resource.TestCheckResourceAttr(resNameSource, "engine", "mysql"),
 					resource.TestCheckResourceAttr(resNameSource, "engine_id", testEngine),
 					resource.TestCheckNoResourceAttr(resNameSource, "fork_restore_time"),
 					resource.TestCheckNoResourceAttr(resNameSource, "fork_source"),
@@ -486,9 +490,9 @@ func TestAccResource_fork(t *testing.T) {
 					for {
 						select {
 						case <-ticker.C:
-							db, err := client.GetPostgresDatabase(ctx, dbSource.ID)
+							db, err := client.GetMySQLDatabase(ctx, dbSource.ID)
 							if err != nil {
-								t.Fatalf("failed to get postgres database: %s", err)
+								t.Fatalf("failed to get mysql database: %s", err)
 							}
 
 							if db.OldestRestoreTime != nil {
@@ -501,7 +505,7 @@ func TestAccResource_fork(t *testing.T) {
 				},
 				Config: tmpl.Fork(t, label, testRegion, testEngine, "g6-nanode-1"),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resNameFork, nil),
+					acceptance.CheckMySQLDatabaseExists(resNameFork, nil),
 
 					resource.TestCheckResourceAttrSet(resNameFork, "id"),
 
@@ -509,7 +513,7 @@ func TestAccResource_fork(t *testing.T) {
 					resource.TestCheckResourceAttr(resNameFork, "cluster_size", "1"),
 					resource.TestCheckResourceAttrSet(resNameFork, "created"),
 					resource.TestCheckResourceAttr(resNameFork, "encrypted", "true"),
-					resource.TestCheckResourceAttr(resNameFork, "engine", "postgresql"),
+					resource.TestCheckResourceAttr(resNameFork, "engine", "mysql"),
 					resource.TestCheckResourceAttr(resNameFork, "engine_id", testEngine),
 					resource.TestCheckResourceAttrSet(resNameFork, "fork_restore_time"),
 					resource.TestCheckResourceAttrSet(resNameFork, "fork_source"),
@@ -548,16 +552,16 @@ func TestAccResource_fork(t *testing.T) {
 	})
 }
 
-func TestAccResource_suspension(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_suspension(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_database_postgresql_v2.foobar"
+	resName := "linode_database_mysql_v2.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Suspension(
@@ -571,7 +575,7 @@ func TestAccResource_suspension(t *testing.T) {
 					},
 				),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resName, nil),
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 
 					resource.TestCheckResourceAttrSet(resName, "id"),
 
@@ -594,7 +598,7 @@ func TestAccResource_suspension(t *testing.T) {
 					},
 				),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resName, nil),
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 
 					resource.TestCheckResourceAttrSet(resName, "id"),
 
@@ -617,7 +621,7 @@ func TestAccResource_suspension(t *testing.T) {
 					},
 				),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resName, nil),
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 
 					resource.TestCheckResourceAttrSet(resName, "id"),
 
@@ -645,16 +649,16 @@ func TestAccResource_suspension(t *testing.T) {
 	})
 }
 
-func TestAccResource_engineConfig(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_engineConfig(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_database_postgresql_v2.foobar"
+	resName := "linode_database_mysql_v2.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.EngineConfig(
@@ -662,110 +666,72 @@ func TestAccResource_engineConfig(t *testing.T) {
 					tmpl.TemplateDataEngineConfig{
 						Label:    label,
 						Region:   testRegion,
-						EngineID: "postgresql/14",
+						EngineID: testEngine,
 						Type:     "g6-nanode-1",
 
-						EngineConfigPGAutovacuumAnalyzeScaleFactor:         0.1,
-						EngineConfigPGAutovacuumAnalyzeThreshold:           50,
-						EngineConfigPGAutovacuumMaxWorkers:                 3,
-						EngineConfigPGAutovacuumNaptime:                    100,
-						EngineConfigPGAutovacuumVacuumCostDelay:            20,
-						EngineConfigPGAutovacuumVacuumCostLimit:            200,
-						EngineConfigPGAutovacuumVacuumScaleFactor:          0.2,
-						EngineConfigPGAutovacuumVacuumThreshold:            100,
-						EngineConfigPGBGWriterDelay:                        1000,
-						EngineConfigPGBGWriterFlushAfter:                   512,
-						EngineConfigPGBGWriterLRUMaxpages:                  100,
-						EngineConfigPGBGWriterLRUMultiplier:                2.5,
-						EngineConfigPGDeadlockTimeout:                      1000,
-						EngineConfigPGDefaultToastCompression:              "pglz",
-						EngineConfigPGIdleInTransactionSessionTimeout:      60000,
-						EngineConfigPGJIT:                                  true,
-						EngineConfigPGMaxFilesPerProcess:                   1000,
-						EngineConfigPGMaxLocksPerTransaction:               64,
-						EngineConfigPGMaxLogicalReplicationWorkers:         4,
-						EngineConfigPGMaxParallelWorkers:                   8,
-						EngineConfigPGMaxParallelWorkersPerGather:          2,
-						EngineConfigPGMaxPredLocksPerTransaction:           128,
-						EngineConfigPGMaxReplicationSlots:                  8,
-						EngineConfigPGMaxSlotWALKeepSize:                   128,
-						EngineConfigPGMaxStackDepth:                        2097152,
-						EngineConfigPGMaxStandbyArchiveDelay:               60000,
-						EngineConfigPGMaxStandbyStreamingDelay:             60000,
-						EngineConfigPGMaxWALSenders:                        20,
-						EngineConfigPGMaxWorkerProcesses:                   8,
-						EngineConfigPGPasswordEncryption:                   "scram-sha-256",
-						EngineConfigPGPGPartmanBGWInterval:                 3600,
-						EngineConfigPGPGPartmanBGWRole:                     "myrolename",
-						EngineConfigPGPGStatMonitorPGSMEnableQueryPlan:     true,
-						EngineConfigPGPGStatMonitorPGSMMaxBuckets:          5,
-						EngineConfigPGPGStatStatementsTrack:                "all",
-						EngineConfigPGTempFileLimit:                        100,
-						EngineConfigPGTimezone:                             "Europe/Helsinki",
-						EngineConfigPGTrackActivityQuerySize:               2048,
-						EngineConfigPGTrackCommitTimestamp:                 "on",
-						EngineConfigPGTrackFunctions:                       "all",
-						EngineConfigPGTrackIOTiming:                        "on",
-						EngineConfigPGWALSenderTimeout:                     60000,
-						EngineConfigPGWALWriterDelay:                       200,
-						EngineConfigPGStatMonitorEnable:                    true,
-						EngineConfigPGLookoutMaxFailoverReplicationTimeLag: 10000,
-						EngineConfigSharedBuffersPercentage:                25.5,
-						EngineConfigWorkMem:                                400,
+						EngineConfigBinlogRetentionPeriod:             600,
+						EngineConfigMySQLConnectTimeout:               15,
+						EngineConfigMySQLDefaultTimeZone:              "+02:00",
+						EngineConfigMySQLGroupConcatMaxLen:            2048,
+						EngineConfigMySQLInformationSchemaStatsExpiry: 7200,
+						EngineConfigMySQLInnoDBChangeBufferMaxSize:    30,
+						EngineConfigMySQLInnoDBFlushNeighbors:         0,
+						EngineConfigMySQLInnoDBFTMinTokenSize:         4,
+						EngineConfigMySQLInnoDBFTServerStopwordTable:  "mysql/innodb_ft_custom_stopword",
+						EngineConfigMySQLInnoDBLockWaitTimeout:        600,
+						EngineConfigMySQLInnoDBLogBufferSize:          33554432,
+						EngineConfigMySQLInnoDBOnlineAlterLogMaxSize:  536870912,
+						EngineConfigMySQLInnoDBReadIOThreads:          8,
+						EngineConfigMySQLInnoDBRollbackOnTimeout:      false,
+						EngineConfigMySQLInnoDBThreadConcurrency:      16,
+						EngineConfigMySQLInnoDBWriteIOThreads:         8,
+						EngineConfigMySQLInteractiveTimeout:           600,
+						EngineConfigMySQLInternalTmpMemStorageEngine:  "TempTable",
+						EngineConfigMySQLMaxAllowedPacket:             134217728,
+						EngineConfigMySQLMaxHeapTableSize:             33554432,
+						EngineConfigMySQLNetBufferLength:              32768,
+						EngineConfigMySQLNetReadTimeout:               60,
+						EngineConfigMySQLNetWriteTimeout:              60,
+						EngineConfigMySQLSortBufferSize:               524288,
+						EngineConfigMySQLSQLMode:                      "TRADITIONAL,ANSI",
+						EngineConfigMySQLSQLRequirePrimaryKey:         false,
+						EngineConfigMySQLTmpTableSize:                 33554432,
+						EngineConfigMySQLWaitTimeout:                  36000,
 					},
 				),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resName, nil),
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 
 					resource.TestCheckResourceAttrSet(resName, "id"),
 
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_analyze_scale_factor", "0.1"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_analyze_threshold", "50"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_max_workers", "3"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_naptime", "100"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_vacuum_cost_delay", "20"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_vacuum_cost_limit", "200"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_vacuum_scale_factor", "0.2"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_vacuum_threshold", "100"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_bgwriter_delay", "1000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_bgwriter_flush_after", "512"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_bgwriter_lru_maxpages", "100"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_bgwriter_lru_multiplier", "2.5"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_deadlock_timeout", "1000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_default_toast_compression", "pglz"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_idle_in_transaction_session_timeout", "60000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_jit", "true"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_files_per_process", "1000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_locks_per_transaction", "64"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_logical_replication_workers", "4"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_parallel_workers", "8"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_parallel_workers_per_gather", "2"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_pred_locks_per_transaction", "128"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_replication_slots", "8"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_slot_wal_keep_size", "128"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_stack_depth", "2097152"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_standby_archive_delay", "60000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_standby_streaming_delay", "60000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_wal_senders", "20"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_worker_processes", "8"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_password_encryption", "scram-sha-256"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_partman_bgw_interval", "3600"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_partman_bgw_role", "myrolename"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_stat_monitor_pgsm_enable_query_plan", "true"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_stat_monitor_pgsm_max_buckets", "5"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_stat_statements_track", "all"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_temp_file_limit", "100"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_timezone", "Europe/Helsinki"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_track_activity_query_size", "2048"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_track_commit_timestamp", "on"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_track_functions", "all"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_track_io_timing", "on"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_wal_sender_timeout", "60000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_wal_writer_delay", "200"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_stat_monitor_enable", "true"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pglookout_max_failover_replication_time_lag", "10000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_shared_buffers_percentage", "25.5"),
-					resource.TestCheckResourceAttr(resName, "engine_config_work_mem", "400"),
+					resource.TestCheckResourceAttr(resName, "engine_config_binlog_retention_period", "600"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_connect_timeout", "15"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_default_time_zone", "+02:00"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_group_concat_max_len", "2048"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_information_schema_stats_expiry", "7200"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_change_buffer_max_size", "30"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_flush_neighbors", "0"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_ft_min_token_size", "4"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_ft_server_stopword_table", "mysql/innodb_ft_custom_stopword"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_lock_wait_timeout", "600"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_log_buffer_size", "33554432"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_online_alter_log_max_size", "536870912"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_read_io_threads", "8"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_rollback_on_timeout", "false"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_thread_concurrency", "16"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_write_io_threads", "8"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_interactive_timeout", "600"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_internal_tmp_mem_storage_engine", "TempTable"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_max_allowed_packet", "134217728"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_max_heap_table_size", "33554432"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_net_buffer_length", "32768"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_net_read_timeout", "60"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_net_write_timeout", "60"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sort_buffer_size", "524288"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sql_mode", "TRADITIONAL,ANSI"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sql_require_primary_key", "false"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_tmp_table_size", "33554432"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_wait_timeout", "36000"),
 				),
 			},
 			{
@@ -774,178 +740,121 @@ func TestAccResource_engineConfig(t *testing.T) {
 					tmpl.TemplateDataEngineConfig{
 						Label:    label,
 						Region:   testRegion,
-						EngineID: "postgresql/14",
+						EngineID: testEngine,
 						Type:     "g6-nanode-1",
 
-						EngineConfigPGAutovacuumAnalyzeScaleFactor:         0.5,
-						EngineConfigPGAutovacuumAnalyzeThreshold:           50,
-						EngineConfigPGAutovacuumMaxWorkers:                 3,
-						EngineConfigPGAutovacuumNaptime:                    100,
-						EngineConfigPGAutovacuumVacuumCostDelay:            20,
-						EngineConfigPGAutovacuumVacuumCostLimit:            200,
-						EngineConfigPGAutovacuumVacuumScaleFactor:          0.2,
-						EngineConfigPGAutovacuumVacuumThreshold:            100,
-						EngineConfigPGBGWriterDelay:                        1000,
-						EngineConfigPGBGWriterFlushAfter:                   512,
-						EngineConfigPGBGWriterLRUMaxpages:                  100,
-						EngineConfigPGBGWriterLRUMultiplier:                2.5,
-						EngineConfigPGDeadlockTimeout:                      1000,
-						EngineConfigPGDefaultToastCompression:              "pglz",
-						EngineConfigPGIdleInTransactionSessionTimeout:      60000,
-						EngineConfigPGJIT:                                  true,
-						EngineConfigPGMaxFilesPerProcess:                   1000,
-						EngineConfigPGMaxLocksPerTransaction:               64,
-						EngineConfigPGMaxLogicalReplicationWorkers:         4,
-						EngineConfigPGMaxParallelWorkers:                   8,
-						EngineConfigPGMaxParallelWorkersPerGather:          2,
-						EngineConfigPGMaxPredLocksPerTransaction:           128,
-						EngineConfigPGMaxReplicationSlots:                  8,
-						EngineConfigPGMaxSlotWALKeepSize:                   128,
-						EngineConfigPGMaxStackDepth:                        2097152,
-						EngineConfigPGMaxStandbyArchiveDelay:               60000,
-						EngineConfigPGMaxStandbyStreamingDelay:             60000,
-						EngineConfigPGMaxWALSenders:                        20,
-						EngineConfigPGMaxWorkerProcesses:                   8,
-						EngineConfigPGPasswordEncryption:                   "md5",
-						EngineConfigPGPGPartmanBGWInterval:                 3600,
-						EngineConfigPGPGPartmanBGWRole:                     "myrolename",
-						EngineConfigPGPGStatMonitorPGSMEnableQueryPlan:     true,
-						EngineConfigPGPGStatMonitorPGSMMaxBuckets:          5,
-						EngineConfigPGPGStatStatementsTrack:                "all",
-						EngineConfigPGTempFileLimit:                        100,
-						EngineConfigPGTimezone:                             "Europe/Helsinki",
-						EngineConfigPGTrackActivityQuerySize:               2048,
-						EngineConfigPGTrackCommitTimestamp:                 "on",
-						EngineConfigPGTrackFunctions:                       "all",
-						EngineConfigPGTrackIOTiming:                        "on",
-						EngineConfigPGWALSenderTimeout:                     60000,
-						EngineConfigPGWALWriterDelay:                       200,
-						EngineConfigPGStatMonitorEnable:                    true,
-						EngineConfigPGLookoutMaxFailoverReplicationTimeLag: 100000,
-						EngineConfigSharedBuffersPercentage:                25.5,
-						EngineConfigWorkMem:                                400,
+						EngineConfigBinlogRetentionPeriod:             1200,
+						EngineConfigMySQLConnectTimeout:               30,
+						EngineConfigMySQLDefaultTimeZone:              "+05:00",
+						EngineConfigMySQLGroupConcatMaxLen:            4096,
+						EngineConfigMySQLInformationSchemaStatsExpiry: 18000,
+						EngineConfigMySQLInnoDBChangeBufferMaxSize:    15,
+						EngineConfigMySQLInnoDBFlushNeighbors:         1,
+						EngineConfigMySQLInnoDBFTMinTokenSize:         8,
+						EngineConfigMySQLInnoDBFTServerStopwordTable:  "db_name/innodb_ft_stopword_list",
+						EngineConfigMySQLInnoDBLockWaitTimeout:        300,
+						EngineConfigMySQLInnoDBLogBufferSize:          67108864,
+						EngineConfigMySQLInnoDBOnlineAlterLogMaxSize:  1342177280,
+						EngineConfigMySQLInnoDBReadIOThreads:          6,
+						EngineConfigMySQLInnoDBRollbackOnTimeout:      true,
+						EngineConfigMySQLInnoDBThreadConcurrency:      20,
+						EngineConfigMySQLInnoDBWriteIOThreads:         10,
+						EngineConfigMySQLInteractiveTimeout:           900,
+						EngineConfigMySQLInternalTmpMemStorageEngine:  "MEMORY",
+						EngineConfigMySQLMaxAllowedPacket:             134217728,
+						EngineConfigMySQLMaxHeapTableSize:             67108864,
+						EngineConfigMySQLNetBufferLength:              32768,
+						EngineConfigMySQLNetReadTimeout:               90,
+						EngineConfigMySQLNetWriteTimeout:              90,
+						EngineConfigMySQLSortBufferSize:               1048576,
+						EngineConfigMySQLSQLMode:                      "STRICT_TRANS_TABLES,ANSI",
+						EngineConfigMySQLSQLRequirePrimaryKey:         true,
+						EngineConfigMySQLTmpTableSize:                 67108864,
+						EngineConfigMySQLWaitTimeout:                  43200,
 					},
 				),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resName, nil),
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 
 					resource.TestCheckResourceAttrSet(resName, "id"),
 
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_analyze_scale_factor", "0.5"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_analyze_threshold", "50"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_max_workers", "3"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_naptime", "100"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_vacuum_cost_delay", "20"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_vacuum_cost_limit", "200"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_vacuum_scale_factor", "0.2"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_vacuum_threshold", "100"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_bgwriter_delay", "1000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_bgwriter_flush_after", "512"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_bgwriter_lru_maxpages", "100"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_bgwriter_lru_multiplier", "2.5"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_deadlock_timeout", "1000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_default_toast_compression", "pglz"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_idle_in_transaction_session_timeout", "60000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_jit", "true"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_files_per_process", "1000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_locks_per_transaction", "64"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_logical_replication_workers", "4"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_parallel_workers", "8"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_parallel_workers_per_gather", "2"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_pred_locks_per_transaction", "128"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_replication_slots", "8"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_slot_wal_keep_size", "128"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_stack_depth", "2097152"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_standby_archive_delay", "60000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_standby_streaming_delay", "60000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_wal_senders", "20"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_worker_processes", "8"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_password_encryption", "md5"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_partman_bgw_interval", "3600"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_partman_bgw_role", "myrolename"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_stat_monitor_pgsm_enable_query_plan", "true"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_stat_monitor_pgsm_max_buckets", "5"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_stat_statements_track", "all"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_temp_file_limit", "100"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_timezone", "Europe/Helsinki"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_track_activity_query_size", "2048"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_track_commit_timestamp", "on"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_track_functions", "all"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_track_io_timing", "on"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_wal_sender_timeout", "60000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_wal_writer_delay", "200"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_stat_monitor_enable", "true"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pglookout_max_failover_replication_time_lag", "100000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_shared_buffers_percentage", "25.5"),
-					resource.TestCheckResourceAttr(resName, "engine_config_work_mem", "400"),
+					resource.TestCheckResourceAttr(resName, "engine_config_binlog_retention_period", "1200"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_connect_timeout", "30"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_default_time_zone", "+05:00"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_group_concat_max_len", "4096"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_information_schema_stats_expiry", "18000"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_change_buffer_max_size", "15"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_flush_neighbors", "1"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_ft_min_token_size", "8"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_ft_server_stopword_table", "db_name/innodb_ft_stopword_list"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_lock_wait_timeout", "300"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_log_buffer_size", "67108864"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_online_alter_log_max_size", "1342177280"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_read_io_threads", "6"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_rollback_on_timeout", "true"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_thread_concurrency", "20"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_write_io_threads", "10"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_interactive_timeout", "900"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_internal_tmp_mem_storage_engine", "MEMORY"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_max_allowed_packet", "134217728"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_max_heap_table_size", "67108864"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_net_buffer_length", "32768"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_net_read_timeout", "90"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_net_write_timeout", "90"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sort_buffer_size", "1048576"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_tmp_table_size", "67108864"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_wait_timeout", "43200"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sql_mode", "STRICT_TRANS_TABLES,ANSI"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sql_require_primary_key", "true"),
 				),
 			},
-			// Verify that ommitting or skipping these fields leaves previously set values unchanged
+			// Verify that omitting the nullable field EngineConfigMySQLInnoDBFTServerStopwordTable does not affect other engine config fields in the Terraform output
 			{
-				Config: tmpl.EngineConfigUpdate(
+				Config: tmpl.EngineConfigNullableField(
 					t,
 					tmpl.TemplateDataEngineConfig{
-						Label:    label,
-						Region:   testRegion,
-						EngineID: "postgresql/14",
-						Type:     "g6-nanode-1",
-
-						EngineConfigPGAutovacuumAnalyzeScaleFactor: 0.7,
+						Label:                             label,
+						Region:                            testRegion,
+						EngineID:                          testEngine,
+						Type:                              "g6-nanode-1",
+						EngineConfigBinlogRetentionPeriod: 1800,
 					},
 				),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resName, nil),
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 
 					resource.TestCheckResourceAttrSet(resName, "id"),
-					// Updated EngineConfigPGAutovacuumAnalyzeScaleFactor Field
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_analyze_scale_factor", "0.7"),
-					// Retained Fields
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_analyze_threshold", "50"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_max_workers", "3"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_naptime", "100"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_vacuum_cost_delay", "20"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_vacuum_cost_limit", "200"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_vacuum_scale_factor", "0.2"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_autovacuum_vacuum_threshold", "100"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_bgwriter_delay", "1000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_bgwriter_flush_after", "512"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_bgwriter_lru_maxpages", "100"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_bgwriter_lru_multiplier", "2.5"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_deadlock_timeout", "1000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_default_toast_compression", "pglz"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_idle_in_transaction_session_timeout", "60000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_jit", "true"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_files_per_process", "1000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_locks_per_transaction", "64"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_logical_replication_workers", "4"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_parallel_workers", "8"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_parallel_workers_per_gather", "2"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_pred_locks_per_transaction", "128"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_replication_slots", "8"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_slot_wal_keep_size", "128"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_stack_depth", "2097152"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_standby_archive_delay", "60000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_standby_streaming_delay", "60000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_wal_senders", "20"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_max_worker_processes", "8"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_password_encryption", "md5"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_partman_bgw_interval", "3600"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_partman_bgw_role", "myrolename"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_stat_monitor_pgsm_enable_query_plan", "true"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_stat_monitor_pgsm_max_buckets", "5"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_pg_stat_statements_track", "all"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_temp_file_limit", "100"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_timezone", "Europe/Helsinki"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_track_activity_query_size", "2048"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_track_commit_timestamp", "on"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_track_functions", "all"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_track_io_timing", "on"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_wal_sender_timeout", "60000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_wal_writer_delay", "200"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_stat_monitor_enable", "true"),
-					resource.TestCheckResourceAttr(resName, "engine_config_pglookout_max_failover_replication_time_lag", "100000"),
-					resource.TestCheckResourceAttr(resName, "engine_config_shared_buffers_percentage", "25.5"),
-					resource.TestCheckResourceAttr(resName, "engine_config_work_mem", "400"),
+					// Updated EngineConfigBinlogRetentionPeriod field assertion
+					resource.TestCheckResourceAttr(resName, "engine_config_binlog_retention_period", "1800"),
+					// Retained fields
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_connect_timeout", "30"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_default_time_zone", "+05:00"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_group_concat_max_len", "4096"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_information_schema_stats_expiry", "18000"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_change_buffer_max_size", "15"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_flush_neighbors", "1"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_ft_min_token_size", "8"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_lock_wait_timeout", "300"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_log_buffer_size", "67108864"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_online_alter_log_max_size", "1342177280"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_read_io_threads", "6"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_rollback_on_timeout", "true"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_thread_concurrency", "20"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_write_io_threads", "10"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_interactive_timeout", "900"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_internal_tmp_mem_storage_engine", "MEMORY"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_max_allowed_packet", "134217728"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_max_heap_table_size", "67108864"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_net_buffer_length", "32768"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_net_read_timeout", "90"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_net_write_timeout", "90"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sort_buffer_size", "1048576"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_tmp_table_size", "67108864"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_wait_timeout", "43200"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sql_mode", "STRICT_TRANS_TABLES,ANSI"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sql_require_primary_key", "true"),
+					// Nullable field EngineConfigMySQLInnoDBFTServerStopwordTable assertion
+					resource.TestCheckNoResourceAttr(resName, "engine_config_mysql_innodb_ft_server_stopword_table"),
 				),
 			},
 			{
@@ -958,21 +867,21 @@ func TestAccResource_engineConfig(t *testing.T) {
 	})
 }
 
-func TestAccResource_vpc(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_vpc(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_database_postgresql_v2.foobar"
+	resName := "linode_database_mysql_v2.foobar"
 	label := acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.VPC0(t, label, testRegion, testEngine, "g6-nanode-1"),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resName, nil),
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 
 					resource.TestCheckResourceAttrSet(resName, "id"),
 
@@ -990,7 +899,7 @@ func TestAccResource_vpc(t *testing.T) {
 			{
 				Config: tmpl.VPC1(t, label, testRegion, testEngine, "g6-nanode-1"),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckPostgresDatabaseExists(resName, nil),
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 
 					resource.TestCheckResourceAttrSet(resName, "id"),
 
@@ -1015,14 +924,14 @@ func TestAccResource_vpc(t *testing.T) {
 	})
 }
 
-func TestAccResource_noPendingUpdatesRegression(t *testing.T) {
+func TestAccResourceDatabaseMysqlV2_noPendingUpdatesRegression(t *testing.T) {
 	t.Parallel()
 
 	overriddenProvider := acceptance.NewFrameworkProviderWithClient(
 		acceptance.NewClientWithDatabasePendingUpdates(t),
 	)
 
-	resName := "linode_database_postgresql_v2.foobar"
+	resName := "linode_database_mysql_v2.foobar"
 	label := acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
@@ -1032,7 +941,7 @@ func TestAccResource_noPendingUpdatesRegression(t *testing.T) {
 				return acceptance.ProtoV6CustomProviderFactories["linode"](overriddenProvider, nil)
 			},
 		},
-		CheckDestroy: acceptance.CheckPostgreSQLDatabaseV2Destroy,
+		CheckDestroy: acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine, "g6-nanode-1"),
