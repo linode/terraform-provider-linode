@@ -17,12 +17,12 @@ Get information about all Linode LKE types with a certain label:
 data "linode_lke_types" "specific-label" {
   filter {
     name = "label"
-    values = "LKE Standard Availability"
+    values =["LKE Standard Availability"]
   }
 }
 
 output "type_id" {
-  value = data.linode_lke_types.specific-label.id
+  value = data.linode_lke_types.specific-label.types.*.id
 }
 ```
 
@@ -32,7 +32,7 @@ Get information about all Linode LKE types:
 data "linode_lke_types" "all-types" {}
 
 output "type_id" {
-  value = data.linode_lke_types.all-types.*.id
+  value = data.linode_lke_types.all-types.types.*.id
 }
 ```
 
@@ -56,7 +56,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-Each Linode LKE type will export the following attributes:
+Each LKE type will be stored in the `types` attribute and will export the following attributes:
 
 * `id` - The ID representing the Kubernetes type.
 
