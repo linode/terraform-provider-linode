@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"hash/crc32"
 	"io"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
