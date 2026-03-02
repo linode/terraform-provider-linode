@@ -65,6 +65,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "The dashboard URL of the cluster.",
+		Deprecated:  "LKE Dashboard has been deprecated. This value will be empty.",
 	},
 	"status": {
 		Type:        schema.TypeString,
