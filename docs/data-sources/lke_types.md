@@ -17,7 +17,7 @@ Get information about all Linode LKE types with a certain label:
 data "linode_lke_types" "specific-label" {
   filter {
     name = "label"
-    values =["LKE Standard Availability"]
+    values = ["LKE Standard Availability"]
   }
 }
 
