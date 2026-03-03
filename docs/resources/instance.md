@@ -200,8 +200,6 @@ The following arguments are supported:
 
 * `disk_encryption` - (Optional) The disk encryption policy for this instance. (`enabled`, `disabled`; default `enabled` in supported regions)
 
-  * **NOTE: Disk encryption may not currently be available to all users.**
-
 * `ipv4` - (Optional) A set of reserved IPv4 addresses to assign to this Linode on creation.
 
   * **NOTE: IP reservation is not currently available to all users.**
