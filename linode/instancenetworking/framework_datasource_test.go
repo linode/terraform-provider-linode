@@ -8,6 +8,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking/tmpl"
@@ -113,3 +116,39 @@ func TestAccDataSourceInstanceNetworking_basicwithReseved(t *testing.T) {
 }
 
 // TODO (Linode Interfaces): Add test for new interface_id field.
+
+func TestAccDataSourceInstanceNetworking_vpcDualStack(t *testing.T) {
+	t.Parallel()
+
+	instanceVPCIP := "10.0.0.5"
+	name := acctest.RandomWithPrefix("tf-test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataVPCDualStack(t, name, testRegion, "10.0.0.0/24", instanceVPCIP),
+				ConfigStateChecks: []statecheck.StateCheck{
+					// IPv4 VPC IPs are present
+					statecheck.ExpectKnownValue(testInstanceNetworkResName,
+						tfjsonpath.New("ipv4").AtSliceIndex(0).AtMapKey("vpc"),
+						knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(testInstanceNetworkResName,
+						tfjsonpath.New("ipv4").AtSliceIndex(0).AtMapKey("vpc").AtSliceIndex(0).AtMapKey("address"),
+						knownvalue.StringExact(instanceVPCIP)),
+					// IPv6 VPC IPs are present
+					statecheck.ExpectKnownValue(testInstanceNetworkResName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("vpc"),
+						knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(testInstanceNetworkResName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("vpc").AtSliceIndex(0).AtMapKey("ipv6_range"),
+						knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(testInstanceNetworkResName,
+						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("vpc").AtSliceIndex(0).AtMapKey("ipv6_addresses"),
+						knownvalue.NotNull()),
+				},
+			},
+		},
+	})
+}
