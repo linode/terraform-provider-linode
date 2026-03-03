@@ -61,7 +61,7 @@ func init() {
 
 		k8sVersion = k8sVersions[len(k8sVersions)-1]
 
-		region, err := acceptance.GetRandomRegionWithCaps([]string{"kubernetes"}, "core")
+		region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLKE}, "core")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -431,7 +431,7 @@ func TestAccResourceNodePoolEnterprise_basic(t *testing.T) {
 
 	enterpriseK8sVersion := versions[0].ID
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityKubernetesEnterprise}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -503,7 +503,7 @@ func TestAccResourceNodePoolEnterprise_withFirewall(t *testing.T) {
 
 	enterpriseK8sVersion := versions[0].ID
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityKubernetesEnterprise}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

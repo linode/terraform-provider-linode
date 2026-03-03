@@ -21,7 +21,7 @@ const testInstanceNetworkResName = "data.linode_instance_networking.test"
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs", "Linodes"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityVPCs, linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
