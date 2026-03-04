@@ -36,7 +36,7 @@ func init() {
 	})
 
 	region, err := acceptance.GetRandomRegionWithCaps([]string{
-		linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityDiskEncryption,
+		linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityDiskEncryption,
 	}, "core")
 	if err != nil {
 		log.Fatal(err)
@@ -3537,7 +3537,7 @@ func TestAccResourceInstance_withReservedIP(t *testing.T) {
 	rootPass := acctest.RandString(16)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
+		PreCheck:                 func() { acceptance.PreCheck(t); acceptance.OptInTest(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -3569,7 +3569,7 @@ func TestAccResourceInstance_deleteWithReservedIP(t *testing.T) {
 	ipResourceName := "linode_networking_ip.test"
 	rootPass := acctest.RandString(16)
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
+		PreCheck:                 func() { acceptance.PreCheck(t); acceptance.OptInTest(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
