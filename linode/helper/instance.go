@@ -517,7 +517,7 @@ func LinodeIsLockedWithCannotDeleteSubresources(
 ) (locked bool, err error) {
 	linode, err := client.GetInstance(ctx, linodeID)
 	if err != nil {
-		return
+		return locked, err
 	}
 
 	return slices.Contains(linode.Locks, linodego.LockTypeCannotDeleteWithSubresources), nil
