@@ -108,8 +108,14 @@ func (r *Resource) Create(
 	}
 
 	if data.WaitFor.ValueBool() {
-		// wait for the alert definition to be ready (not in progress)
-		alertdefinition, err = client.WaitForAlertDefinitionStatusReady(ctx, serviceType, alertdefinition.ID, int(DefaultAlertDefinitionTimeout.Seconds()))
+		// wait for the alert definition enabled
+		alertdefinition, err = client.WaitForAlertDefinitionStatus(
+			ctx,
+			linodego.AlertDefinitionStatusEnabled,
+			serviceType,
+			alertdefinition.ID,
+			int(DefaultAlertDefinitionTimeout.Seconds()),
+		)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error waiting for Monitor Service Alert Definition to be ready",
@@ -253,9 +259,10 @@ func (r *Resource) Update(
 		}
 
 		if plan.WaitFor.ValueBool() {
-			// wait for the alert definition to be ready (not in progress)
-			alertDefinition, err = client.WaitForAlertDefinitionStatusReady(
+			// wait for the alert definition enabled
+			alertDefinition, err = client.WaitForAlertDefinitionStatus(
 				ctx,
+				linodego.AlertDefinitionStatusEnabled,
 				alertDefinition.ServiceType,
 				alertDefinition.ID,
 				int(DefaultAlertDefinitionTimeout.Seconds()),
