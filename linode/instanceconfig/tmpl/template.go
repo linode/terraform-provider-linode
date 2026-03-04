@@ -8,6 +8,7 @@ import (
 
 type TemplateData struct {
 	Label    string
+	Type     string
 	Booted   bool
 	Swap     bool
 	Region   string
@@ -169,6 +170,30 @@ func VPCInterfaceIPv61(t testing.TB, label, region string, rootPass string) stri
 		t,
 		"instance_config_vpc_interface_ipv6_1", TemplateData{
 			Label:    label,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+}
+
+func DeviceBlockExt(t testing.TB, label, instanceType, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"instance_config_device_block_ext", TemplateData{
+			Label:    label,
+			Type:     instanceType,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+}
+
+func DeviceNamedBlockExt(t testing.TB, label, instanceType, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"instance_config_device_named_block_ext", TemplateData{
+			Label:    label,
+			Type:     instanceType,
 			Region:   region,
 			RootPass: rootPass,
 		},

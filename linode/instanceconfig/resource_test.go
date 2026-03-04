@@ -851,6 +851,59 @@ func TestAccResourceInstanceConfig_vpcInterfaceIPv6(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstanceConfig_deviceBlockExt(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance_config.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	instanceType := "g6-standard-6"
+	rootPass := acctest.RandString(64)
+
+	devicesCheck := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
+		resource.TestCheckResourceAttrSet(resName, "devices.0.sdb.0.disk_id"),
+		resource.TestCheckResourceAttrSet(resName, "devices.0.sdk.0.volume_id"),
+
+		resource.TestCheckResourceAttrSet(resName, "device.0.disk_id"),
+		resource.TestCheckResourceAttrSet(resName, "device.1.disk_id"),
+		resource.TestCheckResourceAttrSet(resName, "device.2.volume_id"),
+
+		resource.TestCheckResourceAttr(resName, "device.0.device_name", "sda"),
+		resource.TestCheckResourceAttr(resName, "device.1.device_name", "sdb"),
+		resource.TestCheckResourceAttr(resName, "device.2.device_name", "sdk"),
+	)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DeviceBlockExt(t, instanceName, instanceType, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", "my-config"),
+					devicesCheck,
+				),
+			},
+			{
+				Config: tmpl.DeviceNamedBlockExt(t, instanceName, instanceType, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", "my-config"),
+					devicesCheck,
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
 func checkExists(name string, config *linodego.InstanceConfig) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
