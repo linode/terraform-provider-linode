@@ -1,8 +1,8 @@
-//go:build integration || monitoralertdefinitions
-
 package monitoralertdefinitions_test
 
 import (
+	"context"
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -14,29 +14,31 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/monitoralertdefinitions/tmpl"
 )
 
+var channelID int
+
+func init() {
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		fmt.Errorf("Error getting client: %s", err)
+	}
+
+	channels, err := client.ListAlertChannels(context.Background(), nil)
+	if err != nil {
+		fmt.Errorf("error listing alert channels: %s", err)
+	}
+
+	if len(channels) < 1 {
+		fmt.Errorf("at least one alert channel is required for alert definition tests")
+	}
+
+	channelID = channels[0].ID
+}
+
 func TestAccDataSourceAlertDefinitions_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "data.linode_monitor_alert_definitions.foobar"
 	alertLabel := acctest.RandomWithPrefix("tf-test")
-
-	// TODO: revert to use alert channels from API once it's available
-	//client, err := acceptance.GetTestClient()
-	//if err != nil {
-	//	fmt.Errorf("Error getting client: %s", err)
-	//}
-	//
-	//channels, err := client.ListAlertChannels(context.Background(), nil)
-	//if err != nil {
-	//	fmt.Errorf("error listing alert channels: %s", err)
-	//}
-	//
-	//if len(channels) < 1 {
-	//	t.Skipf("Skipping test: At least one alert channel is required for alert definition tests")
-	//}
-	//
-	//channelID := channels[0].ID
-	channelID := 10000
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -98,9 +100,6 @@ func TestAccDataSourceAlertDefinitions_filter(t *testing.T) {
 
 	resName := "data.linode_monitor_alert_definitions.foobar"
 	alertLabel := acctest.RandomWithPrefix("tf-test")
-
-	// TODO: revert to use alert channels from API once it's available
-	channelID := 10000
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

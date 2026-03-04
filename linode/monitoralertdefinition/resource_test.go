@@ -1,5 +1,3 @@
-//go:build integration || monitoralertdefinition
-
 package monitoralertdefinition_test
 
 import (
@@ -27,23 +25,21 @@ func init() {
 		Name: "linode_monitor_alert_definition",
 		F:    sweep,
 	})
-	// TODO: revert to use alert channels from API once it's available
-	//client, err := acceptance.GetTestClient()
-	//if err != nil {
-	//	fmt.Errorf("Error getting client: %s", err)
-	//}
-	//
-	//channels, err := client.ListAlertChannels(context.Background(), nil)
-	//if err != nil {
-	//	fmt.Errorf("error listing alert channels: %s", err)
-	//}
-	//if len(channels) < 1 {
-	//	fmt.Errorf("at least one alert channel is required for alert definition tests")
-	//}
-	//
-	//channelID = channels[0].ID
 
-	channelID = 10000
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		fmt.Errorf("Error getting client: %s", err)
+	}
+
+	channels, err := client.ListAlertChannels(context.Background(), nil)
+	if err != nil {
+		fmt.Errorf("error listing alert channels: %s", err)
+	}
+	if len(channels) < 1 {
+		fmt.Errorf("at least one alert channel is required for alert definition tests")
+	}
+
+	channelID = channels[0].ID
 }
 
 func sweep(prefix string) error {
