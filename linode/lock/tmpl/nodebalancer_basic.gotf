@@ -1,0 +1,14 @@
+{{ define "lock_nodebalancer_basic" }}
+
+resource "linode_nodebalancer" "test" {
+    label = "{{ .Label }}"
+    region = "{{ .Region }}"
+}
+
+resource "linode_lock" "test" {
+    entity_id = linode_nodebalancer.test.id
+    entity_type = "nodebalancer"
+    lock_type = "{{ .LockType }}"
+}
+
+{{ end }}
