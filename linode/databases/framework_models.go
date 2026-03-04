@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -20,23 +21,28 @@ type ModelPrivateNetwork struct {
 
 // DatabaseModel represents a single Database object.
 type DatabaseModel struct {
-	ID             types.Int64    `tfsdk:"id"`
-	AllowList      []types.String `tfsdk:"allow_list"`
-	ClusterSize    types.Int64    `tfsdk:"cluster_size"`
-	Created        types.String   `tfsdk:"created"`
-	Encrypted      types.Bool     `tfsdk:"encrypted"`
-	Engine         types.String   `tfsdk:"engine"`
-	HostPrimary    types.String   `tfsdk:"host_primary"`
-	HostSecondary  types.String   `tfsdk:"host_secondary"`
-	HostStandby    types.String   `tfsdk:"host_standby"`
-	InstanceURI    types.String   `tfsdk:"instance_uri"`
-	Label          types.String   `tfsdk:"label"`
-	PrivateNetwork types.Object   `tfsdk:"private_network"`
-	Region         types.String   `tfsdk:"region"`
-	Status         types.String   `tfsdk:"status"`
-	Type           types.String   `tfsdk:"type"`
-	Updated        types.String   `tfsdk:"updated"`
-	Version        types.String   `tfsdk:"version"`
+	ID                types.Int64       `tfsdk:"id"`
+	AllowList         []types.String    `tfsdk:"allow_list"`
+	ClusterSize       types.Int64       `tfsdk:"cluster_size"`
+	Created           types.String      `tfsdk:"created"`
+	Encrypted         types.Bool        `tfsdk:"encrypted"`
+	Engine            types.String      `tfsdk:"engine"`
+	HostPrimary       types.String      `tfsdk:"host_primary"`
+	HostSecondary     types.String      `tfsdk:"host_secondary"`
+	HostStandby       types.String      `tfsdk:"host_standby"`
+	InstanceURI       types.String      `tfsdk:"instance_uri"`
+	Label             types.String      `tfsdk:"label"`
+	PrivateNetwork    types.Object      `tfsdk:"private_network"`
+	Region            types.String      `tfsdk:"region"`
+	Status            types.String      `tfsdk:"status"`
+	Type              types.String      `tfsdk:"type"`
+	Updated           types.String      `tfsdk:"updated"`
+	Version           types.String      `tfsdk:"version"`
+	OldestRestoreTime timetypes.RFC3339 `tfsdk:"oldest_restore_time"`
+
+	// Fork-specific fields
+	ForkSource      types.Int64       `tfsdk:"fork_source"`
+	ForkRestoreTime timetypes.RFC3339 `tfsdk:"fork_restore_time"`
 }
 
 // DatabaseFilterModel describes the Terraform resource data model to match the
@@ -71,6 +77,20 @@ func (model *DatabaseFilterModel) parseDatabases(
 		m.Type = types.StringValue(db.Type)
 		m.Version = types.StringValue(db.Version)
 
+		if db.Fork != nil {
+			m.ForkSource = types.Int64Value(int64(db.Fork.Source))
+			m.ForkRestoreTime = timetypes.NewRFC3339TimePointerValue(db.Fork.RestoreTime)
+		} else {
+			m.ForkSource = types.Int64Null()
+			m.ForkRestoreTime = timetypes.NewRFC3339Null()
+		}
+
+		if db.OldestRestoreTime != nil {
+			m.OldestRestoreTime = timetypes.NewRFC3339TimePointerValue(db.OldestRestoreTime)
+		} else {
+			m.OldestRestoreTime = timetypes.NewRFC3339Null()
+		}
+
 		if db.Created != nil {
 			m.Created = types.StringValue(db.Created.Format(time.RFC3339))
 		} else {
@@ -87,6 +107,8 @@ func (model *DatabaseFilterModel) parseDatabases(
 			privateNetworkObject, rd := databaseshared.FlattenPrivateNetwork(ctx, *db.PrivateNetwork)
 			d.Append(rd...)
 			m.PrivateNetwork = privateNetworkObject
+		} else {
+			m.PrivateNetwork = types.ObjectNull(databaseshared.ObjectTypePrivateNetwork.AttrTypes)
 		}
 
 		return m
