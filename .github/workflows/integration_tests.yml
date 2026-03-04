@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload Test Report as Artifact
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: test-report-${{ matrix.user }}
           if-no-files-found: ignore
@@ -182,7 +182,7 @@ jobs:
         run: pip3 install requests wheel boto3==1.35.99
 
       - name: Download test report
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
 
       - name: Get .xml reports from separate Artifacts into root folder
         run: rsync -av test-report-USER_*/* .
