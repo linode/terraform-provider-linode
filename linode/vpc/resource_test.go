@@ -139,8 +139,13 @@ func TestAccResourceVPC_dualStack(t *testing.T) {
 	resName := "linode_vpc.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
-	// TODO (VPC Dual Stack): Remove region hardcoding
-	targetRegion := "no-osl-1"
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+		linodego.CapabilityVPCs,
+		linodego.CapabilityVPCDualStack,
+	}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

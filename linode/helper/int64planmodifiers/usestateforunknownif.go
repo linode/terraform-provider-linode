@@ -7,16 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 )
 
-// UseStateForUnknownIfNotNull is a convenience wrapper to only use the state value
-// in place of unknown values in plans if its value is not null.
-func UseStateForUnknownIfNotNull() planmodifier.Int64 {
-	return UseStateForUnknownIf(
-		func(ctx context.Context, request planmodifier.Int64Request, resp *UseStateForUnknownIfFuncResponse) {
-			resp.UseState = !request.StateValue.IsNull()
-		},
-	)
-}
-
 type UseStateForUnknownIfFunc func(context.Context, planmodifier.Int64Request, *UseStateForUnknownIfFuncResponse)
 
 type UseStateForUnknownIfFuncResponse struct {

@@ -68,7 +68,7 @@ func initOptInTests() {
 		return
 	}
 
-	for _, testName := range strings.Split(optInTestsValue, ",") {
+	for testName := range strings.SplitSeq(optInTestsValue, ",") {
 		optInTests[testName] = struct{}{}
 	}
 }
@@ -308,7 +308,7 @@ func CheckResourceAttrListContains(resName, path, desiredValue string) resource.
 			return fmt.Errorf("attribute %s does not exist", path)
 		}
 
-		for i := 0; i < length; i++ {
+		for i := range length {
 			if rs.Primary.Attributes[path+"."+strconv.Itoa(i)] == desiredValue {
 				return nil
 			}
@@ -330,7 +330,7 @@ func LoopThroughStringList(resName, path string, listValidateFunc ListAttrValida
 			return fmt.Errorf("attribute %s does not exist", path)
 		}
 
-		for i := 0; i < length; i++ {
+		for i := range length {
 			err := listValidateFunc(resName, path+"."+strconv.Itoa(i), s)
 			if err != nil {
 				return fmt.Errorf("Value not found:%s", err)
@@ -354,7 +354,7 @@ func CheckListContains(resName, path, value string) resource.TestCheckFunc {
 			return fmt.Errorf("attribute %s does not exist", path)
 		}
 
-		for i := 0; i < length; i++ {
+		for i := range length {
 			foundValue, ok := rs.Primary.Attributes[path+"."+strconv.Itoa(i)]
 			if !ok {
 				return fmt.Errorf("index %d does not exist in attributes", i)
@@ -546,7 +546,7 @@ func AnyOfTestCheckFunc(funcs ...resource.TestCheckFunc) resource.TestCheckFunc 
 	}
 }
 
-func ExecuteTemplate(t testing.TB, templateName string, data interface{}) string {
+func ExecuteTemplate(t testing.TB, templateName string, data any) string {
 	t.Helper()
 
 	var b bytes.Buffer
@@ -566,7 +566,7 @@ func CreateTempFile(t testing.TB, name, content string) *os.File {
 	}
 
 	t.Cleanup(func() {
-		if err := os.Remove(file.Name()); err != nil {
+		if err := os.Remove(file.Name()); err != nil { //#nosec G703
 			t.Fatalf("failed to remove test file: %s", err)
 		}
 	})
@@ -591,7 +591,7 @@ type ProviderMetaModifier func(ctx context.Context, data *schema.ResourceData, c
 func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier) *schema.Provider {
 	oldConfigure := provider.ConfigureContextFunc
 
-	provider.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	provider.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (any, diag.Diagnostics) {
 		config, err := oldConfigure(ctx, data)
 		if err != nil {
 			return nil, err
@@ -665,6 +665,14 @@ func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
 	return nil, errors.New("failed to get an object storage endpoint")
 }
 
+// accountAvailabilityCaps are capabilities that must be verified both at the region level and at the account availability level.
+var accountAvailabilityCaps = map[string]bool{
+	"Linodes":       true,
+	"NodeBalancers": true,
+	"Block Storage": true,
+	"Kubernetes":    true,
+}
+
 // GetRegionsWithCaps returns a list of region IDs that support the given capabilities
 // Parameters:
 // - capabilities: Required capabilities that the regions must support.
@@ -679,6 +687,31 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 	regions, err := client.ListRegions(context.Background(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	// Fetch per-region account availabilities. On failure, log a warning and proceed without account-level filtering.
+	accountAvail := make(map[string]map[string]bool)
+	acctAvailabilities, err := client.ListAccountAvailabilities(context.Background(), nil)
+	if err != nil {
+		log.Printf("[WARN] Failed to retrieve account availabilities for regions. "+
+			"Assuming required capabilities are available in all regions for this account. "+
+			"Tests may fail if the account lacks access to necessary capabilities in the selected region. err=%v", err)
+	} else {
+		for _, aa := range acctAvailabilities {
+			avail := make(map[string]bool, len(aa.Available))
+			for _, a := range aa.Available {
+				avail[a] = true
+			}
+			accountAvail[aa.Region] = avail
+		}
+	}
+
+	// Determine which of the requested capabilities also require account-level checks.
+	var requiredAccountCaps []string
+	for _, c := range capabilities {
+		if accountAvailabilityCaps[c] {
+			requiredAccountCaps = append(requiredAccountCaps, c)
+		}
 	}
 
 	// Filter on capabilities and site type
@@ -701,6 +734,21 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 			}
 		}
 
+		// If account availability data was fetched, verify account-level caps too.
+		// If we have no data at all (fetch failed), skip this check.
+		if len(accountAvail) > 0 && len(requiredAccountCaps) > 0 {
+			regionAvail, ok := accountAvail[region.ID]
+			if !ok {
+				// Region not present in account availabilities → not available.
+				return true
+			}
+			for _, c := range requiredAccountCaps {
+				if !regionAvail[c] {
+					return true
+				}
+			}
+		}
+
 		return false
 	})
 
@@ -715,13 +763,9 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 		return false
 	})
 
-	result := make([]string, len(filteredRegions))
-
-	for i, r := range filteredRegions {
-		result[i] = r.ID
-	}
-
-	return result, nil
+	return helper.MapSlice(filteredRegions, func(r linodego.Region) string {
+		return r.ID
+	}), nil
 }
 
 // GetRandomRegionWithCaps gets a random region given a list of region capabilities.
@@ -766,10 +810,7 @@ func GetTestClient() (*linodego.Client, error) {
 		return nil, fmt.Errorf("LINODE_TOKEN must be set for acceptance tests")
 	}
 
-	apiVersion := os.Getenv("LINODE_API_VERSION")
-	if apiVersion == "" {
-		apiVersion = "v4beta"
-	}
+	apiVersion := cmp.Or(os.Getenv("LINODE_API_VERSION"), "v4beta")
 
 	config := &helper.Config{
 		AccessToken: token,
@@ -791,10 +832,7 @@ func GetTestClientAlternateToken(tokenName string) (*linodego.Client, error) {
 		return nil, fmt.Errorf("%s must be set for acceptance tests", tokenName)
 	}
 
-	apiVersion := os.Getenv("LINODE_API_VERSION")
-	if apiVersion == "" {
-		apiVersion = "v4beta"
-	}
+	apiVersion := cmp.Or(os.Getenv("LINODE_API_VERSION"), "v4beta")
 
 	config := &helper.Config{
 		AccessToken: token,

@@ -3,6 +3,7 @@
 package vpcsubnet_test
 
 import (
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/vpcsubnet/tmpl"
 )
@@ -37,6 +39,8 @@ func TestAccDataSourceVPCSubnet_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "linodes.0.interfaces.#", "1"),
 					resource.TestCheckResourceAttrSet(resourceName, "linodes.0.interfaces.0.id"),
 					resource.TestCheckResourceAttr(resourceName, "linodes.0.interfaces.0.active", "false"),
+
+					resource.TestCheckResourceAttr(resourceName, "databases.#", "0"),
 				),
 			},
 		},
@@ -49,8 +53,13 @@ func TestAccDataSourceVPCSubnet_dualStack(t *testing.T) {
 	resourceName := "data.linode_vpc_subnet.foo"
 	subnetLabel := acctest.RandomWithPrefix("tf-test")
 
-	// TODO (VPC Dual Stack): Remove region hardcoding
-	targetRegion := "no-osl-1"
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+		linodego.CapabilityVPCs,
+		linodego.CapabilityVPCDualStack,
+	}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

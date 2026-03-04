@@ -75,7 +75,7 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `tags` - A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
-* `maintenance_policy` - The maintenance policy of this Linode instance. (**Note: v4beta only.**)
+* `maintenance_policy` - The maintenance policy of this Linode instance.
 
 * `capabilities` - A list of capabilities of this Linode instance.
 
@@ -114,8 +114,6 @@ Each Linode instance will be stored in the `instances` attribute and will export
 * `interface_generation` - The interface type for this Instance. (`linode`, `legacy_config`)
 
 * `disk_encryption` - The disk encryption policy for this instance.
-
-  * **NOTE: Disk encryption may not currently be available to all users.**
 
 * `lke_cluster_id` - If applicable, the ID of the LKE cluster this instance is a part of.
 

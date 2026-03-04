@@ -25,7 +25,7 @@ import (
 var testRegion string
 
 func init() {
-	r, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"}, "core")
+	r, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
@@ -51,6 +51,7 @@ func TestAccResourceVPCSubnet_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
+					resource.TestCheckResourceAttr(resName, "databases.#", "0"),
 				),
 			},
 			{
@@ -109,8 +110,13 @@ func TestAccResourceVPCSubnet_dualStack(t *testing.T) {
 	resName := "linode_vpc_subnet.foobar"
 	subnetLabel := acctest.RandomWithPrefix("tf-test")
 
-	// TODO (VPC Dual Stack): Remove region hardcoding
-	targetRegion := "no-osl-1"
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+		linodego.CapabilityVPCs,
+		linodego.CapabilityVPCDualStack,
+	}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

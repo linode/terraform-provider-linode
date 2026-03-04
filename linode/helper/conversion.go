@@ -12,43 +12,27 @@ import (
 )
 
 func TypedSliceToAny[T any](obj []T) []any {
-	result := make([]any, len(obj))
-
-	for i, v := range obj {
-		result[i] = v
-	}
-
-	return result
+	return MapSlice(obj, func(v T) any {
+		return v
+	})
 }
 
 func AnySliceToTyped[T any](obj []any) []T {
-	result := make([]T, len(obj))
-
-	for i, v := range obj {
-		result[i] = v.(T)
-	}
-
-	return result
+	return MapSlice(obj, func(v any) T {
+		return v.(T)
+	})
 }
 
 func StringTypedMapToAny[T any](m map[string]T) map[string]any {
-	result := make(map[string]any, len(m))
-
-	for k, v := range m {
-		result[k] = v
-	}
-
-	return result
+	return MapMap(m, func(k string, v T) (string, any) {
+		return k, v
+	})
 }
 
 func StringAnyMapToTyped[T any](m map[string]any) map[string]T {
-	result := make(map[string]T, len(m))
-
-	for k, v := range m {
-		result[k] = v.(T)
-	}
-
-	return result
+	return MapMap(m, func(k string, v any) (string, T) {
+		return k, v.(T)
+	})
 }
 
 func StringAliasSliceToStringSlice[T ~string](obj []T) []string {

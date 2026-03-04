@@ -18,10 +18,11 @@ import (
 	"github.com/linode/linodego"
 )
 
-func GetRegionOrCluster(d *schema.ResourceData) (regionOrCluster string) {
+func GetRegionOrCluster(ctx context.Context, d *schema.ResourceData) (regionOrCluster string) {
 	if region, ok := d.GetOk("region"); ok && region != "" {
 		regionOrCluster = region.(string)
 	} else {
+		tflog.Warn(ctx, "Cluster is deprecated for Linode Object Storage services, please consider switch to using region.")
 		regionOrCluster = d.Get("cluster").(string)
 	}
 	return regionOrCluster
@@ -62,7 +63,7 @@ func S3Connection(ctx context.Context, endpoint, accessKey, secretKey string) (*
 func S3ConnectionFromData(
 	ctx context.Context,
 	d *schema.ResourceData,
-	meta interface{},
+	meta any,
 	accessKey, secretKey string,
 ) (*s3.Client, error) {
 	tflog.Debug(ctx, "Creating Object Storage client from resource data")
@@ -77,9 +78,9 @@ func S3ConnectionFromData(
 	return S3Connection(ctx, endpoint, accessKey, secretKey)
 }
 
-func ComputeS3Endpoint(ctx context.Context, d *schema.ResourceData, meta interface{}) (string, error) {
+func ComputeS3Endpoint(ctx context.Context, d *schema.ResourceData, meta any) (string, error) {
 	tflog.Debug(ctx, "Getting Object Storage bucket from resource data")
-	regionOrCluster := GetRegionOrCluster(d)
+	regionOrCluster := GetRegionOrCluster(ctx, d)
 	bucketLabel := d.Get("label").(string)
 
 	b, err := meta.(*ProviderMeta).Client.GetObjectStorageBucket(ctx, regionOrCluster, bucketLabel)

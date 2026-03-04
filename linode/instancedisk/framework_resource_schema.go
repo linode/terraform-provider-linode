@@ -83,8 +83,10 @@ var frameworkResourceSchema = schema.Schema{
 		"image": schema.StringAttribute{
 			Description: "An Image ID to deploy the Linode Disk from.",
 			Optional:    true,
+			Computed:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"root_pass": schema.StringAttribute{
@@ -146,9 +148,8 @@ var frameworkResourceSchema = schema.Schema{
 			Computed:    true,
 		},
 		"disk_encryption": schema.StringAttribute{
-			Description: "The disk encryption policy for this disk's parent Linode. " +
-				"NOTE: Disk encryption may not currently be available to all users.",
-			Computed: true,
+			Description: "The disk encryption policy for this disk's parent Linode.",
+			Computed:    true,
 		},
 	},
 }
