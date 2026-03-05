@@ -128,10 +128,9 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 	},
 	"disk_encryption": {
-		Type: schema.TypeString,
-		Description: "The disk encryption policy for this Instance." +
-			"NOTE: Disk encryption may not currently be available to all users.",
-		Computed: true,
+		Type:        schema.TypeString,
+		Description: "The disk encryption policy for this Instance.",
+		Computed:    true,
 	},
 	"lke_cluster_id": {
 		Type:        schema.TypeInt,

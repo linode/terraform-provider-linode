@@ -464,7 +464,6 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "The password that will be initially assigned to the 'root' user account.",
 		Sensitive:   true,
 		Optional:    true,
-		ForceNew:    true,
 		StateFunc:   rootPasswordState,
 		ValidateFunc: validation.StringLenBetween(
 			helper.RootPassMinimumCharacters,
@@ -589,11 +588,10 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 	},
 	"disk_encryption": {
-		Type: schema.TypeString,
-		Description: "The disk encryption policy for this Instance. " +
-			"NOTE: Disk encryption may not currently be available to all users.",
-		Optional: true,
-		ForceNew: true,
+		Type:        schema.TypeString,
+		Description: "The disk encryption policy for this Instance.",
+		Optional:    true,
+		ForceNew:    true,
 		ValidateDiagFunc: validation.ToDiagFunc(
 			validation.StringInSlice([]string{"enabled", "disabled"}, false),
 		),

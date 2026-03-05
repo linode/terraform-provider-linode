@@ -3,6 +3,7 @@
 package instance_test
 
 import (
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -249,9 +250,14 @@ func TestAccDataSourceInstance_interfaceVPCIPv6(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	// TODO (VPC Dual Stack): Remove region hardcoding
-	targetRegion := "no-osl-1"
-
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+		linodego.CapabilityLinodes,
+		linodego.CapabilityVPCs,
+		linodego.CapabilityVPCDualStack,
+	}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
 	ipv6Path := tfjsonpath.New("instances").
 		AtSliceIndex(0).
 		AtMapKey("config").

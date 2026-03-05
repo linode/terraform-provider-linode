@@ -190,6 +190,10 @@ func (fp *FrameworkProvider) HandleDefaults(
 		lpm.SkipInstanceDeletePoll = types.BoolValue(false)
 	}
 
+	if lpm.SkipLKEClusterDeletePoll.IsNull() {
+		lpm.SkipLKEClusterDeletePoll = types.BoolValue(false)
+	}
+
 	if lpm.SkipImplicitReboots.IsNull() {
 		lpm.SkipImplicitReboots = types.BoolValue(false)
 	}
