@@ -75,6 +75,12 @@ In addition to all arguments above, the following attributes are exported:
 
   * `disk_encryption` - The disk encryption policy for nodes in this pool.
 
+  * `isolation` - Network isolation settings for the node pool.
+
+    * `public_ipv4` - Whether nodes have public IPv4 addresses.
+
+    * `public_ipv6` - Whether nodes have public IPv6 addresses.
+
   * `tags` - An array of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
   * `tier` - The desired Kubernetes tier. **NOTE: This field may not be available to all users and is only populated when api_version is set to `v4beta`.**

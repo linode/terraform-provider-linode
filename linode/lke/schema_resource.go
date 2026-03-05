@@ -232,7 +232,35 @@ var resourceSchema = map[string]*schema.Schema{
 				"disk_encryption": {
 					Type:        schema.TypeString,
 					Description: "The disk encryption policy for the nodes in this pool.",
+					Optional:    true,
 					Computed:    true,
+					ForceNew:    true,
+					ValidateFunc: validation.StringInSlice([]string{
+						"enabled", "disabled",
+					}, false),
+				},
+				"isolation": {
+					Type:     schema.TypeList,
+					MaxItems: 1,
+					Optional: true,
+					Computed: true,
+					Description: "Isolation configuration for the node pool.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"public_ipv4": {
+								Type:        schema.TypeBool,
+								Optional:    true,
+								Computed:    true,
+								Description: "Whether public IPv4 is enabled for nodes in this pool.",
+							},
+							"public_ipv6": {
+								Type:        schema.TypeBool,
+								Optional:    true,
+								Computed:    true,
+								Description: "Whether public IPv6 is enabled for nodes in this pool.",
+							},
+						},
+					},
 				},
 				"nodes": {
 					Type: schema.TypeList,
