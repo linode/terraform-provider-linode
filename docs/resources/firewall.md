@@ -124,6 +124,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `status` - The status of the Firewall.
 
+* `version` - The version number of the Firewall's rule configuration. This is incremented each time the Firewall's rules are changed.
+
 * [`devices`](#devices) - The devices governed by the Firewall.
 
 ### devices

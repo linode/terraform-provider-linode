@@ -53,6 +53,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `status` - The status of the firewall. (`enabled`, `disabled`, `deleted`)
 
+* `version` - The version number of the Firewall's rule configuration. This is incremented each time the Firewall's rules are changed.
+
 * `created` - When this firewall was created.
 
 * `updated` - When this firewall was last updated.
