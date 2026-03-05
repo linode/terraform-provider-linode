@@ -1,7 +1,6 @@
 package firewall
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-nettypes/cidrtypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -64,17 +63,17 @@ var ruleNestedObject = schema.NestedBlockObject{
 			},
 		},
 		"ipv4": schema.ListAttribute{
-			Description: "A list of CIDR blocks or 0.0.0.0/0 (to allow all) this rule applies to.",
+			Description: "A list of IPv4 addresses or CIDRs, or prefix list tokens (e.g. pl::subnets:123) this rule applies to.",
 			Optional:    true,
-			ElementType: cidrtypes.IPv4PrefixType{},
+			ElementType: types.StringType,
 			Validators: []validator.List{
 				listvalidator.SizeAtLeast(1),
 			},
 		},
 		"ipv6": schema.ListAttribute{
-			Description: "A list of IPv6 addresses or networks this rule applies to.",
+			Description: "A list of IPv6 addresses or networks, or prefix list tokens (e.g. pl::subnets:123) this rule applies to.",
 			Optional:    true,
-			ElementType: cidrtypes.IPv6PrefixType{},
+			ElementType: types.StringType,
 			Validators: []validator.List{
 				listvalidator.SizeAtLeast(1),
 			},
@@ -94,6 +93,18 @@ var frameworkResourceSchema = schema.Schema{
 		},
 	},
 	Attributes: map[string]schema.Attribute{
+		"inbound_ruleset": schema.ListAttribute{
+			Description: "A list of Firewall Rule Set IDs to reference as inbound rules. " +
+				"Ruleset references are prepended before any inline inbound rules.",
+			Optional:    true,
+			ElementType: types.Int64Type,
+		},
+		"outbound_ruleset": schema.ListAttribute{
+			Description: "A list of Firewall Rule Set IDs to reference as outbound rules. " +
+				"Ruleset references are prepended before any inline outbound rules.",
+			Optional:    true,
+			ElementType: types.Int64Type,
+		},
 		"id": schema.StringAttribute{
 			Description: "The unique ID of this Object Storage key.",
 			Computed:    true,

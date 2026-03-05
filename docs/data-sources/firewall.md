@@ -35,9 +35,13 @@ In addition to all arguments above, the following attributes are exported:
 
 * [`inbound`](#inbound-and-outbound) - A firewall rule that specifies what inbound network traffic is allowed.
 
+* `inbound_ruleset` - A list of Firewall Rule Set IDs referenced as inbound rules.
+
 * `inbound_policy` - The default behavior for inbound traffic. (`ACCEPT`, `DROP`)
 
 * [`outbound`](#inbound-and-outbound) - A firewall rule that specifies what outbound network traffic is allowed.
+
+* `outbound_ruleset` - A list of Firewall Rule Set IDs referenced as outbound rules.
 
 * `outbound_policy` - The default behavior for outbound traffic. (`ACCEPT`, `DROP`)
 
@@ -67,9 +71,9 @@ The following arguments are supported in the inbound and outbound rule blocks:
 
 * `ports` - A string representation of ports and/or port ranges (i.e. "443" or "80-90, 91").
 
-* `ipv4` - A list of IPv4 addresses or networks. Must be in IP/mask format.
+* `ipv4` - A list of IPv4 addresses or networks in CIDR format, or prefix list tokens.
 
-* `ipv6` - A list of IPv6 addresses or networks. Must be in IP/mask format.
+* `ipv6` - A list of IPv6 addresses or networks in CIDR format, or prefix list tokens.
 
 ### devices
 
