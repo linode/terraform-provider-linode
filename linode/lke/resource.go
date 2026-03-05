@@ -139,6 +139,22 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	d.Set("vpc_id", cluster.VpcID)
 	d.Set("stack_type", cluster.StackType)
 
+	// Neither POST nor GET /lke/clusters/{id} returns ruleset_ids.
+	// For enterprise clusters, discover them via GET /networking/firewalls/rulesets
+	// matching the lke{id}-inbound / lke{id}-outbound label convention.
+	if cluster.Tier == TierEnterprise {
+		rulesetIDs, rsDiags := discoverClusterRulesets(ctx, client, id)
+		if rsDiags.HasError() {
+			return rsDiags
+		}
+		if rulesetIDs != nil {
+			d.Set("ruleset_ids", []map[string]any{{
+				"inbound":  rulesetIDs.Inbound,
+				"outbound": rulesetIDs.Outbound,
+			}})
+		}
+	}
+
 	matchedPools, err := matchPoolsWithSchema(ctx, pools, declaredPools)
 	if err != nil {
 		return diag.Errorf("failed to match api pools with schema: %s", err)
@@ -251,6 +267,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 	d.SetId(strconv.Itoa(cluster.ID))
 
+	// ruleset_ids are discovered by readResource via ListFirewallRuleSets.
+
 	// Currently the enterprise cluster kube config takes long time to generate.
 	// Wait for it to be ready before start waiting for nodes and allow a longer timeout for retrying
 	// to avoid context exceeded or canceled before getting a meaningful result.
@@ -266,27 +284,34 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	ctx = tflog.SetField(ctx, "cluster_id", cluster.ID)
-	tflog.Debug(ctx, "Waiting for a single LKE cluster node to be ready")
 
-	// Sometimes the K8S API will raise an EOF error if polling immediately after
-	// a cluster is created. We should retry accordingly.
-	// NOTE: This routine has a short retry period because we want to raise
-	// and meaningful errors quickly.
-	diag.FromErr(retry.RetryContext(ctx, retryContextTimeout, func() *retry.RetryError {
-		tflog.Debug(ctx, "client.WaitForLKEClusterCondition(...)", map[string]any{
-			"condition": "ClusterHasReadyNode",
-		})
+	// Only wait for ready nodes when pools were requested.
+	// Enterprise tier clusters can be created with zero pools.
+	if len(createOpts.NodePools) > 0 {
+		tflog.Debug(ctx, "Waiting for a single LKE cluster node to be ready")
 
-		err := client.WaitForLKEClusterConditions(ctx, cluster.ID, linodego.LKEClusterPollOptions{
-			TimeoutSeconds: 15 * 60,
-		}, k8scondition.ClusterHasReadyNode)
-		if err != nil {
-			tflog.Debug(ctx, err.Error())
-			return retry.RetryableError(err)
-		}
+		// Sometimes the K8S API will raise an EOF error if polling immediately after
+		// a cluster is created. We should retry accordingly.
+		// NOTE: This routine has a short retry period because we want to raise
+		// and meaningful errors quickly.
+		diag.FromErr(retry.RetryContext(ctx, retryContextTimeout, func() *retry.RetryError {
+			tflog.Debug(ctx, "client.WaitForLKEClusterCondition(...)", map[string]any{
+				"condition": "ClusterHasReadyNode",
+			})
 
-		return nil
-	}))
+			err := client.WaitForLKEClusterConditions(ctx, cluster.ID, linodego.LKEClusterPollOptions{
+				TimeoutSeconds: 15 * 60,
+			}, k8scondition.ClusterHasReadyNode)
+			if err != nil {
+				tflog.Debug(ctx, err.Error())
+				return retry.RetryableError(err)
+			}
+
+			return nil
+		}))
+	} else {
+		tflog.Debug(ctx, "No pools defined, skipping wait for ready node")
+	}
 
 	return readResource(ctx, d, meta)
 }
@@ -546,7 +571,12 @@ func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.
 func customDiffValidateOptionalCount(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
 	invalidPools := make([]string, 0)
 
-	poolIterator := diff.GetRawConfig().GetAttr("pool").ElementIterator()
+	pool := diff.GetRawConfig().GetAttr("pool")
+	if pool.IsNull() || !pool.IsKnown() || pool.LengthInt() == 0 {
+		return nil
+	}
+
+	poolIterator := pool.ElementIterator()
 
 	for poolIterator.Next() {
 		rawKey, rawPool := poolIterator.Element()
@@ -600,4 +630,56 @@ func customDiffValidatePoolForStandardTier(ctx context.Context, diff *schema.Res
 	}
 
 	return nil
+}
+
+// discoverClusterRulesets looks up the LKE-E service-managed rulesets via
+// GET /networking/firewalls/rulesets, matching the label convention
+// lke{clusterID}-inbound / lke{clusterID}-outbound.
+// Neither POST nor GET /lke/clusters/{id} returns these IDs, so this is
+// the only way to populate ruleset_ids during read and import.
+func discoverClusterRulesets(
+	ctx context.Context, client linodego.Client, clusterID int,
+) (*linodego.LKEClusterRuleSetIDs, diag.Diagnostics) {
+	inboundLabel := fmt.Sprintf("lke%d-inbound", clusterID)
+	outboundLabel := fmt.Sprintf("lke%d-outbound", clusterID)
+
+	tflog.Debug(ctx, "Discovering LKE-E rulesets", map[string]any{
+		"inbound_label":  inboundLabel,
+		"outbound_label": outboundLabel,
+	})
+
+	rulesets, err := client.ListFirewallRuleSets(ctx, &linodego.ListOptions{})
+	if err != nil {
+		return nil, diag.Errorf(
+			"failed to list firewall rulesets for cluster %d: %s", clusterID, err,
+		)
+	}
+
+	var inboundID, outboundID int
+	for _, rs := range rulesets {
+		switch rs.Label {
+		case inboundLabel:
+			inboundID = rs.ID
+		case outboundLabel:
+			outboundID = rs.ID
+		}
+	}
+
+	if inboundID == 0 || outboundID == 0 {
+		tflog.Warn(ctx, "LKE-E rulesets not found", map[string]any{
+			"inbound_id":  inboundID,
+			"outbound_id": outboundID,
+		})
+		return nil, nil
+	}
+
+	tflog.Info(ctx, "Found LKE-E rulesets", map[string]any{
+		"inbound_id":  inboundID,
+		"outbound_id": outboundID,
+	})
+
+	return &linodego.LKEClusterRuleSetIDs{
+		Inbound:  inboundID,
+		Outbound: outboundID,
+	}, nil
 }

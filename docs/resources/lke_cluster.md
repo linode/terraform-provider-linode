@@ -175,7 +175,7 @@ The following arguments are supported:
 
 * `region` - (Required) This Kubernetes cluster's location.
 
-* [`pool`](#pool) - (Required) The Node Pool specifications for the Kubernetes cluster. At least one Node Pool is required.
+* [`pool`](#pool) - (Required) The Node Pool specifications for the Kubernetes cluster. At least one Node Pool is required for standard tier clusters. Enterprise tier clusters (`tier = "enterprise"`) may be created with zero inline pools.
 
 * [`control_plane`](#control_plane) (Optional) Defines settings for the Kubernetes Control Plane.
 
@@ -274,6 +274,12 @@ In addition to all arguments above, the following attributes are exported:
 * `dashboard_url` - The Kubernetes Dashboard access URL for this cluster. LKE Enterprise does not have a dashboard URL.
 
 * `apl_enabled` - Enables the App Platform Layer
+
+* `ruleset_ids` - The IDs of the service-managed firewall rulesets automatically created for LKE Enterprise clusters. Only populated for enterprise tier clusters.
+
+  * `inbound` - The ID of the inbound service-managed ruleset.
+
+  * `outbound` - The ID of the outbound service-managed ruleset.
 
 * `pool` - Additional nested attributes:
 

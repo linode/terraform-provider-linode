@@ -49,6 +49,12 @@ In addition to all arguments above, the following attributes are exported:
 
 * `apl_enabled` - Enables the App Platform Layer
 
+* `ruleset_ids` - The IDs of the service-managed firewall rulesets automatically created for LKE Enterprise clusters.
+
+  * `inbound` - The ID of the inbound service-managed ruleset.
+
+  * `outbound` - The ID of the outbound service-managed ruleset.
+
 * `subnet_id` - The ID of the VPC subnet to use for the Kubernetes cluster. This subnet must be dual stack (IPv4 and IPv6 should both be enabled).
 
 * `vpc_id` - The ID of the VPC to use for the Kubernetes cluster.

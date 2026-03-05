@@ -102,6 +102,26 @@ var resourceSchema = map[string]*schema.Schema{
 			}, false),
 		),
 	},
+	"ruleset_ids": {
+		Type:     schema.TypeList,
+		Computed: true,
+		Description: "The IDs of the service-managed firewall rulesets automatically " +
+			"created for LKE Enterprise clusters.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"inbound": {
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Description: "The ID of the inbound service ruleset.",
+				},
+				"outbound": {
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Description: "The ID of the outbound service ruleset.",
+				},
+			},
+		},
+	},
 	"pool": {
 		Type: schema.TypeList,
 		Elem: &schema.Resource{
