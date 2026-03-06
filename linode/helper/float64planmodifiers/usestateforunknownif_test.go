@@ -1,5 +1,3 @@
-//go:build unit
-
 package float64planmodifiers_test
 
 import (

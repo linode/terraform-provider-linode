@@ -1,5 +1,3 @@
-//go:build unit
-
 package mapplanmodifiers_test
 
 import (

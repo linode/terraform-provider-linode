@@ -1,5 +1,3 @@
-//go:build integration || objcluster
-
 package objcluster_test
 
 import (

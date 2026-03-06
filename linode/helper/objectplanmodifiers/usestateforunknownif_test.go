@@ -1,5 +1,3 @@
-//go:build unit
-
 package objectplanmodifiers_test
 
 import (

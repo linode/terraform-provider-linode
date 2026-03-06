@@ -1,5 +1,3 @@
-//go:build integration || databases || dbaas_tests
-
 package databases_test
 
 import (

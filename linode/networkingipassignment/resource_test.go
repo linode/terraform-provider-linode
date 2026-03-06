@@ -1,5 +1,3 @@
-//go:build integration || networkingipassignment
-
 package networkingipassignment_test
 
 import (

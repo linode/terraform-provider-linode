@@ -43,7 +43,9 @@ test: fmt-check test-unit test-smoke test-int
 
 .PHONY: test-unit
 test-unit: fmt-check
-	go test -v --tags=unit ./$(if $(PKG_NAME),linode/$(PKG_NAME),linode/...)
+	\
+	unset TF_ACC \
+	go test -v ./$(if $(PKG_NAME),linode/$(PKG_NAME),linode/...)
 
 IP_ENV_FILE = /tmp/linode/ip_vars.env
 SUBMODULE_DIR = e2e_scripts
@@ -60,10 +62,10 @@ $(IP_ENV_FILE):
 	fi
 	$(E2E_SCRIPT)
 
-# TEST_SUITE: Optional, specify a test suite (e.g. domain), Default to run everything if not set
 # TEST_ARGS: Optional, additional arguments for go test (e.g. -o -json, etc)
 # PKG_NAME: Recommended usage with TEST_CASE argument for faster execution e.g. make PKG_NAME="volume" TEST_CASE="TestAccResourceVolume_basic" test-int
 # TEST_CASE: Optional, specify a test case (e.g. 'TestAccResourceVolume_basic')
+# TF_ACC: Optional, documented at https://developer.hashicorp.com/terraform/plugin/sdkv2/testing/acceptance-tests#environment-variables
 
 # Integration Test
 .PHONY: test-int
@@ -74,7 +76,7 @@ test-int: fmt-check generate-ip-env
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
 	RUN_LONG_TESTS=$(if $(RUN_LONG_TESTS),$(RUN_LONG_TESTS),false) \
-	bash -c 'set -o pipefail && go test --tags=$(if $(TEST_SUITE),$(TEST_SUITE),"integration") -v ./$(if $(PKG_NAME),linode/$(PKG_NAME),linode/...) \
+	bash -c 'set -o pipefail && go test -v ./$(if $(PKG_NAME),linode/$(PKG_NAME),linode/...) \
 	-count $(if $(COUNT),$(COUNT),1) -timeout $(if $(TIMEOUT),$(TIMEOUT),240m) -ldflags="-X=github.com/linode/terraform-provider-linode/v3/version.ProviderVersion=acc" -parallel $(if $(PARALLEL),$(PARALLEL),10) $(if $(TEST_CASE),-run $(TEST_CASE)) $(if $(TEST_ARGS),$(TEST_ARGS)) | sed -e "/testing: warning: no tests to run/,+1d" -e "/\[no test files\]/d" -e "/\[no tests to run\]/d"'
 
 .PHONY: test-smoke
@@ -85,7 +87,7 @@ test-smoke: fmt-check generate-ip-env
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
 	TF_VAR_ipv4_addr=$(shell grep PUBLIC_IPV4 $(IP_ENV_FILE) | cut -d '=' -f2 | tr -d '[:space:]') \
 	TF_VAR_ipv6_addr=$(shell grep PUBLIC_IPV6 $(IP_ENV_FILE) | cut -d '=' -f2 | tr -d '[:space:]') \
-	bash -c 'set -o pipefail && go test -v ./linode/... -run TestSmokeTests -tags=integration \
+	bash -c 'set -o pipefail && go test -v ./linode/... -run TestSmokeTests \
 	-count $(if $(COUNT),$(COUNT),1) -timeout $(if $(TIMEOUT),$(TIMEOUT),240m) -ldflags="-X=github.com/linode/terraform-provider-linode/v3/version.ProviderVersion=acc" -parallel $(if $(PARALLEL),$(PARALLEL),10) $(if $(TEST_ARGS),$(TEST_ARGS)) | sed -e "/testing: warning: no tests to run/,+1d" -e "/\[no test files\]/d" -e "/\[no tests to run\]/d"'
 
 MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli

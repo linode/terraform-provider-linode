@@ -1,5 +1,3 @@
-//go:build integration || objbucket
-
 package objbucket_test
 
 import (

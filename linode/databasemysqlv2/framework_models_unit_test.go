@@ -1,5 +1,3 @@
-//go:build unit
-
 package databasemysqlv2_test
 
 import (

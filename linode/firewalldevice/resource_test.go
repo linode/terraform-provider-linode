@@ -1,5 +1,3 @@
-//go:build integration || firewalldevice
-
 package firewalldevice_test
 
 import (

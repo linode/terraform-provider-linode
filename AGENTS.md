@@ -76,11 +76,6 @@ resource "linode_example" "foobar" {
 {{ end }}
 ```
 
-## Build Tags
-
-- `//go:build integration` or `//go:build <resource-name>` - Integration tests (require API token)
-- `//go:build unit` - Unit tests (no API calls)
-
 ## Integration Test Style
 
 When writing integration tests, **prefer `ConfigStateChecks` with `statecheck.*` functions** over the legacy `Check` field with `resource.TestCheckResourceAttr` / `resource.ComposeTestCheckFunc`. The `statecheck` API is the modern Terraform testing approach and should be used for all new tests.
@@ -164,7 +159,7 @@ Uses `github.com/linode/linodego` client. Access via:
 - Use `golangci-lint fmt` for code formatting (run `make format`), or `gofmt -w` if unavailable
 - Use `tflog.Debug(ctx, ...)` for logging in resources
 - Prefer Framework over SDKv2 for new resources
-- Unit test files use `*_unit_test.go` naming with `//go:build unit` tag
+- Unit test files use `*_unit_test.go` naming
 
 ## Go Idioms
 

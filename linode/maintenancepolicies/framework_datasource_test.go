@@ -1,5 +1,3 @@
-//go:build integration || maintenancepolicies
-
 package maintenancepolicies_test
 
 import (

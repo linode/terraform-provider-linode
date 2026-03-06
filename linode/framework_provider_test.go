@@ -1,5 +1,3 @@
-//go:build integration || linode
-
 package linode_test
 
 import (

@@ -1,5 +1,3 @@
-//go:build integration || objkey
-
 package objkey_test
 
 import (

@@ -1,5 +1,3 @@
-//go:build integration || lkenodepool
-
 package lkenodepool_test
 
 import (

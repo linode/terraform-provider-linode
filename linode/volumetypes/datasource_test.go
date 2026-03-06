@@ -1,5 +1,3 @@
-//go:build integration || volumetypes
-
 package volumetypes_test
 
 import (

@@ -1,5 +1,3 @@
-//go:build integration || consumerimagesharegrouptoken
-
 package consumerimagesharegrouptoken_test
 
 import (
