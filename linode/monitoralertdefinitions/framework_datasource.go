@@ -1,3 +1,5 @@
+//go:build integration || monitoralertdefinitions
+
 package monitoralertdefinitions
 
 import (
