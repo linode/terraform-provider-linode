@@ -5,6 +5,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/regionvpcavailability/tmpl"
 )
@@ -21,11 +24,12 @@ func TestAccDataSourceRegionVPCAvailability_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, regionID),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttrSet(resourceName, "available"),
-					resource.TestCheckResourceAttr(resourceName, "available_ipv6_prefix_lengths.#", "0"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("available"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("available_ipv6_prefix_lengths").AtSliceIndex(0), knownvalue.Int64Exact(48)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("available_ipv6_prefix_lengths").AtSliceIndex(1), knownvalue.Int64Exact(52)),
+				},
 			},
 			{
 				Config:      tmpl.DataNoRegion(t),
