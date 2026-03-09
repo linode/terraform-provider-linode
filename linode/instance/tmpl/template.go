@@ -705,17 +705,6 @@ func DataDevicesExt(t testing.TB, label, instanceType, region string, rootPass s
 		})
 }
 
-func DataDeviceBlockExt(t testing.TB, label, instanceType, region string, rootPass string) string {
-	return acceptance.ExecuteTemplate(t,
-		"instance_data_device_block_ext", TemplateData{
-			Label:    label,
-			Type:     instanceType,
-			Image:    acceptance.TestImageLatest,
-			Region:   region,
-			RootPass: rootPass,
-		})
-}
-
 func DataWithBlockStorageEncryption(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_with_block_storage_encryption", TemplateData{
