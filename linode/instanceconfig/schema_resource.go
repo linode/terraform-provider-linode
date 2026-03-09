@@ -129,7 +129,7 @@ var deviceV2Schema = map[string]*schema.Schema{
 	"device_name": {
 		Type:        schema.TypeString,
 		Required:    true,
-		Description: "The Disk ID to map to this disk slot",
+		Description: "The device slot identifier (for example, sda, sdb) to map a disk or volume into",
 		ValidateDiagFunc: validation.ToDiagFunc(
 			validation.StringInSlice(
 				helper.GetConfigDeviceKeys(),
