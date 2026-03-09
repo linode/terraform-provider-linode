@@ -3,6 +3,7 @@ package monitoralertdefinitions_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -19,16 +20,16 @@ var channelID int
 func init() {
 	client, err := acceptance.GetTestClient()
 	if err != nil {
-		fmt.Errorf("Error getting client: %s", err)
+		log.Fatal(fmt.Errorf("Error getting client: %s", err))
 	}
 
 	channels, err := client.ListAlertChannels(context.Background(), nil)
 	if err != nil {
-		fmt.Errorf("error listing alert channels: %s", err)
+		log.Fatal(fmt.Errorf("error listing alert channels: %s", err))
 	}
 
 	if len(channels) < 1 {
-		fmt.Errorf("at least one alert channel is required for alert definition tests")
+		log.Fatal(fmt.Errorf("at least one alert channel is required for alert definition tests"))
 	}
 
 	channelID = channels[0].ID
