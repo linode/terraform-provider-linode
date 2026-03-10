@@ -52,7 +52,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.parseMonitorAlertChannels(helper.AnySliceToTyped[linodego.AlertChannel](result))
+	data.parseMonitorAlertChannels(ctx, helper.AnySliceToTyped[linodego.AlertChannel](result))
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -63,6 +63,8 @@ func listMonitorAlertChannels(
 ) ([]any, error) {
 	tflog.Trace(ctx, "client.ListAlertChannels(...)")
 
+	// The API does not properly support filtering currently and sending filter will trigger errors.
+	// We retrieve all channels and filter in Terraform.
 	channels, err := client.ListAlertChannels(ctx, nil)
 	if err != nil {
 		return nil, err

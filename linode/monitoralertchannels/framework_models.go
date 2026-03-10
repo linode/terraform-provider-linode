@@ -54,10 +54,13 @@ type MonitorAlertChannelEmailDetails struct {
 	RecipientType types.String `tfsdk:"recipient_type"`
 }
 
-func (data *MonitorAlertChannelFilterModel) parseMonitorAlertChannels(channels []linodego.AlertChannel) {
+func (data *MonitorAlertChannelFilterModel) parseMonitorAlertChannels(
+	ctx context.Context,
+	channels []linodego.AlertChannel,
+) {
 	result := make([]MonitorAlertChannelModel, len(channels))
 	for i := range channels {
-		result[i] = flattenMonitorAlertChannel(context.Background(), &channels[i])
+		result[i] = flattenMonitorAlertChannel(ctx, &channels[i])
 	}
 
 	data.MonitorAlertChannels = result

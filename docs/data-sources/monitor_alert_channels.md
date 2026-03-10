@@ -32,7 +32,7 @@ data "linode_monitor_alert_channels" "system" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select IP addresses that meet certain requirements.
+* [`filter`](#filter) - (Optional) A set of filters used to select monitor alert channels that meet certain requirements.
 
 ### Filter
 
