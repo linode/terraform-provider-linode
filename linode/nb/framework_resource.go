@@ -67,6 +67,7 @@ func (r *Resource) Create(
 		Label:                 data.Label.ValueStringPointer(),
 		ClientConnThrottle:    &clientConnThrottle,
 		ClientUDPSessThrottle: &clientUDPSessThrottle,
+		Type:                  linodego.NodeBalancerPlanType(data.Type.ValueString()),
 	}
 
 	if !data.FirewallID.IsNull() {
@@ -394,6 +395,7 @@ func upgradeNodebalancerResourceStateV0toV1(
 		Updated:            timetypes.RFC3339{StringValue: nbDataV0.Updated},
 		Tags:               nbDataV0.Tags,
 		Firewalls:          types.ListNull(firewallObjType),
+		Type:               types.StringValue("common"),
 	}
 
 	var transferMap map[string]string

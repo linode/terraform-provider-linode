@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	linodesetplanmodifier "github.com/linode/terraform-provider-linode/v3/linode/helper/setplanmodifiers"
@@ -24,6 +25,12 @@ const (
 	NBLabelRegex        = "^[a-zA-Z0-9_-]*$"
 	NBLabelErrorMessage = "Labels may only contain letters, number, dashes, and underscores."
 )
+
+var nodeBalancerTypesStrings = []string{
+	string(linodego.NBTypeCommon),
+	string(linodego.NBTypePremium),
+	string(linodego.NBTypePremium40GB),
+}
 
 var firewallObjType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
@@ -186,6 +193,19 @@ var frameworkResourceSchema = schema.Schema{
 				listplanmodifier.UseStateForUnknown(),
 			},
 			NestedObject: frameworkResourceSchemaVPCs,
+		},
+		"type": schema.StringAttribute{
+			Description: "The type of NodeBalancer. Possible values are 'common', 'premium' or 'premium_40gb'.",
+			Optional:    true,
+			Computed:    true,
+			Default:     stringdefault.StaticString("common"),
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifier.RequiresReplace(),
+			},
+			Validators: []validator.String{
+				stringvalidator.OneOf(nodeBalancerTypesStrings...),
+			},
 		},
 	},
 }

@@ -39,7 +39,7 @@ The following arguments are supported:
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
-* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `asc`)
+* `order` - (Optional) The order in which results should be returned (`asc`, `desc`; default `asc`).
 
 ### Filter
 
@@ -47,49 +47,51 @@ The following arguments are supported:
 
 * `values` - (Required) A list of values for the filter to allow. These values should all be in string form.
 
-* `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)
+* `match_by` - (Optional) The method to match the field by (`exact`, `regex`, `substring`; default `exact`).
 
 ## Attributes Reference
 
 Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and will export the following attributes:
 
-* `label` - The label of the Linode NodeBalancer
+* `label` - The label of the Linode NodeBalancer.
 
-* `client_conn_throttle` - Throttle connections per second (0-20)
+* `client_conn_throttle` - Throttle connections per second (0-20).
 
 * `client_udp_sess_throttle` - Throttle UDP sessions per second (0-20).
 
   * **NOTE: This attribute may not be generally available.**
 
-* `created` – When this Linode NodeBalancer was created
+* `created` – When this Linode NodeBalancer was created.
 
-* `linode_id` - The ID of a Linode Instance where the NodeBalancer should be attached
+* `linode_id` - The ID of a Linode Instance where the NodeBalancer should be attached.
 
 * `tags` - A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
-* `hostname` - This NodeBalancer's hostname, ending with .ip.linodeusercontent.com
+* `hostname` - This NodeBalancer's hostname, ending with .ip.linodeusercontent.com.
 
-* `id` - The Linode NodeBalancer's unique ID
+* `id` - The Linode NodeBalancer's unique ID.
 
-* `ipv4` - The Public IPv4 Address of this NodeBalancer
+* `ipv4` - The Public IPv4 Address of this NodeBalancer.
 
-* `ipv6` - The Public IPv6 Address of this NodeBalancer
+* `ipv6` - The Public IPv6 Address of this NodeBalancer.
 
 * `region` - The Region where this Linode NodeBalancer is located. NodeBalancers only support backends in the same Region.
 
-* `updated` – When this Linode NodeBalancer was last updated
+* `updated` – When this Linode NodeBalancer was last updated.
 
-* [`transfer`](#transfer) - The network transfer stats for the current month
+* [`transfer`](#transfer) - The network transfer stats for the current month.
+
+* `type` - The type of this NodeBalancer.
 
 ### transfer
 
 The following attributes are available on transfer:
 
-* `in` - The total transfer, in MB, used by this NodeBalancer for the current month
+* `in` - The total transfer, in MB, used by this NodeBalancer for the current month.
 
-* `out` - The total inbound transfer, in MB, used for this NodeBalancer for the current month
+* `out` - The total inbound transfer, in MB, used for this NodeBalancer for the current month.
 
-* `total` - The total outbound transfer, in MB, used for this NodeBalancer for the current month
+* `total` - The total outbound transfer, in MB, used for this NodeBalancer for the current month.
 
 ## Filterable Fields
 

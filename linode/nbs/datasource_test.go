@@ -40,6 +40,7 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.ipv4"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.ipv6"),
 					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.label", nbLabel+"-0"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.type", "common"),
 					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.region", nbRegion),
 					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.transfer.#", "1"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.transfer.0.in"),
@@ -67,6 +68,7 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "nodebalancers.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.region", nbRegion),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.type", "common"),
 					acceptance.CheckListContains(resourceName, "nodebalancers.0.tags", "tf_test_2"),
 				),
 			},

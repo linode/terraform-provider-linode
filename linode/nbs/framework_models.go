@@ -35,6 +35,7 @@ type NodeBalancerModel struct {
 	Updated               timetypes.RFC3339 `tfsdk:"updated"`
 	Transfer              types.List        `tfsdk:"transfer"`
 	Tags                  types.Set         `tfsdk:"tags"`
+	Type                  types.String      `tfsdk:"type"`
 }
 
 func (data *NodeBalancerFilterModel) parseNodeBalancers(
@@ -57,6 +58,7 @@ func (data *NodeBalancerModel) flattenNodeBalancer(
 ) diag.Diagnostics {
 	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Label = types.StringPointerValue(nodebalancer.Label)
+	data.Type = types.StringValue(string(nodebalancer.Type))
 	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Region = types.StringValue(nodebalancer.Region)
 	data.ClientConnThrottle = types.Int64Value(int64(nodebalancer.ClientConnThrottle))

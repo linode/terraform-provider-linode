@@ -78,6 +78,10 @@ var DataSourceAttributes = map[string]schema.Attribute{
 		Computed:    true,
 		Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 	},
+	"type": schema.StringAttribute{
+		Description: "The type of this NodeBalancer.",
+		Computed:    true,
+	},
 }
 
 // dataSourceAttributesVPC contains all user-configurable fields for a VPC NodeBalancer.

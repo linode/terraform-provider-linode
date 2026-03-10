@@ -83,6 +83,7 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 
 	resName := "linode_nodebalancer.foobar"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
+	nbType := "common"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -91,13 +92,14 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, nodebalancerName, testRegion),
+				Config: tmpl.Basic(t, nodebalancerName, testRegion, nbType),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 					resource.TestCheckResourceAttr(resName, "client_udp_sess_throttle", "10"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "type", "common"),
 
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
 					resource.TestCheckResourceAttrSet(resName, "ipv4"),
@@ -124,6 +126,7 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 
 	resName := "linode_nodebalancer.foobar"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
+	nbType := "common"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -132,13 +135,14 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, nodebalancerName, testRegion),
+				Config: tmpl.Basic(t, nodebalancerName, testRegion, nbType),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 					resource.TestCheckResourceAttr(resName, "client_udp_sess_throttle", "10"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "type", "common"),
 
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
 					resource.TestCheckResourceAttrSet(resName, "ipv4"),
@@ -157,6 +161,7 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "0"),
 					resource.TestCheckResourceAttr(resName, "client_udp_sess_throttle", "5"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "type", "common"),
 
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
 					resource.TestCheckResourceAttrSet(resName, "ipv4"),
@@ -195,6 +200,7 @@ func TestAccResourceNodeBalancer_firewall(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
+					resource.TestCheckResourceAttr(resName, "type", "common"),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 					acceptance.CheckResourceAttrGreaterThan(resName, "firewalls.#", 0),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.label", fmt.Sprintf("%v-fw", nodebalancerName)),

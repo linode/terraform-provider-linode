@@ -32,6 +32,7 @@ type NodeBalancerModel struct {
 	Tags                  types.Set         `tfsdk:"tags"`
 	Firewalls             types.List        `tfsdk:"firewalls"`
 	VPCs                  types.List        `tfsdk:"vpcs"`
+	Type                  types.String      `tfsdk:"type"`
 }
 
 type FirewallModel struct {
@@ -70,6 +71,7 @@ func (data *NodeBalancerModel) Flatten(
 ) diag.Diagnostics {
 	data.ID = helper.KeepOrUpdateString(data.ID, strconv.Itoa(nodebalancer.ID), preserveKnown)
 	data.Label = helper.KeepOrUpdateStringPointer(data.Label, nodebalancer.Label, preserveKnown)
+	data.Type = helper.KeepOrUpdateString(data.Type, string(nodebalancer.Type), preserveKnown)
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, helper.StringSliceToFramework(nodebalancer.Tags))
 	if diags.HasError() {
@@ -131,6 +133,7 @@ func (data *NodeBalancerModel) Flatten(
 func (data *NodeBalancerModel) CopyFrom(other NodeBalancerModel, preserveKnown bool) {
 	data.ID = helper.KeepOrUpdateValue(data.ID, other.ID, preserveKnown)
 	data.Label = helper.KeepOrUpdateValue(data.Label, other.Label, preserveKnown)
+	data.Type = helper.KeepOrUpdateValue(data.Type, other.Type, preserveKnown)
 	data.Region = helper.KeepOrUpdateValue(data.Region, other.Region, preserveKnown)
 	data.ClientConnThrottle = helper.KeepOrUpdateValue(
 		data.ClientConnThrottle, other.ClientConnThrottle, preserveKnown,
@@ -252,6 +255,7 @@ type NodeBalancerDataSourceModel struct {
 	Tags                  types.Set         `tfsdk:"tags"`
 	Firewalls             []NBFirewallModel `tfsdk:"firewalls"`
 	VPCs                  types.List        `tfsdk:"vpcs"`
+	Type                  types.String      `tfsdk:"type"`
 }
 
 type NBFirewallModel struct {
@@ -275,6 +279,7 @@ func (data *NodeBalancerDataSourceModel) Flatten(
 ) diag.Diagnostics {
 	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Label = types.StringPointerValue(nodebalancer.Label)
+	data.Type = types.StringValue(string(nodebalancer.Type))
 	data.Region = types.StringValue(nodebalancer.Region)
 	data.ClientConnThrottle = types.Int64Value(int64(nodebalancer.ClientConnThrottle))
 	data.ClientUDPSessThrottle = types.Int64Value(int64(nodebalancer.ClientUDPSessThrottle))

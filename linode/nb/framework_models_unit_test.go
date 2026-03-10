@@ -69,6 +69,7 @@ func TestFlattenNodeBalancer(t *testing.T) {
 			Out:   &transferOut,
 			Total: &transferTotal,
 		},
+		Type: linodego.NBTypeCommon,
 	}
 
 	nodeBalancerModel := &NodeBalancerModel{}
@@ -94,6 +95,7 @@ func TestFlattenNodeBalancer(t *testing.T) {
 	assert.False(t, diags.HasError())
 
 	assert.Equal(t, types.StringValue("123"), nodeBalancerModel.ID)
+	assert.Equal(t, types.StringValue("common"), nodeBalancerModel.Type)
 	assert.Equal(t, types.StringValue("us-east"), nodeBalancerModel.Region)
 	assert.Equal(t, types.Int64Value(10), nodeBalancerModel.ClientConnThrottle)
 	assert.Equal(t, types.Int64Value(5), nodeBalancerModel.ClientUDPSessThrottle)

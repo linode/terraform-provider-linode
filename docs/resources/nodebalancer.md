@@ -59,6 +59,8 @@ The following arguments are supported:
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
+* `type` - (Optional) The type of the NodeBalancer (`common`, `premium`, `premium_40gb`). Defaults to `common`.
+
 ## Attributes Reference
 
 This resource exports the following attributes:
