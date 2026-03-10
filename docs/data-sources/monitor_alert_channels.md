@@ -37,9 +37,7 @@ The following arguments are supported:
 ### Filter
 
 * `name` - (Required) The name of the field to filter by. See the [Filterable Fields section](#filterable-fields) for a complete list of filterable fields.
-
 * `values` - (Required) A list of values for the filter to allow. These values should all be in string form.
-
 * `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)
 
 ## Attributes Reference
@@ -70,7 +68,7 @@ Each Alert Channel will be stored in the `monitor_alert_channels` attribute and 
 
 The following top-level fields can be used with the `filter` block:
 
-  * `id`
-  * `label`
-  * `type`
-  * `channel_type`
+* `id`
+* `label`
+* `type`
+* `channel_type`
