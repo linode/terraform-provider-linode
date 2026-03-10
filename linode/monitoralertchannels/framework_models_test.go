@@ -140,7 +140,7 @@ func TestParseMonitorAlertChannels(t *testing.T) {
 	now := time.Now().UTC()
 	model := MonitorAlertChannelFilterModel{}
 
-	model.parseMonitorAlertChannels([]linodego.AlertChannel{
+	model.parseMonitorAlertChannels(context.Background(), []linodego.AlertChannel{
 		{
 			ID:          10,
 			Label:       "one",
