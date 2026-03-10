@@ -1,3 +1,5 @@
+//go:build integration || monitoralertchannels
+
 package monitoralertchannels_test
 
 import (

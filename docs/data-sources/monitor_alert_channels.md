@@ -7,15 +7,14 @@ description: |-
 # Data Source: linode_monitor_alert_channels
 
 Use this data source to query Linode Monitor Alert notification channels.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-notification-channels).  (**Note: v4beta only.**)
 
 ## Example Usage
 
+Retrieve ALL Monitor Alert Channels:
+
 ```hcl
 data "linode_monitor_alert_channels" "all" {}
-
-output "first_channel_label" {
-  value = data.linode_monitor_alert_channels.all.monitor_alert_channels[0].label
-}
 ```
 
 ## Filter Example
@@ -33,38 +32,45 @@ data "linode_monitor_alert_channels" "system" {
 
 The following arguments are supported:
 
-- `filter` - (Optional) One or more filter blocks to select channels.
-  - `name` - (Required) The name of the field to filter by.
+* [`filter`](#filter) - (Optional) A set of filters used to select IP addresses that meet certain requirements.
+
+### Filter
+
+* `name` - (Required) The name of the field to filter by. See the [Filterable Fields section](#filterable-fields) for a complete list of filterable fields.
+
+* `values` - (Required) A list of values for the filter to allow. These values should all be in string form.
+
+* `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)
 
 ## Attributes Reference
 
 Each Alert Channel will be stored in the `monitor_alert_channels` attribute and will export the following attributes:
 
-- `id` - The unique ID of the channel.
-- `label` - The display label for the channel.
-- `type` - The channel type (`system` or `user`).
-- `channel_type` - The notification transport type (currently `email`).
-- `created` - When the channel was created.
-- `updated` - When the channel was last updated.
-- `created_by` - The user who created the channel, or `system`.
-- `updated_by` - The user who last updated the channel, or `system`.
-- `alerts` - Alert linkage metadata for this channel.
-  - `url` - The API URL for associated alerts.
-  - `type` - The alert type associated with the channel.
-  - `alert_count` - The number of associated alerts.
-- `content` - (Deprecated) Legacy read-only channel content.
-  - `email` - Legacy email content values.
-    - `email_addresses` - Legacy email recipients for system channels.
-- `details` - Channel configuration details.
-  - `email` - Email-specific configuration details.
-    - `usernames` - Usernames that receive notifications.
-    - `recipient_type` - Recipient selection mode (for example `read_write_users` or `user`).
+* `id` - The unique ID of the channel.
+* `label` - The display label for the channel.
+* `type` - The channel type (`system` or `user`).
+* `channel_type` - The notification transport type (currently `email`).
+* `created` - When the channel was created.
+* `updated` - When the channel was last updated.
+* `created_by` - The user who created the channel, or `system`.
+* `updated_by` - The user who last updated the channel, or `system`.
+* `alerts` - Alert linkage metadata for this channel.
+  * `url` - The API URL for associated alerts.
+  * `type` - The alert type associated with the channel.
+  * `alert_count` - The number of associated alerts.
+* `content` - (Deprecated) Legacy read-only channel content.
+  * `email` - Legacy email content values.
+    * `email_addresses` - Legacy email recipients for system channels.
+* `details` - Channel configuration details.
+  * `email` - Email-specific configuration details.
+    * `usernames` - Usernames that receive notifications.
+    * `recipient_type` - Recipient selection mode (for example `read_write_users` or `user`).
 
 ## Filterable Fields
 
 The following top-level fields can be used with the `filter` block:
 
-  - `id`
-  - `label`
-  - `type`
-  - `channel_type`
+  * `id`
+  * `label`
+  * `type`
+  * `channel_type`

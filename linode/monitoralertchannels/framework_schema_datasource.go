@@ -53,9 +53,18 @@ var monitorAlertChannelAttributes = map[string]schema.Attribute{
 		Description: "Details about the alerts where this notification channel is applied.",
 		Computed:    true,
 		Attributes: map[string]schema.Attribute{
-			"url":         schema.StringAttribute{Description: "The API URL for the associated alerts.", Computed: true},
-			"type":        schema.StringAttribute{Description: "The alert type associated with this channel.", Computed: true},
-			"alert_count": schema.Int64Attribute{Description: "The number of alerts associated with this channel.", Computed: true},
+			"url": schema.StringAttribute{
+				Description: "The API URL for the associated alerts.",
+				Computed:    true,
+			},
+			"type": schema.StringAttribute{
+				Description: "The alert type associated with this channel.",
+				Computed:    true,
+			},
+			"alert_count": schema.Int64Attribute{
+				Description: "The number of alerts associated with this channel.",
+				Computed:    true,
+			},
 		},
 	},
 	"content": schema.SingleNestedAttribute{
