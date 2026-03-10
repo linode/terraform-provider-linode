@@ -60,6 +60,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/lock"
 	"github.com/linode/terraform-provider-linode/v3/linode/locks"
 	"github.com/linode/terraform-provider-linode/v3/linode/maintenancepolicies"
+	"github.com/linode/terraform-provider-linode/v3/linode/monitoralertchannels"
 	"github.com/linode/terraform-provider-linode/v3/linode/nb"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbconfigs"
@@ -367,5 +368,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		consumerimagesharegroup.NewDataSource,
 		consumerimagesharegroupimageshares.NewDataSource,
 		lkenodepool.NewDataSource,
+		monitoralertchannels.NewDataSource,
 	}
 }
