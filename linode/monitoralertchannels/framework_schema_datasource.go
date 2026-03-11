@@ -8,10 +8,10 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"id":           {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
-	"label":        {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"type":         {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"channel_type": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"id":           {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"label":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"type":         {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"channel_type": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var monitorAlertChannelAttributes = map[string]schema.Attribute{
