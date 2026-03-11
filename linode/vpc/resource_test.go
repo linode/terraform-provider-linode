@@ -235,7 +235,7 @@ func TestAccResourceLinodeVPC_create_InvalidLabel(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.Basic(t, vpcLabel, testRegion),
-				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
+				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and dashes"),
 			},
 		},
 	})
@@ -264,7 +264,7 @@ func TestAccResourceLinodeVPC_update_InvalidLabel(t *testing.T) {
 			},
 			{
 				Config:      tmpl.Updates(t, invalidLabel, testRegion),
-				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
+				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and dashes"),
 			},
 			{
 				ResourceName:      resName,
