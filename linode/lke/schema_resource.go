@@ -133,6 +133,7 @@ var resourceSchema = map[string]*schema.Schema{
 					Type:        schema.TypeInt,
 					Description: "The ID of the Firewall to attach to nodes in this node pool.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"labels": {
 					Type: schema.TypeMap,
@@ -209,10 +210,9 @@ var resourceSchema = map[string]*schema.Schema{
 					},
 				},
 				"disk_encryption": {
-					Type: schema.TypeString,
-					Description: "The disk encryption policy for the nodes in this pool. " +
-						"NOTE: Disk encryption may not currently be available to all users.",
-					Computed: true,
+					Type:        schema.TypeString,
+					Description: "The disk encryption policy for the nodes in this pool.",
+					Computed:    true,
 				},
 				"nodes": {
 					Type: schema.TypeList,

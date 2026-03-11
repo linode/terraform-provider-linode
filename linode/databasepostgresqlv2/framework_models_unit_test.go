@@ -107,6 +107,7 @@ func TestModel_Flatten(t *testing.T) {
 	require.Equal(t, currentTimeFWValue, model.ForkRestoreTime)
 	require.Equal(t, "1.2.3.4", model.HostPrimary.ValueString())
 	require.Equal(t, "4.3.2.1", model.HostSecondary.ValueString())
+	require.Equal(t, "4.3.2.1", model.HostStandby.ValueString())
 	require.Equal(t, "foobar", model.RootUsername.ValueString())
 	require.Equal(t, "barfoo", model.RootPassword.ValueString())
 	require.Equal(t, currentTimeFWValue, model.Created)

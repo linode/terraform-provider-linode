@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/databases/tmpl"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
@@ -32,7 +33,7 @@ func init() {
 
 	engineVersion = v.ID
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityDBAAS}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,7 +57,7 @@ func TestAccDataSourceDatabases_byAttr(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "databases.0.label", dbName),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.cluster_size", "1"),
-					resource.TestCheckResourceAttr(resourceName, "databases.0.encrypted", "false"),
+					resource.TestCheckResourceAttr(resourceName, "databases.0.encrypted", "true"),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.engine", "mysql"),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.region", testRegion),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.type", "g6-nanode-1"),
@@ -64,12 +65,12 @@ func TestAccDataSourceDatabases_byAttr(t *testing.T) {
 
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.host_primary"),
-					resource.TestCheckResourceAttrSet(resourceName, "databases.0.host_secondary"),
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.id"),
-					resource.TestCheckResourceAttrSet(resourceName, "databases.0.instance_uri"),
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.status"),
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.updated"),
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.version"),
+					resource.TestCheckNoResourceAttr(resourceName, "databases.0.fork_restore_time"),
+					resource.TestCheckNoResourceAttr(resourceName, "databases.0.fork_source"),
 				),
 			},
 			{
