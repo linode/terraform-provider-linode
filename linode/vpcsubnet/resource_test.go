@@ -183,7 +183,7 @@ func TestAccResourceVPCSubnet_create_InvalidLabel_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.Basic(t, subnetLabel, "172.16.0.0/24", testRegion),
-				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
+				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and dashes"),
 			},
 		},
 	})
@@ -212,7 +212,7 @@ func TestAccResourceVPCSubnet_update_invalidLabel(t *testing.T) {
 			},
 			{
 				Config:      tmpl.Updates(t, invalidLabel, "192.168.0.0/26", testRegion),
-				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
+				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and dashes"),
 			},
 		},
 	})
