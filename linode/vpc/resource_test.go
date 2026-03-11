@@ -32,7 +32,7 @@ func init() {
 
 	var err error
 
-	testRegion, err = acceptance.GetRandomRegionWithCaps([]string{"VPCs"}, "core")
+	testRegion, err = acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}

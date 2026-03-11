@@ -25,7 +25,7 @@ import (
 var testRegion string
 
 func init() {
-	r, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityVPCs}, "core")
+	r, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
