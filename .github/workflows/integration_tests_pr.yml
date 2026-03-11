@@ -57,7 +57,7 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v4
 
       - run: make deps
 
