@@ -101,6 +101,10 @@ func flattenIPv6(network *linodego.InstanceIPv6Response, diags *diag.Diagnostics
 	result["global"] = global
 	result["link_local"] = link_local
 	result["slaac"] = slaac
+	result["vpc"] = helper.GenericSliceToList(network.VPC, vpcNetworkObjectType, flattenVPCIPByValue, diags)
+	if diags.HasError() {
+		return nil
+	}
 
 	obj, newDiags := types.ObjectValue(ipv6ObjectType.AttrTypes, result)
 	if newDiags.HasError() {
@@ -139,6 +143,7 @@ func FlattenIPVPCNAT1To1(data *linodego.InstanceIPNAT1To1) (basetypes.ObjectValu
 
 func flattenVPCIP(vpc *linodego.VPCIP) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := make(map[string]attr.Value)
+	var diags diag.Diagnostics
 
 	result["address"] = types.StringPointerValue(vpc.Address)
 	result["address_range"] = types.StringPointerValue(vpc.AddressRange)
@@ -155,9 +160,21 @@ func flattenVPCIP(vpc *linodego.VPCIP) (*basetypes.ObjectValue, diag.Diagnostics
 	result["linode_id"] = types.Int64Value(int64(vpc.LinodeID))
 	result["nat_1_1"] = types.StringPointerValue(vpc.NAT1To1)
 
-	obj, d := types.ObjectValue(vpcNetworkObjectType.AttrTypes, result)
-	if d.HasError() {
-		return nil, d
+	result["ipv6_range"] = types.StringPointerValue(vpc.IPv6Range)
+	result["ipv6_is_public"] = types.BoolPointerValue(vpc.IPv6IsPublic)
+	result["ipv6_addresses"] = helper.GenericSliceToList(
+		vpc.IPv6Addresses,
+		vpcIPv6AddressObjectType,
+		flattenVPCIPIPv6Address,
+		&diags,
+	)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	obj, newDiags := types.ObjectValue(vpcNetworkObjectType.AttrTypes, result)
+	if newDiags.HasError() {
+		return nil, newDiags
 	}
 
 	return &obj, nil
@@ -197,6 +214,20 @@ func flattenIP(network *linodego.InstanceIP) (
 	}
 
 	return &obj, nil
+}
+
+func flattenVPCIPByValue(vpc linodego.VPCIP) (
+	*basetypes.ObjectValue, diag.Diagnostics,
+) {
+	return flattenVPCIP(&vpc)
+}
+
+func flattenVPCIPIPv6Address(addr linodego.VPCIPIPv6Address) (
+	basetypes.ObjectValue, diag.Diagnostics,
+) {
+	return types.ObjectValue(vpcIPv6AddressObjectType.AttrTypes, map[string]attr.Value{
+		"slaac_address": types.StringValue(addr.SLAACAddress),
+	})
 }
 
 func flattenIPV6Range(network linodego.IPv6Range) (

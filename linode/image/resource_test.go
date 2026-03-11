@@ -60,7 +60,7 @@ func init() {
 		F:    sweep,
 	})
 
-	regions, err := acceptance.GetRegionsWithCaps([]string{"Object Storage", "Linodes"}, "core")
+	regions, err := acceptance.GetRegionsWithCaps([]string{linodego.CapabilityObjectStorage, linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

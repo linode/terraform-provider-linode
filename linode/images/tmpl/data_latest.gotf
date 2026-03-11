@@ -13,7 +13,7 @@ data "linode_images" "foobar" {
 
     filter {
         name = "is_public"
-        values = ["false"]
+        values = [false]
     }
 }
 

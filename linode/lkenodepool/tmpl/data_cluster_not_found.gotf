@@ -1,0 +1,10 @@
+{{ define "lke_nodepool_data_cluster_not_found" }}
+
+{{ template "nodepool_template" . }}
+
+data "linode_lke_node_pool" "test" {
+    id         = linode_lke_node_pool.foobar.id
+    cluster_id = 0
+}
+
+{{ end }}

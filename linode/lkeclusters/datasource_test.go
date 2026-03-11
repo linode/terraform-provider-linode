@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkeclusters/tmpl"
 )
@@ -44,7 +45,7 @@ func init() {
 
 	k8sVersionLatest = k8sVersions[len(k8sVersions)-1]
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"kubernetes"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLKE}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

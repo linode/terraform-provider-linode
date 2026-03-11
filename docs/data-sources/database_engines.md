@@ -39,7 +39,7 @@ output "engine_ids" {
 Create a Linode MySQL Database using the latest support MySQL version:
 
 ```hcl
-resource "linode_database_mysql" "my_db" {
+resource "linode_database_mysql_v2" "my_db" {
   label = "mydb"
   engine_id = data.linode_database_engines.mysql.engines.0.id
   region = "us-southeast"
