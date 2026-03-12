@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/linode/linodego"
+	"github.com/stretchr/testify/require"
 )
 
 func TestExpandConfigInterface(t *testing.T) {
@@ -54,4 +55,21 @@ func TestFlattenConfigInterface(t *testing.T) {
 			t.Errorf("Mismatch for key %s: Expected %v, but got %v", key, expectedValue, resultValue)
 		}
 	}
+}
+
+func TestGetConfigDeviceKeys(t *testing.T) {
+	keys := GetConfigDeviceKeys()
+	require.Len(t, keys, 64)
+	require.Equal(t, "sda", keys[0])
+	require.Equal(t, "sdaa", keys[26])
+	require.Equal(t, "sdba", keys[52])
+	require.Equal(t, "sdbl", keys[63])
+}
+
+func TestGetConfigDeviceKeysMutationIsolation(t *testing.T) {
+	keys := GetConfigDeviceKeys()
+	keys[0] = "mutated"
+
+	refetched := GetConfigDeviceKeys()
+	require.Equal(t, "sda", refetched[0])
 }
