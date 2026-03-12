@@ -40,7 +40,7 @@ func getS3ClientFromModel(
 	endpointType *linodego.ObjectStorageEndpointType,
 	diags *diag.Diagnostics,
 ) (*s3.Client, func()) {
-	keys, teardownKeys := data.GetObjectStorageKeys(ctx, client, config, permission, endpointType, diags)
+	keys, teardownKeys := GetObjectStorageKeys(ctx, data, client, config, permission, endpointType, diags)
 	if diags.HasError() {
 		return nil, teardownKeys
 	}
