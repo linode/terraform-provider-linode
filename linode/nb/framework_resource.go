@@ -90,6 +90,16 @@ func (r *Resource) Create(
 		createOpts.VPCs = vpcs
 	}
 
+	if !data.FrontendVPCs.IsNull() {
+		frontendVPCs, d := frontendVPCModelsToLinodego(ctx, data.FrontendVPCs)
+		resp.Diagnostics.Append(d...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		createOpts.FrontendVPCs = frontendVPCs
+	}
+
 	if !data.Tags.IsNull() {
 		resp.Diagnostics.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
 		if resp.Diagnostics.HasError() {
@@ -121,6 +131,9 @@ func (r *Resource) Create(
 		return
 	}
 
+	// safeListVPCConfigs lists VPC configs for backend and fronted nodes.
+	// Backend VPC configs are configured through the "vpcs" attribute and
+	// frontend VPC configs are configured through the "frontend_vpcs" attribute.
 	vpcConfigs := safeListVPCConfigs(
 		ctx,
 		client,
@@ -384,18 +397,21 @@ func upgradeNodebalancerResourceStateV0toV1(
 	}
 
 	nbDataV1 := NodeBalancerModel{
-		ID:                 nbDataV0.ID,
-		Label:              nbDataV0.Label,
-		Region:             nbDataV0.Region,
-		ClientConnThrottle: nbDataV0.ClientConnThrottle,
-		Hostname:           nbDataV0.Hostname,
-		IPv4:               nbDataV0.IPv4,
-		IPv6:               nbDataV0.IPv6,
-		Created:            timetypes.RFC3339{StringValue: nbDataV0.Created},
-		Updated:            timetypes.RFC3339{StringValue: nbDataV0.Updated},
-		Tags:               nbDataV0.Tags,
-		Firewalls:          types.ListNull(firewallObjType),
-		Type:               types.StringValue("common"),
+		ID:                  nbDataV0.ID,
+		Label:               nbDataV0.Label,
+		Region:              nbDataV0.Region,
+		ClientConnThrottle:  nbDataV0.ClientConnThrottle,
+		Hostname:            nbDataV0.Hostname,
+		IPv4:                nbDataV0.IPv4,
+		IPv6:                nbDataV0.IPv6,
+		Created:             timetypes.RFC3339{StringValue: nbDataV0.Created},
+		Updated:             timetypes.RFC3339{StringValue: nbDataV0.Updated},
+		Tags:                nbDataV0.Tags,
+		Firewalls:           types.ListNull(firewallObjType),
+		Type:                types.StringValue("common"),
+		FrontendVPCs:        types.ListNull(frontendVPCObjType),
+		FrontendAddressType: types.StringNull(),
+		FrontendVPCSubnetID: types.Int64Null(),
 	}
 
 	var transferMap map[string]string

@@ -70,6 +70,14 @@ func VPC(t testing.TB, nodebalancer, region string) string {
 		})
 }
 
+func FrontendVPC(t testing.TB, nodebalancer, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_frontend_vpc", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
+}
+
 func DataVPC(t testing.TB, nodebalancer, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_data_vpc", TemplateData{

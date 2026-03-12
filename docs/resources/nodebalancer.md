@@ -81,6 +81,8 @@ This resource exports the following attributes:
 
 * [`vpcs`](#vpcs) - A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
+* [`frontend_vpcs`](#frontend_vpcs) - For internal load balancing, where the NodeBalancer is within a VPC, indicate a VPC subnet_id. For greater flexibility, you can specify the IP range within the subnet used for allocation.. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+
 ### transfer
 
 The following attributes are available on transfer:
@@ -142,6 +144,18 @@ The following arguments are supported under each entry of the `vpcs` attribute:
 * `ipv4_range` - (Optional) A CIDR range for the VPC's IPv4 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
 
 * `ipv4_range_auto_assign` - (Optional, Write-Only) Enables the use of a larger ipv4_range subnet for multiple NodeBalancers within the same VPC by allocating smaller /30 subnets for each NodeBalancer's backends.
+
+#### frontend_vpcs
+
+-> **Limited Availability** Frontend VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+
+The following arguments are supported under each entry of the `vpcs` attribute:
+
+* `subnet_id` - (Required) The VPC's subnet ID for the VPC based NodeBalancer.
+
+* `ipv4_range` - (Optional, Write-Only) A CIDR range for the VPC's IPv4 addresses allocated as the NodeBalancer's frontend IPs.
+
+* `ipv6_range` - (Optional, Write-Only) A CIDR range for the VPC's IPv6 addresses allocated as the NodeBalancer's frontend IPs.
 
 ## Import
 

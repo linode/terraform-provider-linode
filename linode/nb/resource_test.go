@@ -282,6 +282,74 @@ func TestAccResourceNodeBalancer_vpc(t *testing.T) {
 	})
 }
 
+func TestAccResourceNodeBalancer_frontendVPC(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_nodebalancer.test"
+	nodebalancerName := acctest.RandomWithPrefix("tf-test")
+
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{"NodeBalancers", "VPCs"}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkNodeBalancerDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.FrontendVPC(t, nodebalancerName, targetRegion),
+				Check:  checkNodeBalancerExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv4_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("frontend_vpcs"),
+						knownvalue.Null(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("frontend_address_type"),
+						knownvalue.NotNull(),
+					),
+					// statecheck.ExpectKnownValue(
+					// 	resName,
+					// 	tfjsonpath.New("frontend_vpc_subnet_id"),
+					// 	knownvalue.NotNull(),
+					// ),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("type"),
+						knownvalue.StringExact("premium"),
+					),
+				},
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id"}, // Ignore strict comparison for these attributes
+			},
+		},
+	})
+}
+
 func TestLinodeNodeBalancer_UpgradeV0(t *testing.T) {
 	t.Parallel()
 
