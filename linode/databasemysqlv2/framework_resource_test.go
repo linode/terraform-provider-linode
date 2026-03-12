@@ -33,7 +33,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases", "VPCs"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityDBAAS, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

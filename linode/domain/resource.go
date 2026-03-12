@@ -52,21 +52,45 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		return diag.Errorf("Error finding the specified Linode Domain: %s", err)
 	}
 
-	d.Set("domain", domain.Domain)
-	d.Set("type", domain.Type)
-	d.Set("group", domain.Group)
-	d.Set("status", domain.Status)
-	d.Set("description", domain.Description)
-	d.Set("master_ips", domain.MasterIPs)
-	if len(domain.AXfrIPs) > 0 {
-		d.Set("axfr_ips", domain.AXfrIPs)
+	if err := d.Set("domain", domain.Domain); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set domain: %w", err))
 	}
-	d.Set("ttl_sec", domain.TTLSec)
-	d.Set("retry_sec", domain.RetrySec)
-	d.Set("expire_sec", domain.ExpireSec)
-	d.Set("refresh_sec", domain.RefreshSec)
-	d.Set("soa_email", domain.SOAEmail)
-	d.Set("tags", domain.Tags)
+	if err := d.Set("type", domain.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set type: %w", err))
+	}
+	if err := d.Set("group", domain.Group); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set group: %w", err))
+	}
+	if err := d.Set("status", domain.Status); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set status: %w", err))
+	}
+	if err := d.Set("description", domain.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set description: %w", err))
+	}
+	if err := d.Set("master_ips", domain.MasterIPs); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set master_ips: %w", err))
+	}
+	if err := d.Set("axfr_ips", domain.AXfrIPs); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set axfr_ips: %w", err))
+	}
+	if err := d.Set("ttl_sec", domain.TTLSec); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set ttl_sec: %w", err))
+	}
+	if err := d.Set("retry_sec", domain.RetrySec); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set retry_sec: %w", err))
+	}
+	if err := d.Set("expire_sec", domain.ExpireSec); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set expire_sec: %w", err))
+	}
+	if err := d.Set("refresh_sec", domain.RefreshSec); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set refresh_sec: %w", err))
+	}
+	if err := d.Set("soa_email", domain.SOAEmail); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set soa_email: %w", err))
+	}
+	if err := d.Set("tags", domain.Tags); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set tags: %w", err))
+	}
 
 	return nil
 }
