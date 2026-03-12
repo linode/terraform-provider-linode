@@ -90,6 +90,12 @@ Each engine will be stored in the `databases` attribute and will export the foll
 
 * `version` - The Managed Database engine version.
 
+* `fork_restore_time` - The database timestamp from which it was restored.
+
+* `fork_source` - The ID of the database that was forked from.
+
+* `oldest_restore_time` - The oldest time to which a database can be restored.
+
 ## private_network
 
 The following arguments are exposed by the `private_network` attribute:

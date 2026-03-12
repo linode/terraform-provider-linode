@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -69,9 +70,11 @@ var resourceSchema = schema.Schema{
 			},
 		},
 		"disk_encryption": schema.StringAttribute{
-			Description: "The disk encryption policy for nodes in this pool. " +
-				"NOTE: Disk encryption may not currently be available to all users.",
-			Computed: true,
+			Description: "The disk encryption policy for nodes in this pool.",
+			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,
@@ -87,6 +90,9 @@ var resourceSchema = schema.Schema{
 			Description: "A list of nodes in the node pool.",
 			Computed:    true,
 			ElementType: nodeObjectType,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"labels": schema.MapAttribute{
 			Description: "Key-value pairs added as labels to nodes in the node pool. " +

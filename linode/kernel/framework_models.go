@@ -17,10 +17,11 @@ type DataSourceModel struct {
 	Label        types.String      `tfsdk:"label"`
 	PVOPS        types.Bool        `tfsdk:"pvops"`
 	Version      types.String      `tfsdk:"version"`
-	XEN          types.Bool        `tfsdk:"xen"`
+	// XEN is deprecated. Deprecated: this field is no longer populated by the API, but it is included here for backward compatibility with existing implementations.
+	XEN types.Bool `tfsdk:"xen"`
 }
 
-func (data *DataSourceModel) ParseKernel(ctx context.Context, kernel *linodego.LinodeKernel) {
+func (data *DataSourceModel) ParseKernel(_ context.Context, kernel *linodego.LinodeKernel) {
 	data.ID = types.StringValue(kernel.ID)
 	data.Architecture = types.StringValue(kernel.Architecture)
 	data.Built = timetypes.NewRFC3339TimePointerValue(kernel.Built)

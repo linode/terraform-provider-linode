@@ -30,21 +30,30 @@ var networkObjectType = types.ObjectType{
 	},
 }
 
+var vpcIPv6AddressObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"slaac_address": types.StringType,
+	},
+}
+
 var vpcNetworkObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
-		"address":       types.StringType,
-		"address_range": types.StringType,
-		"active":        types.BoolType,
-		"vpc_id":        types.Int64Type,
-		"subnet_id":     types.Int64Type,
-		"config_id":     types.Int64Type,
-		"interface_id":  types.Int64Type,
-		"gateway":       types.StringType,
-		"prefix":        types.Int64Type,
-		"region":        types.StringType,
-		"subnet_mask":   types.StringType,
-		"linode_id":     types.Int64Type,
-		"nat_1_1":       types.StringType,
+		"address":        types.StringType,
+		"address_range":  types.StringType,
+		"active":         types.BoolType,
+		"vpc_id":         types.Int64Type,
+		"subnet_id":      types.Int64Type,
+		"config_id":      types.Int64Type,
+		"interface_id":   types.Int64Type,
+		"gateway":        types.StringType,
+		"prefix":         types.Int64Type,
+		"region":         types.StringType,
+		"subnet_mask":    types.StringType,
+		"linode_id":      types.Int64Type,
+		"nat_1_1":        types.StringType,
+		"ipv6_range":     types.StringType,
+		"ipv6_is_public": types.BoolType,
+		"ipv6_addresses": types.ListType{ElemType: vpcIPv6AddressObjectType},
 	},
 }
 
@@ -72,6 +81,7 @@ var ipv6ObjectType = types.ObjectType{
 		"global":     types.ListType{ElemType: globalObjectType},
 		"link_local": types.ObjectType{AttrTypes: networkObjectType.AttrTypes},
 		"slaac":      types.ObjectType{AttrTypes: networkObjectType.AttrTypes},
+		"vpc":        types.ListType{ElemType: vpcNetworkObjectType},
 	},
 }
 

@@ -115,8 +115,6 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `disk_encryption` - The disk encryption policy for this instance.
 
-  * **NOTE: Disk encryption may not currently be available to all users.**
-
 * `lke_cluster_id` - If applicable, the ID of the LKE cluster this instance is a part of.
 
 * `specs.0.disk` -  The amount of storage space, in GB. this Linode has access to. A typical Linode will divide this space between a primary disk with an image deployed to it, and a swap disk, usually 512 MB. This is the default configuration created when deploying a Linode with an image through POST /linode/instances.
@@ -183,7 +181,7 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
   * `devices` -  A list of `disk` or `volume` attachments for this `config`.  If the `boot_config_label` omits a `devices` block, the Linode will not be booted.
 
-    * `sda` ... `sdh` -  The SDA-SDH slots, represent the Linux block device nodes for the first 8 disks attached to the Linode.  Each device must be suplied sequentially.  The device can be either a Disk or a Volume identified by `disk_label` or `volume_id`. Only one disk identifier is permitted per slot. Devices mapped from `sde` through `sdh` are unavailable in `"fullvirt"` `virt_mode`.
+    * `sda` ... `sdbl` - Device slots for attaching disks and volumes (named `sda`-`sdz`, `sdaa`-`sdaz`, `sdba`-`sdbl`). The maximum number of available devices is determined by the instance type's RAM (up to 64 devices). Each slot accepts either a Disk or Volume via `disk_label` or `volume_id`.
 
     * `disk_label` -  The `label` of the `disk` to map to this `device` slot.
 
