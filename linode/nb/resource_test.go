@@ -320,7 +320,17 @@ func TestAccResourceNodeBalancer_frontendVPC(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("frontend_vpcs"),
+						tfjsonpath.New("frontend_vpcs").AtSliceIndex(0).AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("frontend_vpcs").AtSliceIndex(0).AtMapKey("ipv4_range"),
+						knownvalue.Null(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("frontend_vpcs").AtSliceIndex(0).AtMapKey("ipv6_range"),
 						knownvalue.Null(),
 					),
 					statecheck.ExpectKnownValue(
@@ -328,11 +338,11 @@ func TestAccResourceNodeBalancer_frontendVPC(t *testing.T) {
 						tfjsonpath.New("frontend_address_type"),
 						knownvalue.NotNull(),
 					),
-					// statecheck.ExpectKnownValue(
-					// 	resName,
-					// 	tfjsonpath.New("frontend_vpc_subnet_id"),
-					// 	knownvalue.NotNull(),
-					// ),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("frontend_vpc_subnet_id"),
+						knownvalue.NotNull(),
+					),
 					statecheck.ExpectKnownValue(
 						resName,
 						tfjsonpath.New("type"),
@@ -344,7 +354,7 @@ func TestAccResourceNodeBalancer_frontendVPC(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id"}, // Ignore strict comparison for these attributes
+				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id", "frontend_vpcs"}, // Ignore strict comparison for these attributes
 			},
 		},
 	})

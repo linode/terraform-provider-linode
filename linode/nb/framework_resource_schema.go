@@ -95,7 +95,6 @@ var frameworkResourceSchemaFrontendVPCs = schema.NestedAttributeObject{
 		"subnet_id": schema.Int64Attribute{
 			Description: "The VPC's subnet ID for the VPC based NodeBalancer.",
 			Required:    true,
-			WriteOnly:   true,
 			PlanModifiers: []planmodifier.Int64{
 				int64planmodifier.UseStateForUnknown(),
 				int64planmodifier.RequiresReplace(),
@@ -235,8 +234,7 @@ var frameworkResourceSchema = schema.Schema{
 		"frontend_vpcs": schema.ListNestedAttribute{
 			Description: "For internal load balancing, where the NodeBalancer is within a VPC, " +
 				"indicate a VPC subnet_id. For greater flexibility, you can specify the IP range within the subnet used for allocation.",
-			Optional:  true,
-			WriteOnly: true,
+			Optional: true,
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.RequiresReplace(),
 				listplanmodifier.UseStateForUnknown(),

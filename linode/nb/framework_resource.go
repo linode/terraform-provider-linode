@@ -91,6 +91,7 @@ func (r *Resource) Create(
 	}
 
 	if !data.FrontendVPCs.IsNull() {
+		tflog.Debug(ctx, "NOTNULL FRONTEND")
 		frontendVPCs, d := frontendVPCModelsToLinodego(ctx, data.FrontendVPCs)
 		resp.Diagnostics.Append(d...)
 		if resp.Diagnostics.HasError() {
@@ -99,6 +100,10 @@ func (r *Resource) Create(
 
 		createOpts.FrontendVPCs = frontendVPCs
 	}
+
+	tflog.Debug(ctx, "XXX createOpts", map[string]any{
+		"createOpts": createOpts,
+	})
 
 	if !data.Tags.IsNull() {
 		resp.Diagnostics.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)

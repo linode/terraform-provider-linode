@@ -83,6 +83,10 @@ This resource exports the following attributes:
 
 * [`frontend_vpcs`](#frontend_vpcs) - For internal load balancing, where the NodeBalancer is within a VPC, indicate a VPC subnet_id. For greater flexibility, you can specify the IP range within the subnet used for allocation.. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
+* `frontend_address_type` - Indicates whether incoming requests are routed to NodeBalancers using VPC frontend IPs or public frontend IPs.
+
+* `frontend_vpc_subnet_id` - The VPC subnet assigned to this NodeBalancer.
+
 ### transfer
 
 The following attributes are available on transfer:

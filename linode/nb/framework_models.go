@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalls"
@@ -293,6 +294,8 @@ type NodeBalancerDataSourceModel struct {
 	Firewalls             []NBFirewallModel `tfsdk:"firewalls"`
 	VPCs                  types.List        `tfsdk:"vpcs"`
 	Type                  types.String      `tfsdk:"type"`
+	FrontendAddressType   types.String      `tfsdk:"frontend_address_type"`
+	FrontendVPCSubnetID   types.Int64       `tfsdk:"frontend_vpc_subnet_id"`
 }
 
 type NBFirewallModel struct {
@@ -325,6 +328,8 @@ func (data *NodeBalancerDataSourceModel) Flatten(
 	data.IPv6 = types.StringPointerValue(nodebalancer.IPv6)
 	data.Created = timetypes.NewRFC3339TimePointerValue(nodebalancer.Created)
 	data.Updated = timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated)
+	data.FrontendAddressType = types.StringValue(string(nodebalancer.FrontendAddressType))
+	data.FrontendVPCSubnetID = types.Int64PointerValue(helper.IntPtrToInt64Ptr(nodebalancer.FrontendVPCSubnetID))
 
 	transfer, diags := FlattenTransfer(ctx, nodebalancer.Transfer)
 	if diags.HasError() {
@@ -493,6 +498,11 @@ func frontendVPCModelsToLinodego(
 		frontendVPCModels,
 		func(vpcModel ResourceFrontendVPCModel) linodego.NodeBalancerFrontendVPCOptions {
 			result, localD := vpcModel.ToLinodego()
+			tflog.Debug(ctx, "Converted frontend VPC model to Linodego object", map[string]any{
+				"subnet_id":  vpcModel.SubnetID.ValueInt64(),
+				"ipv4_range": vpcModel.IPv4Range.ValueString(),
+				"ipv6_range": vpcModel.IPv6Range.ValueString(),
+			})
 			d.Append(localD...)
 			return *result
 		},
