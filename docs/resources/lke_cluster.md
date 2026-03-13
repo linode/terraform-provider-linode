@@ -175,7 +175,7 @@ The following arguments are supported:
 
 * `region` - (Required) This Kubernetes cluster's location.
 
-* [`pool`](#pool) - (Required) The Node Pool specifications for the Kubernetes cluster. At least one Node Pool is required.
+* [`pool`](#pool) - (Required) The Node Pool specifications for the Kubernetes cluster. At least one Node Pool is required for standard tier clusters. Enterprise tier clusters (`tier = "enterprise"`) may be created with zero inline pools.
 
 * [`control_plane`](#control_plane) (Optional) Defines settings for the Kubernetes Control Plane.
 
@@ -221,6 +221,10 @@ The following arguments are supported in the `pool` specification block:
 
 * [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
 
+* `disk_encryption` - (Optional) The disk encryption policy for nodes in this pool. Accepted values are `enabled` and `disabled`. Changing this forces recreation of the pool.
+
+* [`isolation`](#isolation) - (Optional) Network isolation settings for the node pool.
+
 * `k8s_version` - (Optional) The k8s version of the nodes in this Node Pool. For LKE enterprise only and may not currently available to all users even under v4beta.
 
 * `update_strategy` - (Optional) The strategy for updating the Node Pool k8s version. For LKE enterprise only and may not currently available to all users even under v4beta.
@@ -232,6 +236,14 @@ The following arguments are supported in the `autoscaler` specification block:
 * `min` - (Required) The minimum number of nodes to autoscale to.
 
 * `max` - (Required) The maximum number of nodes to autoscale to.
+
+### isolation
+
+The following arguments are supported in the `isolation` specification block:
+
+* `public_ipv4` - (Optional) Whether nodes in this pool should have public IPv4 addresses. Defaults to `true`.
+
+* `public_ipv6` - (Optional) Whether nodes in this pool should have public IPv6 addresses. Defaults to `true`.
 
 ### control_plane
 
@@ -275,11 +287,23 @@ In addition to all arguments above, the following attributes are exported:
 
 * `apl_enabled` - Enables the App Platform Layer
 
+* `ruleset_ids` - The IDs of the service-managed firewall rulesets automatically created for LKE Enterprise clusters. Only populated for enterprise tier clusters.
+
+  * `inbound` - The ID of the inbound service-managed ruleset.
+
+  * `outbound` - The ID of the outbound service-managed ruleset.
+
 * `pool` - Additional nested attributes:
 
   * `id` - The ID of the Node Pool.
 
   * `disk_encryption` - The disk encryption policy for nodes in this pool.
+
+  * `isolation` - Network isolation settings for the node pool.
+
+    * `public_ipv4` - Whether nodes have public IPv4 addresses.
+
+    * `public_ipv6` - Whether nodes have public IPv6 addresses.
 
   * [`nodes`](#nodes) - The nodes in the Node Pool.
 
