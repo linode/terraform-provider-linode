@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalls"
@@ -132,6 +131,26 @@ func (data *NodeBalancerModel) Flatten(
 
 	// We cannot set frontend VPC configs as the values returned from the API might be modified
 	// and different than what was provided in the config. `frontend_vpcs` is an Optional, WriteOnly attribute.
+
+	frontendVPCConfigs := filterVPCConfigsByPurpose(vpcConfigs, linodego.NodeBalancerVPCConfigPurposeFrontend)
+	if len(frontendVPCConfigs) > 0 {
+		subnetID := frontendVPCConfigs[0].SubnetID
+
+		frontendVPCConfigsModels := []ResourceFrontendVPCModel{
+			{
+				BaseVPCModel: BaseVPCModel{
+					SubnetID: types.Int64Value(int64(subnetID)),
+					// IPv4Range: types.StringValue(frontendVPCConfigs[0].IPv4Range),
+				},
+				// IPv6Range: types.StringValue(frontendVPCConfigs[0].IPv6Range),
+			},
+		}
+		frontendVPCs, diags := types.ListValueFrom(ctx, frameworkResourceSchemaFrontendVPCs.Type(), frontendVPCConfigsModels)
+		if diags.HasError() {
+			return diags
+		}
+		data.FrontendVPCs = helper.KeepOrUpdateValue(data.FrontendVPCs, frontendVPCs, preserveKnown)
+	}
 
 	data.FrontendAddressType = helper.KeepOrUpdateString(
 		data.FrontendAddressType,
@@ -498,11 +517,6 @@ func frontendVPCModelsToLinodego(
 		frontendVPCModels,
 		func(vpcModel ResourceFrontendVPCModel) linodego.NodeBalancerFrontendVPCOptions {
 			result, localD := vpcModel.ToLinodego()
-			tflog.Debug(ctx, "Converted frontend VPC model to Linodego object", map[string]any{
-				"subnet_id":  vpcModel.SubnetID.ValueInt64(),
-				"ipv4_range": vpcModel.IPv4Range.ValueString(),
-				"ipv6_range": vpcModel.IPv6Range.ValueString(),
-			})
 			d.Append(localD...)
 			return *result
 		},
