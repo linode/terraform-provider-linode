@@ -129,9 +129,10 @@ func (data *NodeBalancerModel) Flatten(
 		return diags
 	}
 
-	// We cannot set frontend VPC configs as the values returned from the API might be modified
+	// We cannot set frontend VPC configs as-is as the values returned from the API might be modified
 	// and different than what was provided in the config. `frontend_vpcs` is an Optional, WriteOnly attribute.
-
+	// In order to avoid diff after import, `subnet_id` is extracted from the API response and used to populate
+	// `frontend_vpc_subnet_id` attribute, omitting `ipv4_range` and `ipv6_range` attributes.
 	frontendVPCConfigs := filterVPCConfigsByPurpose(vpcConfigs, linodego.NodeBalancerVPCConfigPurposeFrontend)
 	if len(frontendVPCConfigs) > 0 {
 		subnetID := frontendVPCConfigs[0].SubnetID
@@ -140,9 +141,7 @@ func (data *NodeBalancerModel) Flatten(
 			{
 				BaseVPCModel: BaseVPCModel{
 					SubnetID: types.Int64Value(int64(subnetID)),
-					// IPv4Range: types.StringValue(frontendVPCConfigs[0].IPv4Range),
 				},
-				// IPv6Range: types.StringValue(frontendVPCConfigs[0].IPv6Range),
 			},
 		}
 		frontendVPCs, diags := types.ListValueFrom(ctx, frameworkResourceSchemaFrontendVPCs.Type(), frontendVPCConfigsModels)
