@@ -9,9 +9,11 @@ import (
 var filterConfig = frameworkfilter.Config{
 	"id":              {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 	"ipv4_range":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"ipv6_range":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"nodebalancer_id": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 	"subnet_id":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 	"vpc_id":          {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"purpose":         {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDatasourceSchema = schema.Schema{

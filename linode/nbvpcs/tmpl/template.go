@@ -26,3 +26,19 @@ func DataFilter(t testing.TB, label, region string) string {
 			Region: region,
 		})
 }
+
+func DataFrontendVPC(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nbvpcs_data_frontend_vpc", TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}
+
+func DataFrontendVPCFilter(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nbvpcs_data_frontend_vpc_filter", TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}
