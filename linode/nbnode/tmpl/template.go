@@ -21,7 +21,7 @@ type InstanceTemplateData struct {
 	RootPass string
 }
 
-func Basic(t testing.TB, nodebalancer, region string, rootPass string) string {
+func Basic(t testing.TB, nodebalancer, region, rootPass, nbType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_basic",
 		TemplateData{
@@ -36,12 +36,13 @@ func Basic(t testing.TB, nodebalancer, region string, rootPass string) string {
 				NodeBalancer: tmpl.TemplateData{
 					Label:  nodebalancer,
 					Region: region,
+					Type:   nbType,
 				},
 			},
 		})
 }
 
-func Updates(t testing.TB, nodebalancer, region string, rootPass string) string {
+func Updates(t testing.TB, nodebalancer, region, rootPass, nbType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_updates",
 		TemplateData{
@@ -56,12 +57,13 @@ func Updates(t testing.TB, nodebalancer, region string, rootPass string) string 
 				NodeBalancer: tmpl.TemplateData{
 					Label:  nodebalancer,
 					Region: region,
+					Type:   nbType,
 				},
 			},
 		})
 }
 
-func VPC(t testing.TB, nodebalancer, region string, rootPass string) string {
+func VPC(t testing.TB, nodebalancer, region, rootPass, nbType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_vpc",
 		TemplateData{
@@ -70,12 +72,13 @@ func VPC(t testing.TB, nodebalancer, region string, rootPass string) string {
 				NodeBalancer: tmpl.TemplateData{
 					Label:  nodebalancer,
 					Region: region,
+					Type:   nbType,
 				},
 			},
 		})
 }
 
-func DataBasic(t testing.TB, nodebalancer, region string, rootPass string) string {
+func DataBasic(t testing.TB, nodebalancer, region, rootPass, nbType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_data_basic",
 		TemplateData{
@@ -90,12 +93,13 @@ func DataBasic(t testing.TB, nodebalancer, region string, rootPass string) strin
 				NodeBalancer: tmpl.TemplateData{
 					Label:  nodebalancer,
 					Region: region,
+					Type:   nbType,
 				},
 			},
 		})
 }
 
-func DataVPC(t testing.TB, nodebalancer, region string, rootPass string) string {
+func DataVPC(t testing.TB, nodebalancer, region, rootPass, nbType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_data_vpc",
 		TemplateData{
@@ -104,6 +108,7 @@ func DataVPC(t testing.TB, nodebalancer, region string, rootPass string) string 
 				NodeBalancer: tmpl.TemplateData{
 					Label:  nodebalancer,
 					Region: region,
+					Type:   nbType,
 				},
 			},
 		})

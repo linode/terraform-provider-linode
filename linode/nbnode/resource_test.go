@@ -37,7 +37,7 @@ func TestAccResourceNodeBalancerNode_basic(t *testing.T) {
 
 	resName := "linode_nodebalancer_node.foonode"
 	nodeName := acctest.RandomWithPrefix("tf_test")
-	config := tmpl.Basic(t, nodeName, testRegion, acctest.RandString(64))
+	config := tmpl.Basic(t, nodeName, testRegion, acctest.RandString(64), "common")
 
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
@@ -72,6 +72,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 	resName := "linode_nodebalancer_node.foonode"
 	nodeName := acctest.RandomWithPrefix("tf_test")
 	rootPass := acctest.RandString(64)
+	nbType := "common"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -80,7 +81,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, nodeName, testRegion, rootPass),
+				Config: tmpl.Basic(t, nodeName, testRegion, rootPass, nbType),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", nodeName),
@@ -88,7 +89,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Updates(t, nodeName, testRegion, rootPass),
+				Config: tmpl.Updates(t, nodeName, testRegion, rootPass, nbType),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", nodeName)),
@@ -111,6 +112,7 @@ func TestAccResourceNodeBalancerNode_vpc(t *testing.T) {
 	resName := "linode_nodebalancer_node.test"
 	label := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
+	nbType := "common"
 
 	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{"NodeBalancers", "VPCs"}, "core")
 	if err != nil {
@@ -124,7 +126,7 @@ func TestAccResourceNodeBalancerNode_vpc(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.VPC(t, label, targetRegion, rootPass),
+				Config: tmpl.VPC(t, label, targetRegion, rootPass, nbType),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resName,
@@ -144,7 +146,7 @@ func TestAccResourceNodeBalancerNode_vpc(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resName,
 						tfjsonpath.New("address"),
-						knownvalue.StringExact("10.0.0.5:80"),
+						knownvalue.StringExact("10.0.0.50:80"),
 					),
 					statecheck.ExpectKnownValue(
 						resName,
@@ -159,7 +161,7 @@ func TestAccResourceNodeBalancerNode_vpc(t *testing.T) {
 				},
 			},
 			{
-				Config: tmpl.VPC(t, label, targetRegion, rootPass),
+				Config: tmpl.VPC(t, label, targetRegion, rootPass, nbType),
 			},
 			{
 				ResourceName:            resName,

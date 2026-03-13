@@ -36,6 +36,8 @@ type NodeBalancerModel struct {
 	Transfer              types.List        `tfsdk:"transfer"`
 	Tags                  types.Set         `tfsdk:"tags"`
 	Type                  types.String      `tfsdk:"type"`
+	FrontendAddressType   types.String      `tfsdk:"frontend_address_type"`
+	FrontendVPCSubnetID   types.Int64       `tfsdk:"frontend_vpc_subnet_id"`
 }
 
 func (data *NodeBalancerFilterModel) parseNodeBalancers(
@@ -59,7 +61,6 @@ func (data *NodeBalancerModel) flattenNodeBalancer(
 	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Label = types.StringPointerValue(nodebalancer.Label)
 	data.Type = types.StringValue(string(nodebalancer.Type))
-	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Region = types.StringValue(nodebalancer.Region)
 	data.ClientConnThrottle = types.Int64Value(int64(nodebalancer.ClientConnThrottle))
 	data.ClientUDPSessThrottle = types.Int64Value(int64(nodebalancer.ClientUDPSessThrottle))
@@ -68,6 +69,8 @@ func (data *NodeBalancerModel) flattenNodeBalancer(
 	data.Ipv6 = types.StringPointerValue(nodebalancer.IPv6)
 	data.Created = timetypes.NewRFC3339TimePointerValue(nodebalancer.Created)
 	data.Updated = timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated)
+	data.FrontendAddressType = types.StringValue(string(nodebalancer.FrontendAddressType))
+	data.FrontendVPCSubnetID = types.Int64PointerValue(helper.IntPtrToInt64Ptr(nodebalancer.FrontendVPCSubnetID))
 
 	transfer, diags := nb.FlattenTransfer(ctx, nodebalancer.Transfer)
 	if diags.HasError() {

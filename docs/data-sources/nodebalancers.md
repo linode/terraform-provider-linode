@@ -63,8 +63,6 @@ Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and wil
 
 * `created` – When this Linode NodeBalancer was created.
 
-* `linode_id` - The ID of a Linode Instance where the NodeBalancer should be attached.
-
 * `tags` - A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
 * `hostname` - This NodeBalancer's hostname, ending with .ip.linodeusercontent.com.
@@ -82,6 +80,10 @@ Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and wil
 * [`transfer`](#transfer) - The network transfer stats for the current month.
 
 * `type` - The type of this NodeBalancer.
+
+* `frontend_address_type` - Indicates whether incoming requests are routed to NodeBalancers using VPC frontend IPs or public frontend IPs.
+
+* `frontend_vpc_subnet_id` - The VPC subnet assigned to this NodeBalancer.
 
 ### transfer
 
