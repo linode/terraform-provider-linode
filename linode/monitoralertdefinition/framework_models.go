@@ -65,7 +65,7 @@ type AlertChannelModel struct {
 	ID    types.Int64  `tfsdk:"id"`
 	Label types.String `tfsdk:"label"`
 	Type  types.String `tfsdk:"type"`
-	Url   types.String `tfsdk:"url"`
+	URL   types.String `tfsdk:"url"`
 }
 
 type TriggerConditionsModel struct {
@@ -126,26 +126,26 @@ var triggerConditionsObjectType = types.ObjectType{
 
 func (data *AlertDefinitionDataSourceModel) FlattenDataSourceModel(
 	ctx context.Context,
-	alertdefinition *linodego.AlertDefinition,
+	alertDefinition *linodego.AlertDefinition,
 	preserveKnown bool,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
-	data.ID = helper.KeepOrUpdateInt64(data.ID, int64(alertdefinition.ID), preserveKnown)
-	data.ServiceType = helper.KeepOrUpdateString(data.ServiceType, alertdefinition.ServiceType, preserveKnown)
-	data.Description = helper.KeepOrUpdateString(data.Description, alertdefinition.Description, preserveKnown)
-	data.Label = helper.KeepOrUpdateString(data.Label, alertdefinition.Label, preserveKnown)
-	data.Status = helper.KeepOrUpdateString(data.Status, string(alertdefinition.Status), preserveKnown)
-	data.Severity = helper.KeepOrUpdateInt64(data.Severity, int64(alertdefinition.Severity), preserveKnown)
-	data.Type = helper.KeepOrUpdateString(data.Type, alertdefinition.Type, preserveKnown)
-	data.HasMoreResources = helper.KeepOrUpdateBool(data.HasMoreResources, alertdefinition.HasMoreResources, preserveKnown)
-	data.CreatedBy = helper.KeepOrUpdateString(data.CreatedBy, alertdefinition.CreatedBy, preserveKnown)
-	data.UpdatedBy = helper.KeepOrUpdateString(data.UpdatedBy, alertdefinition.UpdatedBy, preserveKnown)
-	data.Class = helper.KeepOrUpdateString(data.Class, alertdefinition.Class, preserveKnown)
+	data.ID = helper.KeepOrUpdateInt64(data.ID, int64(alertDefinition.ID), preserveKnown)
+	data.ServiceType = helper.KeepOrUpdateString(data.ServiceType, alertDefinition.ServiceType, preserveKnown)
+	data.Description = helper.KeepOrUpdateString(data.Description, alertDefinition.Description, preserveKnown)
+	data.Label = helper.KeepOrUpdateString(data.Label, alertDefinition.Label, preserveKnown)
+	data.Status = helper.KeepOrUpdateString(data.Status, string(alertDefinition.Status), preserveKnown)
+	data.Severity = helper.KeepOrUpdateInt64(data.Severity, int64(alertDefinition.Severity), preserveKnown)
+	data.Type = helper.KeepOrUpdateString(data.Type, alertDefinition.Type, preserveKnown)
+	data.HasMoreResources = helper.KeepOrUpdateBool(data.HasMoreResources, alertDefinition.HasMoreResources, preserveKnown)
+	data.CreatedBy = helper.KeepOrUpdateString(data.CreatedBy, alertDefinition.CreatedBy, preserveKnown)
+	data.UpdatedBy = helper.KeepOrUpdateString(data.UpdatedBy, alertDefinition.UpdatedBy, preserveKnown)
+	data.Class = helper.KeepOrUpdateString(data.Class, alertDefinition.Class, preserveKnown)
 
 	data.EntityIDs = helper.KeepOrUpdateList(
 		types.StringType,
 		data.EntityIDs,
-		helper.StringSliceToFrameworkValueSlice(alertdefinition.EntityIDs),
+		helper.StringSliceToFrameworkValueSlice(alertDefinition.EntityIDs),
 		preserveKnown,
 		&diags,
 	)
@@ -155,13 +155,13 @@ func (data *AlertDefinitionDataSourceModel) FlattenDataSourceModel(
 	}
 
 	data.Created = helper.KeepOrUpdateValue(
-		data.Created, timetypes.NewRFC3339TimePointerValue(alertdefinition.Created), preserveKnown,
+		data.Created, timetypes.NewRFC3339TimePointerValue(alertDefinition.Created), preserveKnown,
 	)
 	data.Updated = helper.KeepOrUpdateValue(
-		data.Updated, timetypes.NewRFC3339TimePointerValue(alertdefinition.Updated), preserveKnown,
+		data.Updated, timetypes.NewRFC3339TimePointerValue(alertDefinition.Updated), preserveKnown,
 	)
 
-	channels, channelIDs, d := flattenAlertChannels(ctx, alertdefinition.AlertChannels)
+	channels, channelIDs, d := flattenAlertChannels(ctx, alertDefinition.AlertChannels)
 	if d != nil {
 		diags.Append(d...)
 		return diags
@@ -192,7 +192,7 @@ func (data *AlertDefinitionDataSourceModel) FlattenDataSourceModel(
 		false,
 		&diags,
 		func(m *RuleCriteriaModel, isNull *bool, p bool, d *diag.Diagnostics) {
-			m.flattenRuleCriteria(ctx, alertdefinition.RuleCriteria, p, d)
+			m.flattenRuleCriteria(ctx, alertDefinition.RuleCriteria, p, d)
 		},
 	)
 
@@ -209,7 +209,7 @@ func (data *AlertDefinitionDataSourceModel) FlattenDataSourceModel(
 		preserveKnown,
 		&diags,
 		func(triggerConditionsModel *TriggerConditionsModel, _ *bool, preserveKnown bool, _ *diag.Diagnostics) {
-			triggerConditionsModel.flattenTriggerConditionsModel(&alertdefinition.TriggerConditions, preserveKnown)
+			triggerConditionsModel.flattenTriggerConditionsModel(&alertDefinition.TriggerConditions, preserveKnown)
 		},
 	)
 
@@ -224,26 +224,26 @@ func (data *AlertDefinitionDataSourceModel) FlattenDataSourceModel(
 
 func (data *AlertDefinitionResourceModel) flattenResourceModel(
 	ctx context.Context,
-	alertdefinition *linodego.AlertDefinition,
+	alertDefinition *linodego.AlertDefinition,
 	preserveKnown bool,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
-	data.ID = helper.KeepOrUpdateInt64(data.ID, int64(alertdefinition.ID), preserveKnown)
-	data.ServiceType = helper.KeepOrUpdateString(data.ServiceType, alertdefinition.ServiceType, preserveKnown)
-	data.Description = helper.KeepOrUpdateString(data.Description, alertdefinition.Description, preserveKnown)
-	data.Label = helper.KeepOrUpdateString(data.Label, alertdefinition.Label, preserveKnown)
-	data.Status = helper.KeepOrUpdateString(data.Status, string(alertdefinition.Status), preserveKnown)
-	data.Severity = helper.KeepOrUpdateInt64(data.Severity, int64(alertdefinition.Severity), preserveKnown)
-	data.Type = helper.KeepOrUpdateString(data.Type, alertdefinition.Type, preserveKnown)
-	data.HasMoreResources = helper.KeepOrUpdateBool(data.HasMoreResources, alertdefinition.HasMoreResources, preserveKnown)
-	data.CreatedBy = helper.KeepOrUpdateString(data.CreatedBy, alertdefinition.CreatedBy, preserveKnown)
-	data.UpdatedBy = helper.KeepOrUpdateString(data.UpdatedBy, alertdefinition.UpdatedBy, preserveKnown)
-	data.Class = helper.KeepOrUpdateString(data.Class, alertdefinition.Class, preserveKnown)
+	data.ID = helper.KeepOrUpdateInt64(data.ID, int64(alertDefinition.ID), preserveKnown)
+	data.ServiceType = helper.KeepOrUpdateString(data.ServiceType, alertDefinition.ServiceType, preserveKnown)
+	data.Description = helper.KeepOrUpdateString(data.Description, alertDefinition.Description, preserveKnown)
+	data.Label = helper.KeepOrUpdateString(data.Label, alertDefinition.Label, preserveKnown)
+	data.Status = helper.KeepOrUpdateString(data.Status, string(alertDefinition.Status), preserveKnown)
+	data.Severity = helper.KeepOrUpdateInt64(data.Severity, int64(alertDefinition.Severity), preserveKnown)
+	data.Type = helper.KeepOrUpdateString(data.Type, alertDefinition.Type, preserveKnown)
+	data.HasMoreResources = helper.KeepOrUpdateBool(data.HasMoreResources, alertDefinition.HasMoreResources, preserveKnown)
+	data.CreatedBy = helper.KeepOrUpdateString(data.CreatedBy, alertDefinition.CreatedBy, preserveKnown)
+	data.UpdatedBy = helper.KeepOrUpdateString(data.UpdatedBy, alertDefinition.UpdatedBy, preserveKnown)
+	data.Class = helper.KeepOrUpdateString(data.Class, alertDefinition.Class, preserveKnown)
 	data.WaitFor = helper.KeepOrUpdateBool(data.WaitFor, data.WaitFor.ValueBool(), preserveKnown)
 	data.EntityIDs = helper.KeepOrUpdateList(
 		types.StringType,
 		data.EntityIDs,
-		helper.StringSliceToFrameworkValueSlice(alertdefinition.EntityIDs),
+		helper.StringSliceToFrameworkValueSlice(alertDefinition.EntityIDs),
 		preserveKnown,
 		&diags,
 	)
@@ -253,13 +253,13 @@ func (data *AlertDefinitionResourceModel) flattenResourceModel(
 	}
 
 	data.Created = helper.KeepOrUpdateValue(
-		data.Created, timetypes.NewRFC3339TimePointerValue(alertdefinition.Created), preserveKnown,
+		data.Created, timetypes.NewRFC3339TimePointerValue(alertDefinition.Created), preserveKnown,
 	)
 	data.Updated = helper.KeepOrUpdateValue(
-		data.Updated, timetypes.NewRFC3339TimePointerValue(alertdefinition.Updated), preserveKnown,
+		data.Updated, timetypes.NewRFC3339TimePointerValue(alertDefinition.Updated), preserveKnown,
 	)
 
-	channels, channelIDs, d := flattenAlertChannels(ctx, alertdefinition.AlertChannels)
+	channels, channelIDs, d := flattenAlertChannels(ctx, alertDefinition.AlertChannels)
 	if d != nil {
 		diags.Append(d...)
 		return diags
@@ -290,7 +290,7 @@ func (data *AlertDefinitionResourceModel) flattenResourceModel(
 		false,
 		&diags,
 		func(m *RuleCriteriaModel, isNull *bool, p bool, d *diag.Diagnostics) {
-			m.flattenRuleCriteria(ctx, alertdefinition.RuleCriteria, p, d)
+			m.flattenRuleCriteria(ctx, alertDefinition.RuleCriteria, p, d)
 		},
 	)
 
@@ -305,7 +305,7 @@ func (data *AlertDefinitionResourceModel) flattenResourceModel(
 		preserveKnown,
 		&diags,
 		func(triggerConditionsModel *TriggerConditionsModel, _ *bool, preserveKnown bool, _ *diag.Diagnostics) {
-			triggerConditionsModel.flattenTriggerConditionsModel(&alertdefinition.TriggerConditions, preserveKnown)
+			triggerConditionsModel.flattenTriggerConditionsModel(&alertDefinition.TriggerConditions, preserveKnown)
 		},
 	)
 
@@ -433,7 +433,7 @@ func flattenAlertChannels(
 		aChannelModels[i].ID = types.Int64Value(int64(channel.ID))
 		aChannelModels[i].Label = types.StringValue(channel.Label)
 		aChannelModels[i].Type = types.StringValue(channel.Type)
-		aChannelModels[i].Url = types.StringValue(channel.URL)
+		aChannelModels[i].URL = types.StringValue(channel.URL)
 
 		// Collect channel IDs
 		channelIDs[i] = channel.ID

@@ -7,7 +7,7 @@ Get Monitor Alert Definition.
 # linode\_monitor\_alert\_definition
 
 Retrieves Monitor Alert Definitions.
-For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-monitor-alert-definitions). (**Note: v4beta only.**)
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-alert-definition). (**Note: v4beta only.**)
 
 ## Example Usage
 

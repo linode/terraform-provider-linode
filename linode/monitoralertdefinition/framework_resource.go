@@ -63,7 +63,7 @@ func (r *Resource) Create(
 		Severity:    severity,
 	}
 
-	if !data.TriggerConditions.IsUnknown() || !data.TriggerConditions.IsNull() {
+	if !data.TriggerConditions.IsUnknown() && !data.TriggerConditions.IsNull() {
 		createOpts.TriggerConditions = flattenTriggerConditions(ctx, data.TriggerConditions, &resp.Diagnostics)
 	}
 
@@ -71,7 +71,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	if !data.RuleCriteria.IsUnknown() || !data.RuleCriteria.IsNull() {
+	if !data.RuleCriteria.IsUnknown() && !data.RuleCriteria.IsNull() {
 		createOpts.RuleCriteria = flattenRuleCriteriaOpts(ctx, data.RuleCriteria, &resp.Diagnostics)
 	}
 
@@ -217,28 +217,28 @@ func (r *Resource) Update(
 			Status:      &status,
 		}
 
-		if !plan.EntityIDs.IsUnknown() || !plan.EntityIDs.IsNull() {
+		if !plan.EntityIDs.IsUnknown() && !plan.EntityIDs.IsNull() {
 			resp.Diagnostics.Append(plan.EntityIDs.ElementsAs(ctx, &updateOpts.EntityIDs, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
 		}
 
-		if !plan.ChannelIDs.IsUnknown() || !plan.ChannelIDs.IsNull() {
+		if !plan.ChannelIDs.IsUnknown() && !plan.ChannelIDs.IsNull() {
 			resp.Diagnostics.Append(plan.ChannelIDs.ElementsAs(ctx, &updateOpts.ChannelIDs, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
 		}
 
-		if !plan.TriggerConditions.IsUnknown() || !plan.TriggerConditions.IsNull() {
+		if !plan.TriggerConditions.IsUnknown() && !plan.TriggerConditions.IsNull() {
 			updateOpts.TriggerConditions = flattenTriggerConditions(ctx, plan.TriggerConditions, &resp.Diagnostics)
 			if resp.Diagnostics.HasError() {
 				return
 			}
 		}
 
-		if !plan.RuleCriteria.IsUnknown() || !plan.RuleCriteria.IsNull() {
+		if !plan.RuleCriteria.IsUnknown() && !plan.RuleCriteria.IsNull() {
 			updateOpts.RuleCriteria = flattenRuleCriteriaOpts(ctx, plan.RuleCriteria, &resp.Diagnostics)
 			if resp.Diagnostics.HasError() {
 				return
