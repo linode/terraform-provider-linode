@@ -32,6 +32,9 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/domainzonefile"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalldevice"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewallrulesexpansion"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewallruleset"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewallrulesets"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalls"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewallsettings"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalltemplate"
@@ -82,6 +85,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/placementgroup"
 	"github.com/linode/terraform-provider-linode/v3/linode/placementgroupassignment"
 	"github.com/linode/terraform-provider-linode/v3/linode/placementgroups"
+	"github.com/linode/terraform-provider-linode/v3/linode/prefixlist"
+	"github.com/linode/terraform-provider-linode/v3/linode/prefixlists"
 	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroup"
 	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroupimageshares"
 	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroupmember"
@@ -243,6 +248,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		accountsettings.NewResource,
 		firewall.NewResource,
 		firewalldevice.NewResource,
+		firewallruleset.NewResource,
 		image.NewResource,
 		instancedisk.NewResource,
 		instanceip.NewResource,
@@ -283,6 +289,9 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		account.NewDataSource,
 		backup.NewDataSource,
 		firewall.NewDataSource,
+		firewallrulesexpansion.NewDataSource,
+		firewallruleset.NewDataSource,
+		firewallrulesets.NewDataSource,
 		kernel.NewDataSource,
 		stackscript.NewDataSource,
 		stackscripts.NewDataSource,
@@ -367,5 +376,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		consumerimagesharegroup.NewDataSource,
 		consumerimagesharegroupimageshares.NewDataSource,
 		lkenodepool.NewDataSource,
+		prefixlist.NewDataSource,
+		prefixlists.NewDataSource,
 	}
 }

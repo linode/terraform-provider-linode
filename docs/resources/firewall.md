@@ -79,10 +79,14 @@ The following arguments are supported:
 * `disabled` - (Optional) If `true`, the Firewall's rules are not enforced (defaults to `false`).
 
 * [`inbound`](#inbound) - (Optional) A firewall rule that specifies what inbound network traffic is allowed.
+
+* `inbound_ruleset` - (Optional) A list of Firewall Rule Set IDs to reference as inbound rules. Ruleset references are prepended before any inline `inbound` rules.
   
 * `inbound_policy` - (Required) The default behavior for inbound traffic. This setting can be overridden by updating the inbound.action property of the Firewall Rule. (`ACCEPT`, `DROP`)
 
 * [`outbound`](#outbound) - (Optional) A firewall rule that specifies what outbound network traffic is allowed.
+
+* `outbound_ruleset` - (Optional) A list of Firewall Rule Set IDs to reference as outbound rules. Ruleset references are prepended before any inline `outbound` rules.
   
 * `outbound_policy` - (Required) The default behavior for outbound traffic. This setting can be overridden by updating the outbound.action property for an individual Firewall Rule. (`ACCEPT`, `DROP`)
 
@@ -108,9 +112,9 @@ The following arguments are supported in the inbound and outbound rule blocks:
 
 * `ports` - (Optional) A string representation of ports and/or port ranges (i.e. "443" or "80-90, 91").
   
-* `ipv4` - (Optional) A list of IPv4 addresses or networks. Must be in IP/mask (CIDR) format.
+* `ipv4` - (Optional) A list of IPv4 addresses or networks in CIDR format, or prefix list tokens (e.g. `pl::subnets:123`, `pl:system:ps:managed:container:registry`).
 
-* `ipv6` - (Optional) A list of IPv6 addresses or networks. Must be in IP/mask (CIDR) format.
+* `ipv6` - (Optional) A list of IPv6 addresses or networks in CIDR format, or prefix list tokens (e.g. `pl::subnets:123`, `pl:system:ps:managed:container:registry`).
 
 ## Attributes Reference
 
@@ -119,6 +123,8 @@ In addition to all arguments above, the following attributes are exported:
 * `id` - The ID of the Firewall.
 
 * `status` - The status of the Firewall.
+
+* `version` - The version number of the Firewall's rule configuration. This is incremented each time the Firewall's rules are changed.
 
 * [`devices`](#devices) - The devices governed by the Firewall.
 
