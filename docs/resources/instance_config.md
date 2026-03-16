@@ -181,7 +181,7 @@ The following arguments are supported:
 
 The following attributes are available on devices:
 
-* `sda` ... `sdh` - (Optional) The SDA-SDH slots, represent the Linux block device nodes for the first 8 disks attached to the Linode.  Each device must be suplied sequentially.  The device can be either a Disk or a Volume identified by `disk_id` or `volume_id`. Only one disk identifier is permitted per slot. Devices mapped from `sde` through `sdh` are unavailable in `"fullvirt"` `virt_mode`.
+* `sda` ... `sdbl` - (Optional) Device slots for attaching disks and volumes (named `sda`-`sdz`, `sdaa`-`sdaz`, `sdba`-`sdbl`). The maximum number of available devices is determined by the instance type's RAM (up to 64 devices). Each slot accepts either a Disk or Volume via `disk_id` or `volume_id`.
 
   * `volume_id` - (Optional) The Volume ID to map to this `device` slot.
 
@@ -191,7 +191,7 @@ The following attributes are available on devices:
 
 An assignment between a disk and a configuration profile device. This block supersedes the `devices` block.
 
-Compared with `devices`, `sda` ... `sdh` is now in the `device_name` attribute in a device block, and the block itself becomes unnamed.
+Compared with `devices`, `sda` ... `sdbl` is now in the `device_name` attribute in a device block, and the block itself becomes unnamed.
 
 ```terraform
 device {

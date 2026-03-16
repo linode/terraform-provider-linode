@@ -1,0 +1,37 @@
+{{ define "instance_config_device_block_ext" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{ .Label }}"
+    region = "{{ .Region }}"
+    type = "{{ .Type }}"
+}
+
+{{ template "instance_config_disk_with_swap" . }}
+
+resource "linode_instance_config" "foobar" {
+  linode_id = linode_instance.foobar.id
+  label = "my-config"
+
+  device {
+    device_name = "sda"
+    disk_id = linode_instance_disk.foobar.id
+  }
+
+  device {
+    device_name = "sdb"
+    disk_id = linode_instance_disk.foobar_swap.id
+  }
+
+  device {
+    device_name = "sdk"
+    volume_id = linode_volume.foobar.id
+  }
+}
+
+resource "linode_volume" "foobar" {
+    label = "{{ .Label }}"
+    size = 20
+    region = linode_instance.foobar.region
+}
+
+{{ end }}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/images/tmpl"
 )
@@ -15,7 +16,7 @@ import (
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps(nil, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,8 +43,11 @@ func TestAccDataSourceImages_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "images.0.description", "descriptive text"),
 					resource.TestCheckResourceAttr(resourceName, "images.0.is_public", "false"),
 					resource.TestCheckResourceAttr(resourceName, "images.0.is_shared", "false"),
-					resource.TestCheckNoResourceAttr(resourceName, "images.0.image_sharing.shared_with.sharegroup_count"),
-					resource.TestCheckNoResourceAttr(resourceName, "images.0.image_sharing.shared_with.sharegroup_list_url"),
+					resource.TestCheckResourceAttr(resourceName, "images.0.image_sharing.shared_with.sharegroup_count", "0"),
+					resource.TestCheckResourceAttrSet(
+						resourceName,
+						"images.0.image_sharing.shared_with.sharegroup_list_url",
+					),
 					resource.TestCheckNoResourceAttr(resourceName, "images.0.image_sharing.shared_by"),
 					resource.TestCheckResourceAttr(resourceName, "images.0.type", "manual"),
 					acceptance.CheckListContains(resourceName, "images.0.tags", "test"),
@@ -58,8 +62,11 @@ func TestAccDataSourceImages_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "images.1.description", "descriptive text"),
 					resource.TestCheckResourceAttr(resourceName, "images.1.is_public", "false"),
 					resource.TestCheckResourceAttr(resourceName, "images.1.is_shared", "false"),
-					resource.TestCheckNoResourceAttr(resourceName, "images.1.image_sharing.shared_with.sharegroup_count"),
-					resource.TestCheckNoResourceAttr(resourceName, "images.1.image_sharing.shared_with.sharegroup_list_url"),
+					resource.TestCheckResourceAttr(resourceName, "images.1.image_sharing.shared_with.sharegroup_count", "0"),
+					resource.TestCheckResourceAttrSet(
+						resourceName,
+						"images.0.image_sharing.shared_with.sharegroup_list_url",
+					),
 					resource.TestCheckNoResourceAttr(resourceName, "images.1.image_sharing.shared_by"),
 					resource.TestCheckResourceAttr(resourceName, "images.1.type", "manual"),
 					acceptance.CheckListContains(resourceName, "images.1.tags", "test"),
