@@ -81,7 +81,7 @@ This resource exports the following attributes:
 
 * [`vpcs`](#vpcs) - A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
-* [`frontend_vpcs`](#frontend_vpcs) - For internal load balancing, where the NodeBalancer is within a VPC, indicate a VPC subnet_id. For greater flexibility, you can specify the IP range within the subnet used for allocation.. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+* [`frontend_vpcs`](#frontend_vpcs) - For internal load balancing, where the NodeBalancer is within a VPC, indicate a VPC subnet_id. For greater flexibility, you can specify the IP range within the subnet used for allocation. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
 * `frontend_address_type` - Indicates whether incoming requests are routed to NodeBalancers using VPC frontend IPs or public frontend IPs.
 
@@ -153,7 +153,7 @@ The following arguments are supported under each entry of the `vpcs` attribute:
 
 -> **Limited Availability** Frontend VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
-The following arguments are supported under each entry of the `vpcs` attribute:
+The following arguments are supported under each entry of the `frontend_vpcs` attribute:
 
 * `subnet_id` - (Required) The VPC's subnet ID for the VPC based NodeBalancer.
 

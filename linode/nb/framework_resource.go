@@ -131,7 +131,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	// safeListVPCConfigs lists VPC configs for backend and fronted nodes.
+	// safeListVPCConfigs lists VPC configs for backend and frontend nodes.
 	// Backend VPC configs are configured through the "vpcs" attribute and
 	// frontend VPC configs are configured through the "frontend_vpcs" attribute.
 	vpcConfigs := safeListVPCConfigs(
