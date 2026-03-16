@@ -81,6 +81,7 @@ func TestFlattenNodeBalancer(t *testing.T) {
 			SubnetID:       789,
 			VPCID:          321,
 			IPv4Range:      "10.0.0.4/30",
+			Purpose:        "backend",
 		},
 	}
 
