@@ -1,3 +1,5 @@
+//go:build integration || regionsvpcavailability
+
 package regionsvpcavailability_test
 
 import (
