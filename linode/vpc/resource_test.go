@@ -32,7 +32,7 @@ func init() {
 
 	var err error
 
-	testRegion, err = acceptance.GetRandomRegionWithCaps([]string{"VPCs"}, "core")
+	testRegion, err = acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
@@ -235,7 +235,7 @@ func TestAccResourceLinodeVPC_create_InvalidLabel(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.Basic(t, vpcLabel, testRegion),
-				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
+				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and dashes"),
 			},
 		},
 	})
@@ -264,7 +264,7 @@ func TestAccResourceLinodeVPC_update_InvalidLabel(t *testing.T) {
 			},
 			{
 				Config:      tmpl.Updates(t, invalidLabel, testRegion),
-				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
+				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and dashes"),
 			},
 			{
 				ResourceName:      resName,

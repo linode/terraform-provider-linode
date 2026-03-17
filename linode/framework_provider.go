@@ -92,6 +92,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/rdns"
 	"github.com/linode/terraform-provider-linode/v3/linode/region"
 	"github.com/linode/terraform-provider-linode/v3/linode/regions"
+	"github.com/linode/terraform-provider-linode/v3/linode/regionsvpcavailability"
+	"github.com/linode/terraform-provider-linode/v3/linode/regionvpcavailability"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkeys"
 	"github.com/linode/terraform-provider-linode/v3/linode/stackscript"
@@ -368,6 +370,8 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		consumerimagesharegroup.NewDataSource,
 		consumerimagesharegroupimageshares.NewDataSource,
 		lkenodepool.NewDataSource,
+		regionvpcavailability.NewDataSource,
+		regionsvpcavailability.NewDataSource,
 		monitoralertchannels.NewDataSource,
 	}
 }

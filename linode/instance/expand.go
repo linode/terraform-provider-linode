@@ -1,6 +1,8 @@
 package instance
 
 import (
+	"fmt"
+
 	"github.com/linode/linodego"
 )
 
@@ -22,7 +24,12 @@ func expandInstanceConfigDeviceMap(
 				return nil, err
 			}
 
-			*deviceMap = changeInstanceConfigDevice(*deviceMap, k, tDevice)
+			newDeviceMap, err := changeInstanceConfigDevice(*deviceMap, k, tDevice)
+			if err != nil {
+				return nil, fmt.Errorf("failed to change config device map: %w", err)
+			}
+
+			*deviceMap = newDeviceMap
 		}
 	}
 	return deviceMap, nil

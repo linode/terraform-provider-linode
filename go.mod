@@ -25,7 +25,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.21.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.38.1
 	github.com/hashicorp/terraform-plugin-testing v1.14.0
-	github.com/linode/linodego v1.65.0
+	github.com/linode/linodego v1.66.0
 	github.com/linode/linodego/k8s v1.25.2
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.48.0
@@ -125,6 +125,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-// TODO: revert it once linodego release this feature
-replace github.com/linode/linodego => github.com/linode/linodego v1.66.1-0.20260305074418-81ccc1f71e6a

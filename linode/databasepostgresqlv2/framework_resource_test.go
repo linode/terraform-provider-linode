@@ -33,7 +33,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases", "VPCs"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityDBAAS, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -135,7 +135,7 @@ func TestAccResourceDatabasePostgresqlV2_basic(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 		},
 	})
@@ -268,7 +268,7 @@ func TestAccResourceDatabasePostgresqlV2_resize(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 		},
 	})
@@ -402,7 +402,7 @@ func TestAccResourceDatabasePostgresqlV2_complex(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 		},
 	})
@@ -466,7 +466,7 @@ func TestAccResourceDatabasePostgresqlV2_fork(t *testing.T) {
 				ResourceName:            resNameSource,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 			{
 				PreConfig: func() {
@@ -543,7 +543,7 @@ func TestAccResourceDatabasePostgresqlV2_fork(t *testing.T) {
 				ResourceName:            resNameFork,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 		},
 	})
@@ -637,6 +637,7 @@ func TestAccResourceDatabasePostgresqlV2_suspension(t *testing.T) {
 					"updated",
 					"oldest_restore_time",
 					"members",
+					"version",
 
 					// These fields will be populated with null when importing a suspended database
 					"ca_cert", "root_password", "root_username",
@@ -953,7 +954,7 @@ func TestAccResourceDatabasePostgresqlV2_engineConfig(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 		},
 	})
@@ -1010,7 +1011,7 @@ func TestAccResourceDatabasePostgresqlV2_vpc(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 		},
 	})
@@ -1060,7 +1061,7 @@ func TestAccResourceDatabasePostgresqlV2_noPendingUpdatesRegression(t *testing.T
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 		},
 	})
