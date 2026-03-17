@@ -63,7 +63,7 @@ func listMonitorAlertChannels(
 ) ([]any, error) {
 	tflog.Trace(ctx, "client.ListAlertChannels(...)")
 
-	// The API does not properly support filtering currently and sending filter will trigger errors.
+	// TODO: The API does not properly support filtering currently and sending filter will trigger errors.
 	// We retrieve all channels and filter in Terraform.
 	channels, err := client.ListAlertChannels(ctx, nil)
 	if err != nil {
