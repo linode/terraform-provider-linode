@@ -78,6 +78,8 @@ func listAllAlertDefinitions(
 ) ([]any, error) {
 	tflog.Trace(ctx, "client.ListAllMonitorAlertDefinitions(...)")
 
+	// TODO: The API does not properly support filtering currently and sending filter will trigger errors.
+	// We retrieve all alerts and filter in Terraform.
 	alertDefinitions, err := client.ListAllMonitorAlertDefinitions(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -93,6 +95,8 @@ func (data *AlertDefinitionFilterModel) listAlertDefinitionsByServiceType(
 ) ([]any, error) {
 	tflog.Trace(ctx, "client.ListMonitorAlertDefinitions(...)")
 
+	// TODO: The API does not properly support filtering currently and sending filter will trigger errors.
+	// We retrieve all alerts and filter in Terraform.
 	alertDefinitions, err := client.ListMonitorAlertDefinitions(
 		ctx,
 		data.ServiceType.ValueString(),
