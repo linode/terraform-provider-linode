@@ -193,6 +193,7 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "A list of VPCs to be assigned to this NodeBalancer.",
 			Optional:    true,
 			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
 				listplanmodifier.RequiresReplace(),
 			},
 			NestedObject: frameworkResourceSchemaVPCs,
