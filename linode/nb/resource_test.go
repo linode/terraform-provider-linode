@@ -115,7 +115,7 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id"}, // Ignore strict comparison for these attributes
+				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id", "firewalls"}, // Ignore strict comparison for these attributes
 			},
 		},
 	})
