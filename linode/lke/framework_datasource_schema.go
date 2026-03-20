@@ -98,6 +98,10 @@ var frameworkDataSourceSchema = schema.Schema{
 						Description: "Enables audit logs on the cluster's control plane.",
 						Computed:    true,
 					},
+					"metrics_enabled": schema.BoolAttribute{
+						Description: "Enables metrics on the cluster's control plane.",
+						Computed:    true,
+					},
 					"acl": schema.ListNestedAttribute{
 						Computed:    true,
 						Description: "The ACL configuration for an LKE cluster's control plane.",

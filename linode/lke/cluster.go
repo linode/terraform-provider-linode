@@ -649,6 +649,7 @@ func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane,
 
 	flattened["high_availability"] = controlPlane.HighAvailability
 	flattened["audit_logs_enabled"] = controlPlane.AuditLogsEnabled
+	flattened["metrics_enabled"] = controlPlane.MetricsEnabled
 
 	return flattened
 }
@@ -665,6 +666,11 @@ func expandControlPlaneOptions(controlPlane map[string]any) (
 	if value, ok := controlPlane["audit_logs_enabled"]; ok {
 		v := value.(bool)
 		result.AuditLogsEnabled = &v
+	}
+
+	if value, ok := controlPlane["metrics_enabled"]; ok {
+		v := value.(bool)
+		result.MetricsEnabled = &v
 	}
 
 	// default to disabled

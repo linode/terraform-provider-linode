@@ -74,7 +74,7 @@ var resourceSchema = schema.Schema{
 			Optional:    true,
 			Computed:    true,
 			PlanModifiers: []planmodifier.String{
-\				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifier.UseStateForUnknown(),
 			},
 			Validators: []validator.String{
 				stringvalidator.OneOf(

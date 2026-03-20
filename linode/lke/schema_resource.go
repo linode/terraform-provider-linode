@@ -350,6 +350,12 @@ var resourceSchema = map[string]*schema.Schema{
 					Optional:    true,
 					Computed:    true,
 				},
+				"metrics_enabled": {
+					Type:        schema.TypeBool,
+					Description: "Enables metrics on the cluster's control plane.",
+					Optional:    true,
+					Computed:    true,
+				},
 				"acl": {
 					Type:        schema.TypeList,
 					Description: "Defines the ACL configuration for an LKE cluster's control plane.",

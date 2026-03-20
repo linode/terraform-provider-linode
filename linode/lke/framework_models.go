@@ -46,6 +46,7 @@ type LKEDataModel struct {
 type LKEControlPlane struct {
 	HighAvailability types.Bool           `tfsdk:"high_availability"`
 	AuditLogsEnabled types.Bool           `tfsdk:"audit_logs_enabled"`
+	MetricsEnabled   types.Bool           `tfsdk:"metrics_enabled"`
 	ACL              []LKEControlPlaneACL `tfsdk:"acl"`
 }
 
@@ -270,6 +271,7 @@ func parseControlPlane(
 
 	cp.HighAvailability = types.BoolValue(controlPlane.HighAvailability)
 	cp.AuditLogsEnabled = types.BoolValue(controlPlane.AuditLogsEnabled)
+	cp.MetricsEnabled = types.BoolValue(controlPlane.MetricsEnabled)
 
 	return cp, nil
 }

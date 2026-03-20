@@ -40,6 +40,7 @@ type LKEClusterModel struct {
 type LKEControlPlaneModel struct {
 	HighAvailability types.Bool `tfsdk:"high_availability"`
 	AuditLogsEnabled types.Bool `tfsdk:"audit_logs_enabled"`
+	MetricsEnabled   types.Bool `tfsdk:"metrics_enabled"`
 }
 
 func (data *LKEClusterFilterModel) parseLKEClusters(
@@ -86,6 +87,7 @@ func (data *LKEClusterModel) parseLKECluster(
 		var cp LKEControlPlaneModel
 		cp.HighAvailability = types.BoolValue(cluster.ControlPlane.HighAvailability)
 		cp.AuditLogsEnabled = types.BoolValue(cluster.ControlPlane.AuditLogsEnabled)
+		cp.MetricsEnabled = types.BoolValue(cluster.ControlPlane.MetricsEnabled)
 
 		return cp
 	}
