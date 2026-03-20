@@ -34,7 +34,7 @@ func init() {
 
 	testRegion = region
 
-	nodeBalancerRegion, err := acceptance.GetRandomRegionWithCaps([]string{"nodebalancers"}, "core")
+	nodeBalancerRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityNodeBalancers}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
