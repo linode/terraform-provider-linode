@@ -101,6 +101,8 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "type", "common"),
 
+					resource.TestCheckResourceAttr(resName, "frontend_address_type", "public"),
+					resource.TestCheckNoResourceAttr(resName, "frontend_vpc_subnet_id"),
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
 					resource.TestCheckResourceAttrSet(resName, "ipv4"),
 					resource.TestCheckResourceAttrSet(resName, "ipv6"),
@@ -144,6 +146,8 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "type", "common"),
 
+					resource.TestCheckResourceAttr(resName, "frontend_address_type", "public"),
+					resource.TestCheckNoResourceAttr(resName, "frontend_vpc_subnet_id"),
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
 					resource.TestCheckResourceAttrSet(resName, "ipv4"),
 					resource.TestCheckResourceAttrSet(resName, "ipv6"),
@@ -163,6 +167,8 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "type", "common"),
 
+					resource.TestCheckResourceAttr(resName, "frontend_address_type", "public"),
+					resource.TestCheckNoResourceAttr(resName, "frontend_vpc_subnet_id"),
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
 					resource.TestCheckResourceAttrSet(resName, "ipv4"),
 					resource.TestCheckResourceAttrSet(resName, "ipv6"),
@@ -223,6 +229,8 @@ func TestAccResourceNodeBalancer_firewall(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "firewalls.0.outbound.0.ipv6.0", "2001:db8::/32"),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.tags.#", "1"),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.tags.0", "test"),
+					resource.TestCheckResourceAttr(resName, "frontend_address_type", "public"),
+					resource.TestCheckNoResourceAttr(resName, "frontend_vpc_subnet_id"),
 				),
 			},
 			{
