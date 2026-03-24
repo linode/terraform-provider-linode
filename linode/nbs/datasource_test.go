@@ -31,6 +31,7 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t, nbLabel, nbRegion),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.#", "2"),
 
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.id"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.client_conn_throttle"),
@@ -51,6 +52,27 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.updated"),
 					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.frontend_address_type", "public"),
 					resource.TestCheckNoResourceAttr(resourceName, "nodebalancers.0.frontend_vpc_subnet_id"),
+
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.1.id"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.1.client_conn_throttle"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.1.client_udp_sess_throttle"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.1.created"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.1.hostname"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.1.ipv4"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.1.ipv6"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.1.label", nbLabel+"-1"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.1.type", "common"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.1.region", nbRegion),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.1.transfer.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.1.transfer.0.in"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.1.transfer.0.out"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.1.transfer.0.total"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.1.tags.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.1.tags.0", "tf_test_1"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.1.tags.1", "tf_test_2"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.1.updated"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.1.frontend_address_type", "public"),
+					resource.TestCheckNoResourceAttr(resourceName, "nodebalancers.1.frontend_vpc_subnet_id"),
 				),
 			},
 			{
