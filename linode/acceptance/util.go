@@ -804,6 +804,7 @@ func GetRandomPremiumRegion() (string, error) {
 		"us-iad",
 	}
 
+	// #nosec G404 -- Test data, doesn't need to be cryptography
 	return premiumRegions[rand.Intn(len(premiumRegions))], nil
 }
 
