@@ -783,7 +783,7 @@ func GetRandomRegionWithCaps(capabilities []string, regionType string, filters .
 	return regions[rand.Intn(len(regions))], nil
 }
 
-func GetRandomPremiumRegion() (string, error) {
+func GetRandomRegionSupportingPremiumNodeBalancers() (string, error) {
 	premiumRegions := []string{
 		"nl-ams",
 		"jp-tyo-3",

@@ -254,8 +254,8 @@ func TestAccResourceNodeBalancer_vpc(t *testing.T) {
 	resName := "linode_nodebalancer.test"
 	nodebalancerName := acctest.RandomWithPrefix("tf-test")
 
-	// Use random premium region, as not all regions support VPCs.
-	targetRegion, err := acceptance.GetRandomPremiumRegion()
+	// Use random region that supports premium NodeBalancers.
+	targetRegion, err := acceptance.GetRandomRegionSupportingPremiumNodeBalancers()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -297,8 +297,8 @@ func TestAccResourceNodeBalancer_frontendVPC(t *testing.T) {
 	resName := "linode_nodebalancer.test"
 	nodebalancerName := acctest.RandomWithPrefix("tf-test")
 
-	// Use random premium region, as not all regions support VPCs.
-	targetRegion, err := acceptance.GetRandomPremiumRegion()
+	// Use random region that supports premium NodeBalancers.
+	targetRegion, err := acceptance.GetRandomRegionSupportingPremiumNodeBalancers()
 	if err != nil {
 		log.Fatal(err)
 	}
