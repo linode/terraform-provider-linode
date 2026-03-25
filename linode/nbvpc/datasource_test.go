@@ -83,7 +83,8 @@ func TestAccDataSource_frontendVPC(t *testing.T) {
 
 	label := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{"NodeBalancers", "VPCs"}, "core")
+	// Use random premium region, as not all regions support VPCs.
+	targetRegion, err := acceptance.GetRandomPremiumRegion()
 	if err != nil {
 		log.Fatal(err)
 	}
