@@ -32,9 +32,36 @@ resource "linode_nodebalancer_node" "test" {
     nodebalancer_id = linode_nodebalancer.test.id
     config_id       = linode_nodebalancer_config.test.id
     subnet_id       = linode_vpc_subnet.test.id
-    address         = "10.0.0.5:80"
+    address         = "10.0.0.50:80"
     label           = "{{ .Label }}"
     weight          = 50
+
+    depends_on = [linode_instance.test]
+}
+
+resource "linode_instance" "test" {
+    label = "{{ .Label }}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "{{ .Config.NodeBalancer.Region }}"
+    firewall_id = linode_firewall.e2e_test_firewall.id
+
+     config {
+        label = "config"
+        kernel = "linode/latest-64bit"
+        root_device = "/dev/sda"
+        helpers {
+            network = true
+        }
+
+        interface {
+            purpose = "vpc"
+            subnet_id = linode_vpc_subnet.test.id
+            ipv4 {
+                vpc = "${cidrhost(linode_vpc_subnet.test.ipv4, 50)}"
+            }
+        }
+    }
 }
 
 resource "linode_vpc" "test" {

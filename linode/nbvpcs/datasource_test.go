@@ -62,6 +62,160 @@ func TestAccDataSource_basic(t *testing.T) {
 						firstConfigPath.AtMapKey("ipv4_range"),
 						knownvalue.StringExact("10.0.0.4/30"),
 					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("ipv6_range"),
+						knownvalue.StringExact(""),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("purpose"),
+						knownvalue.StringExact("backend"),
+					),
+				},
+			},
+			{
+				Config: tmpl.DataFilter(t, label, targetRegion),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						tfjsonpath.New("nodebalancer_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("vpc_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("ipv4_range"),
+						knownvalue.StringExact("10.0.0.4/30"),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("ipv6_range"),
+						knownvalue.StringExact(""),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("purpose"),
+						knownvalue.StringExact("backend"),
+					),
+				},
+			},
+		},
+	})
+}
+
+func TestAccDataSource_frontendVPC(t *testing.T) {
+	t.Parallel()
+
+	dataSourceName := "data.linode_nodebalancer_vpcs.test"
+
+	label := acctest.RandomWithPrefix("tf-test")
+
+	// Use random region that supports premium NodeBalancers.
+	targetRegion, err := acceptance.GetRandomRegionSupportingPremiumNodeBalancers()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	firstConfigPath := tfjsonpath.New("vpc_configs").AtSliceIndex(0)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataFrontendVPC(t, label, targetRegion),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						tfjsonpath.New("nodebalancer_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("vpc_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("ipv4_range"),
+						knownvalue.StringExact("10.0.0.2/32"),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("ipv6_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("purpose"),
+						knownvalue.StringExact("frontend"),
+					),
+				},
+			},
+			{
+				Config: tmpl.DataFrontendVPCFilter(t, label, targetRegion),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						tfjsonpath.New("nodebalancer_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("vpc_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("ipv4_range"),
+						knownvalue.StringExact("10.0.0.2/32"),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("ipv6_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("purpose"),
+						knownvalue.StringExact("frontend"),
+					),
 				},
 			},
 		},

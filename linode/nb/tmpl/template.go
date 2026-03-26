@@ -9,13 +9,15 @@ import (
 type TemplateData struct {
 	Label  string
 	Region string
+	Type   string
 }
 
-func Basic(t testing.TB, nodebalancer, region string) string {
+func Basic(t testing.TB, nodebalancer, region, nbType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_basic", TemplateData{
 			Label:  nodebalancer,
 			Region: region,
+			Type:   nbType,
 		})
 }
 
@@ -27,11 +29,12 @@ func Updates(t testing.TB, nodebalancer, region string) string {
 		})
 }
 
-func DataBasic(t testing.TB, nodebalancer, region string) string {
+func DataBasic(t testing.TB, nodebalancer, region, nbType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_data_basic", TemplateData{
 			Label:  nodebalancer,
 			Region: region,
+			Type:   nbType,
 		})
 }
 
@@ -67,9 +70,25 @@ func VPC(t testing.TB, nodebalancer, region string) string {
 		})
 }
 
+func FrontendVPC(t testing.TB, nodebalancer, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_frontend_vpc", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
+}
+
 func DataVPC(t testing.TB, nodebalancer, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_data_vpc", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
+}
+
+func DataFrontendVPC(t testing.TB, nodebalancer, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_data_frontend_vpc", TemplateData{
 			Label:  nodebalancer,
 			Region: region,
 		})

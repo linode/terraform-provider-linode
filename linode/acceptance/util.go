@@ -783,6 +783,31 @@ func GetRandomRegionWithCaps(capabilities []string, regionType string, filters .
 	return regions[rand.Intn(len(regions))], nil
 }
 
+func GetRandomRegionSupportingPremiumNodeBalancers() (string, error) {
+	premiumRegions := []string{
+		"nl-ams",
+		"jp-tyo-3",
+		"sg-sin-2",
+		"de-fra-2",
+		"in-bom-2",
+		"gb-lon",
+		"us-lax",
+		"id-cgk",
+		"us-mia",
+		"it-mil",
+		"jp-osa",
+		"in-maa",
+		"se-sto",
+		"br-gru",
+		"us-sea",
+		"fr-par",
+		"us-iad",
+	}
+
+	// #nosec G404 -- Test data, doesn't need to be cryptography
+	return premiumRegions[rand.Intn(len(premiumRegions))], nil
+}
+
 // Deprecated: Cluster is now deprecated in favor of Region.
 // GetRandomOBJCluster gets a random Object Storage cluster.
 func GetRandomOBJCluster() (string, error) {

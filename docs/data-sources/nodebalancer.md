@@ -27,7 +27,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `label` - The label of the Linode NodeBalancer
+* `label` - The label of the Linode NodeBalancer.
 
 * `client_conn_throttle` - Throttle connections per second (0-20).
 
@@ -35,35 +35,41 @@ In addition to all arguments above, the following attributes are exported:
 
   * **NOTE: This attribute may not be generally available.**
 
-* `created` – When this Linode NodeBalancer was created
+* `created` – When this Linode NodeBalancer was created.
 
 * `linode_id` - The ID of a Linode Instance where the NodeBalancer should be attached.
 
 * `tags` - A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
-* `hostname` - This NodeBalancer's hostname, ending with .ip.linodeusercontent.com
+* `hostname` - This NodeBalancer's hostname, ending with .ip.linodeusercontent.com.
 
-* `ipv4` - The Public IPv4 Address of this NodeBalancer
+* `ipv4` - The Public IPv4 Address of this NodeBalancer.
 
-* `ipv6` - The Public IPv6 Address of this NodeBalancer
+* `ipv6` - The Public IPv6 Address of this NodeBalancer.
 
 * `region` - The Region where this Linode NodeBalancer is located. NodeBalancers only support backends in the same Region.
 
-* [`transfer`](#transfer) - The network transfer stats for the current month
+* [`transfer`](#transfer) - The network transfer stats for the current month.
 
-* `updated` – When this Linode NodeBalancer was last updated
+* `updated` – When this Linode NodeBalancer was last updated.
 
 * [`firewalls`](#firewalls) - A list of Firewalls assigned to this NodeBalancer.
+
+* `type` - The type of this NodeBalancer.
+
+* `frontend_address_type` - Indicates whether incoming requests are routed to NodeBalancers using VPC frontend IPs or public frontend IPs.
+
+* `frontend_vpc_subnet_id` - The VPC subnet assigned to this NodeBalancer.
 
 ### transfer
 
 The following attributes are available on transfer:
 
-* `in` - The total transfer, in MB, used by this NodeBalancer for the current month
+* `in` - The total transfer, in MB, used by this NodeBalancer for the current month.
 
-* `out` - The total inbound transfer, in MB, used for this NodeBalancer for the current month
+* `out` - The total inbound transfer, in MB, used for this NodeBalancer for the current month.
 
-* `total` - The total outbound transfer, in MB, used for this NodeBalancer for the current month
+* `total` - The total outbound transfer, in MB, used for this NodeBalancer for the current month.
 
 ### firewalls
 
@@ -77,13 +83,13 @@ The following attributes are available on firewalls:
 
 * [`inbound`](#inbound-and-outbound) - A firewall rule that specifies what inbound network traffic is allowed.
 
-* `inbound_policy` - The default behavior for inbound traffic. (`ACCEPT`, `DROP`)
+* `inbound_policy` - The default behavior for inbound traffic. (`ACCEPT`, `DROP`).
 
 * [`outbound`](#inbound-and-outbound) - A firewall rule that specifies what outbound network traffic is allowed.
 
-* `outbound_policy` - The default behavior for outbound traffic. (`ACCEPT`, `DROP`)
+* `outbound_policy` - The default behavior for outbound traffic. (`ACCEPT`, `DROP`).
 
-* `status` - The status of the firewall. (`enabled`, `disabled`, `deleted`)
+* `status` - The status of the firewall. (`enabled`, `disabled`, `deleted`).
 
 * `created` - When this firewall was created.
 
@@ -97,7 +103,7 @@ The following arguments are supported in the inbound and outbound rule blocks:
 
 * `action` - Controls whether traffic is accepted or dropped by this rule. Overrides the Firewall’s inbound_policy if this is an inbound rule, or the outbound_policy if this is an outbound rule.
 
-* `protocol` - The network protocol this rule controls. (`TCP`, `UDP`, `ICMP`)
+* `protocol` - The network protocol this rule controls (`TCP`, `UDP`, `ICMP`).
 
 * `ports` - A string representation of ports and/or port ranges (i.e. "443" or "80-90, 91").
 

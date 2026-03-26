@@ -83,6 +83,7 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 
 	resName := "linode_nodebalancer.foobar"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
+	nbType := "common"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -91,14 +92,17 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, nodebalancerName, testRegion),
+				Config: tmpl.Basic(t, nodebalancerName, testRegion, nbType),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 					resource.TestCheckResourceAttr(resName, "client_udp_sess_throttle", "10"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "type", "common"),
 
+					resource.TestCheckResourceAttr(resName, "frontend_address_type", "public"),
+					resource.TestCheckNoResourceAttr(resName, "frontend_vpc_subnet_id"),
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
 					resource.TestCheckResourceAttrSet(resName, "ipv4"),
 					resource.TestCheckResourceAttrSet(resName, "ipv6"),
@@ -113,7 +117,7 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id"}, // Ignore strict comparison for these attributes
+				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id", "firewalls"}, // Ignore strict comparison for these attributes
 			},
 		},
 	})
@@ -124,6 +128,7 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 
 	resName := "linode_nodebalancer.foobar"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
+	nbType := "common"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -132,14 +137,17 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, nodebalancerName, testRegion),
+				Config: tmpl.Basic(t, nodebalancerName, testRegion, nbType),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 					resource.TestCheckResourceAttr(resName, "client_udp_sess_throttle", "10"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "type", "common"),
 
+					resource.TestCheckResourceAttr(resName, "frontend_address_type", "public"),
+					resource.TestCheckNoResourceAttr(resName, "frontend_vpc_subnet_id"),
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
 					resource.TestCheckResourceAttrSet(resName, "ipv4"),
 					resource.TestCheckResourceAttrSet(resName, "ipv6"),
@@ -157,7 +165,10 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "0"),
 					resource.TestCheckResourceAttr(resName, "client_udp_sess_throttle", "5"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "type", "common"),
 
+					resource.TestCheckResourceAttr(resName, "frontend_address_type", "public"),
+					resource.TestCheckNoResourceAttr(resName, "frontend_vpc_subnet_id"),
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
 					resource.TestCheckResourceAttrSet(resName, "ipv4"),
 					resource.TestCheckResourceAttrSet(resName, "ipv6"),
@@ -195,6 +206,7 @@ func TestAccResourceNodeBalancer_firewall(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
+					resource.TestCheckResourceAttr(resName, "type", "common"),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 					acceptance.CheckResourceAttrGreaterThan(resName, "firewalls.#", 0),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.label", fmt.Sprintf("%v-fw", nodebalancerName)),
@@ -217,6 +229,8 @@ func TestAccResourceNodeBalancer_firewall(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "firewalls.0.outbound.0.ipv6.0", "2001:db8::/32"),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.tags.#", "1"),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.tags.0", "test"),
+					resource.TestCheckResourceAttr(resName, "frontend_address_type", "public"),
+					resource.TestCheckNoResourceAttr(resName, "frontend_vpc_subnet_id"),
 				),
 			},
 			{
@@ -240,7 +254,8 @@ func TestAccResourceNodeBalancer_vpc(t *testing.T) {
 	resName := "linode_nodebalancer.test"
 	nodebalancerName := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{"NodeBalancers", "VPCs"}, "core")
+	// Use random region that supports premium NodeBalancers.
+	targetRegion, err := acceptance.GetRandomRegionSupportingPremiumNodeBalancers()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -271,6 +286,85 @@ func TestAccResourceNodeBalancer_vpc(t *testing.T) {
 						knownvalue.NotNull(),
 					),
 				},
+			},
+		},
+	})
+}
+
+func TestAccResourceNodeBalancer_frontendVPC(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_nodebalancer.test"
+	nodebalancerName := acctest.RandomWithPrefix("tf-test")
+
+	// Use random region that supports premium NodeBalancers.
+	targetRegion, err := acceptance.GetRandomRegionSupportingPremiumNodeBalancers()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkNodeBalancerDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.FrontendVPC(t, nodebalancerName, targetRegion),
+				Check:  checkNodeBalancerExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv4_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("frontend_vpcs").AtSliceIndex(0).AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("frontend_vpcs").AtSliceIndex(0).AtMapKey("ipv4_range"),
+						knownvalue.Null(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("frontend_vpcs").AtSliceIndex(0).AtMapKey("ipv6_range"),
+						knownvalue.Null(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("frontend_address_type"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("frontend_vpc_subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("type"),
+						knownvalue.StringExact("premium"),
+					),
+				},
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id"}, // Ignore strict comparison for these attributes
 			},
 		},
 	})

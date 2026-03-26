@@ -32,6 +32,10 @@ type NodeBalancerModel struct {
 	Tags                  types.Set         `tfsdk:"tags"`
 	Firewalls             types.List        `tfsdk:"firewalls"`
 	VPCs                  types.List        `tfsdk:"vpcs"`
+	FrontendVPCs          types.List        `tfsdk:"frontend_vpcs"`
+	Type                  types.String      `tfsdk:"type"`
+	FrontendAddressType   types.String      `tfsdk:"frontend_address_type"`
+	FrontendVPCSubnetID   types.Int64       `tfsdk:"frontend_vpc_subnet_id"`
 }
 
 type FirewallModel struct {
@@ -70,6 +74,7 @@ func (data *NodeBalancerModel) Flatten(
 ) diag.Diagnostics {
 	data.ID = helper.KeepOrUpdateString(data.ID, strconv.Itoa(nodebalancer.ID), preserveKnown)
 	data.Label = helper.KeepOrUpdateStringPointer(data.Label, nodebalancer.Label, preserveKnown)
+	data.Type = helper.KeepOrUpdateString(data.Type, string(nodebalancer.Type), preserveKnown)
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, helper.StringSliceToFramework(nodebalancer.Tags))
 	if diags.HasError() {
@@ -106,31 +111,82 @@ func (data *NodeBalancerModel) Flatten(
 		return diags
 	}
 
-	data.Firewalls = helper.KeepOrUpdateValue(data.Firewalls, *fws, preserveKnown)
+	data.Firewalls = *fws
 
-	vpcConfigsModels := helper.MapSlice(
-		vpcConfigs,
+	// Filter out backend VPC configs, matching `vpcs` attribute.
+	backendVPCConfigs := filterVPCConfigsByPurpose(vpcConfigs, linodego.NodeBalancerVPCConfigPurposeBackend)
+
+	backendVPCConfigsModels := helper.MapSlice(
+		backendVPCConfigs,
 		func(vpcConfig linodego.NodeBalancerVPCConfig) (result ResourceVPCModel) {
 			result.FlattenVPCConfig(&vpcConfig)
 			return result
 		},
 	)
 
-	vpcs, diags := types.ListValueFrom(ctx, frameworkResourceSchemaVPCs.Type(), vpcConfigsModels)
+	backendVPCs, diags := types.ListValueFrom(ctx, frameworkResourceSchemaVPCs.Type(), backendVPCConfigsModels)
 	if diags.HasError() {
 		return diags
 	}
 
+	// We cannot set frontend VPC configs as-is as the values returned from the API might be modified
+	// and different than what was provided in the config. `frontend_vpcs` is an Optional, WriteOnly attribute.
+	// In order to avoid diff after import, `subnet_id` is extracted from the API response and used to populate
+	// `frontend_vpc_subnet_id` attribute, omitting `ipv4_range` and `ipv6_range` attributes.
+	frontendVPCConfigs := filterVPCConfigsByPurpose(vpcConfigs, linodego.NodeBalancerVPCConfigPurposeFrontend)
+	if len(frontendVPCConfigs) > 0 {
+		subnetID := frontendVPCConfigs[0].SubnetID
+
+		frontendVPCConfigsModels := []ResourceFrontendVPCModel{
+			{
+				BaseVPCModel: BaseVPCModel{
+					SubnetID: types.Int64Value(int64(subnetID)),
+				},
+			},
+		}
+		frontendVPCs, diags := types.ListValueFrom(ctx, frameworkResourceSchemaFrontendVPCs.Type(), frontendVPCConfigsModels)
+		if diags.HasError() {
+			return diags
+		}
+		data.FrontendVPCs = helper.KeepOrUpdateValue(data.FrontendVPCs, frontendVPCs, preserveKnown)
+	}
+
+	data.FrontendAddressType = helper.KeepOrUpdateString(
+		data.FrontendAddressType,
+		string(nodebalancer.FrontendAddressType),
+		preserveKnown,
+	)
+
+	data.FrontendVPCSubnetID = helper.KeepOrUpdateInt64Pointer(
+		data.FrontendVPCSubnetID,
+		helper.IntPtrToInt64Ptr(nodebalancer.FrontendVPCSubnetID),
+		preserveKnown,
+	)
+
 	// TODO: Make use of new KeepOrUpdate helpers once Linode Interfaces has been merged.
-	//		 In the meantime, enabling preserveKnown will break the diff logic for computed fields.
-	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, vpcs, false)
+	// In the meantime, enabling preserveKnown will break the diff logic for computed fields.
+	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, backendVPCs, false)
 
 	return nil
+}
+
+func filterVPCConfigsByPurpose(
+	vpcConfigs []linodego.NodeBalancerVPCConfig,
+	purpose linodego.NodeBalancerVPCConfigPurpose,
+) []linodego.NodeBalancerVPCConfig {
+	filtered := make([]linodego.NodeBalancerVPCConfig, 0)
+	for _, vpcConfig := range vpcConfigs {
+		if vpcConfig.Purpose == purpose {
+			filtered = append(filtered, vpcConfig)
+		}
+	}
+	return filtered
 }
 
 func (data *NodeBalancerModel) CopyFrom(other NodeBalancerModel, preserveKnown bool) {
 	data.ID = helper.KeepOrUpdateValue(data.ID, other.ID, preserveKnown)
 	data.Label = helper.KeepOrUpdateValue(data.Label, other.Label, preserveKnown)
+	data.Type = helper.KeepOrUpdateValue(data.Type, other.Type, preserveKnown)
 	data.Region = helper.KeepOrUpdateValue(data.Region, other.Region, preserveKnown)
 	data.ClientConnThrottle = helper.KeepOrUpdateValue(
 		data.ClientConnThrottle, other.ClientConnThrottle, preserveKnown,
@@ -148,6 +204,9 @@ func (data *NodeBalancerModel) CopyFrom(other NodeBalancerModel, preserveKnown b
 	data.Tags = helper.KeepOrUpdateValue(data.Tags, other.Tags, preserveKnown)
 	data.Firewalls = helper.KeepOrUpdateValue(data.Firewalls, other.Firewalls, preserveKnown)
 	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, other.VPCs, preserveKnown)
+	data.FrontendVPCs = helper.KeepOrUpdateValue(data.FrontendVPCs, other.FrontendVPCs, preserveKnown)
+	data.FrontendAddressType = helper.KeepOrUpdateValue(data.FrontendAddressType, other.FrontendAddressType, preserveKnown)
+	data.FrontendVPCSubnetID = helper.KeepOrUpdateValue(data.FrontendVPCSubnetID, other.FrontendVPCSubnetID, preserveKnown)
 }
 
 func parseNBFirewalls(
@@ -252,6 +311,9 @@ type NodeBalancerDataSourceModel struct {
 	Tags                  types.Set         `tfsdk:"tags"`
 	Firewalls             []NBFirewallModel `tfsdk:"firewalls"`
 	VPCs                  types.List        `tfsdk:"vpcs"`
+	Type                  types.String      `tfsdk:"type"`
+	FrontendAddressType   types.String      `tfsdk:"frontend_address_type"`
+	FrontendVPCSubnetID   types.Int64       `tfsdk:"frontend_vpc_subnet_id"`
 }
 
 type NBFirewallModel struct {
@@ -275,6 +337,7 @@ func (data *NodeBalancerDataSourceModel) Flatten(
 ) diag.Diagnostics {
 	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Label = types.StringPointerValue(nodebalancer.Label)
+	data.Type = types.StringValue(string(nodebalancer.Type))
 	data.Region = types.StringValue(nodebalancer.Region)
 	data.ClientConnThrottle = types.Int64Value(int64(nodebalancer.ClientConnThrottle))
 	data.ClientUDPSessThrottle = types.Int64Value(int64(nodebalancer.ClientUDPSessThrottle))
@@ -283,6 +346,8 @@ func (data *NodeBalancerDataSourceModel) Flatten(
 	data.IPv6 = types.StringPointerValue(nodebalancer.IPv6)
 	data.Created = timetypes.NewRFC3339TimePointerValue(nodebalancer.Created)
 	data.Updated = timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated)
+	data.FrontendAddressType = types.StringValue(string(nodebalancer.FrontendAddressType))
+	data.FrontendVPCSubnetID = types.Int64PointerValue(helper.IntPtrToInt64Ptr(nodebalancer.FrontendVPCSubnetID))
 
 	transfer, diags := FlattenTransfer(ctx, nodebalancer.Transfer)
 	if diags.HasError() {
@@ -369,6 +434,12 @@ type ResourceVPCModel struct {
 	IPv4RangeAutoAssign types.Bool `tfsdk:"ipv4_range_auto_assign"`
 }
 
+type ResourceFrontendVPCModel struct {
+	BaseVPCModel
+
+	IPv6Range types.String `tfsdk:"ipv6_range"`
+}
+
 func (m *ResourceVPCModel) ToLinodego() (*linodego.NodeBalancerVPCOptions, diag.Diagnostics) {
 	var d diag.Diagnostics
 
@@ -384,6 +455,24 @@ func (m *ResourceVPCModel) ToLinodego() (*linodego.NodeBalancerVPCOptions, diag.
 		SubnetID:            subnetID,
 		IPv4Range:           m.IPv4Range.ValueString(),
 		IPv4RangeAutoAssign: m.IPv4RangeAutoAssign.ValueBool(),
+	}, d
+}
+
+func (m *ResourceFrontendVPCModel) ToLinodego() (*linodego.NodeBalancerFrontendVPCOptions, diag.Diagnostics) {
+	var d diag.Diagnostics
+
+	subnetID := helper.FrameworkSafeInt64ToInt(
+		m.SubnetID.ValueInt64(),
+		&d,
+	)
+	if d.HasError() {
+		return nil, d
+	}
+
+	return &linodego.NodeBalancerFrontendVPCOptions{
+		SubnetID:  subnetID,
+		IPv4Range: m.IPv4Range.ValueString(),
+		IPv6Range: m.IPv6Range.ValueString(),
 	}, d
 }
 
@@ -403,6 +492,29 @@ func vpcModelsToLinodego(
 	return helper.MapSlice(
 		vpcModels,
 		func(vpcModel ResourceVPCModel) linodego.NodeBalancerVPCOptions {
+			result, localD := vpcModel.ToLinodego()
+			d.Append(localD...)
+			return *result
+		},
+	), d
+}
+
+func frontendVPCModelsToLinodego(
+	ctx context.Context,
+	vpcs types.List,
+) ([]linodego.NodeBalancerFrontendVPCOptions, diag.Diagnostics) {
+	var d diag.Diagnostics
+
+	var frontendVPCModels []ResourceFrontendVPCModel
+
+	d.Append(vpcs.ElementsAs(ctx, &frontendVPCModels, false)...)
+	if d.HasError() {
+		return nil, d
+	}
+
+	return helper.MapSlice(
+		frontendVPCModels,
+		func(vpcModel ResourceFrontendVPCModel) linodego.NodeBalancerFrontendVPCOptions {
 			result, localD := vpcModel.ToLinodego()
 			d.Append(localD...)
 			return *result

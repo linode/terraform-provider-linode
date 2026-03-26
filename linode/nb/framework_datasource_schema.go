@@ -78,6 +78,18 @@ var DataSourceAttributes = map[string]schema.Attribute{
 		Computed:    true,
 		Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 	},
+	"type": schema.StringAttribute{
+		Description: "The type of this NodeBalancer.",
+		Computed:    true,
+	},
+	"frontend_address_type": schema.StringAttribute{
+		Description: "Indicates whether incoming requests are routed to NodeBalancers using VPC frontend IPs or public frontend IPs.",
+		Computed:    true,
+	},
+	"frontend_vpc_subnet_id": schema.Int64Attribute{
+		Description: "The VPC subnet assigned to this NodeBalancer.",
+		Computed:    true,
+	},
 }
 
 // dataSourceAttributesVPC contains all user-configurable fields for a VPC NodeBalancer.
