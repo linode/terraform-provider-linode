@@ -51,8 +51,8 @@ func (plan *LinodeInterfaceModel) GetCreateOptions(ctx context.Context, diags *d
 		opts.DefaultRoute = linodego.Pointer(defaultRouteOpts)
 	}
 
-	if !plan.FirewallID.IsUnknown() {
-		opts.FirewallID = helper.FrameworkSafeInt64ValueToIntDoublePointerWithUnknownToNil(plan.FirewallID, diags)
+	if !plan.FirewallID.IsUnknown() && !plan.FirewallID.IsNull() {
+		opts.FirewallID = helper.FrameworkSafeInt64ValueToIntPointerWithUnknownToNil(plan.FirewallID, diags)
 		if diags.HasError() {
 			return opts, linodeID
 		}
