@@ -95,14 +95,6 @@ func FrameworkSafeInt64PointerToIntPointer(number *int64, diags *diag.Diagnostic
 	return linodego.Pointer(result)
 }
 
-func FrameworkSafeInt64ValueToIntDoublePointerWithUnknownToNil(v types.Int64, diags *diag.Diagnostics) **int {
-	if v.IsUnknown() {
-		return linodego.DoublePointerNull[int]()
-	}
-
-	return linodego.Pointer(FrameworkSafeInt64PointerToIntPointer(v.ValueInt64Pointer(), diags))
-}
-
 func FrameworkSafeInt64ValueToIntPointerWithUnknownToNil(v types.Int64, diags *diag.Diagnostics) *int {
 	if v.IsUnknown() {
 		return nil
