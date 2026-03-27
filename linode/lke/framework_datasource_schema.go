@@ -54,8 +54,9 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "The Base64-encoded Kubeconfig for the cluster.",
 		},
 		"dashboard_url": schema.StringAttribute{
-			Computed:    true,
-			Description: "The dashboard URL of the cluster.",
+			Computed:           true,
+			Description:        "The dashboard URL of the cluster.",
+			DeprecationMessage: "LKE Dashboard has been deprecated. This value is empty and the attribute will be removed in future versions.",
 		},
 		"status": schema.StringAttribute{
 			Computed:    true,
