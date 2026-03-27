@@ -176,9 +176,20 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	d.SetId(strconv.Itoa(cfg.ID))
 
-	if !d.GetRawConfig().GetAttr("booted").IsNull() {
+	// Boot the instance if booted is true or null (not specified).
+	// This matches the behavior of linode_instance with inline configs.
+	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
+	booted := d.Get("booted").(bool)
+
+	if bootedNull || booted {
 		if err := applyBootStatus(ctx, &client, linodeID, cfg.ID, helper.GetDeadlineSeconds(ctx, d),
-			d.Get("booted").(bool), false); err != nil {
+			true, false); err != nil {
+			return diag.Errorf("failed to update boot status: %s", err)
+		}
+	} else {
+		// booted is explicitly false
+		if err := applyBootStatus(ctx, &client, linodeID, cfg.ID, helper.GetDeadlineSeconds(ctx, d),
+			false, false); err != nil {
 			return diag.Errorf("failed to update boot status: %s", err)
 		}
 	}
