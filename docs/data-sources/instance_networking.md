@@ -55,6 +55,8 @@ The following attributes are available for each Linode’s IPv6 addresses:
 
 * [`slaac`] (#slaac) - A SLAAC IPv6 address object that exists in Linode’s system.
 
+* [`vpc`] (#ipv6-vpc) - A list of VPC IPv6 Address objects assigned to this Linode.
+
 ### Private
 
 A list of private IP Address objects belonging to this Linode.
@@ -193,6 +195,13 @@ A list of VPC IP Address objects assigned to this Linode.
 * `linode_id` - The identifier for the Linode the VPC interface currently belongs to.
 
 * `nat_1_1` - The public IP address used for NAT 1:1 with the VPC. This is `null` if the VPC interface uses an `address_range` or NAT 1:1 isn't used.
+
+* `ipv6_range` - The /64 prefix, in CIDR notation, assigned to an interface. Only set for VPC interfaces with IPv6 enabled.
+
+* `ipv6_is_public` - Whether the VPC IPv6 interface has public reachability.
+
+* `ipv6_addresses` - A list of IPv6 addresses associated with this VPC interface.
+  * `slaac_address` - The specific address within the prefix that the interface is expected to autoconfigure through SLAAC.
 
 ### Global
 

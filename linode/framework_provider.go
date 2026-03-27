@@ -60,6 +60,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/lock"
 	"github.com/linode/terraform-provider-linode/v3/linode/locks"
 	"github.com/linode/terraform-provider-linode/v3/linode/maintenancepolicies"
+	"github.com/linode/terraform-provider-linode/v3/linode/monitoralertdefinition"
+	"github.com/linode/terraform-provider-linode/v3/linode/monitoralertdefinitions"
 	"github.com/linode/terraform-provider-linode/v3/linode/nb"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbconfigs"
@@ -91,6 +93,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/rdns"
 	"github.com/linode/terraform-provider-linode/v3/linode/region"
 	"github.com/linode/terraform-provider-linode/v3/linode/regions"
+	"github.com/linode/terraform-provider-linode/v3/linode/regionsvpcavailability"
+	"github.com/linode/terraform-provider-linode/v3/linode/regionvpcavailability"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkeys"
 	"github.com/linode/terraform-provider-linode/v3/linode/stackscript"
@@ -274,6 +278,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		consumerimagesharegrouptoken.NewResource,
 		firewallsettings.NewResource,
 		linodeinterface.NewResource,
+		monitoralertdefinition.NewResource,
 	}
 }
 
@@ -366,6 +371,10 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		consumerimagesharegrouptokens.NewDataSource,
 		consumerimagesharegroup.NewDataSource,
 		consumerimagesharegroupimageshares.NewDataSource,
+		monitoralertdefinition.NewDataSource,
+		monitoralertdefinitions.NewDataSource,
 		lkenodepool.NewDataSource,
+		regionvpcavailability.NewDataSource,
+		regionsvpcavailability.NewDataSource,
 	}
 }

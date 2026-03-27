@@ -665,6 +665,14 @@ func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
 	return nil, errors.New("failed to get an object storage endpoint")
 }
 
+// accountAvailabilityCaps are capabilities that must be verified both at the region level and at the account availability level.
+var accountAvailabilityCaps = map[string]bool{
+	"Linodes":       true,
+	"NodeBalancers": true,
+	"Block Storage": true,
+	"Kubernetes":    true,
+}
+
 // GetRegionsWithCaps returns a list of region IDs that support the given capabilities
 // Parameters:
 // - capabilities: Required capabilities that the regions must support.
@@ -679,6 +687,31 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 	regions, err := client.ListRegions(context.Background(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	// Fetch per-region account availabilities. On failure, log a warning and proceed without account-level filtering.
+	accountAvail := make(map[string]map[string]bool)
+	acctAvailabilities, err := client.ListAccountAvailabilities(context.Background(), nil)
+	if err != nil {
+		log.Printf("[WARN] Failed to retrieve account availabilities for regions. "+
+			"Assuming required capabilities are available in all regions for this account. "+
+			"Tests may fail if the account lacks access to necessary capabilities in the selected region. err=%v", err)
+	} else {
+		for _, aa := range acctAvailabilities {
+			avail := make(map[string]bool, len(aa.Available))
+			for _, a := range aa.Available {
+				avail[a] = true
+			}
+			accountAvail[aa.Region] = avail
+		}
+	}
+
+	// Determine which of the requested capabilities also require account-level checks.
+	var requiredAccountCaps []string
+	for _, c := range capabilities {
+		if accountAvailabilityCaps[c] {
+			requiredAccountCaps = append(requiredAccountCaps, c)
+		}
 	}
 
 	// Filter on capabilities and site type
@@ -698,6 +731,21 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 		for _, c := range capabilities {
 			if _, ok := capsMap[strings.ToUpper(c)]; !ok {
 				return true
+			}
+		}
+
+		// If account availability data was fetched, verify account-level caps too.
+		// If we have no data at all (fetch failed), skip this check.
+		if len(accountAvail) > 0 && len(requiredAccountCaps) > 0 {
+			regionAvail, ok := accountAvail[region.ID]
+			if !ok {
+				// Region not present in account availabilities → not available.
+				return true
+			}
+			for _, c := range requiredAccountCaps {
+				if !regionAvail[c] {
+					return true
+				}
 			}
 		}
 
