@@ -55,11 +55,11 @@ func (r *Resource) Create(
 		}
 	}
 
-	client := r.Meta.Client
-
 	tflog.Debug(ctx, "client.ReserveIPAddress(...)", map[string]any{
 		"options": createOpts,
 	})
+
+	client := r.Meta.Client
 
 	ip, err := client.ReserveIPAddress(ctx, createOpts)
 	if err != nil {
@@ -136,21 +136,18 @@ func (r *Resource) Update(
 	resp *resource.UpdateResponse,
 ) {
 	tflog.Debug(ctx, "Update "+r.Config.Name)
-	var plan, state ResourceModel
+	var plan ResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	address := state.ID.ValueString()
+	address := plan.ID.ValueString()
 
 	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
 		"address": address,
 	})
-
-	client := r.Meta.Client
 
 	var newTags []string
 	if !plan.Tags.IsNull() && !plan.Tags.IsUnknown() {
@@ -167,6 +164,8 @@ func (r *Resource) Update(
 	tflog.Debug(ctx, "client.UpdateReservedIPAddress(...)", map[string]any{
 		"options": updateOpts,
 	})
+
+	client := r.Meta.Client
 
 	ip, err := client.UpdateReservedIPAddress(ctx, address, updateOpts)
 	if err != nil {
@@ -204,9 +203,10 @@ func (r *Resource) Delete(
 		"address": address,
 	})
 
+	tflog.Debug(ctx, "client.DeleteReservedIPAddress(...)")
+
 	client := r.Meta.Client
 
-	tflog.Debug(ctx, "client.DeleteReservedIPAddress(...)")
 	if err := client.DeleteReservedIPAddress(ctx, address); err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(

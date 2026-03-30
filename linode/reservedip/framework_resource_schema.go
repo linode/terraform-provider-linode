@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	linodesetplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/setplanmodifiers"
 	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
@@ -19,6 +21,14 @@ var assignedEntityType = types.ObjectType{
 		"type":  types.StringType,
 		"url":   types.StringType,
 	},
+}
+
+// AssignedEntityModel is the tfsdk-tagged struct for items in the assigned_entity list.
+type AssignedEntityModel struct {
+	ID    types.Int64  `tfsdk:"id"`
+	Label types.String `tfsdk:"label"`
+	Type  types.String `tfsdk:"type"`
+	URL   types.String `tfsdk:"url"`
 }
 
 var frameworkResourceSchema = schema.Schema{
@@ -105,6 +115,10 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:    true,
 			Computed:    true,
 			ElementType: types.StringType,
+			Default:     helper.EmptySetDefault(types.StringType),
+			PlanModifiers: []planmodifier.Set{
+				linodesetplanmodifiers.CaseInsensitiveSet(),
+			},
 		},
 		"vpc_nat_1_1": schema.ListAttribute{
 			Description: "Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.",

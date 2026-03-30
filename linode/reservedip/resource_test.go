@@ -36,17 +36,47 @@ func TestAccResourceReservedIP_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(testResourceName, "address"),
-					resource.TestCheckResourceAttr(testResourceName, "region", testRegion),
-					resource.TestCheckResourceAttr(testResourceName, "reserved", "true"),
-					resource.TestCheckResourceAttr(testResourceName, "public", "true"),
-					resource.TestCheckResourceAttr(testResourceName, "type", "ipv4"),
-					resource.TestCheckResourceAttrSet(testResourceName, "gateway"),
-					resource.TestCheckResourceAttrSet(testResourceName, "subnet_mask"),
-					resource.TestCheckResourceAttrSet(testResourceName, "prefix"),
-				),
 				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						testResourceName,
+						tfjsonpath.New("address"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						testResourceName,
+						tfjsonpath.New("region"),
+						knownvalue.StringExact(testRegion),
+					),
+					statecheck.ExpectKnownValue(
+						testResourceName,
+						tfjsonpath.New("reserved"),
+						knownvalue.Bool(true),
+					),
+					statecheck.ExpectKnownValue(
+						testResourceName,
+						tfjsonpath.New("public"),
+						knownvalue.Bool(true),
+					),
+					statecheck.ExpectKnownValue(
+						testResourceName,
+						tfjsonpath.New("type"),
+						knownvalue.StringExact("ipv4"),
+					),
+					statecheck.ExpectKnownValue(
+						testResourceName,
+						tfjsonpath.New("gateway"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						testResourceName,
+						tfjsonpath.New("subnet_mask"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						testResourceName,
+						tfjsonpath.New("prefix"),
+						knownvalue.NotNull(),
+					),
 					statecheck.ExpectKnownValue(
 						testResourceName,
 						tfjsonpath.New("tags"),
@@ -65,10 +95,9 @@ func TestAccResourceReservedIP_basic(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:            testResourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"tags"},
+				ResourceName:      testResourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -77,14 +106,15 @@ func TestAccResourceReservedIP_basic(t *testing.T) {
 func TestAccResourceReservedIP_withTags(t *testing.T) {
 	t.Parallel()
 
-	tags := []string{"tf-test", "reserved"}
+	tagsInitial := []string{"tf-test", "reserved"}
+	tagsUpdated := []string{"tf-test", "updated"}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.WithTags(t, testRegion, tags),
+				Config: tmpl.WithTags(t, testRegion, tagsInitial),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						testResourceName,
@@ -97,10 +127,22 @@ func TestAccResourceReservedIP_withTags(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:            testResourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"tags"},
+				Config: tmpl.WithTags(t, testRegion, tagsUpdated),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						testResourceName,
+						tfjsonpath.New("tags"),
+						knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.StringExact("tf-test"),
+							knownvalue.StringExact("updated"),
+						}),
+					),
+				},
+			},
+			{
+				ResourceName:      testResourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

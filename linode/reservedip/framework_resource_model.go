@@ -80,20 +80,16 @@ func (m *ResourceModel) flatten(
 	if ip.AssignedEntity == nil {
 		assignedList = types.ListNull(assignedEntityType)
 	} else {
-		entityObj, entityDiags := types.ObjectValue(
-			assignedEntityType.AttrTypes,
-			map[string]attr.Value{
-				"id":    types.Int64Value(int64(ip.AssignedEntity.ID)),
-				"label": types.StringValue(ip.AssignedEntity.Label),
-				"type":  types.StringValue(ip.AssignedEntity.Type),
-				"url":   types.StringValue(ip.AssignedEntity.URL),
-			},
-		)
-		diags.Append(entityDiags...)
 		var listDiags diag.Diagnostics
-		assignedList, listDiags = types.ListValue(
+		assignedList, listDiags = types.ListValueFrom(
+			ctx,
 			assignedEntityType,
-			[]attr.Value{entityObj},
+			[]AssignedEntityModel{{
+				ID:    types.Int64Value(int64(ip.AssignedEntity.ID)),
+				Label: types.StringValue(ip.AssignedEntity.Label),
+				Type:  types.StringValue(ip.AssignedEntity.Type),
+				URL:   types.StringValue(ip.AssignedEntity.URL),
+			}},
 		)
 		diags.Append(listDiags...)
 	}
