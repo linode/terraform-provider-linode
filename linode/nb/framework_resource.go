@@ -80,6 +80,7 @@ func (r *Resource) Create(
 		}
 	}
 
+	// VPCs are deprecated but still supported.
 	if !data.VPCs.IsNull() {
 		vpcs, d := vpcModelsToLinodego(ctx, data.VPCs)
 		resp.Diagnostics.Append(d...)
@@ -88,6 +89,18 @@ func (r *Resource) Create(
 		}
 
 		createOpts.VPCs = vpcs
+	}
+
+	// BackendVPCs is the replacement for VPCs.
+	// They cannot be specified together due to the ConflictsWith validator on the schema.
+	if !data.BackendVPCs.IsNull() {
+		vpcs, d := vpcModelsToLinodego(ctx, data.BackendVPCs)
+		resp.Diagnostics.Append(d...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		createOpts.BackendVPCs = vpcs
 	}
 
 	if !data.FrontendVPCs.IsNull() {
