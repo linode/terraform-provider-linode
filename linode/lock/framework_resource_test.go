@@ -11,14 +11,20 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/lock/tmpl"
 )
 
-var testRegion string
+var (
+	testRegion             string
+	testNodeBalancerRegion string
+)
 
 func init() {
 	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
@@ -27,6 +33,13 @@ func init() {
 	}
 
 	testRegion = region
+
+	nodeBalancerRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityNodeBalancers}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testNodeBalancerRegion = nodeBalancerRegion
 }
 
 func TestAccResourceLock_basic(t *testing.T) {
@@ -93,6 +106,47 @@ func TestAccResourceLock_withSubresources(t *testing.T) {
 					resource.TestCheckResourceAttrSet(lockName, "entity_label"),
 					resource.TestCheckResourceAttrSet(lockName, "entity_url"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccResourceLock_nodeBalancer(t *testing.T) {
+	t.Parallel()
+
+	lockName := "linode_lock.test"
+	label := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreventPostDestroyRefresh: true,
+		PreCheck:                  func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories:  acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:              checkLockDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.NodeBalancerBasic(t, label, testNodeBalancerRegion),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lockName,
+						tfjsonpath.New("entity_type"), knownvalue.StringExact("nodebalancer"),
+					),
+					statecheck.ExpectKnownValue(lockName,
+						tfjsonpath.New("lock_type"), knownvalue.StringExact("cannot_delete"),
+					),
+					statecheck.ExpectKnownValue(lockName,
+						tfjsonpath.New("entity_id"), knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(lockName,
+						tfjsonpath.New("entity_label"), knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(lockName,
+						tfjsonpath.New("entity_url"), knownvalue.NotNull(),
+					),
+				},
+			},
+			{
+				ResourceName:      lockName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

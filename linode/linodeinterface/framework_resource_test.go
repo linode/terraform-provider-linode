@@ -777,7 +777,7 @@ func TestAccLinodeInterface_vpc_with_ipv6(t *testing.T) {
 		linodego.CapabilityLinodes,
 		linodego.CapabilityVlans,
 		linodego.CapabilityVPCs,
-		"VPC Dual Stack",
+		linodego.CapabilityVPCDualStack,
 	}, "core")
 	if err != nil {
 		log.Fatal(err)

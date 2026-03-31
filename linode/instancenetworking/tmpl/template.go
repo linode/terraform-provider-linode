@@ -38,3 +38,13 @@ func DataBasic_withReservedField(t *testing.T, instanceLabel, region string) str
 			Region: region,
 		})
 }
+
+func DataVPCDualStack(t testing.TB, label, region, subnetIPv4, interfaceIPv4 string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_networking_data_vpc_dual_stack", TemplateData{
+			Label:         label,
+			Region:        region,
+			IPv4:          subnetIPv4,
+			InterfaceIPv4: interfaceIPv4,
+		})
+}

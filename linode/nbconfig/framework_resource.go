@@ -84,7 +84,14 @@ func (r *Resource) Create(
 	}
 
 	tflog.Debug(ctx, "client.CreateNodeBalancerConfig(...)", map[string]any{
-		"options": createOpts,
+		"port":           createOpts.Port,
+		"protocol":       createOpts.Protocol,
+		"algorithm":      createOpts.Algorithm,
+		"stickiness":     createOpts.Stickiness,
+		"check":          createOpts.Check,
+		"check_path":     createOpts.CheckPath,
+		"check_interval": createOpts.CheckInterval,
+		"proxy_protocol": createOpts.ProxyProtocol,
 	})
 
 	config, err := client.CreateNodeBalancerConfig(ctx, nodeBalancerID, *createOpts)
@@ -193,7 +200,14 @@ func (r *Resource) Update(
 	}
 
 	tflog.Debug(ctx, "client.UpdateNodeBalancerConfig(...)", map[string]any{
-		"options": updateOpts,
+		"port":           updateOpts.Port,
+		"protocol":       updateOpts.Protocol,
+		"algorithm":      updateOpts.Algorithm,
+		"stickiness":     updateOpts.Stickiness,
+		"check":          updateOpts.Check,
+		"check_path":     updateOpts.CheckPath,
+		"check_interval": updateOpts.CheckInterval,
+		"proxy_protocol": updateOpts.ProxyProtocol,
 	})
 
 	config, err := client.UpdateNodeBalancerConfig(ctx, nodeBalancerID, id, *updateOpts)
