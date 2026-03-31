@@ -44,7 +44,11 @@ func (m *ResourceModel) flatten(
 	m.Type = helper.KeepOrUpdateString(m.Type, string(ip.Type), preserveKnown)
 	m.Public = helper.KeepOrUpdateBool(m.Public, ip.Public, preserveKnown)
 	m.RDNS = helper.KeepOrUpdateString(m.RDNS, ip.RDNS, preserveKnown)
-	m.LinodeID = helper.KeepOrUpdateInt64(m.LinodeID, int64(ip.LinodeID), preserveKnown)
+	if ip.LinodeID != 0 {
+		m.LinodeID = helper.KeepOrUpdateValue(m.LinodeID, types.Int64Value(int64(ip.LinodeID)), preserveKnown)
+	} else {
+		m.LinodeID = helper.KeepOrUpdateValue(m.LinodeID, types.Int64Null(), preserveKnown)
+	}
 	m.Reserved = helper.KeepOrUpdateBool(m.Reserved, ip.Reserved, preserveKnown)
 
 	// Tags: if the API returns nil (endpoint omits the field or returns null),

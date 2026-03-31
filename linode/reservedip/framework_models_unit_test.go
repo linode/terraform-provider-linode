@@ -41,7 +41,7 @@ func TestFlattenReservedIP(t *testing.T) {
 	assert.Equal(t, "ipv4", m.Type.ValueString())
 	assert.Equal(t, true, m.Public.ValueBool())
 	assert.Equal(t, "198-51-100-5.ip.linodeusercontent.com", m.RDNS.ValueString())
-	assert.Equal(t, int64(0), m.LinodeID.ValueInt64())
+	assert.True(t, m.LinodeID.IsNull())
 	assert.Equal(t, "us-east", m.Region.ValueString())
 	assert.Equal(t, true, m.Reserved.ValueBool())
 
