@@ -1,0 +1,9 @@
+{{ define "user_data_basic" }}
+
+data "linode_profile" "user" {}
+
+data "linode_user" "user" {
+    username = "${data.linode_profile.user.username}"
+}
+
+{{ end }}

@@ -93,6 +93,10 @@ var frameworkResourceSchema = schema.Schema{
 				int64planmodifier.UseStateForUnknown(),
 			},
 		},
+		"io_ready": schema.BoolAttribute{
+			Description: "Indicates whether the volume is successfully attached to a Linode and ready for read and write operations.",
+			Computed:    true,
+		},
 		"filesystem_path": schema.StringAttribute{
 			Description: "The full filesystem path for the Volume based on the Volume's label. Path is " +
 				"/dev/disk/by-id/scsi-0Linode_Volume_ + Volume label.",

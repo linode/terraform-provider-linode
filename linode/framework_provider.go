@@ -37,6 +37,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalltemplate"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalltemplates"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/iamentities"
+	"github.com/linode/terraform-provider-linode/v3/linode/iamuser"
 	"github.com/linode/terraform-provider-linode/v3/linode/image"
 	"github.com/linode/terraform-provider-linode/v3/linode/images"
 	"github.com/linode/terraform-provider-linode/v3/linode/instancedisk"
@@ -245,6 +247,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		accountsettings.NewResource,
 		firewall.NewResource,
 		firewalldevice.NewResource,
+		iamuser.NewResource,
 		image.NewResource,
 		instancedisk.NewResource,
 		instanceip.NewResource,
@@ -312,6 +315,8 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nbtypes.NewDataSource,
 		instancetype.NewDataSource,
 		instancetypes.NewDataSource,
+		iamentities.NewDataSource,
+		iamuser.NewDataSource,
 		image.NewDataSource,
 		images.NewDataSource,
 		accountlogin.NewDataSource,

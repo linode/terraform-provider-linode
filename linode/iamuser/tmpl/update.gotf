@@ -1,0 +1,16 @@
+{{ define "iam_user_update" }}
+
+{{ template "iam_user_basic" . }}
+
+resource "linode_iam_user" "test_iam_user" {
+    username = "{{.Username}}"
+    entity_access = [
+        {
+            id = linode_volume.test_volume.id
+            type = "volume"
+            roles = ["volume_admin"]
+        }
+    ]
+}
+
+{{ end }}
