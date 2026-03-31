@@ -35,10 +35,9 @@ func (r *Resource) Create(
 	tflog.Debug(ctx, "Create "+r.Config.Name)
 
 	var plan IAMUserResourceModel
-	diags := resp.Diagnostics
 
-	diags.Append(req.Plan.Get(ctx, &plan)...)
-	if diags.HasError() {
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -49,13 +48,15 @@ func (r *Resource) Create(
 
 	perms, err := client.GetUserRolePermissions(ctx, username)
 	if err != nil {
-		diags.AddError("Failed to get User Roles", err.Error())
+		resp.Diagnostics.AddError("Failed to get User Roles", err.Error())
+		return
 	}
-	updateOpts := perms.GetUpdateOptions()
-	shouldUpdate := plan.CreateChanges(ctx, perms, &updateOpts, &diags)
 
-	plan.KeepOrUpdate(ctx, perms, true, &diags)
-	if diags.HasError() {
+	updateOpts := perms.GetUpdateOptions()
+	shouldUpdate := plan.CreateChanges(ctx, perms, &updateOpts, &resp.Diagnostics)
+
+	plan.KeepOrUpdate(ctx, perms, true, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -67,15 +68,17 @@ func (r *Resource) Create(
 
 		newPerms, err := client.UpdateUserRolePermissions(ctx, username, updateOpts)
 		if err != nil {
-			diags.AddError("Failed to Update User", err.Error())
+			resp.Diagnostics.AddError("Failed to Update User", err.Error())
 			return
 		}
-		plan.KeepOrUpdate(ctx, newPerms, true, &diags)
-		if diags.HasError() {
+
+		plan.KeepOrUpdate(ctx, newPerms, true, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	diags.Append(resp.State.Set(ctx, &plan)...)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Read(
@@ -198,8 +201,7 @@ func (r *Resource) Delete(
 	}
 }
 
-//TODO IMPORT STATE MAYBE? need to import the resource instead of creating
-
+// TODO IMPORT STATE MAYBE? need to import the resource instead of creating
 func populateLogAttributes(ctx context.Context, username string) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
 		"username": username,
