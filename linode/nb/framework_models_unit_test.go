@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
@@ -72,7 +73,13 @@ func TestFlattenNodeBalancer(t *testing.T) {
 		Type: linodego.NBTypeCommon,
 	}
 
-	nodeBalancerModel := &NodeBalancerModel{}
+	nodeBalancerModel := &NodeBalancerModel{
+		// VPCs is deprecated, but in this unit test we can
+		// check that the flatten function correctly handles both
+		// VPCs and BackendVPCs when preserveKnown is false.
+		VPCs:        types.ListValueMust(frameworkResourceSchemaVPCs.Type(), []attr.Value{}),
+		BackendVPCs: types.ListValueMust(frameworkResourceSchemaVPCs.Type(), []attr.Value{}),
+	}
 
 	vpcConfigs := []linodego.NodeBalancerVPCConfig{
 		{
