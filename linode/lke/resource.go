@@ -611,7 +611,7 @@ func customDiffValidatePoolForStandardTier(ctx context.Context, diff *schema.Res
 // during updates by validating only the user's config.
 func customDiffValidateUpdateStrategyWithTier(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
 	tier := diff.GetRawConfig().GetAttr("tier")
-	tierIsEnterprise := !tier.IsNull() && tier.AsString() == TierEnterprise
+	tierIsEnterprise := tier.IsKnown() && !tier.IsNull() && tier.AsString() == TierEnterprise
 	if tierIsEnterprise {
 		return nil
 	}
