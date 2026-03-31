@@ -237,7 +237,7 @@ var frameworkResourceSchema = schema.Schema{
 					path.MatchRoot("backend_vpcs"),
 				}...),
 			},
-			DeprecationMessage: "'vpcs' is deprecated in favor of 'backend_vpcs'. This attribute may be removed in future major release.",
+			DeprecationMessage: "'vpcs' is deprecated in favor of 'backend_vpcs'. This attribute may be removed in a future major release.",
 		},
 		"backend_vpcs": schema.ListNestedAttribute{
 			Description: "A VPC configuration for backend nodes.",
