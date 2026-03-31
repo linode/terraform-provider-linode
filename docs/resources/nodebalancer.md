@@ -79,9 +79,9 @@ This resource exports the following attributes:
 
 * [`firewalls`](#firewalls) - A list of Firewalls assigned to this NodeBalancer.
 
-* [`vpcs`](#vpcs) - (Deprecated: Prefer using `backend_vpcs` instead.) A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`. 
+* [`vpcs`](#vpcs) - (Deprecated: Prefer using `backend_vpcs` instead.) A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
-* [`backend_vpcs`](#backend_vpcs) - A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`. 
+* [`backend_vpcs`](#backend_vpcs) - A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
 * [`frontend_vpcs`](#frontend_vpcs) - For internal load balancing, where the NodeBalancer is within a VPC, indicate a VPC subnet_id. For greater flexibility, you can specify the IP range within the subnet used for allocation. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
