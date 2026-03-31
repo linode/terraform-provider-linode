@@ -56,7 +56,7 @@ The following arguments are supported:
 
 * `entity_id` - (Required) The ID of the entity to lock.
 
-* `entity_type` - (Required) The type of the entity to lock. Currently only `linode` is supported. Note: Linodes that are part of an LKE cluster cannot be locked.
+* `entity_type` - (Required) The type of the entity to lock. Supported values are `linode`, `nodebalancer`, `volume`, `lkecluster`, and `lkenodepool`. Note: Linodes that are part of an LKE cluster cannot be locked.
 
 * `lock_type` - (Required) The type of lock to apply. Only one lock type can exist per resource at a time. Valid values are:
   * `cannot_delete` - Prevents the resource from being deleted, rebuilt, or transferred to another account.
