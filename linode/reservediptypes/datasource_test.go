@@ -33,7 +33,7 @@ func TestAccDataSourceReservedIPTypes_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						dataSourceName,
 						tfjsonpath.New("types").AtSliceIndex(0).AtMapKey("id"),
-						knownvalue.NotNull(),
+						knownvalue.StringExact("reserved-ip"),
 					),
 					statecheck.ExpectKnownValue(
 						dataSourceName,
