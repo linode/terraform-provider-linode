@@ -1030,12 +1030,14 @@ func TestAccResourceInstance_withACLPAlerts(t *testing.T) {
 						statecheck.ExpectKnownValue(
 							resName,
 							tfjsonpath.New("alerts").AtSliceIndex(0).AtMapKey("system_alerts"),
-							knownvalue.ListSizeExact(1),
+							knownvalue.SetSizeExact(1),
 						),
 						statecheck.ExpectKnownValue(
 							resName,
-							tfjsonpath.New("alerts").AtSliceIndex(0).AtMapKey("system_alerts").AtSliceIndex(0),
-							knownvalue.Int64Exact(int64(systemAlert)),
+							tfjsonpath.New("alerts").AtSliceIndex(0).AtMapKey("system_alerts"),
+							knownvalue.SetExact([]knownvalue.Check{
+								knownvalue.Int64Exact(int64(systemAlert)),
+							}),
 						),
 					},
 				},
@@ -1051,7 +1053,7 @@ func TestAccResourceInstance_withACLPAlerts(t *testing.T) {
 						statecheck.ExpectKnownValue(
 							resName,
 							tfjsonpath.New("alerts").AtSliceIndex(0).AtMapKey("system_alerts"),
-							knownvalue.ListSizeExact(0),
+							knownvalue.SetSizeExact(0),
 						),
 					},
 				},

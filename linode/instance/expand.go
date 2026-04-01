@@ -1,8 +1,28 @@
 package instance
 
 import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
+
+// expandIntSet converts a value that is either a *schema.Set or []any of ints
+// into a []int slice.
+func expandIntSet(v any) []int {
+	var items []any
+	switch val := v.(type) {
+	case *schema.Set:
+		items = val.List()
+	case []any:
+		items = val
+	default:
+		return nil
+	}
+	result := make([]int, 0, len(items))
+	for _, raw := range items {
+		result = append(result, raw.(int))
+	}
+	return result
+}
 
 // expandInstanceConfigDeviceMap converts a terraform linode_instance config.*.devices map to a InstanceConfigDeviceMap
 // for the Linode API.
@@ -47,21 +67,13 @@ func expandInstanceACLPAlertsOpts(m map[string]any) *linodego.InstanceACLPAlerts
 	var alertsACLPOpts linodego.InstanceACLPAlertsOptions
 
 	if v, ok := m["system_alerts"]; ok {
-		l := v.([]any)
-		systemAlerts := make([]int, 0, len(l))
-		for _, raw := range l {
-			systemAlerts = append(systemAlerts, raw.(int))
-		}
-		alertsACLPOpts.SystemAlerts = systemAlerts
+		l := expandIntSet(v)
+		alertsACLPOpts.SystemAlerts = l
 	}
 
 	if v, ok := m["user_alerts"]; ok {
-		l := v.([]any)
-		userAlerts := make([]int, 0, len(l))
-		for _, raw := range l {
-			userAlerts = append(userAlerts, raw.(int))
-		}
-		alertsACLPOpts.UserAlerts = userAlerts
+		l := expandIntSet(v)
+		alertsACLPOpts.UserAlerts = l
 	}
 
 	return &alertsACLPOpts
@@ -88,21 +100,13 @@ func expandInstanceAlertsUpdateOpts(m map[string]any) *linodego.InstanceAlert {
 	}
 
 	if v, ok := m["system_alerts"]; ok {
-		l := v.([]any)
-		systemAlerts := make([]int, 0, len(l))
-		for _, raw := range l {
-			systemAlerts = append(systemAlerts, raw.(int))
-		}
-		alertsUpdateOpts.SystemAlerts = systemAlerts
+		l := expandIntSet(v)
+		alertsUpdateOpts.SystemAlerts = l
 	}
 
 	if v, ok := m["user_alerts"]; ok {
-		l := v.([]any)
-		userAlerts := make([]int, 0, len(l))
-		for _, raw := range l {
-			userAlerts = append(userAlerts, raw.(int))
-		}
-		alertsUpdateOpts.UserAlerts = userAlerts
+		l := expandIntSet(v)
+		alertsUpdateOpts.UserAlerts = l
 	}
 
 	return &alertsUpdateOpts

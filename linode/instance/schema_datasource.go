@@ -225,13 +225,13 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 						"If set to 0, this alert is disabled.",
 				},
 				"system_alerts": {
-					Type:        schema.TypeList,
+					Type:        schema.TypeSet,
 					Elem:        &schema.Schema{Type: schema.TypeInt},
 					Computed:    true,
 					Description: "A list of system alerts associated with current instance.",
 				},
 				"user_alerts": {
-					Type:        schema.TypeList,
+					Type:        schema.TypeSet,
 					Elem:        &schema.Schema{Type: schema.TypeInt},
 					Computed:    true,
 					Description: "A list of user alerts associated with current instance.",

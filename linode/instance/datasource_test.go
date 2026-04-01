@@ -404,7 +404,7 @@ func TestAccDataSourceInstances_withAlert(t *testing.T) {
 							AtMapKey("alerts").
 							AtSliceIndex(0).
 							AtMapKey("system_alerts"),
-						knownvalue.ListSizeExact(1),
+						knownvalue.SetSizeExact(1),
 					),
 					statecheck.ExpectKnownValue(
 						resName,
@@ -412,9 +412,10 @@ func TestAccDataSourceInstances_withAlert(t *testing.T) {
 							AtSliceIndex(0).
 							AtMapKey("alerts").
 							AtSliceIndex(0).
-							AtMapKey("system_alerts").
-							AtSliceIndex(0),
-						knownvalue.Int64Exact(int64(systemAlert)),
+							AtMapKey("system_alerts"),
+						knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.Int64Exact(int64(systemAlert)),
+						}),
 					),
 				},
 			},
