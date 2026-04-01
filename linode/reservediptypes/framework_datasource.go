@@ -52,7 +52,11 @@ func (r *DataSource) Read(
 		return
 	}
 
-	data.parseReservedIPTypes(ctx, helper.AnySliceToTyped[linodego.ReservedIPType](result))
+	diags := data.parseReservedIPTypes(ctx, helper.AnySliceToTyped[linodego.ReservedIPType](result))
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
