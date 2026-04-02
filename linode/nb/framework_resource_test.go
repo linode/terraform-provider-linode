@@ -270,6 +270,11 @@ func TestAccResourceNodeBalancer_vpc(t *testing.T) {
 						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv4_range"),
 						knownvalue.NotNull(),
 					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv6_range"),
+						knownvalue.NotNull(),
+					),
 				},
 			},
 		},
