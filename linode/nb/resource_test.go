@@ -267,7 +267,7 @@ func TestAccResourceNodeBalancer_backendVPC(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.VPC(t, nodebalancerName, targetRegion),
+				Config: tmpl.BackendVPC(t, nodebalancerName, targetRegion),
 				Check:  checkNodeBalancerExists,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(

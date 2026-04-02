@@ -447,6 +447,12 @@ type ResourceVPCModel struct {
 	IPv4RangeAutoAssign types.Bool `tfsdk:"ipv4_range_auto_assign"`
 }
 
+type ResourceBackendVPCModel struct {
+	BaseVPCModel
+
+	IPv4RangeAutoAssign types.Bool `tfsdk:"ipv4_range_auto_assign"`
+}
+
 type ResourceFrontendVPCModel struct {
 	BaseVPCModel
 
@@ -465,6 +471,24 @@ func (m *ResourceVPCModel) ToLinodego() (*linodego.NodeBalancerVPCOptions, diag.
 	}
 
 	return &linodego.NodeBalancerVPCOptions{
+		SubnetID:            subnetID,
+		IPv4Range:           m.IPv4Range.ValueString(),
+		IPv4RangeAutoAssign: m.IPv4RangeAutoAssign.ValueBool(),
+	}, d
+}
+
+func (m *ResourceBackendVPCModel) ToLinodego() (*linodego.NodeBalancerBackendVPCOptions, diag.Diagnostics) {
+	var d diag.Diagnostics
+
+	subnetID := helper.FrameworkSafeInt64ToInt(
+		m.SubnetID.ValueInt64(),
+		&d,
+	)
+	if d.HasError() {
+		return nil, d
+	}
+
+	return &linodego.NodeBalancerBackendVPCOptions{
 		SubnetID:            subnetID,
 		IPv4Range:           m.IPv4Range.ValueString(),
 		IPv4RangeAutoAssign: m.IPv4RangeAutoAssign.ValueBool(),
@@ -505,6 +529,29 @@ func vpcModelsToLinodego(
 	return helper.MapSlice(
 		vpcModels,
 		func(vpcModel ResourceVPCModel) linodego.NodeBalancerVPCOptions {
+			result, localD := vpcModel.ToLinodego()
+			d.Append(localD...)
+			return *result
+		},
+	), d
+}
+
+func backendVPCModelsToLinodego(
+	ctx context.Context,
+	vpcs types.List,
+) ([]linodego.NodeBalancerBackendVPCOptions, diag.Diagnostics) {
+	var d diag.Diagnostics
+
+	var vpcModels []ResourceBackendVPCModel
+
+	d.Append(vpcs.ElementsAs(ctx, &vpcModels, false)...)
+	if d.HasError() {
+		return nil, d
+	}
+
+	return helper.MapSlice(
+		vpcModels,
+		func(vpcModel ResourceBackendVPCModel) linodego.NodeBalancerBackendVPCOptions {
 			result, localD := vpcModel.ToLinodego()
 			d.Append(localD...)
 			return *result

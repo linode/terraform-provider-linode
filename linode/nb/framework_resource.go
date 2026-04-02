@@ -94,7 +94,7 @@ func (r *Resource) Create(
 	// BackendVPCs is the replacement for VPCs.
 	// They cannot be specified together due to the ConflictsWith validator on the schema.
 	if !data.BackendVPCs.IsNull() {
-		vpcs, d := vpcModelsToLinodego(ctx, data.BackendVPCs)
+		vpcs, d := backendVPCModelsToLinodego(ctx, data.BackendVPCs)
 		resp.Diagnostics.Append(d...)
 		if resp.Diagnostics.HasError() {
 			return

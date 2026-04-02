@@ -1,4 +1,4 @@
-{{ define "nodebalancer_vpc" }}
+{{ define "nodebalancer_backend_vpc" }}
 
 {{ template "e2e_test_firewall" . }}
 
