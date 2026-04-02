@@ -40,7 +40,6 @@ Each Linode entity will be stored in the `entities` attribute and will export th
 
 * `type` - The type for each entity. (eg. Volume)
 
-
 ## Filterable Fields
 
 *While the filtering system is in place currently this endpoint does not have filter support for any field.*
