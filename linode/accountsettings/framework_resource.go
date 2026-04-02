@@ -157,26 +157,6 @@ func (r *Resource) createOrUpdateAccountSettings(
 	}
 	email := account.Email
 
-	// Longview Plan update functionality has been moved
-	if !plan.LongviewSubscription.IsNull() {
-		options := linodego.LongviewPlanUpdateOptions{
-			LongviewSubscription: plan.LongviewSubscription.ValueString(),
-		}
-
-		tflog.Debug(ctx, "client.UpdateLongviewPlan(...)", map[string]any{
-			"options": options,
-		})
-
-		_, err := client.UpdateLongviewPlan(ctx, options)
-		if err != nil {
-			diags.AddError(
-				"Failed to update Linode Longview Plan",
-				err.Error(),
-			)
-			return
-		}
-	}
-
 	updateOpts := linodego.AccountSettingsUpdateOptions{}
 
 	if !plan.BackupsEnabled.IsUnknown() {
