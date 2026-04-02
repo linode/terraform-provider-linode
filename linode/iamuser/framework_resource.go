@@ -135,11 +135,10 @@ func (r *Resource) Update(
 	tflog.Debug(ctx, "Update "+r.Config.Name)
 
 	var plan, state IAMUserResourceModel
-	diags := resp.Diagnostics
 
-	diags.Append(req.State.Get(ctx, &state)...)
-	diags.Append(req.Plan.Get(ctx, &plan)...)
-	if diags.HasError() {
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -149,22 +148,9 @@ func (r *Resource) Update(
 	client := r.Meta.Client
 
 	updateOpts := linodego.UserRolePermissionsUpdateOptions{}
-	shouldUpdate := false
-
-	if !state.AccountAccess.Equal(plan.AccountAccess) {
-		diags.Append(plan.AccountAccess.ElementsAs(ctx, &updateOpts.AccountAccess, false)...)
-		if diags.HasError() {
-			return
-		}
-		shouldUpdate = true
-	}
-
-	if !state.EntityAccessHasChanges(ctx, plan, &diags) {
-		diags.Append(plan.EntityAccess.ElementsAs(ctx, &updateOpts.EntityAccess, false)...)
-		if diags.HasError() {
-			return
-		}
-		shouldUpdate = true
+	shouldUpdate := plan.UpdateChanges(ctx, &state, &updateOpts, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	if shouldUpdate {
@@ -175,16 +161,16 @@ func (r *Resource) Update(
 
 		perms, err := client.UpdateUserRolePermissions(ctx, username, updateOpts)
 		if err != nil {
-			diags.AddError("Failed to Update User", err.Error())
+			resp.Diagnostics.AddError("Failed to Update User", err.Error())
 			return
 		}
-		plan.KeepOrUpdate(ctx, perms, true, &diags)
-		if diags.HasError() {
+		plan.KeepOrUpdate(ctx, perms, true, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	diags.Append(resp.State.Set(ctx, &plan)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(
@@ -201,7 +187,6 @@ func (r *Resource) Delete(
 	}
 }
 
-// TODO IMPORT STATE MAYBE? need to import the resource instead of creating
 func populateLogAttributes(ctx context.Context, username string) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
 		"username": username,

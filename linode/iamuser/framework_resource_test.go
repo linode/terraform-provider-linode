@@ -84,8 +84,11 @@ func volumeSweep(prefix string) error {
 	return nil
 }
 
-func TestAccResourceIAMUser_Update(t *testing.T) {
+func TestAccResourceIAMUser_Create(t *testing.T) {
 	t.Parallel()
+
+	// IAM Tests need to be opted into, iam accounts do not support all existing user endpoints as they will be replacing some of them
+	acceptance.OptInTest(t)
 
 	resName := "linode_iam_user.test_iam_user"
 	volumeName := acctest.RandomWithPrefix("tf_test")
@@ -97,11 +100,46 @@ func TestAccResourceIAMUser_Update(t *testing.T) {
 		CheckDestroy:             acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Update(t, volumeName, testRegion, username, email, true),
+				Config: tmpl.Update(t, volumeName, testRegion, username, email, "volume_admin", true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "account_access.0", "account_event_viewer"),
 					resource.TestCheckResourceAttr(resName, "entity_access.0.type", "volume"),
 					resource.TestCheckResourceAttr(resName, "entity_access.0.roles.0", "volume_admin"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceIAMUser_Update(t *testing.T) {
+	t.Parallel()
+
+	// IAM Tests need to be opted into, iam accounts do not support all existing user endpoints as they will be replacing some of them
+	acceptance.OptInTest(t)
+
+	resName := "linode_iam_user.test_iam_user"
+	volumeName := acctest.RandomWithPrefix("tf_test")
+	username := acctest.RandomWithPrefix("tf_test")
+	email := username + "@example.com"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Update(t, volumeName, testRegion, username, email, "volume_admin", true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "account_access.0", "account_event_viewer"),
+					resource.TestCheckResourceAttr(resName, "entity_access.0.type", "volume"),
+					resource.TestCheckResourceAttr(resName, "entity_access.0.roles.0", "volume_admin"),
+				),
+			},
+			{
+				Config: tmpl.Update(t, volumeName, testRegion, username, email, "volume_viewer", true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "account_access.0", "account_event_viewer"),
+					resource.TestCheckResourceAttr(resName, "entity_access.0.type", "volume"),
+					resource.TestCheckResourceAttr(resName, "entity_access.0.roles.0", "volume_viewer"),
 				),
 			},
 		},

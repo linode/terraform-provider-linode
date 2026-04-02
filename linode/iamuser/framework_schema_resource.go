@@ -23,11 +23,13 @@ var frameworkResourceSchema = schema.Schema{
 		"account_access": schema.ListAttribute{
 			Description: "The user account level access.",
 			Optional:    true,
+			Computed:    true,
 			ElementType: types.StringType,
 		},
 		"entity_access": schema.ListNestedAttribute{
 			Description: "The user entity level access.",
 			Optional:    true,
+			Computed:    true,
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{

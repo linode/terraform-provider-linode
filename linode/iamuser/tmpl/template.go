@@ -12,9 +12,10 @@ type TemplateData struct {
 	Username    string
 	Email       string
 	Restricted  bool
+	Role        string
 }
 
-func Update(t testing.TB, label, region, username, email string, restricted bool) string {
+func Update(t testing.TB, label, region, username, email, role string, restricted bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"iam_user_update", TemplateData{
 			VolumeLabel: label,
@@ -22,10 +23,15 @@ func Update(t testing.TB, label, region, username, email string, restricted bool
 			Username:    username,
 			Email:       email,
 			Restricted:  restricted,
+			Role:        role,
 		})
 }
 
-func DataBasic(t testing.TB) string {
+func DataBasic(t testing.TB, username, email string, restricted bool) string {
 	return acceptance.ExecuteTemplate(t,
-		"user_data_basic", nil)
+		"iam_user_data_basic", TemplateData{
+			Username:   username,
+			Email:      email,
+			Restricted: restricted,
+		})
 }
