@@ -52,7 +52,7 @@ func (plan *LinodeInterfaceModel) GetCreateOptions(ctx context.Context, diags *d
 	}
 
 	if !plan.FirewallID.IsUnknown() {
-		opts.FirewallID = helper.FrameworkSafeInt64ValueToIntPointerWithUnknownToNil(plan.FirewallID, diags)
+		opts.FirewallID = helper.FrameworkSafeInt64PointerToIntPointer(plan.FirewallID.ValueInt64Pointer(), diags)
 		if diags.HasError() {
 			return opts, linodeID
 		}
