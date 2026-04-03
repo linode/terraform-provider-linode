@@ -99,7 +99,6 @@ func (data *LKEDataModel) parseLKEAttributes(
 	pools []linodego.LKENodePool,
 	kubeconfig *linodego.LKEClusterKubeconfig,
 	endpoints []linodego.LKEClusterAPIEndpoint,
-	dashboard *linodego.LKEClusterDashboard,
 	acl *linodego.LKEClusterControlPlaneACLResponse,
 ) diag.Diagnostics {
 	data.Created = types.StringValue(cluster.Created.Format(helper.TIME_FORMAT))
@@ -225,11 +224,7 @@ func (data *LKEDataModel) parseLKEAttributes(
 	}
 	data.APIEndpoints = apiEndpoints
 
-	if dashboard != nil {
-		data.DashboardURL = types.StringValue(dashboard.URL)
-	} else {
-		data.DashboardURL = types.StringNull()
-	}
+	data.DashboardURL = types.StringNull() // deprecated & unused
 
 	return nil
 }
