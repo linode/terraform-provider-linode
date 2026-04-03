@@ -30,7 +30,6 @@ var frameworkDataSourceSchema = schema.Schema{
 					"label": schema.StringAttribute{
 						Description: "The Reserved IP Type's label.",
 						Computed:    true,
-						Optional:    true,
 					},
 					"price": schema.ListAttribute{
 						Description: "Cost in US dollars, broken down into hourly and monthly charges.",

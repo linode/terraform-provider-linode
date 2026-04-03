@@ -31,7 +31,7 @@ func (r *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data."+r.Config.Name)
 
-	var data ReservedIPTypeFilterModel
+	var data reservedIPTypeFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {

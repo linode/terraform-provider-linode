@@ -1,10 +1,5 @@
 {{ define "reserved_ip_types_data_basic" }}
 
-data "linode_reserved_ip_types" "foobar" {
-    filter {
-        name   = "label"
-        values = ["Reserved IP"]
-    }
-}
+data "linode_reserved_ip_types" "foobar" {}
 
 {{ end }}

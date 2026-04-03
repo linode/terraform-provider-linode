@@ -10,3 +10,8 @@ func DataBasic(t testing.TB) string {
 	return acceptance.ExecuteTemplate(t,
 		"reserved_ip_types_data_basic", nil)
 }
+
+func DataFilter(t testing.TB) string {
+	return acceptance.ExecuteTemplate(t,
+		"reserved_ip_types_data_filter", nil)
+}

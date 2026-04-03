@@ -28,6 +28,16 @@ func TestAccDataSourceReservedIPTypes_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						dataSourceName,
 						tfjsonpath.New("types"),
+						knownvalue.NotNull(),
+					),
+				},
+			},
+			{
+				Config: tmpl.DataFilter(t),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						tfjsonpath.New("types"),
 						knownvalue.ListSizeExact(1),
 					),
 					statecheck.ExpectKnownValue(
