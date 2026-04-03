@@ -72,6 +72,10 @@ var frameworkDataSourceSchema = schema.Schema{
 						Computed:    true,
 						ElementType: vpcsubnet.DatabaseObjectType,
 					},
+					"nodebalancers": schema.ListAttribute{
+						Computed:    true,
+						ElementType: vpcsubnet.NodebalancerObjectType,
+					},
 				},
 			},
 		},
