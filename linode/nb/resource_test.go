@@ -248,7 +248,7 @@ func TestAccResourceNodeBalancer_firewall(t *testing.T) {
 	})
 }
 
-func TestAccResourceNodeBalancer_vpc(t *testing.T) {
+func TestAccResourceNodeBalancer_backendVPC(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer.test"
@@ -267,7 +267,52 @@ func TestAccResourceNodeBalancer_vpc(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.VPC(t, nodebalancerName, targetRegion),
+				Config: tmpl.BackendVPC(t, nodebalancerName, targetRegion),
+				Check:  checkNodeBalancerExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("backend_vpcs").AtSliceIndex(0).AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("backend_vpcs").AtSliceIndex(0).AtMapKey("ipv4_range"),
+						knownvalue.NotNull(),
+					),
+				},
+			},
+		},
+	})
+}
+
+func TestAccResourceNodeBalancer_VPCDeprecated(t *testing.T) {
+	// This test verifies that the deprecated VPCs attribute can still be used
+	// to create a NodeBalancer with VPC backends, and that the state is properly populated.
+	t.Parallel()
+
+	resName := "linode_nodebalancer.test"
+	nodebalancerName := acctest.RandomWithPrefix("tf-test")
+
+	// Use random region that supports premium NodeBalancers.
+	targetRegion, err := acceptance.GetRandomRegionSupportingPremiumNodeBalancers()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkNodeBalancerDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPCDeprecated(t, nodebalancerName, targetRegion),
 				Check:  checkNodeBalancerExists,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
@@ -320,12 +365,12 @@ func TestAccResourceNodeBalancer_frontendVPC(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("subnet_id"),
+						tfjsonpath.New("backend_vpcs").AtSliceIndex(0).AtMapKey("subnet_id"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv4_range"),
+						tfjsonpath.New("backend_vpcs").AtSliceIndex(0).AtMapKey("ipv4_range"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
@@ -364,7 +409,7 @@ func TestAccResourceNodeBalancer_frontendVPC(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id"}, // Ignore strict comparison for these attributes
+				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id", "backend_vpcs"}, // Ignore strict comparison for these attributes
 			},
 		},
 	})
