@@ -21,6 +21,12 @@ var DataSourceSchema = schema.Schema{
 				"routing traffic to the backend VPC nodes.",
 			Computed: true,
 		},
+		"ipv6_range": schema.StringAttribute{
+			Description: "A CIDR range for the VPC's IPv6 addresses. " +
+				"The NodeBalancer sources IP addresses from this range when " +
+				"routing traffic to the backend VPC nodes.",
+			Computed: true,
+		},
 
 		"subnet_id": schema.Int64Attribute{
 			Description: "The ID of this configuration's VPC subnet.",
