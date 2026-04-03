@@ -28,6 +28,7 @@ func Provider() *schema.Provider {
 			"token": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Sensitive:   true,
 				Description: "The token that allows you access to your Linode account",
 			},
 			"config_path": {
@@ -120,6 +121,7 @@ func Provider() *schema.Provider {
 			"obj_access_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Sensitive:   true,
 				Description: "The access key to be used in linode_object_storage_bucket and linode_object_storage_object.",
 			},
 			"obj_secret_key": {
