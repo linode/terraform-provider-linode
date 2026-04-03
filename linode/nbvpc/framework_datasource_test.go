@@ -1,6 +1,6 @@
-//go:build integration || nbvpcs
+//go:build integration || nbvpc
 
-package nbvpcs_test
+package nbvpc_test
 
 import (
 	"log"
@@ -13,13 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/nbvpcs/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/nbvpc/tmpl"
 )
 
 func TestAccDataSource_basic(t *testing.T) {
 	t.Parallel()
 
-	dataSourceName := "data.linode_nodebalancer_vpcs.test"
+	dataSourceName := "data.linode_nodebalancer_vpc.test"
 
 	label := acctest.RandomWithPrefix("tf-test")
 
@@ -27,8 +27,6 @@ func TestAccDataSource_basic(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	firstConfigPath := tfjsonpath.New("vpc_configs").AtSliceIndex(0)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -50,18 +48,24 @@ func TestAccDataSource_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						dataSourceName,
-						firstConfigPath.AtMapKey("subnet_id"),
+						tfjsonpath.New("vpc_id"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						dataSourceName,
-						firstConfigPath.AtMapKey("vpc_id"),
+						tfjsonpath.New("subnet_id"),
 						knownvalue.NotNull(),
 					),
+
 					statecheck.ExpectKnownValue(
 						dataSourceName,
-						firstConfigPath.AtMapKey("ipv4_range"),
+						tfjsonpath.New("ipv4_range"),
 						knownvalue.StringExact("10.0.0.4/30"),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						tfjsonpath.New("ipv6_range"),
+						knownvalue.NotNull(),
 					),
 				},
 			},
