@@ -268,6 +268,52 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 	})
 }
 
+// TestAccResourceInstanceConfig_bootedDefault verifies that when the booted attribute
+// is not specified, new instances boot automatically but existing instances that are
+// manually shut down don't get forced back on.
+func TestAccResourceInstanceConfig_bootedDefault(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+
+	resName := "linode_instance_config.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(64)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Create with booted omitted - instance should boot automatically
+				Config: tmpl.BootedDefault(t, instanceName, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", "my-config"),
+					resource.TestCheckResourceAttr(resName, "booted", "true"),
+					resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
+				),
+			},
+			{
+				// Verify instance is running after creation
+				PreConfig: func() {
+					if instance.Status != linodego.InstanceRunning {
+						t.Fatalf("expected instance to be running after creation, got %s", instance.Status)
+					}
+				},
+				// Re-apply with no changes - instance should stay running
+				Config: tmpl.BootedDefault(t, instanceName, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+					resource.TestCheckResourceAttr(resName, "booted", "true"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 	t.Parallel()
 
