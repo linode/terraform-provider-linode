@@ -1,7 +1,9 @@
 package iamuser
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -10,6 +12,9 @@ var frameworkSchema = schema.Schema{
 		"username": schema.StringAttribute{
 			Description: "The username to work with.",
 			Required:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 		"account_access": schema.ListAttribute{
 			Description: "The user account level access.",

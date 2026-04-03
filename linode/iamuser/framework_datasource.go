@@ -39,14 +39,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	if data.Username.ValueString() == "" {
-		resp.Diagnostics.AddError(
-			"Username is required.",
-			"Username can't be empty.",
-		)
-		return
-	}
-
 	ctx = tflog.SetField(ctx, "username", data.Username.ValueString())
 
 	perms, err := client.GetUserRolePermissions(ctx, data.Username.ValueString())
