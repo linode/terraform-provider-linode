@@ -237,6 +237,18 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 					DiskID:   124458,
 					VolumeID: 8,
 				},
+				SDZ: &linodego.InstanceConfigDevice{
+					DiskID:   124458,
+					VolumeID: 26,
+				},
+				SDAA: &linodego.InstanceConfigDevice{
+					DiskID:   124458,
+					VolumeID: 27,
+				},
+				SDBL: &linodego.InstanceConfigDevice{
+					DiskID:   124458,
+					VolumeID: 64,
+				},
 			},
 			Helpers:     &linodego.InstanceConfigHelpers{},
 			Interfaces:  []linodego.InstanceConfigInterface{},

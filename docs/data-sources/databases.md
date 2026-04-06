@@ -82,10 +82,6 @@ Each engine will be stored in the `databases` attribute and will export the foll
 
 * `region` - The region to use for the Managed Database.
 
-* `replication_type` - The replication method used for the Managed Database.
-
-* `ssl_connection` - Whether to require SSL credentials to establish a connection to the Managed Database.
-
 * `status` - The operating status of the Managed Database.
 
 * `type` - The Linode Instance type used for the nodes of the  Managed Database instance.
@@ -93,6 +89,12 @@ Each engine will be stored in the `databases` attribute and will export the foll
 * `updated` - When this Managed Database was last updated.
 
 * `version` - The Managed Database engine version.
+
+* `fork_restore_time` - The database timestamp from which it was restored.
+
+* `fork_source` - The ID of the database that was forked from.
+
+* `oldest_restore_time` - The oldest time to which a database can be restored.
 
 ## private_network
 

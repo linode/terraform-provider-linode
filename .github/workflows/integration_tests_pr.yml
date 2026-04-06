@@ -57,6 +57,8 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
+      - uses: hashicorp/setup-terraform@v4
+
       - run: make deps
 
       - run: make TEST_SUITE="${{ inputs.test_suite }}" test-int

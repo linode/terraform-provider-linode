@@ -36,7 +36,7 @@ func init() {
 	})
 
 	region, err := acceptance.GetRandomRegionWithCaps([]string{
-		linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityDiskEncryption,
+		linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityDiskEncryption,
 	}, "core")
 	if err != nil {
 		log.Fatal(err)
@@ -745,6 +745,48 @@ func TestAccResourceInstance_disksAndConfigs(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_diskConfigDevicesExt(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	instanceType := "g6-standard-6"
+	rootPass := acctest.RandString(64)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			acceptance.CheckInstanceDestroy,
+			acceptance.CheckVolumeDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DiskConfigDevicesExt(t, instanceName, instanceType, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", instanceType),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "config.0.devices.0.sda.0.disk_label", "boot"),
+					resource.TestCheckResourceAttr(resName, "config.0.devices.0.sdb.0.disk_label", "swap"),
+					resource.TestCheckResourceAttrSet(resName, "config.0.devices.0.sdk.0.volume_id"),
+					checkComputeInstanceDisk(&instance, "boot", 3000),
+					checkComputeInstanceDisk(&instance, "swap", 512),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id"},
+			},
+		},
+	})
+}
+
 func TestAccResourceInstance_volumeAndConfig(t *testing.T) {
 	t.Parallel()
 
@@ -899,11 +941,77 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_resetRootPass(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+
+	rootPass := acctest.RandString(64)
+	rootPassUpdated := rootPass + "updated"
+
+	// We cannot compare root_pass directly since it is stored as a sensitive value in state,
+	// so we capture the original value and assert it changes after the update.
+	var originalRootPass string
+
+	var originalInstanceID int
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+
+					func(s *terraform.State) error {
+						originalInstanceID = instance.ID
+						return nil
+					},
+
+					resource.TestCheckResourceAttrWith(resName, "root_pass", func(v string) error {
+						originalRootPass = v
+						return nil
+					}),
+				),
+			},
+			{
+				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPassUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+
+					func(s *terraform.State) error {
+						if instance.ID != originalInstanceID {
+							return fmt.Errorf(
+								"instance was recreated: original ID %d, new ID %d",
+								originalInstanceID,
+								instance.ID,
+							)
+						}
+						return nil
+					},
+
+					resource.TestCheckResourceAttrWith(resName, "root_pass", func(v string) error {
+						if v == originalRootPass {
+							return fmt.Errorf("root_pass did not change")
+						}
+						return nil
+					}),
+				),
+			},
+		},
+	})
+}
+
 func TestAccResourceInstance_updateMaintenancePolicy(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Linodes", "Maintenance Policy"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes, linodego.CapabilityMaintenancePolicy}, "core")
 	require.NoError(t, err)
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
@@ -2238,7 +2346,7 @@ func TestAccResourceInstance_userData(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Metadata"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityMetadata}, "core")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2341,7 +2449,7 @@ func TestAccResourceInstance_firewallOnCreation(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityCloudFirewall}, "core")
 	rootPass := acctest.RandString(64)
 	if err != nil {
 		t.Fatal(err)
@@ -2516,7 +2624,7 @@ func TestAccResourceInstance_migration(t *testing.T) {
 
 	// Resolve a region to migrate to
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{"Linodes"}, "core",
+		[]string{linodego.CapabilityLinodes}, "core",
 		func(v linodego.Region) bool {
 			return v.ID != testRegion
 		},
@@ -2573,7 +2681,7 @@ func TestAccResourceInstance_withPG(t *testing.T) {
 
 	// Resolve a region with support for PGs
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{"Linodes", "Placement Group"}, "core",
+		[]string{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup}, "core",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -2620,7 +2728,7 @@ func TestAccResourceInstance_pgAssignment(t *testing.T) {
 
 	// Resolve a region with support for PGs
 	testRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{"Linodes", "Placement Group"}, "core",
+		[]string{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup}, "core",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -2927,9 +3035,14 @@ func TestAccResourceInstance_interfaceVPCIPv6(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	// TODO (VPC Dual Stack): Remove region hardcoding
-	targetRegion := "no-osl-1"
-
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+		linodego.CapabilityLinodes,
+		linodego.CapabilityVPCs,
+		linodego.CapabilityVPCDualStack,
+	}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
 	ipv6Path := tfjsonpath.New("interface").
 		AtSliceIndex(0).
 		AtMapKey("ipv6").
@@ -3116,8 +3229,13 @@ func TestAccResourceInstance_configInterfaceVPCIPv6(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	// TODO (VPC Dual Stack): Remove region hardcoding
-	targetRegion := "no-osl-1"
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+		linodego.CapabilityLinodes,
+		linodego.CapabilityVPCs,
+	}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	ipv6Path := tfjsonpath.New("config").
 		AtSliceIndex(0).
@@ -3498,7 +3616,7 @@ func TestAccResourceInstance_withReservedIP(t *testing.T) {
 	rootPass := acctest.RandString(16)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
+		PreCheck:                 func() { acceptance.PreCheck(t); acceptance.OptInTest(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -3530,7 +3648,7 @@ func TestAccResourceInstance_deleteWithReservedIP(t *testing.T) {
 	ipResourceName := "linode_networking_ip.test"
 	rootPass := acctest.RandString(16)
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
+		PreCheck:                 func() { acceptance.PreCheck(t); acceptance.OptInTest(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{

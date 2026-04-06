@@ -1,6 +1,7 @@
 package databases
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
@@ -54,6 +55,20 @@ var frameworkDataSourceSchema = schema.Schema{
 						Description: "The number of Linode Instance nodes deployed to the Managed Database.",
 						Computed:    true,
 					},
+					"fork_restore_time": schema.StringAttribute{
+						Description: "The database timestamp from which it was restored.",
+						Computed:    true,
+						CustomType:  timetypes.RFC3339Type{},
+					},
+					"fork_source": schema.Int64Attribute{
+						Description: "The ID of the database that was forked from.",
+						Computed:    true,
+					},
+					"oldest_restore_time": schema.StringAttribute{
+						Description: "The oldest time to which a database can be restored.",
+						Computed:    true,
+						CustomType:  timetypes.RFC3339Type{},
+					},
 					"created": schema.StringAttribute{
 						Description: "When this Managed Database was created.",
 						Computed:    true,
@@ -80,7 +95,7 @@ var frameworkDataSourceSchema = schema.Schema{
 						Computed:    true,
 					},
 					"instance_uri": schema.StringAttribute{
-						Description: "he API route for the database instance.",
+						Description: "The API route for the database instance.",
 						Computed:    true,
 					},
 					"label": schema.StringAttribute{
@@ -90,14 +105,6 @@ var frameworkDataSourceSchema = schema.Schema{
 					"private_network": databaseshared.DataSourceAttributePrivateNetwork,
 					"region": schema.StringAttribute{
 						Description: "The Region ID for the Managed Database.",
-						Computed:    true,
-					},
-					"replication_type": schema.StringAttribute{
-						Description: "The replication method used for the Managed Database.",
-						Computed:    true,
-					},
-					"ssl_connection": schema.BoolAttribute{
-						Description: "Whether to require SSL credentials to establish a connection to the Managed Database.",
 						Computed:    true,
 					},
 					"status": schema.StringAttribute{

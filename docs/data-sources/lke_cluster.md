@@ -4,7 +4,7 @@ description: |-
   Provides details about an LKE Cluster.
 ---
 
-# Data Source: linode\_lke_cluster
+# Data Source: linode\_lke\_cluster
 
 Provides details about an LKE Cluster.
 For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-lke-cluster).
@@ -68,8 +68,6 @@ In addition to all arguments above, the following attributes are exported:
   * `count` - The number of nodes in the Node Pool.
 
   * `disk_encryption` - The disk encryption policy for nodes in this pool.
-
-    * **NOTE: Disk encryption may not currently be available to all users.**
 
   * `tags` - An array of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 

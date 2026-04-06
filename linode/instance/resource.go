@@ -329,8 +329,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.Errorf("failed to initialize event poller: %s", err)
 	}
 
-	tflog.Debug(ctx, "client.CreateInstance(...)", map[string]any{
-		"options": createOpts,
+	tflog.Debug(ctx, "client.CreateInstance(...) ", map[string]any{
+		"label":  createOpts.Label,
+		"region": createOpts.Region,
+		"type":   createOpts.Type,
+		"image":  createOpts.Image,
 	})
 
 	instance, err := client.CreateInstance(ctx, createOpts)
@@ -575,6 +578,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.Errorf("Error fetching data about the current linode: %s", err)
 	}
 
+	// Track whether root_pass needs updating. We defer the actual reset so it can
+	// share a single shutdown/boot cycle with other offline-required operations
+	// (e.g., VPC interface updates) instead of causing an extra power cycle.
+	pendingRootPassReset := d.HasChange("root_pass")
+
 	updateOpts := linodego.InstanceUpdateOptions{}
 	simpleUpdate := false
 
@@ -768,66 +776,140 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	booted := d.Get("booted").(bool)
 	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
 
-	if d.HasChange("interface") {
-		interfaces := d.Get("interface").([]any)
+	// Detect whether the interface update requires a power-off (VPC interface change).
+	// The actual shutdown and interface config application are deferred to the
+	// unified offline-required block below so that all offline-required operations
+	// (root_pass reset, VPC interface updates, etc.) share a single power cycle.
+	var pendingInterfaceUpdate bool
+	var expandedInterfaces []linodego.InstanceConfigInterfaceCreateOptions
+	var interfacePowerOffRequired bool
 
-		expandedInterfaces := helper.ExpandConfigInterfaces(ctx, interfaces)
+	if d.HasChange("interface") {
+		pendingInterfaceUpdate = true
+		interfaces := d.Get("interface").([]any)
+		expandedInterfaces = helper.ExpandConfigInterfaces(ctx, interfaces)
+
 		config, err := client.GetInstanceConfig(ctx, id, bootConfig)
 		if err != nil {
 			return diag.Errorf("failed to get config %d: %s", bootConfig, err)
 		}
 
-		powerOffRequired := VPCInterfaceIncluded(config.Interfaces, expandedInterfaces)
+		interfacePowerOffRequired = VPCInterfaceIncluded(config.Interfaces, expandedInterfaces)
 
-		tflog.Debug(ctx, "Updating instance config for interface changes", map[string]any{
-			"config_id": bootConfig,
-		})
+		if !interfacePowerOffRequired {
+			// Interface change that does NOT require a power cycle can be applied immediately.
+			tflog.Debug(ctx, "Updating instance config for interface changes (no power-off needed)", map[string]any{
+				"config_id": bootConfig,
+			})
 
-		instance, err := client.GetInstance(ctx, id)
+			configUpdateOpts := linodego.InstanceConfigUpdateOptions{
+				Interfaces: expandedInterfaces,
+			}
+
+			if _, err := client.UpdateInstanceConfig(
+				ctx, id, bootConfig, configUpdateOpts,
+			); err != nil {
+				return diag.Errorf("failed to set boot config interfaces: %s", err)
+			}
+
+			rebootInstance = true
+			pendingInterfaceUpdate = false
+		}
+	}
+
+	// All operations that require the instance to be powered off are handled here
+	// in a single shutdown/boot cycle: root_pass reset, VPC interface updates, etc.
+	needsOffline := pendingRootPassReset || (pendingInterfaceUpdate && interfacePowerOffRequired)
+
+	if needsOffline {
+		// Wait for the instance to reach a non-transient state (e.g., not booting,
+		// rebooting, or shutting_down) before checking its status. This ensures we
+		// don't skip shutdown for an instance that is effectively still online.
+		settledStatus, err := helper.WaitForInstanceNonTransientStatus(
+			ctx, &client, id, helper.GetDeadlineSeconds(ctx, d),
+		)
 		if err != nil {
-			return diag.Errorf("Error fetching data about the current linode: %s", err)
+			return diag.Errorf(
+				"Error waiting for Linode instance %d to reach a non-transient state: %s", id, err,
+			)
 		}
 
-		// we should power on Linode after updating of the interfaces if
-		// it's currently on and booted attribute is unset by the user.
-		// Otherwise, it will stay off (if it's already off) or be handled by
-		// `handleBootedUpdate` (if booted is set to an explicit value)
-		shouldPowerOn := bootedNull && powerOffRequired && instance.Status == linodego.InstanceRunning
+		wasRunning := settledStatus == linodego.InstanceRunning
 
-		if powerOffRequired {
-			if err := ShutdownInstanceForVPCInterfaceUpdate(
-				ctx, &client, skipImplicitReboots, id, helper.GetDeadlineSeconds(ctx, d),
+		// Power off if not already offline
+		if settledStatus != linodego.InstanceOffline {
+			offlineReason := "offline-required update"
+			if pendingRootPassReset && pendingInterfaceUpdate {
+				offlineReason = "root password reset and VPC interface update"
+			} else if pendingRootPassReset {
+				offlineReason = "root password reset"
+			} else if pendingInterfaceUpdate {
+				offlineReason = "VPC interface update"
+			}
+
+			if err := ShutdownInstanceForOfflineOperation(
+				ctx, &client, skipImplicitReboots, id, helper.GetDeadlineSeconds(ctx, d), offlineReason,
 			); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
-		// reboot won't be needed if we power off the Linode during update
-		rebootInstance = !powerOffRequired
-		configUpdateOpts := linodego.InstanceConfigUpdateOptions{
-			Interfaces: expandedInterfaces,
-		}
-
-		tflog.Debug(
-			ctx,
-			"client.UpdateInstanceConfig(...)",
-			map[string]any{"options": configUpdateOpts},
-		)
-
-		if _, err := client.UpdateInstanceConfig(
-			ctx, instance.ID, bootConfig, configUpdateOpts,
-		); err != nil {
-			return diag.Errorf("failed to set boot config interfaces: %s", err)
-		}
-
-		if shouldPowerOn {
-			if diag := BootInstanceAfterVPCInterfaceUpdate(
-				ctx, meta.(*helper.ProviderMeta), id, bootConfig, helper.GetDeadlineSeconds(ctx, d),
-			); diag != nil {
-				return diag
+		// Apply root_pass reset while offline
+		if pendingRootPassReset {
+			newPass := d.Get("root_pass").(string)
+			tflog.Debug(ctx, "Resetting root password while instance is offline")
+			if err := client.ResetInstancePassword(
+				ctx, id, linodego.InstancePasswordResetOptions{RootPass: newPass},
+			); err != nil {
+				return diag.Errorf("failed to reset root password: %s", err)
 			}
 		}
 
+		// Apply VPC interface update while offline
+		if pendingInterfaceUpdate && interfacePowerOffRequired {
+			tflog.Debug(ctx, "Updating instance config for interface changes (offline)", map[string]any{
+				"config_id": bootConfig,
+			})
+
+			configUpdateOpts := linodego.InstanceConfigUpdateOptions{
+				Interfaces: expandedInterfaces,
+			}
+
+			if _, err := client.UpdateInstanceConfig(
+				ctx, id, bootConfig, configUpdateOpts,
+			); err != nil {
+				return diag.Errorf("failed to set boot config interfaces: %s", err)
+			}
+		}
+
+		// Boot back up if it was running and booted isn't explicitly false.
+		// Otherwise, it will stay off or be handled by `handleBootedUpdate`.
+		shouldPowerOn := wasRunning && (bootedNull || booted)
+		if shouldPowerOn {
+			bootReason := "offline-required update"
+			if pendingRootPassReset && pendingInterfaceUpdate {
+				bootReason = "root password reset and VPC interface update"
+			} else if pendingRootPassReset {
+				bootReason = "root password reset"
+			} else if pendingInterfaceUpdate {
+				bootReason = "VPC interface update"
+			}
+
+			if diags := BootInstanceAfterOfflineOperation(
+				ctx, meta.(*helper.ProviderMeta), id, bootConfig, helper.GetDeadlineSeconds(ctx, d), bootReason,
+			); diags != nil {
+				return diags
+			}
+		}
+
+		// Refresh instance after the offline operations
+		instance, err = client.GetInstance(ctx, id)
+		if err != nil {
+			return diag.Errorf("Error fetching data about the current linode: %s", err)
+		}
+
+		// reboot won't be needed since we already handled the power cycle
+		rebootInstance = false
 	}
 
 	if d.HasChange("shared_ipv4") {

@@ -4,6 +4,7 @@ package instance_test
 
 import (
 	"context"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -21,7 +22,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 
 	// Resolve a region with support for Maintenance Policy
 	region, err := acceptance.GetRandomRegionWithCaps(
-		[]string{"Linodes", "Maintenance Policy"},
+		[]string{linodego.CapabilityLinodes, linodego.CapabilityMaintenancePolicy},
 		"core",
 	)
 	if err != nil {
@@ -66,6 +67,38 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 	})
 }
 
+func TestAccDataSourceInstances_devicesExt(t *testing.T) {
+	t.Parallel()
+
+	resName := "data.linode_instances.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	instanceType := "g6-standard-6"
+	rootPass := acctest.RandString(64)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			acceptance.CheckInstanceDestroy,
+			acceptance.CheckVolumeDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataDevicesExt(t, instanceName, instanceType, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.id"),
+					resource.TestCheckResourceAttr(resName, "instances.0.type", instanceType),
+					resource.TestCheckResourceAttr(resName, "instances.0.config.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.config.0.devices.0.sda.0.disk_id"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.config.0.devices.0.sdb.0.disk_id"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.config.0.devices.0.sdk.0.volume_id"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccDataSourceInstances_withBlockStorageEncryption(t *testing.T) {
 	t.Parallel()
 
@@ -74,7 +107,7 @@ func TestAccDataSourceInstances_withBlockStorageEncryption(t *testing.T) {
 
 	// Resolve a region with support for Block Storage Encryption
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{"Linodes", "Block Storage Encryption"},
+		[]string{linodego.CapabilityLinodes, linodego.CapabilityBlockStorageEncryption},
 		"core",
 	)
 	if err != nil {
@@ -111,7 +144,7 @@ func TestAccDataSourceInstances_withPG(t *testing.T) {
 
 	// Resolve a region with support for PGs
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{"Linodes", "Placement Group"},
+		[]string{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup},
 		"core",
 	)
 	if err != nil {
@@ -250,9 +283,14 @@ func TestAccDataSourceInstance_interfaceVPCIPv6(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	// TODO (VPC Dual Stack): Remove region hardcoding
-	targetRegion := "no-osl-1"
-
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+		linodego.CapabilityLinodes,
+		linodego.CapabilityVPCs,
+		linodego.CapabilityVPCDualStack,
+	}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
 	ipv6Path := tfjsonpath.New("instances").
 		AtSliceIndex(0).
 		AtMapKey("config").
