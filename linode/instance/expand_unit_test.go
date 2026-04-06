@@ -119,8 +119,8 @@ func TestExpandInstanceACLPAlertsOpts(t *testing.T) {
 		{
 			name: "Valid system_alerts and user_alerts",
 			in: map[string]any{
-				"system_alerts": []any{1, 2},
-				"user_alerts":   []any{3, 4},
+				"system_alerts": []int{1, 2},
+				"user_alerts":   []int{3, 4},
 			},
 			want: func() *linodego.InstanceACLPAlertsOptions {
 				return &linodego.InstanceACLPAlertsOptions{
@@ -132,8 +132,8 @@ func TestExpandInstanceACLPAlertsOpts(t *testing.T) {
 		{
 			name: "Empty system_alerts and user_alerts",
 			in: map[string]any{
-				"system_alerts": []any{},
-				"user_alerts":   []any{},
+				"system_alerts": []int{},
+				"user_alerts":   []int{},
 			},
 			want: func() *linodego.InstanceACLPAlertsOptions {
 				return &linodego.InstanceACLPAlertsOptions{

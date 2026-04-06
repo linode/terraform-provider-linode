@@ -368,11 +368,6 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		updateOpts.WatchdogEnabled = &watchdogEnabled
 	}
 
-	if alerts, alertsOk := d.GetOk("alerts.0"); alertsOk {
-		doUpdate = true
-		updateOpts.Alerts = expandInstanceAlertsUpdateOpts(alerts.(map[string]any))
-	}
-
 	if doUpdate {
 		ctx = populateLogAttributes(ctx, d)
 		tflog.Debug(ctx, "client.UpdateInstance(...)", map[string]any{
@@ -608,9 +603,13 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		simpleUpdate = true
 	}
 	if d.HasChange("alerts") {
-		updateOpts.Alerts = expandInstanceAlertsUpdateOpts(d.Get("alerts.0").(map[string]any))
+		if alertsRaw, ok := d.GetOk("alerts.0"); ok {
+			updateOpts.Alerts = expandInstanceAlertsUpdateOpts(alertsRaw.(map[string]any))
+		}
 		simpleUpdate = true
 	}
+
+	println("updateOpts.Alerts: ", updateOpts.Alerts)
 
 	if d.HasChange("placement_group.0.id") {
 		oldPGID, newPGID := d.GetChange("placement_group.0.id")

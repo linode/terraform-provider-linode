@@ -5,25 +5,6 @@ import (
 	"github.com/linode/linodego"
 )
 
-// expandIntSet converts a value that is either a *schema.Set or []any of ints
-// into a []int slice.
-func expandIntSet(v any) []int {
-	var items []any
-	switch val := v.(type) {
-	case *schema.Set:
-		items = val.List()
-	case []any:
-		items = val
-	default:
-		return nil
-	}
-	result := make([]int, 0, len(items))
-	for _, raw := range items {
-		result = append(result, raw.(int))
-	}
-	return result
-}
-
 // expandInstanceConfigDeviceMap converts a terraform linode_instance config.*.devices map to a InstanceConfigDeviceMap
 // for the Linode API.
 func expandInstanceConfigDeviceMap(
@@ -67,13 +48,17 @@ func expandInstanceACLPAlertsOpts(m map[string]any) *linodego.InstanceACLPAlerts
 	var alertsACLPOpts linodego.InstanceACLPAlertsOptions
 
 	if v, ok := m["system_alerts"]; ok {
-		l := expandIntSet(v)
-		alertsACLPOpts.SystemAlerts = l
+		systemAlertsSet := v.(*schema.Set)
+		for _, alerts := range systemAlertsSet.List() {
+			alertsACLPOpts.SystemAlerts = append(alertsACLPOpts.SystemAlerts, alerts.(int))
+		}
 	}
 
 	if v, ok := m["user_alerts"]; ok {
-		l := expandIntSet(v)
-		alertsACLPOpts.UserAlerts = l
+		userAlertsSet := v.(*schema.Set)
+		for _, alerts := range userAlertsSet.List() {
+			alertsACLPOpts.UserAlerts = append(alertsACLPOpts.UserAlerts, alerts.(int))
+		}
 	}
 
 	return &alertsACLPOpts
@@ -100,13 +85,22 @@ func expandInstanceAlertsUpdateOpts(m map[string]any) *linodego.InstanceAlert {
 	}
 
 	if v, ok := m["system_alerts"]; ok {
-		l := expandIntSet(v)
-		alertsUpdateOpts.SystemAlerts = l
+		systemAlertsSet := v.(*schema.Set)
+		for _, alerts := range systemAlertsSet.List() {
+			alertsUpdateOpts.SystemAlerts = append(alertsUpdateOpts.SystemAlerts, alerts.(int))
+		}
 	}
 
 	if v, ok := m["user_alerts"]; ok {
-		l := expandIntSet(v)
-		alertsUpdateOpts.UserAlerts = l
+		userAlertsSet := v.(*schema.Set)
+		for _, alerts := range userAlertsSet.List() {
+			alertsUpdateOpts.UserAlerts = append(alertsUpdateOpts.UserAlerts, alerts.(int))
+		}
+	}
+
+	println("system_alerts in expandInstanceAlertsUpdateOpts:")
+	for v := range alertsUpdateOpts.SystemAlerts {
+		println("System Alert:", v)
 	}
 
 	return &alertsUpdateOpts

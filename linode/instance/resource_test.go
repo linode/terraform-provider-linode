@@ -1006,7 +1006,7 @@ func TestAccResourceInstance_withACLPAlerts(t *testing.T) {
 	systemAlert := alerts[0].ID
 
 	// This test can occasionally fail while running the entire test suite in parallel
-	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
+	acceptance.RunTestWithRetries(t, 1, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
