@@ -617,8 +617,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		simpleUpdate = true
 	}
 
-	println("updateOpts.Alerts: ", updateOpts.Alerts)
-
 	if d.HasChange("placement_group.0.id") {
 		oldPGID, newPGID := d.GetChange("placement_group.0.id")
 

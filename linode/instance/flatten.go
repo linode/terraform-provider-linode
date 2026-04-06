@@ -91,14 +91,22 @@ func flattenInstance(
 }
 
 func flattenInstanceAlerts(instance linodego.Instance) []map[string]any {
+	var systemAlerts, userAlerts []int
+	if instance.Alerts.SystemAlerts != nil {
+		systemAlerts = *instance.Alerts.SystemAlerts
+	}
+	if instance.Alerts.UserAlerts != nil {
+		userAlerts = *instance.Alerts.UserAlerts
+	}
+
 	return []map[string]any{{
 		"cpu":            instance.Alerts.CPU,
 		"io":             instance.Alerts.IO,
 		"network_in":     instance.Alerts.NetworkIn,
 		"network_out":    instance.Alerts.NetworkOut,
 		"transfer_quota": instance.Alerts.TransferQuota,
-		"system_alerts":  instance.Alerts.SystemAlerts,
-		"user_alerts":    instance.Alerts.UserAlerts,
+		"system_alerts":  systemAlerts,
+		"user_alerts":    userAlerts,
 	}}
 }
 
