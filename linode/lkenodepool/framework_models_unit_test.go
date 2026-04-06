@@ -87,6 +87,7 @@ func TestSetNodePoolCreateOptions(t *testing.T) {
 
 	assert.Equal(t, "k8s_version", *createOpts.K8sVersion)
 	assert.Equal(t, "on_recycle", string(*createOpts.UpdateStrategy))
+	assert.Equal(t, "disabled", string(*createOpts.DiskEncryption))
 }
 
 func TestSetNodePoolUpdateOptions(t *testing.T) {
@@ -138,6 +139,7 @@ func createNodePoolModel() *NodePoolModel {
 		},
 		K8sVersion:     types.StringValue("k8s_version"),
 		UpdateStrategy: types.StringValue("on_recycle"),
+		DiskEncryption: types.StringValue(string(linodego.InstanceDiskEncryptionDisabled)),
 	}
 
 	nodePoolModel.Labels = types.MapValueMust(types.StringType, map[string]attr.Value{})

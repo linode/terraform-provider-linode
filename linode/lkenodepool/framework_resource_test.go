@@ -135,7 +135,7 @@ func TestAccResourceNodePool_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkNodePoolExists,
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
-					resource.TestCheckResourceAttrSet(resName, "disk_encryption"),
+					resource.TestCheckResourceAttr(resName, "disk_encryption", "enabled"),
 					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "external"),
 					resource.TestCheckResourceAttr(resName, "tags.1", poolTag),
@@ -658,6 +658,7 @@ func createTemplateData() tmpl.TemplateData {
 	data.K8sVersion = k8sVersion
 	data.Region = testRegion
 	data.PoolNodeType = "g6-standard-1"
+	data.DiskEncryption = "enabled"
 	return data
 }
 
