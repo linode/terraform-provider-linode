@@ -46,8 +46,8 @@ func TestFlattenInstanceAlerts(t *testing.T) {
 			NetworkIn:     10,
 			NetworkOut:    10,
 			TransferQuota: 80,
-			SystemAlerts:  &[]int{7, 8},
-			UserAlerts:    &[]int{100},
+			SystemAlerts:  []int{7, 8},
+			UserAlerts:    []int{100},
 		},
 		Backups: &linodego.InstanceBackup{
 			Available: true,

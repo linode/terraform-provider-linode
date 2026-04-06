@@ -60,7 +60,7 @@ func expandInstanceACLPAlertsOpts(m map[string]any) *linodego.InstanceACLPAlerts
 		for _, alert := range systemAlertsSet.List() {
 			systemAlerts = append(systemAlerts, alert.(int))
 		}
-		alertsACLPOpts.SystemAlerts = &systemAlerts
+		alertsACLPOpts.SystemAlerts = systemAlerts
 	}
 
 	if v, ok := m["user_alerts"]; ok {
@@ -70,7 +70,7 @@ func expandInstanceACLPAlertsOpts(m map[string]any) *linodego.InstanceACLPAlerts
 			userAlerts = append(userAlerts, alert.(int))
 		}
 
-		alertsACLPOpts.UserAlerts = &userAlerts
+		alertsACLPOpts.UserAlerts = userAlerts
 	}
 
 	return &alertsACLPOpts
@@ -103,7 +103,7 @@ func expandInstanceAlertsUpdateOpts(m map[string]any) *linodego.InstanceAlert {
 			systemAlerts = append(systemAlerts, alert.(int))
 		}
 
-		alertsUpdateOpts.SystemAlerts = &systemAlerts
+		alertsUpdateOpts.SystemAlerts = systemAlerts
 	}
 
 	if v, ok := m["user_alerts"]; ok {
@@ -113,7 +113,7 @@ func expandInstanceAlertsUpdateOpts(m map[string]any) *linodego.InstanceAlert {
 			userAlerts = append(userAlerts, alert.(int))
 		}
 
-		alertsUpdateOpts.UserAlerts = &userAlerts
+		alertsUpdateOpts.UserAlerts = userAlerts
 	}
 
 	return &alertsUpdateOpts

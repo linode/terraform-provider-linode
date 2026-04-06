@@ -93,10 +93,10 @@ func flattenInstance(
 func flattenInstanceAlerts(instance linodego.Instance) []map[string]any {
 	var systemAlerts, userAlerts []int
 	if instance.Alerts.SystemAlerts != nil {
-		systemAlerts = *instance.Alerts.SystemAlerts
+		systemAlerts = instance.Alerts.SystemAlerts
 	}
 	if instance.Alerts.UserAlerts != nil {
-		userAlerts = *instance.Alerts.UserAlerts
+		userAlerts = instance.Alerts.UserAlerts
 	}
 
 	return []map[string]any{{

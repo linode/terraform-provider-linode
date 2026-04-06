@@ -126,4 +126,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/linode/linodego => github.com/linode/linodego v1.67.1-0.20260406175422-30e39645d860
+replace github.com/linode/linodego => github.com/linode/linodego v1.67.1-0.20260406192225-86e68c2e2577

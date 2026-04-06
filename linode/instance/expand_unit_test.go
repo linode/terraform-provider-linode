@@ -125,8 +125,8 @@ func TestExpandInstanceACLPAlertsOpts(t *testing.T) {
 			},
 			want: func() *linodego.InstanceACLPAlertsOptions {
 				return &linodego.InstanceACLPAlertsOptions{
-					SystemAlerts: &[]int{1, 2},
-					UserAlerts:   &[]int{3, 4},
+					SystemAlerts: []int{1, 2},
+					UserAlerts:   []int{3, 4},
 				}
 			}(),
 		},
@@ -138,8 +138,8 @@ func TestExpandInstanceACLPAlertsOpts(t *testing.T) {
 			},
 			want: func() *linodego.InstanceACLPAlertsOptions {
 				return &linodego.InstanceACLPAlertsOptions{
-					SystemAlerts: &[]int{},
-					UserAlerts:   &[]int{},
+					SystemAlerts: []int{},
+					UserAlerts:   []int{},
 				}
 			}(),
 		},
@@ -191,8 +191,8 @@ func TestExpandInstanceAlertsUpdateOpts(t *testing.T) {
 					NetworkIn:     10,
 					NetworkOut:    11,
 					TransferQuota: 80,
-					SystemAlerts:  &[]int{7, 8},
-					UserAlerts:    &[]int{100},
+					SystemAlerts:  []int{7, 8},
+					UserAlerts:    []int{100},
 				}
 			}(),
 		},
@@ -204,8 +204,8 @@ func TestExpandInstanceAlertsUpdateOpts(t *testing.T) {
 			},
 			want: func() *linodego.InstanceAlert {
 				return &linodego.InstanceAlert{
-					SystemAlerts: &[]int{1},
-					UserAlerts:   &[]int{},
+					SystemAlerts: []int{1},
+					UserAlerts:   []int{},
 				}
 			}(),
 		},
