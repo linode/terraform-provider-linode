@@ -37,7 +37,7 @@ func TestExpandInstanceConfigDeviceMap(t *testing.T) {
 	}
 
 	if deviceMap == nil {
-		t.Error("Expected deviceMap to not be nil")
+		t.Fatal("Expected deviceMap to not be nil")
 	}
 
 	// Assert the DiskID for SDA and SDB
@@ -120,7 +120,7 @@ func TestExpandInstanceACLPAlertsOpts(t *testing.T) {
 		{
 			name: "Valid system_alerts and user_alerts",
 			in: map[string]any{
-				"system_alerts": schema.NewSet(schema.HashInt, []interface{}{1, 2}),
+				"system_alerts": schema.NewSet(schema.HashInt, []any{1, 2}),
 				"user_alerts":   schema.NewSet(schema.HashInt, []any{3, 4}),
 			},
 			want: func() *linodego.InstanceACLPAlertsOptions {
