@@ -114,9 +114,19 @@ func TestAccResourceNodePool_basic(t *testing.T) {
 	clusterLabel := acctest.RandomWithPrefix("tf_test_")
 	poolTag := acctest.RandomWithPrefix("tf_test_")
 
+	// This test validates disk_encryption, so we need a region that supports both LKE and Disk Encryption
+	diskEncRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{linodego.CapabilityLKE, linodego.CapabilityDiskEncryption}, "core",
+	)
+	if err != nil {
+		t.Skipf("No region with LKE + Disk Encryption capabilities: %v", err)
+	}
+
 	templateData := createTemplateData()
 	templateData.ClusterLabel = clusterLabel
 	templateData.PoolTag = poolTag
+	templateData.Region = diskEncRegion
+	templateData.DiskEncryption = "enabled"
 	templateData.AutoscalerEnabled = true
 	templateData.AutoscalerMin = 1
 	templateData.AutoscalerMax = 2
@@ -658,7 +668,6 @@ func createTemplateData() tmpl.TemplateData {
 	data.K8sVersion = k8sVersion
 	data.Region = testRegion
 	data.PoolNodeType = "g6-standard-1"
-	data.DiskEncryption = "enabled"
 	return data
 }
 
