@@ -1,4 +1,4 @@
-//go:build unit
+// //go:build unit
 
 package instance
 
@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
@@ -119,26 +120,26 @@ func TestExpandInstanceACLPAlertsOpts(t *testing.T) {
 		{
 			name: "Valid system_alerts and user_alerts",
 			in: map[string]any{
-				"system_alerts": []int{1, 2},
-				"user_alerts":   []int{3, 4},
+				"system_alerts": schema.NewSet(schema.HashInt, []interface{}{1, 2}),
+				"user_alerts":   schema.NewSet(schema.HashInt, []any{3, 4}),
 			},
 			want: func() *linodego.InstanceACLPAlertsOptions {
 				return &linodego.InstanceACLPAlertsOptions{
-					SystemAlerts: []int{1, 2},
-					UserAlerts:   []int{3, 4},
+					SystemAlerts: &[]int{1, 2},
+					UserAlerts:   &[]int{3, 4},
 				}
 			}(),
 		},
 		{
 			name: "Empty system_alerts and user_alerts",
 			in: map[string]any{
-				"system_alerts": []int{},
-				"user_alerts":   []int{},
+				"system_alerts": schema.NewSet(schema.HashInt, []any{}),
+				"user_alerts":   schema.NewSet(schema.HashInt, []any{}),
 			},
 			want: func() *linodego.InstanceACLPAlertsOptions {
 				return &linodego.InstanceACLPAlertsOptions{
-					SystemAlerts: []int{},
-					UserAlerts:   []int{},
+					SystemAlerts: &[]int{},
+					UserAlerts:   &[]int{},
 				}
 			}(),
 		},
@@ -177,8 +178,11 @@ func TestExpandInstanceAlertsUpdateOpts(t *testing.T) {
 				"network_in":     10,
 				"network_out":    11,
 				"transfer_quota": 80,
-				"system_alerts":  []any{7, 8},
-				"user_alerts":    []any{100},
+				"system_alerts": schema.NewSet(
+					schema.HashInt,
+					[]any{7, 8},
+				),
+				"user_alerts": schema.NewSet(schema.HashInt, []any{100}),
 			},
 			want: func() *linodego.InstanceAlert {
 				return &linodego.InstanceAlert{
@@ -187,21 +191,21 @@ func TestExpandInstanceAlertsUpdateOpts(t *testing.T) {
 					NetworkIn:     10,
 					NetworkOut:    11,
 					TransferQuota: 80,
-					SystemAlerts:  []int{7, 8},
-					UserAlerts:    []int{100},
+					SystemAlerts:  &[]int{7, 8},
+					UserAlerts:    &[]int{100},
 				}
 			}(),
 		},
 		{
 			name: "Only ACLP alerts provided",
 			in: map[string]any{
-				"system_alerts": []any{1},
-				"user_alerts":   []any{},
+				"system_alerts": schema.NewSet(schema.HashInt, []any{1}),
+				"user_alerts":   schema.NewSet(schema.HashInt, []any{}),
 			},
 			want: func() *linodego.InstanceAlert {
 				return &linodego.InstanceAlert{
-					SystemAlerts: []int{1},
-					UserAlerts:   []int{},
+					SystemAlerts: &[]int{1},
+					UserAlerts:   &[]int{},
 				}
 			}(),
 		},
