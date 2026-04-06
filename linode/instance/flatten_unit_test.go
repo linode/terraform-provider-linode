@@ -1,4 +1,4 @@
-//go:build unit
+// //go:build unit
 
 package instance
 
@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -260,6 +261,26 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 		},
 	}
 
+	// Build expected devices map with all 64 device slots
+	expectedDevices := make(map[string]interface{})
+	populatedDevices := map[string]bool{
+		"sda": true, "sdb": true, "sdc": true, "sdd": true,
+		"sde": true, "sdf": true, "sdg": true, "sdh": true,
+		"sdz": true, "sdaa": true, "sdbl": true,
+	}
+	for _, key := range helper.GetConfigDeviceKeys() {
+		if populatedDevices[key] {
+			expectedDevices[key] = []map[string]any{
+				{
+					"disk_id":    124458,
+					"disk_label": "disk_label",
+				},
+			}
+		} else {
+			expectedDevices[key] = []map[string]any(nil)
+		}
+	}
+
 	expectedConfigs := []map[string]any{
 		{
 			"id":           1,
@@ -279,58 +300,7 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 					"devtmpfs_automount": false,
 				},
 			},
-			"devices": []map[string]any{
-				{
-					"sda": []map[string]any{
-						{
-							"disk_id":    124458,
-							"disk_label": "disk_label",
-						},
-					},
-					"sdb": []map[string]any{
-						{
-							"disk_id":    124458,
-							"disk_label": "disk_label",
-						},
-					},
-					"sdc": []map[string]any{
-						{
-							"disk_id":    124458,
-							"disk_label": "disk_label",
-						},
-					},
-					"sdd": []map[string]any{
-						{
-							"disk_id":    124458,
-							"disk_label": "disk_label",
-						},
-					},
-					"sde": []map[string]any{
-						{
-							"disk_id":    124458,
-							"disk_label": "disk_label",
-						},
-					},
-					"sdf": []map[string]any{
-						{
-							"disk_id":    124458,
-							"disk_label": "disk_label",
-						},
-					},
-					"sdg": []map[string]any{
-						{
-							"disk_id":    124458,
-							"disk_label": "disk_label",
-						},
-					},
-					"sdh": []map[string]any{
-						{
-							"disk_id":    124458,
-							"disk_label": "disk_label",
-						},
-					},
-				},
-			},
+			"devices":   []map[string]interface{}{expectedDevices},
 			"interface": make([]map[string]any, 0),
 		},
 	}
