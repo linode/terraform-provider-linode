@@ -12,7 +12,6 @@ resource "linode_nodebalancer" "test" {
         {
             subnet_id = linode_vpc_subnet.test.id
             ipv4_range = "10.0.0.4/30"
-            ipv6_range = "auto"
             ipv4_range_auto_assign = true
         }
     ]
