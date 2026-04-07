@@ -1132,7 +1132,7 @@ func TestAccResourceInstance_withACLPAlerts(t *testing.T) {
 						),
 						statecheck.ExpectKnownValue(
 							resName,
-							tfjsonpath.New("group"),
+							tfjsonpath.New("tags").AtSliceIndex(0),
 							knownvalue.StringExact("tf_test"),
 						),
 						statecheck.ExpectKnownValue(
