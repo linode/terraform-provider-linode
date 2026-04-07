@@ -220,7 +220,6 @@ func (p *FrameworkProvider) Schema(
 			},
 			"obj_access_key": schema.StringAttribute{
 				Optional:    true,
-				Sensitive:   true,
 				Description: "The access key to be used in linode_object_storage_bucket and linode_object_storage_object.",
 			},
 			"obj_secret_key": schema.StringAttribute{
