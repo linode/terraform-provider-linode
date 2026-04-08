@@ -208,6 +208,15 @@ func flattenIP(network *linodego.InstanceIP) (
 		result["interface_id"] = types.Int64Null()
 	}
 
+	result["reserved"] = types.BoolValue(network.Reserved)
+
+	tags := helper.StringSliceToFrameworkValueSlice(network.Tags)
+	tagsList, tagsDiags := types.ListValue(types.StringType, tags)
+	if tagsDiags.HasError() {
+		return nil, tagsDiags
+	}
+	result["tags"] = tagsList
+
 	obj, d := types.ObjectValue(networkObjectType.AttrTypes, result)
 	if d.HasError() {
 		return nil, d

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -63,6 +65,20 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// Generate a unique ID for this resource
 	plan.ID = types.StringValue(fmt.Sprintf("%s-%d", plan.Region.ValueString(), len(plan.Assignments)))
 
+	// Fetch IP details to populate computed fields (reserved, tags)
+	for i, assignment := range plan.Assignments {
+		ip, err := client.GetIPAddress(ctx, assignment.Address.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error reading IP Address after assignment",
+				fmt.Sprintf("Could not read IP address %s: %s", assignment.Address.ValueString(), err),
+			)
+			return
+		}
+		plan.Assignments[i].Reserved = types.BoolValue(ip.Reserved)
+		plan.Assignments[i].Tags = flattenTagsList(ip.Tags, &resp.Diagnostics)
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
@@ -95,6 +111,8 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		state.Assignments[i] = AssignmentModel{
 			Address:  types.StringValue(ip.Address),
 			LinodeID: types.Int64Value(int64(ip.LinodeID)),
+			Reserved: types.BoolValue(ip.Reserved),
+			Tags:     flattenTagsList(ip.Tags, &resp.Diagnostics),
 		}
 	}
 
@@ -146,4 +164,14 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 
 	resp.State.RemoveResource(ctx)
+}
+
+func flattenTagsList(tags []string, diags *diag.Diagnostics) types.List {
+	elems := make([]attr.Value, len(tags))
+	for i, t := range tags {
+		elems[i] = types.StringValue(t)
+	}
+	list, d := types.ListValue(types.StringType, elems)
+	diags.Append(d...)
+	return list
 }

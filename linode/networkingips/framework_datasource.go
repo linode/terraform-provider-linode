@@ -69,12 +69,35 @@ func listFunc(
 		"filter": filter,
 	})
 
-	images, err := client.ListIPAddresses(ctx, &linodego.ListOptions{
+	ips, err := client.ListIPAddresses(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return helper.TypedSliceToAny(images), nil
+	// Include unassigned reserved IPs, which are not returned by ListIPAddresses.
+	tflog.Trace(ctx, "client.ListReservedIPAddresses(...)", map[string]any{
+		"filter": filter,
+	})
+
+	reservedIPs, err := client.ListReservedIPAddresses(ctx, &linodego.ListOptions{
+		Filter: filter,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Merge, deduplicating by address (assigned reserved IPs appear in both lists).
+	seen := make(map[string]struct{}, len(ips))
+	for _, ip := range ips {
+		seen[ip.Address] = struct{}{}
+	}
+	for _, ip := range reservedIPs {
+		if _, exists := seen[ip.Address]; !exists {
+			ips = append(ips, ip)
+		}
+	}
+
+	return helper.TypedSliceToAny(ips), nil
 }

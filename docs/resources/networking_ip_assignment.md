@@ -43,6 +43,10 @@ The following attributes can be defined under each entry in the `assignments` fi
 
 * `linode_id` - (Required) The ID of the Linode to which the IP address will be assigned.
 
+* `reserved` - (Computed) Whether this IP address is a reserved IP.
+
+* `tags` - (Computed) A list of tags associated with this IP address.
+
 ## Attribute Reference
 
 * `id` - The unique ID of this resource.

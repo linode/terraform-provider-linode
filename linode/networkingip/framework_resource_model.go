@@ -23,12 +23,15 @@ type ResourceModel struct {
 	SubnetMask types.String `tfsdk:"subnet_mask"`
 	Prefix     types.Int64  `tfsdk:"prefix"`
 	VPCNAT1To1 types.Object `tfsdk:"vpc_nat_1_1"`
+	Tags       types.List   `tfsdk:"tags"`
 }
 
 func (m *ResourceModel) FlattenIPAddress(
 	ip *linodego.InstanceIP,
 	preserveKnown bool,
 ) diag.Diagnostics {
+	var d diag.Diagnostics
+
 	m.ID = helper.KeepOrUpdateString(m.ID, ip.Address, preserveKnown)
 
 	if ip.LinodeID != 0 {
@@ -48,12 +51,18 @@ func (m *ResourceModel) FlattenIPAddress(
 	m.SubnetMask = helper.KeepOrUpdateString(m.SubnetMask, ip.SubnetMask, preserveKnown)
 	m.Prefix = helper.KeepOrUpdateInt64(m.Prefix, int64(ip.Prefix), preserveKnown)
 
-	vpcNAT1To1, d := instancenetworking.FlattenIPVPCNAT1To1(ip.VPCNAT1To1)
-	if d.HasError() {
-		return d
+	vpcNAT1To1, natDiags := instancenetworking.FlattenIPVPCNAT1To1(ip.VPCNAT1To1)
+	if natDiags.HasError() {
+		return natDiags
 	}
 
 	m.VPCNAT1To1 = helper.KeepOrUpdateValue(m.VPCNAT1To1, vpcNAT1To1, preserveKnown)
+
+	tags := helper.StringSliceToFrameworkValueSlice(ip.Tags)
+	m.Tags = helper.KeepOrUpdateList(types.StringType, m.Tags, tags, preserveKnown, &d)
+	if d.HasError() {
+		return d
+	}
 
 	return nil
 }
@@ -72,4 +81,5 @@ func (m *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	m.SubnetMask = helper.KeepOrUpdateValue(m.SubnetMask, other.SubnetMask, preserveKnown)
 	m.Prefix = helper.KeepOrUpdateValue(m.Prefix, other.Prefix, preserveKnown)
 	m.VPCNAT1To1 = helper.KeepOrUpdateValue(m.VPCNAT1To1, other.VPCNAT1To1, preserveKnown)
+	m.Tags = helper.KeepOrUpdateValue(m.Tags, other.Tags, preserveKnown)
 }

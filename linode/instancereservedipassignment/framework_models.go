@@ -25,6 +25,7 @@ type InstanceIPModel struct {
 	ApplyImmediately types.Bool   `tfsdk:"apply_immediately"`
 	IPVPCNAT1To1     types.List   `tfsdk:"vpc_nat_1_1"`
 	Reserved         types.Bool   `tfsdk:"reserved"`
+	Tags             types.List   `tfsdk:"tags"`
 }
 
 func (m *InstanceIPModel) flattenInstanceIP(
@@ -74,6 +75,9 @@ func (m *InstanceIPModel) flattenInstanceIP(
 		preserveKnown,
 	)
 
+	tags := helper.StringSliceToFrameworkValueSlice(ip.Tags)
+	m.Tags = helper.KeepOrUpdateList(types.StringType, m.Tags, tags, preserveKnown, &diags)
+
 	return diags
 }
 
@@ -102,6 +106,7 @@ func (m *InstanceIPModel) CopyFrom(
 		other.IPVPCNAT1To1,
 		preserveKnown,
 	)
+	m.Tags = helper.KeepOrUpdateValue(m.Tags, other.Tags, preserveKnown)
 
 	return diags
 }

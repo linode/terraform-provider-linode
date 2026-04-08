@@ -201,7 +201,32 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		return
 	}
 
-	plan.CopyFrom(state, true)
+	// Re-read the IP to refresh all computed fields after updates
+	ips, err := client.ListIPAddresses(ctx, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error reading IP Addresses after update",
+			fmt.Sprintf("Could not list IP addresses: %s", err),
+		)
+		return
+	}
+
+	var foundIP *linodego.InstanceIP
+	for _, ip := range ips {
+		if ip.Address == state.Address.ValueString() {
+			foundIP = &ip
+			break
+		}
+	}
+
+	if foundIP != nil {
+		resp.Diagnostics.Append(plan.FlattenIPAddress(foundIP, true)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	} else {
+		plan.CopyFrom(state, true)
+	}
 
 	// Workaround for Crossplane issue where ID is not
 	// properly populated in plan

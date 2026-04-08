@@ -2,6 +2,7 @@ package networkingip
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
@@ -62,6 +63,11 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description:    "Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.",
 			Computed:       true,
 			AttributeTypes: instancenetworking.VPCNAT1To1Type.AttrTypes,
+		},
+		"tags": schema.ListAttribute{
+			Description: "A list of tags associated with this IP address.",
+			Computed:    true,
+			ElementType: types.StringType,
 		},
 	},
 }

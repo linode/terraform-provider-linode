@@ -99,7 +99,11 @@ A list of public IP Address objects belonging to this Linode.
 
 * `region` - (Filterable) The Region this IP address resides in.
 
+* `reserved` - Whether this IP address is a reserved IP.
+
 * `subnet_mask` - The mask that separates host bits from network bits for this address.
+
+* `tags` - A list of tags associated with this IP address.
 
 * `type` - The type of address this is.
 
@@ -128,7 +132,11 @@ A list of reserved IP Address objects belonging to this Linode.
 
 * `region` - (Filterable) The Region this IP address resides in.
 
+* `reserved` - Whether this IP address is a reserved IP.
+
 * `subnet_mask` - The mask that separates host bits from network bits for this address.
+
+* `tags` - A list of tags associated with this IP address.
 
 * `type` - The type of address this is.
 
@@ -157,7 +165,11 @@ A list of shared IP Address objects assigned to this Linode.
 
 * `region` - (Filterable) The Region this IP address resides in.
 
+* `reserved` - Whether this IP address is a reserved IP.
+
 * `subnet_mask` - The mask that separates host bits from network bits for this address.
+
+* `tags` - A list of tags associated with this IP address.
 
 * `type` - The type of address this is.
 

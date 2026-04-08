@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
@@ -108,6 +109,11 @@ var frameworkResourceSchema = schema.Schema{
 		"reserved": schema.BoolAttribute{
 			Description: "The reservation status of the IP address",
 			Computed:    true,
+		},
+		"tags": schema.ListAttribute{
+			Description: "A list of tags associated with this IP address.",
+			Computed:    true,
+			ElementType: types.StringType,
 		},
 	},
 }

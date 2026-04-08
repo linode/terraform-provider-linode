@@ -29,6 +29,7 @@ var testInstanceIP = &linodego.InstanceIP{
 	LinodeID:   12345,
 	Region:     "us-mia",
 	Reserved:   false,
+	Tags:       []string{"tag1", "tag2"},
 	VPCNAT1To1: &linodego.InstanceIPNAT1To1{
 		Address:  "10.0.0.1",
 		SubnetID: 456,
@@ -55,6 +56,10 @@ func TestResourceModelParseInstanceIP(t *testing.T) {
 	assert.Equal(t, int64(12345), data.LinodeID.ValueInt64())
 	assert.Equal(t, "us-mia", data.Region.ValueString())
 	assert.Equal(t, false, data.Reserved.ValueBool())
+
+	assert.Equal(t, 2, len(data.Tags.Elements()))
+	assert.Contains(t, data.Tags.String(), "tag1")
+	assert.Contains(t, data.Tags.String(), "tag2")
 
 	var vpcNAT1To1 vpcNAT1To1Model
 
@@ -97,6 +102,10 @@ func TestDataSourceModelParseInstanceIP(t *testing.T) {
 	assert.Equal(t, "us-mia", data.Region.ValueString())
 	assert.Equal(t, false, data.Reserved.ValueBool())
 
+	assert.Equal(t, 2, len(data.Tags.Elements()))
+	assert.Contains(t, data.Tags.String(), "tag1")
+	assert.Contains(t, data.Tags.String(), "tag2")
+
 	var vpcNAT1To1 vpcNAT1To1Model
 
 	diags.Append(
@@ -116,4 +125,87 @@ func TestDataSourceModelParseInstanceIP(t *testing.T) {
 	assert.Equal(t, "10.0.0.1", vpcNAT1To1.Address)
 	assert.Equal(t, int64(123), vpcNAT1To1.VPCID)
 	assert.Equal(t, int64(456), vpcNAT1To1.SubnetID)
+}
+
+func TestResourceModelParseReservedIPWithTags(t *testing.T) {
+	reservedIP := &linodego.InstanceIP{
+		Address:    "192.168.1.1",
+		Gateway:    "192.168.1.0",
+		SubnetMask: "255.255.255.0",
+		Prefix:     24,
+		Type:       "ipv4",
+		Public:     true,
+		RDNS:       "192-168-1-1.ip.linodeusercontent.com",
+		LinodeID:   0,
+		Region:     "us-east",
+		Reserved:   true,
+		Tags:       []string{"prod", "web"},
+	}
+
+	data := &ResourceModel{}
+	var diags diag.Diagnostics
+	diags.Append(data.FlattenIPAddress(reservedIP, false)...)
+	if diags.HasError() {
+		t.Fatal(diags.Errors())
+	}
+
+	assert.Equal(t, true, data.Reserved.ValueBool())
+	assert.True(t, data.LinodeID.IsNull())
+	assert.Equal(t, 2, len(data.Tags.Elements()))
+	assert.Contains(t, data.Tags.String(), "prod")
+	assert.Contains(t, data.Tags.String(), "web")
+}
+
+func TestResourceModelParseEmptyTags(t *testing.T) {
+	ip := &linodego.InstanceIP{
+		Address:    "10.0.0.1",
+		Gateway:    "10.0.0.0",
+		SubnetMask: "255.255.255.0",
+		Prefix:     24,
+		Type:       "ipv4",
+		Public:     false,
+		RDNS:       "",
+		LinodeID:   99,
+		Region:     "us-west",
+		Reserved:   false,
+		Tags:       []string{},
+	}
+
+	data := &ResourceModel{}
+	var diags diag.Diagnostics
+	diags.Append(data.FlattenIPAddress(ip, false)...)
+	if diags.HasError() {
+		t.Fatal(diags.Errors())
+	}
+
+	assert.Equal(t, 0, len(data.Tags.Elements()))
+}
+
+func TestDataSourceModelParseTags(t *testing.T) {
+	ip := &linodego.InstanceIP{
+		Address:    "1.2.3.4",
+		Gateway:    "1.2.3.1",
+		SubnetMask: "255.255.255.0",
+		Prefix:     32,
+		Type:       "ipv4",
+		Public:     true,
+		RDNS:       "rdns.example.com",
+		LinodeID:   100,
+		Region:     "us-mia",
+		Reserved:   true,
+		Tags:       []string{"alpha", "beta", "gamma"},
+	}
+
+	data := &DataSourceModel{}
+	var diags diag.Diagnostics
+	diags.Append(data.parseIP(ip)...)
+	if diags.HasError() {
+		t.Fatal(diags.Errors())
+	}
+
+	assert.Equal(t, true, data.Reserved.ValueBool())
+	assert.Equal(t, 3, len(data.Tags.Elements()))
+	assert.Contains(t, data.Tags.String(), "alpha")
+	assert.Contains(t, data.Tags.String(), "beta")
+	assert.Contains(t, data.Tags.String(), "gamma")
 }
