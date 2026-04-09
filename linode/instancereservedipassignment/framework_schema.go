@@ -110,8 +110,8 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The reservation status of the IP address",
 			Computed:    true,
 		},
-		"tags": schema.ListAttribute{
-			Description: "A list of tags associated with this IP address.",
+		"tags": schema.SetAttribute{
+			Description: "A set of tags associated with this IP address.",
 			Computed:    true,
 			ElementType: types.StringType,
 		},

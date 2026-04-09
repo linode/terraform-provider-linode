@@ -25,7 +25,7 @@ type InstanceIPModel struct {
 	ApplyImmediately types.Bool   `tfsdk:"apply_immediately"`
 	IPVPCNAT1To1     types.List   `tfsdk:"vpc_nat_1_1"`
 	Reserved         types.Bool   `tfsdk:"reserved"`
-	Tags             types.List   `tfsdk:"tags"`
+	Tags             types.Set    `tfsdk:"tags"`
 }
 
 func (m *InstanceIPModel) flattenInstanceIP(
@@ -76,7 +76,7 @@ func (m *InstanceIPModel) flattenInstanceIP(
 	)
 
 	tags := helper.StringSliceToFrameworkValueSlice(ip.Tags)
-	m.Tags = helper.KeepOrUpdateList(types.StringType, m.Tags, tags, preserveKnown, &diags)
+	m.Tags = helper.KeepOrUpdateSet(types.StringType, m.Tags, tags, preserveKnown, &diags)
 
 	return diags
 }

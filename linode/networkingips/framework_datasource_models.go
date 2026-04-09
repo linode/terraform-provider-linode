@@ -22,7 +22,7 @@ type IPAddressModel struct {
 	InterfaceID types.Int64  `tfsdk:"interface_id"`
 	Reserved    types.Bool   `tfsdk:"reserved"`
 	VPCNAT1To1  types.Object `tfsdk:"vpc_nat_1_1"`
-	Tags        types.List   `tfsdk:"tags"`
+	Tags        types.Set    `tfsdk:"tags"`
 }
 
 func (m *IPAddressModel) ParseIP(ip linodego.InstanceIP) diag.Diagnostics {
@@ -46,11 +46,11 @@ func (m *IPAddressModel) ParseIP(ip linodego.InstanceIP) diag.Diagnostics {
 	m.VPCNAT1To1 = vpcNAT1To1
 
 	tags := helper.StringSliceToFrameworkValueSlice(ip.Tags)
-	tagsList, tagsDiags := types.ListValue(types.StringType, tags)
+	tagsSet, tagsDiags := types.SetValue(types.StringType, tags)
 	if tagsDiags.HasError() {
 		return tagsDiags
 	}
-	m.Tags = tagsList
+	m.Tags = tagsSet
 
 	return nil
 }

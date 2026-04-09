@@ -14,5 +14,5 @@ type AssignmentModel struct {
 	Address  types.String `tfsdk:"address"`
 	LinodeID types.Int64  `tfsdk:"linode_id"`
 	Reserved types.Bool   `tfsdk:"reserved"`
-	Tags     types.List   `tfsdk:"tags"`
+	Tags     types.Set    `tfsdk:"tags"`
 }

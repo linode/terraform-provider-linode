@@ -23,7 +23,7 @@ type ResourceModel struct {
 	SubnetMask types.String `tfsdk:"subnet_mask"`
 	Prefix     types.Int64  `tfsdk:"prefix"`
 	VPCNAT1To1 types.Object `tfsdk:"vpc_nat_1_1"`
-	Tags       types.List   `tfsdk:"tags"`
+	Tags       types.Set    `tfsdk:"tags"`
 }
 
 func (m *ResourceModel) FlattenIPAddress(
@@ -59,7 +59,7 @@ func (m *ResourceModel) FlattenIPAddress(
 	m.VPCNAT1To1 = helper.KeepOrUpdateValue(m.VPCNAT1To1, vpcNAT1To1, preserveKnown)
 
 	tags := helper.StringSliceToFrameworkValueSlice(ip.Tags)
-	m.Tags = helper.KeepOrUpdateList(types.StringType, m.Tags, tags, preserveKnown, &d)
+	m.Tags = helper.KeepOrUpdateSet(types.StringType, m.Tags, tags, preserveKnown, &d)
 	if d.HasError() {
 		return d
 	}

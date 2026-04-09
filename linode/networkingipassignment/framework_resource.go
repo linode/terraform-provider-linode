@@ -69,7 +69,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// populated by Read on the next refresh.
 	for i := range plan.Assignments {
 		plan.Assignments[i].Reserved = types.BoolNull()
-		plan.Assignments[i].Tags = types.ListNull(types.StringType)
+		plan.Assignments[i].Tags = types.SetNull(types.StringType)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
@@ -160,12 +160,12 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	resp.State.RemoveResource(ctx)
 }
 
-func flattenTagsList(tags []string, diags *diag.Diagnostics) types.List {
+func flattenTagsList(tags []string, diags *diag.Diagnostics) types.Set {
 	elems := make([]attr.Value, len(tags))
 	for i, t := range tags {
 		elems[i] = types.StringValue(t)
 	}
-	list, d := types.ListValue(types.StringType, elems)
+	set, d := types.SetValue(types.StringType, elems)
 	diags.Append(d...)
-	return list
+	return set
 }

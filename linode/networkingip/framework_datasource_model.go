@@ -23,7 +23,7 @@ type DataSourceModel struct {
 	InterfaceID types.Int64  `tfsdk:"interface_id"`
 	Region      types.String `tfsdk:"region"`
 	VPCNAT1To1  types.Object `tfsdk:"vpc_nat_1_1"`
-	Tags        types.List   `tfsdk:"tags"`
+	Tags        types.Set    `tfsdk:"tags"`
 }
 
 func (data *DataSourceModel) parseIP(ip *linodego.InstanceIP) diag.Diagnostics {
@@ -48,11 +48,11 @@ func (data *DataSourceModel) parseIP(ip *linodego.InstanceIP) diag.Diagnostics {
 	data.VPCNAT1To1 = vpcNAT1To1
 
 	tags := helper.StringSliceToFrameworkValueSlice(ip.Tags)
-	tagsList, tagsDiags := types.ListValue(types.StringType, tags)
+	tagsSet, tagsDiags := types.SetValue(types.StringType, tags)
 	if tagsDiags.HasError() {
 		return tagsDiags
 	}
-	data.Tags = tagsList
+	data.Tags = tagsSet
 
 	return nil
 }

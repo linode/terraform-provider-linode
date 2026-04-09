@@ -28,7 +28,7 @@ var networkObjectType = types.ObjectType{
 		"interface_id": types.Int64Type,
 		"vpc_nat_1_1":  VPCNAT1To1Type,
 		"reserved":     types.BoolType,
-		"tags":         types.ListType{ElemType: types.StringType},
+		"tags":         types.SetType{ElemType: types.StringType},
 	},
 }
 

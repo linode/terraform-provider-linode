@@ -84,8 +84,8 @@ var frameworkDatasourceSchema = schema.Schema{
 						Computed:       true,
 						AttributeTypes: instancenetworking.VPCNAT1To1Type.AttrTypes,
 					},
-					"tags": schema.ListAttribute{
-						Description: "A list of tags associated with this IP address.",
+					"tags": schema.SetAttribute{
+						Description: "A set of tags associated with this IP address.",
 						Computed:    true,
 						ElementType: types.StringType,
 					},

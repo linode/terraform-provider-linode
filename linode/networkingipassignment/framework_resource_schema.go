@@ -41,9 +41,9 @@ var frameworkResourceSchema = schema.Schema{
 						Computed:    true,
 						Description: "Whether this IP address is a reserved IP.",
 					},
-					"tags": schema.ListAttribute{
+					"tags": schema.SetAttribute{
 						Computed:    true,
-						Description: "A list of tags associated with this IP address.",
+						Description: "A set of tags associated with this IP address.",
 						ElementType: types.StringType,
 					},
 				},
