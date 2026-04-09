@@ -6,8 +6,6 @@ description: |-
 
 # linode\_lock
 
-~> **Early Access** Locks are in Early Access and may not be available to all users.
-
 ~> **Important** Only unrestricted users can create and delete locks. Restricted users cannot manage locks even if they have read/write permissions for the resource.
 
 Manages a Linode Lock which prevents accidental deletion and modification of resources. Locks protect against deletion, rebuild operations, and service transfers. The `cannot_delete_with_subresources` lock type also protects subresources such as disks, configs, interfaces, and IP addresses.

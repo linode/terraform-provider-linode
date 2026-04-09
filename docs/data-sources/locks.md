@@ -6,8 +6,6 @@ description: |-
 
 # Data Source: linode\_locks
 
-~> **Early Access:** Lock functionality is in early access and may not be available to all users.
-
 ~> **Important** Only unrestricted users can view locks. Restricted users cannot access lock information even if they have permissions for the resources.
 
 Provides information about Linode Locks that match a set of filters. Locks prevent accidental deletion, rebuild operations, and service transfers of resources.
