@@ -65,18 +65,11 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// Generate a unique ID for this resource
 	plan.ID = types.StringValue(fmt.Sprintf("%s-%d", plan.Region.ValueString(), len(plan.Assignments)))
 
-	// Fetch IP details to populate computed fields (reserved, tags)
-	for i, assignment := range plan.Assignments {
-		ip, err := client.GetIPAddress(ctx, assignment.Address.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error reading IP Address after assignment",
-				fmt.Sprintf("Could not read IP address %s: %s", assignment.Address.ValueString(), err),
-			)
-			return
-		}
-		plan.Assignments[i].Reserved = types.BoolValue(ip.Reserved)
-		plan.Assignments[i].Tags = flattenTagsList(ip.Tags, &resp.Diagnostics)
+	// Computed fields (reserved, tags) are left null here and will be
+	// populated by Read on the next refresh.
+	for i := range plan.Assignments {
+		plan.Assignments[i].Reserved = types.BoolNull()
+		plan.Assignments[i].Tags = types.ListNull(types.StringType)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
@@ -93,12 +86,12 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 
 	client := r.Meta.Client
 
-	for i, assignment := range state.Assignments {
+	retained := make([]AssignmentModel, 0, len(state.Assignments))
+	for _, assignment := range state.Assignments {
 		ip, err := client.GetIPAddress(ctx, assignment.Address.ValueString())
 		if err != nil {
 			if linodego.IsNotFound(err) {
-				// IP not found, remove it from state
-				state.Assignments = append(state.Assignments[:i], state.Assignments[i+1:]...)
+				// IP not found; drop it from state.
 				continue
 			}
 			resp.Diagnostics.AddError(
@@ -108,13 +101,14 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 			return
 		}
 
-		state.Assignments[i] = AssignmentModel{
+		retained = append(retained, AssignmentModel{
 			Address:  types.StringValue(ip.Address),
 			LinodeID: types.Int64Value(int64(ip.LinodeID)),
 			Reserved: types.BoolValue(ip.Reserved),
 			Tags:     flattenTagsList(ip.Tags, &resp.Diagnostics),
-		}
+		})
 	}
+	state.Assignments = retained
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

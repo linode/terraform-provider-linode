@@ -201,31 +201,50 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		return
 	}
 
-	// Re-read the IP to refresh all computed fields after updates
-	ips, err := client.ListIPAddresses(ctx, nil)
+	// Re-read the IP to refresh all computed fields after updates.
+	// Prefer a direct lookup; fall back to listing when the address is not
+	// served by GetIPAddress (e.g. private IPs — see Read for the same workaround).
+	address := state.Address.ValueString()
+	foundIP, err := client.GetIPAddress(ctx, address)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error reading IP Addresses after update",
-			fmt.Sprintf("Could not list IP addresses: %s", err),
-		)
-		return
-	}
-
-	var foundIP *linodego.InstanceIP
-	for _, ip := range ips {
-		if ip.Address == state.Address.ValueString() {
-			foundIP = &ip
-			break
-		}
-	}
-
-	if foundIP != nil {
-		resp.Diagnostics.Append(plan.FlattenIPAddress(foundIP, true)...)
-		if resp.Diagnostics.HasError() {
+		if !linodego.IsNotFound(err) {
+			resp.Diagnostics.AddError(
+				"Error reading IP Address after update",
+				fmt.Sprintf("Could not read IP address %s: %s", address, err),
+			)
 			return
 		}
-	} else {
-		plan.CopyFrom(state, true)
+
+		// Not found via direct lookup — fall back to listing (needed for private IPs).
+		ips, listErr := client.ListIPAddresses(ctx, nil)
+		if listErr != nil {
+			resp.Diagnostics.AddError(
+				"Error reading IP Address after update",
+				fmt.Sprintf(
+					"Could not re-read IP address %q after update. GetIPAddress error: %s. ListIPAddresses error: %s",
+					address, err, listErr,
+				),
+			)
+			return
+		}
+		for _, ip := range ips {
+			if ip.Address == address {
+				foundIP = &ip
+				break
+			}
+		}
+		if foundIP == nil {
+			resp.Diagnostics.AddError(
+				"Error reading IP Address after update",
+				fmt.Sprintf("Could not find IP address %q after update", address),
+			)
+			return
+		}
+	}
+
+	resp.Diagnostics.Append(plan.FlattenIPAddress(foundIP, true)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	// Workaround for Crossplane issue where ID is not
