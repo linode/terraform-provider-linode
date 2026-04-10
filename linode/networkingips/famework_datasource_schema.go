@@ -18,7 +18,7 @@ var filterConfig = frameworkfilter.Config{
 	"subnet_mask": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"public":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"linode_id":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
-	"reserved":    {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
+	"reserved":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
 }
 
 var frameworkDatasourceSchema = schema.Schema{
