@@ -27,7 +27,6 @@ type MonitorAlertChannelModel struct {
 	CreatedBy   types.String                `tfsdk:"created_by"`
 	UpdatedBy   types.String                `tfsdk:"updated_by"`
 	Alerts      *MonitorAlertChannelAlerts  `tfsdk:"alerts"`
-	Content     *MonitorAlertChannelContent `tfsdk:"content"`
 	Details     *MonitorAlertChannelDetails `tfsdk:"details"`
 }
 
@@ -35,14 +34,6 @@ type MonitorAlertChannelAlerts struct {
 	URL        types.String `tfsdk:"url"`
 	Type       types.String `tfsdk:"type"`
 	AlertCount types.Int64  `tfsdk:"alert_count"`
-}
-
-type MonitorAlertChannelContent struct {
-	Email *MonitorAlertChannelEmailContent `tfsdk:"email"`
-}
-
-type MonitorAlertChannelEmailContent struct {
-	EmailAddresses types.List `tfsdk:"email_addresses"`
 }
 
 type MonitorAlertChannelDetails struct {
@@ -81,15 +72,6 @@ func flattenMonitorAlertChannel(ctx context.Context, channel *linodego.AlertChan
 			Type:       types.StringValue(channel.Alerts.Type),
 			AlertCount: types.Int64Value(int64(channel.Alerts.AlertCount)),
 		},
-	}
-
-	if channel.Content.Email != nil {
-		emails, _ := types.ListValueFrom(ctx, types.StringType, channel.Content.Email.EmailAddresses)
-		model.Content = &MonitorAlertChannelContent{
-			Email: &MonitorAlertChannelEmailContent{
-				EmailAddresses: emails,
-			},
-		}
 	}
 
 	if channel.Details.Email != nil {

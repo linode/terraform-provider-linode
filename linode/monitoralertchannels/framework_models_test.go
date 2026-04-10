@@ -77,23 +77,11 @@ func TestFlattenMonitorAlertChannel_AllFields(t *testing.T) {
 		t.Fatalf("expected alerts.alert_count=5, got %d", got.Alerts.AlertCount.ValueInt64())
 	}
 
-	if got.Content == nil || got.Content.Email == nil {
-		t.Fatal("expected content.email to be set")
-	}
-	var emails []string
-	diags := got.Content.Email.EmailAddresses.ElementsAs(context.Background(), &emails, false)
-	if diags.HasError() {
-		t.Fatalf("failed to decode email_addresses: %v", diags)
-	}
-	if len(emails) != 2 || emails[0] != "a@example.com" || emails[1] != "b@example.com" {
-		t.Fatalf("unexpected email_addresses: %#v", emails)
-	}
-
 	if got.Details == nil || got.Details.Email == nil {
 		t.Fatal("expected details.email to be set")
 	}
 	var usernames []string
-	diags = got.Details.Email.Usernames.ElementsAs(context.Background(), &usernames, false)
+	diags := got.Details.Email.Usernames.ElementsAs(context.Background(), &usernames, false)
 	if diags.HasError() {
 		t.Fatalf("failed to decode usernames: %v", diags)
 	}
@@ -126,9 +114,6 @@ func TestFlattenMonitorAlertChannel_NilNested(t *testing.T) {
 	}
 
 	got := flattenMonitorAlertChannel(context.Background(), input)
-	if got.Content != nil {
-		t.Fatalf("expected content=nil, got %#v", got.Content)
-	}
 	if got.Details != nil {
 		t.Fatalf("expected details=nil, got %#v", got.Details)
 	}

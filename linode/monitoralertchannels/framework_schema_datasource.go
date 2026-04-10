@@ -67,23 +67,6 @@ var monitorAlertChannelAttributes = map[string]schema.Attribute{
 			},
 		},
 	},
-	"content": schema.SingleNestedAttribute{
-		Description: "Deprecated read-only legacy channel configuration. For user channels, this may be empty.",
-		Computed:    true,
-		Attributes: map[string]schema.Attribute{
-			"email": schema.SingleNestedAttribute{
-				Description: "Deprecated legacy email notification configuration.",
-				Computed:    true,
-				Attributes: map[string]schema.Attribute{
-					"email_addresses": schema.ListAttribute{
-						Description: "Deprecated read-only email recipients for legacy system channels.",
-						Computed:    true,
-						ElementType: types.StringType,
-					},
-				},
-			},
-		},
-	},
 	"details": schema.SingleNestedAttribute{
 		Description: "The notification channel configuration details.",
 		Computed:    true,
