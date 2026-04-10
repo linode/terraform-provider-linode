@@ -34,6 +34,8 @@ type TemplateData struct {
 	NetworkHelper       *bool
 	MaintenancePolicy   string
 	LockType            string
+
+	SystemAlert int
 }
 
 func Basic(t testing.TB, label, pubKey, region string, rootPass string) string {
@@ -117,6 +119,25 @@ func FullDisk(t testing.TB, label, pubKey, stackScriptName, region string, swapS
 func WithConfig(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_with_config", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}
+
+func WithAlerts(t testing.TB, label, region string, systemAlert int) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_with_alerts", TemplateData{
+			Label:       label,
+			Image:       acceptance.TestImageLatest,
+			Region:      region,
+			SystemAlert: systemAlert,
+		})
+}
+
+func AlertsUpdates(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_alerts_updates", TemplateData{
 			Label:  label,
 			Image:  acceptance.TestImageLatest,
 			Region: region,
@@ -932,5 +953,15 @@ func DataWithLock(t testing.TB, label, region, lockType string) string {
 			Label:    label,
 			Region:   region,
 			LockType: lockType,
+		})
+}
+
+func DataWithAlerts(t testing.TB, label, region string, systemAlert int) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_with_alerts", TemplateData{
+			Label:       label,
+			Image:       acceptance.TestImageLatest,
+			Region:      region,
+			SystemAlert: systemAlert,
 		})
 }
