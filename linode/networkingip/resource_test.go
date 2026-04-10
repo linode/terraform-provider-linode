@@ -4,6 +4,7 @@ package networkingip_test
 
 import (
 	"log"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -375,6 +376,34 @@ func TestAccResourceNetworkingIP_ephemeralToReservedConversion(t *testing.T) {
 						knownvalue.NotNull(),
 					),
 				},
+			},
+		},
+	})
+}
+
+func TestAccResourceNetworkingIP_reservedUnassignedToEphemeral(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_networking_ip.reserved_ip"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Step 1: Create a reserved unassigned IP.
+			{
+				Config: tmpl.NetworkingIPReservedUnassigned(t, testRegion, true),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("reserved"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("linode_id"), knownvalue.Null()),
+				},
+			},
+			// Step 2: Convert reserved → ephemeral. Because the IP is unassigned,
+			// the API deletes it. The provider surfaces an error so the user knows
+			// to remove the resource from their configuration.
+			{
+				Config:      tmpl.NetworkingIPReservedUnassigned(t, testRegion, false),
+				ExpectError: regexp.MustCompile(`IP Address Deleted During Update`),
 			},
 		},
 	})

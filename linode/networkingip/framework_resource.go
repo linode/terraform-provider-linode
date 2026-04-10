@@ -234,9 +234,18 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			}
 		}
 		if foundIP == nil {
+			// The IP no longer exists — converting an unassigned reserved IP to
+			// ephemeral causes the API to delete it. Surface this as an error so
+			// the user knows to remove the resource from their configuration.
+			// On the next plan/refresh, Read will find the IP gone and clean up state.
 			resp.Diagnostics.AddError(
-				"Error reading IP Address after update",
-				fmt.Sprintf("Could not find IP address %q after update", address),
+				"IP Address Deleted During Update",
+				fmt.Sprintf(
+					"IP address %q no longer exists after the update. This can happen when "+
+						"converting an unassigned reserved IP to ephemeral, as the API deletes it. "+
+						"Remove this resource from your Terraform configuration.",
+					address,
+				),
 			)
 			return
 		}
