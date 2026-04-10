@@ -56,9 +56,6 @@ Each Alert Channel will be stored in the `monitor_alert_channels` attribute and 
   * `url` - The API URL for associated alerts.
   * `type` - The alert type associated with the channel.
   * `alert_count` - The number of associated alerts.
-* `content` - (Deprecated) Legacy read-only channel content.
-  * `email` - Legacy email content values.
-    * `email_addresses` - Legacy email recipients for system channels.
 * `details` - Channel configuration details.
   * `email` - Email-specific configuration details.
     * `usernames` - Usernames that receive notifications.

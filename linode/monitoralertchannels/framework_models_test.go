@@ -30,11 +30,6 @@ func TestFlattenMonitorAlertChannel_AllFields(t *testing.T) {
 			Type:       "cpu",
 			AlertCount: 5,
 		},
-		Content: linodego.ChannelContent{
-			Email: &linodego.EmailChannelContent{
-				EmailAddresses: []string{"a@example.com", "b@example.com"},
-			},
-		},
 		Details: linodego.ChannelDetails{
 			Email: &linodego.EmailChannelDetails{
 				Usernames:     []string{"alice", "bob"},
