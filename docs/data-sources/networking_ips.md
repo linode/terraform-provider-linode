@@ -71,7 +71,7 @@ Each IP address will be stored in the `ip_addresses` attribute and will export t
 
 * `reserved` - Whether this IP address is a reserved IP.
 
-* `tags` - A list of tags associated with this IP address.
+* `tags` - A set of tags associated with this IP address.
 
 * `vpc_nat_1_1` - Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.
 

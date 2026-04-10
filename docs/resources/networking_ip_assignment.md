@@ -45,7 +45,7 @@ The following attributes can be defined under each entry in the `assignments` fi
 
 * `reserved` - (Computed) Whether this IP address is a reserved IP.
 
-* `tags` - (Computed) A list of tags associated with this IP address.
+* `tags` - (Computed) A set of tags associated with this IP address.
 
 ## Attribute Reference
 

@@ -103,7 +103,7 @@ A list of public IP Address objects belonging to this Linode.
 
 * `subnet_mask` - The mask that separates host bits from network bits for this address.
 
-* `tags` - A list of tags associated with this IP address.
+* `tags` - A set of tags associated with this IP address.
 
 * `type` - The type of address this is.
 
@@ -136,7 +136,7 @@ A list of reserved IP Address objects belonging to this Linode.
 
 * `subnet_mask` - The mask that separates host bits from network bits for this address.
 
-* `tags` - A list of tags associated with this IP address.
+* `tags` - A set of tags associated with this IP address.
 
 * `type` - The type of address this is.
 
@@ -169,7 +169,7 @@ A list of shared IP Address objects assigned to this Linode.
 
 * `subnet_mask` - The mask that separates host bits from network bits for this address.
 
-* `tags` - A list of tags associated with this IP address.
+* `tags` - A set of tags associated with this IP address.
 
 * `type` - The type of address this is.
 
