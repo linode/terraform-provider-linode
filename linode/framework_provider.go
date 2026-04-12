@@ -96,6 +96,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/rdns"
 	"github.com/linode/terraform-provider-linode/v3/linode/region"
 	"github.com/linode/terraform-provider-linode/v3/linode/regions"
+	"github.com/linode/terraform-provider-linode/v3/linode/regionsvpcavailability"
+	"github.com/linode/terraform-provider-linode/v3/linode/regionvpcavailability"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkeys"
 	"github.com/linode/terraform-provider-linode/v3/linode/stackscript"
@@ -154,6 +156,7 @@ func (p *FrameworkProvider) Schema(
 		Attributes: map[string]schema.Attribute{
 			"token": schema.StringAttribute{
 				Optional:    true,
+				Sensitive:   true,
 				Description: "The token that allows you access to your Linode account",
 			},
 			"config_path": schema.StringAttribute{
@@ -378,5 +381,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		lkenodepool.NewDataSource,
 		prefixlist.NewDataSource,
 		prefixlists.NewDataSource,
+		regionvpcavailability.NewDataSource,
+		regionsvpcavailability.NewDataSource,
 	}
 }

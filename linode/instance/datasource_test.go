@@ -21,7 +21,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 
 	// Resolve a region with support for Maintenance Policy
 	region, err := acceptance.GetRandomRegionWithCaps(
-		[]string{"Linodes", "Maintenance Policy"},
+		[]string{linodego.CapabilityLinodes, linodego.CapabilityMaintenancePolicy},
 		"core",
 	)
 	if err != nil {
@@ -106,7 +106,7 @@ func TestAccDataSourceInstances_withBlockStorageEncryption(t *testing.T) {
 
 	// Resolve a region with support for Block Storage Encryption
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{"Linodes", "Block Storage Encryption"},
+		[]string{linodego.CapabilityLinodes, linodego.CapabilityBlockStorageEncryption},
 		"core",
 	)
 	if err != nil {
@@ -143,7 +143,7 @@ func TestAccDataSourceInstances_withPG(t *testing.T) {
 
 	// Resolve a region with support for PGs
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{"Linodes", "Placement Group"},
+		[]string{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup},
 		"core",
 	)
 	if err != nil {

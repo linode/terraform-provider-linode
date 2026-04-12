@@ -25,7 +25,7 @@ import (
 var testRegion string
 
 func init() {
-	r, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityVPCs}, "core")
+	r, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
@@ -59,6 +59,51 @@ func TestAccResourceVPCSubnet_basic(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
+func TestAccResourceVPCSubnet_nodebalancer(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc_subnet.foobar"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+	fmt.Printf("Using region %s for VPC subnet tests\n", testRegion)
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.BasicWithNodebalancer(t, subnetLabel, "10.0.0.0/24", testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkVPCSubnetExists,
+					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+					resource.TestCheckResourceAttr(resName, "databases.#", "0"),
+				),
+			},
+			{
+				Config: tmpl.UpdatesWithNodebalancer(t, subnetLabel, "10.0.0.0/24", testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkVPCSubnetExists,
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", subnetLabel)),
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttrSet(resName, "updated"),
+					resource.TestCheckResourceAttr(resName, "nodebalancers.#", "1"),
+					resource.TestCheckResourceAttr(resName, "nodebalancers.0.ipv4_range", "10.0.0.4/30"),
+					resource.TestCheckResourceAttrSet(resName, "nodebalancers.0.id"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+				// TODO:: remove when API response for updated timestamp is consistent
+				ImportStateVerifyIgnore: []string{"updated"},
 			},
 		},
 	})
@@ -183,7 +228,7 @@ func TestAccResourceVPCSubnet_create_InvalidLabel_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.Basic(t, subnetLabel, "172.16.0.0/24", testRegion),
-				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
+				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and dashes"),
 			},
 		},
 	})
@@ -212,7 +257,7 @@ func TestAccResourceVPCSubnet_update_invalidLabel(t *testing.T) {
 			},
 			{
 				Config:      tmpl.Updates(t, invalidLabel, "192.168.0.0/26", testRegion),
-				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
+				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and dashes"),
 			},
 		},
 	})

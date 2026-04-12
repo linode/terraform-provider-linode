@@ -28,11 +28,15 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"entity_type": schema.StringAttribute{
-			Description: "The type of the entity to lock. Currently only 'linode' is supported. Note: Linodes that are part of an LKE cluster cannot be locked.",
+			Description: "The type of the entity to lock. Supported values are 'linode', 'nodebalancer', 'volume', 'lkecluster', and 'lkenodepool'. Note: Linodes that are part of an LKE cluster cannot be locked.",
 			Required:    true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
 					string(linodego.EntityLinode),
+					string(linodego.EntityNodebalancer),
+					string(linodego.EntityVolume),
+					string(linodego.EntityLKECluster),
+					string(linodego.EntityLKENodePool),
 				),
 			},
 			PlanModifiers: []planmodifier.String{

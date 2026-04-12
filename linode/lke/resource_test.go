@@ -76,7 +76,7 @@ func init() {
 		k8sVersionPrevious = k8sVersions[len(k8sVersions)-2]
 	}
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"kubernetes"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLKE}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

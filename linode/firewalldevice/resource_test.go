@@ -20,7 +20,7 @@ import (
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall", "NodeBalancers"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityCloudFirewall, linodego.CapabilityNodeBalancers}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

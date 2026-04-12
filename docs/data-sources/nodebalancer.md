@@ -55,6 +55,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * [`firewalls`](#firewalls) - A list of Firewalls assigned to this NodeBalancer.
 
+* [`vpcs`](#vpcs) - A list of VPCs assigned to this NodeBalancer.
+
 ### transfer
 
 The following attributes are available on transfer:
@@ -104,3 +106,15 @@ The following arguments are supported in the inbound and outbound rule blocks:
 * `ipv4` - A list of IPv4 addresses or networks. Must be in IP/mask format.
 
 * `ipv6` - A list of IPv6 addresses or networks. Must be in IP/mask format.
+
+### vpcs
+
+-> **Limited Availability** VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+
+The following attributes are available on each entry in `vpcs`:
+
+* `subnet_id` - The ID of this configuration's VPC subnet.
+
+* `ipv4_range` - A CIDR range for the VPC's IPv4 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
+
+* `ipv6_range` - A CIDR range for the VPC's IPv6 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.

@@ -22,7 +22,7 @@ func TestAccDataSourceVPCs_basic_smoke(t *testing.T) {
 
 	resourceName := "data.linode_vpcs.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"}, "core")
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		t.Error(fmt.Errorf("failed to get region with VPC capability: %w", err))
 	}
