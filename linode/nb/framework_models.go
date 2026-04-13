@@ -114,7 +114,9 @@ func (data *NodeBalancerModel) Flatten(
 		return diags
 	}
 
-	data.Firewalls = *fws
+	if fws != nil {
+		data.Firewalls = helper.KeepOrUpdateValue(data.Firewalls, *fws, preserveKnown)
+	}
 
 	// Filter out backend VPC configs, matching `vpcs` attribute.
 	backendVPCConfigs := filterVPCConfigsByPurpose(vpcConfigs, linodego.NodeBalancerVPCConfigPurposeBackend)
