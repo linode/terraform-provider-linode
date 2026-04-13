@@ -31,11 +31,14 @@ type NodeBalancerModel struct {
 	Transfer              types.List        `tfsdk:"transfer"`
 	Tags                  types.Set         `tfsdk:"tags"`
 	Firewalls             types.List        `tfsdk:"firewalls"`
-	VPCs                  types.List        `tfsdk:"vpcs"`
-	FrontendVPCs          types.List        `tfsdk:"frontend_vpcs"`
-	Type                  types.String      `tfsdk:"type"`
-	FrontendAddressType   types.String      `tfsdk:"frontend_address_type"`
-	FrontendVPCSubnetID   types.Int64       `tfsdk:"frontend_vpc_subnet_id"`
+	// Deprecated: VPCs is deprecated in favor of BackendVPCs.
+	// This attribute may be removed in future major release.
+	VPCs                types.List   `tfsdk:"vpcs"`
+	BackendVPCs         types.List   `tfsdk:"backend_vpcs"`
+	FrontendVPCs        types.List   `tfsdk:"frontend_vpcs"`
+	Type                types.String `tfsdk:"type"`
+	FrontendAddressType types.String `tfsdk:"frontend_address_type"`
+	FrontendVPCSubnetID types.Int64  `tfsdk:"frontend_vpc_subnet_id"`
 }
 
 type FirewallModel struct {
@@ -111,7 +114,9 @@ func (data *NodeBalancerModel) Flatten(
 		return diags
 	}
 
-	data.Firewalls = *fws
+	if fws != nil {
+		data.Firewalls = helper.KeepOrUpdateValue(data.Firewalls, *fws, preserveKnown)
+	}
 
 	// Filter out backend VPC configs, matching `vpcs` attribute.
 	backendVPCConfigs := filterVPCConfigsByPurpose(vpcConfigs, linodego.NodeBalancerVPCConfigPurposeBackend)
@@ -165,7 +170,12 @@ func (data *NodeBalancerModel) Flatten(
 
 	// TODO: Make use of new KeepOrUpdate helpers once Linode Interfaces has been merged.
 	// In the meantime, enabling preserveKnown will break the diff logic for computed fields.
-	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, backendVPCs, false)
+	if !data.BackendVPCs.IsNull() {
+		data.BackendVPCs = helper.KeepOrUpdateValue(data.BackendVPCs, backendVPCs, false)
+	}
+	if !data.VPCs.IsNull() {
+		data.VPCs = helper.KeepOrUpdateValue(data.VPCs, backendVPCs, false)
+	}
 
 	return nil
 }
@@ -203,7 +213,12 @@ func (data *NodeBalancerModel) CopyFrom(other NodeBalancerModel, preserveKnown b
 	data.Transfer = helper.KeepOrUpdateValue(data.Transfer, other.Transfer, preserveKnown)
 	data.Tags = helper.KeepOrUpdateValue(data.Tags, other.Tags, preserveKnown)
 	data.Firewalls = helper.KeepOrUpdateValue(data.Firewalls, other.Firewalls, preserveKnown)
-	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, other.VPCs, preserveKnown)
+	if !data.VPCs.IsNull() {
+		data.VPCs = helper.KeepOrUpdateValue(data.VPCs, other.VPCs, preserveKnown)
+	}
+	if !data.BackendVPCs.IsNull() {
+		data.BackendVPCs = helper.KeepOrUpdateValue(data.BackendVPCs, other.BackendVPCs, preserveKnown)
+	}
 	data.FrontendVPCs = helper.KeepOrUpdateValue(data.FrontendVPCs, other.FrontendVPCs, preserveKnown)
 	data.FrontendAddressType = helper.KeepOrUpdateValue(data.FrontendAddressType, other.FrontendAddressType, preserveKnown)
 	data.FrontendVPCSubnetID = helper.KeepOrUpdateValue(data.FrontendVPCSubnetID, other.FrontendVPCSubnetID, preserveKnown)
@@ -434,6 +449,12 @@ type ResourceVPCModel struct {
 	IPv4RangeAutoAssign types.Bool `tfsdk:"ipv4_range_auto_assign"`
 }
 
+type ResourceBackendVPCModel struct {
+	BaseVPCModel
+
+	IPv4RangeAutoAssign types.Bool `tfsdk:"ipv4_range_auto_assign"`
+}
+
 type ResourceFrontendVPCModel struct {
 	BaseVPCModel
 
@@ -452,6 +473,24 @@ func (m *ResourceVPCModel) ToLinodego() (*linodego.NodeBalancerVPCOptions, diag.
 	}
 
 	return &linodego.NodeBalancerVPCOptions{
+		SubnetID:            subnetID,
+		IPv4Range:           m.IPv4Range.ValueString(),
+		IPv4RangeAutoAssign: m.IPv4RangeAutoAssign.ValueBool(),
+	}, d
+}
+
+func (m *ResourceBackendVPCModel) ToLinodego() (*linodego.NodeBalancerBackendVPCOptions, diag.Diagnostics) {
+	var d diag.Diagnostics
+
+	subnetID := helper.FrameworkSafeInt64ToInt(
+		m.SubnetID.ValueInt64(),
+		&d,
+	)
+	if d.HasError() {
+		return nil, d
+	}
+
+	return &linodego.NodeBalancerBackendVPCOptions{
 		SubnetID:            subnetID,
 		IPv4Range:           m.IPv4Range.ValueString(),
 		IPv4RangeAutoAssign: m.IPv4RangeAutoAssign.ValueBool(),
@@ -492,6 +531,29 @@ func vpcModelsToLinodego(
 	return helper.MapSlice(
 		vpcModels,
 		func(vpcModel ResourceVPCModel) linodego.NodeBalancerVPCOptions {
+			result, localD := vpcModel.ToLinodego()
+			d.Append(localD...)
+			return *result
+		},
+	), d
+}
+
+func backendVPCModelsToLinodego(
+	ctx context.Context,
+	vpcs types.List,
+) ([]linodego.NodeBalancerBackendVPCOptions, diag.Diagnostics) {
+	var d diag.Diagnostics
+
+	var vpcModels []ResourceBackendVPCModel
+
+	d.Append(vpcs.ElementsAs(ctx, &vpcModels, false)...)
+	if d.HasError() {
+		return nil, d
+	}
+
+	return helper.MapSlice(
+		vpcModels,
+		func(vpcModel ResourceBackendVPCModel) linodego.NodeBalancerBackendVPCOptions {
 			result, localD := vpcModel.ToLinodego()
 			d.Append(localD...)
 			return *result
