@@ -143,7 +143,7 @@ func (data *FirewallResourceModel) getCreateOptions(
 		return createOpts
 	}
 
-	createOpts.Devices.Interfaces = helper.ExpandFwInt64Set(data.Interfaces, diags)
+	createOpts.Devices.LinodeInterfaces = helper.ExpandFwInt64Set(data.Interfaces, diags)
 	if diags.HasError() {
 		return createOpts
 	}

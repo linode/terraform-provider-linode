@@ -27,7 +27,10 @@ const testInterfaceResName = "linode_interface.test"
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps(
+		[]string{linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityCloudFirewall},
+		"core",
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -113,7 +116,7 @@ func TestAccLinodeInterface_public_basic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
-				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges"},
+				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges", "firewall_id"},
 			},
 		},
 	})
@@ -177,7 +180,7 @@ func TestAccLinodeInterface_public_ipv4_ipv6(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
-				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges"},
+				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges", "firewall_id"},
 			},
 		},
 	})
@@ -235,7 +238,7 @@ func TestAccLinodeInterface_public_ipv6_only(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
-				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges"},
+				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges", "firewall_id"},
 			},
 		},
 	})
@@ -337,7 +340,7 @@ func TestAccLinodeInterface_public_update_addresses(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
-				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges"},
+				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges", "firewall_id"},
 			},
 		},
 	})
@@ -367,7 +370,7 @@ func TestAccLinodeInterface_vpc_basic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
-				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses"},
+				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses", "firewall_id"},
 			},
 		},
 	})
@@ -417,7 +420,7 @@ func TestAccLinodeInterface_vpc_with_ipv4(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
-				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses"},
+				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses", "firewall_id"},
 			},
 		},
 	})
@@ -491,7 +494,7 @@ func TestAccLinodeInterface_vpc_update_ipv4(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
-				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses"},
+				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses", "firewall_id"},
 			},
 		},
 	})
@@ -522,7 +525,7 @@ func TestAccLinodeInterface_public_default_route(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
-				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges"},
+				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges", "firewall_id"},
 			},
 		},
 	})
@@ -554,7 +557,7 @@ func TestAccLinodeInterface_vpc_default_route(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
-				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses"},
+				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses", "firewall_id"},
 			},
 		},
 	})
@@ -670,7 +673,7 @@ func TestAccLinodeInterface_vpc_default_ip(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
-				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses"},
+				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses", "firewall_id"},
 			},
 		},
 	})
@@ -699,7 +702,7 @@ func TestAccLinodeInterface_public_default_ip(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
-				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges"},
+				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges", "firewall_id"},
 			},
 		},
 	})
@@ -731,7 +734,7 @@ func TestAccLinodeInterface_public_empty_ip_objects(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
-				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges"},
+				ImportStateVerifyIgnore: []string{"public.ipv4.addresses", "public.ipv6.ranges", "firewall_id"},
 			},
 		},
 	})
@@ -764,7 +767,7 @@ func TestAccLinodeInterface_vpc_empty_ip_objects(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
-				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses"},
+				ImportStateVerifyIgnore: []string{"vpc.ipv4.addresses", "firewall_id"},
 			},
 		},
 	})
@@ -777,6 +780,7 @@ func TestAccLinodeInterface_vpc_with_ipv6(t *testing.T) {
 		linodego.CapabilityLinodes,
 		linodego.CapabilityVlans,
 		linodego.CapabilityVPCs,
+		linodego.CapabilityCloudFirewall,
 		linodego.CapabilityVPCDualStack,
 	}, "core")
 	if err != nil {
@@ -882,7 +886,7 @@ func TestAccLinodeInterface_vpc_with_ipv6(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateID,
-				ImportStateVerifyIgnore: []string{"vpc.ipv6.ranges", "vpc.ipv6.slaac"},
+				ImportStateVerifyIgnore: []string{"vpc.ipv6.ranges", "vpc.ipv6.slaac", "firewall_id"},
 			},
 		},
 	})

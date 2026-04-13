@@ -153,6 +153,7 @@ func (p *FrameworkProvider) Schema(
 		Attributes: map[string]schema.Attribute{
 			"token": schema.StringAttribute{
 				Optional:    true,
+				Sensitive:   true,
 				Description: "The token that allows you access to your Linode account",
 			},
 			"config_path": schema.StringAttribute{
