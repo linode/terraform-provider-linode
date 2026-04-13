@@ -128,13 +128,14 @@ func TestFlattenNodeBalancerIPv4(t *testing.T) {
 	}
 
 	t.Run("preserves user-provided IPv4 when preserveKnown=true", func(t *testing.T) {
+		userProvidedIP := "203.0.113.7"
 		model := &NodeBalancerModel{
-			IPv4: types.StringValue(reservedIP),
+			IPv4: types.StringValue(userProvidedIP),
 		}
 
 		diags := model.Flatten(context.Background(), nodeBalancer, nil, nil, true)
 		assert.False(t, diags.HasError())
-		assert.Equal(t, types.StringValue(reservedIP), model.IPv4)
+		assert.Equal(t, types.StringValue(userProvidedIP), model.IPv4)
 	})
 
 	t.Run("updates IPv4 from API when preserveKnown=false", func(t *testing.T) {
