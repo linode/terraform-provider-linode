@@ -89,6 +89,8 @@ Each Linode firewall will be stored in the `firewalls` attribute and will export
 
 * `status` - The status of the firewall.
 
+* `version` - The version number of the Firewall's rule configuration.
+
 * `created` - When this firewall was created.
 
 * `updated` - When this firewall was last updated.

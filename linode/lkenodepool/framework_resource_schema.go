@@ -71,9 +71,16 @@ var resourceSchema = schema.Schema{
 		},
 		"disk_encryption": schema.StringAttribute{
 			Description: "The disk encryption policy for nodes in this pool.",
+			Optional:    true,
 			Computed:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
+			},
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(linodego.InstanceDiskEncryptionEnabled),
+					string(linodego.InstanceDiskEncryptionDisabled),
+				),
 			},
 		},
 		"tags": schema.SetAttribute{
@@ -170,6 +177,28 @@ var resourceSchema = schema.Schema{
 					"value": schema.StringAttribute{
 						Description: "The Kubernetes taint value.",
 						Required:    true,
+					},
+				},
+			},
+		},
+
+		"isolation": schema.ListNestedBlock{
+			Description: "Network isolation settings for the node pool. " +
+				"Controls whether nodes have public IPv4/IPv6 addresses.",
+			Validators: []validator.List{
+				listvalidator.SizeAtMost(1),
+			},
+			NestedObject: schema.NestedBlockObject{
+				Attributes: map[string]schema.Attribute{
+					"public_ipv4": schema.BoolAttribute{
+						Description: "Whether nodes in this pool have public IPv4 addresses.",
+						Optional:    true,
+						Computed:    true,
+					},
+					"public_ipv6": schema.BoolAttribute{
+						Description: "Whether nodes in this pool have public IPv6 addresses.",
+						Optional:    true,
+						Computed:    true,
 					},
 				},
 			},

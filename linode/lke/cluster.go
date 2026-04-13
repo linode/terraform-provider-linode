@@ -29,6 +29,8 @@ type NodePoolSpec struct {
 	UpdateStrategy    *string
 	Label             *string
 	FirewallID        *int
+	DiskEncryption    string
+	Isolation         *linodego.LKENodePoolIsolation
 }
 
 type NodePoolUpdates struct {
@@ -60,6 +62,14 @@ func ReconcileLKENodePoolSpecs(
 			Labels:         linodego.LKENodePoolLabels(spec.Labels),
 			K8sVersion:     spec.K8sVersion,
 			UpdateStrategy: updateStrategy,
+		}
+
+		if spec.DiskEncryption != "" {
+			createOpts.DiskEncryption = linodego.InstanceDiskEncryption(spec.DiskEncryption)
+		}
+
+		if spec.Isolation != nil {
+			createOpts.Isolation = spec.Isolation
 		}
 
 		if spec.Label != nil && *spec.Label != "" {
@@ -516,6 +526,21 @@ func expandLinodeLKENodePoolSpecs(pool []any, preserveNoTarget bool) (poolSpecs 
 			firewallIdPtr = &v
 		}
 
+		var diskEncryption string
+		if v, ok := specMap["disk_encryption"].(string); ok && v != "" {
+			diskEncryption = v
+		}
+
+		var isolation *linodego.LKENodePoolIsolation
+		if isoList, ok := specMap["isolation"].([]any); ok && len(isoList) > 0 {
+			if isoMap, ok := isoList[0].(map[string]any); ok {
+				isolation = &linodego.LKENodePoolIsolation{
+					PublicIPv4: isoMap["public_ipv4"].(bool),
+					PublicIPv6: isoMap["public_ipv6"].(bool),
+				}
+			}
+		}
+
 		poolSpecs = append(poolSpecs, NodePoolSpec{
 			ID:                specMap["id"].(int),
 			Label:             labelPtr,
@@ -530,6 +555,8 @@ func expandLinodeLKENodePoolSpecs(pool []any, preserveNoTarget bool) (poolSpecs 
 			AutoScalerMax:     autoscaler.Max,
 			K8sVersion:        k8sVersionPtr,
 			UpdateStrategy:    updateStrategyPtr,
+			DiskEncryption:    diskEncryption,
+			Isolation:         isolation,
 		})
 	}
 	return poolSpecs
@@ -574,6 +601,15 @@ func flattenLKENodePools(pools []linodego.LKENodePool) []map[string]any {
 			"update_strategy": pool.UpdateStrategy,
 			"firewall_id":     pool.FirewallID,
 		}
+
+		if pool.Isolation != nil {
+			flattened[i]["isolation"] = []map[string]any{
+				{
+					"public_ipv4": pool.Isolation.PublicIPv4,
+					"public_ipv6": pool.Isolation.PublicIPv6,
+				},
+			}
+		}
 	}
 	return flattened
 }
@@ -613,6 +649,7 @@ func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane,
 
 	flattened["high_availability"] = controlPlane.HighAvailability
 	flattened["audit_logs_enabled"] = controlPlane.AuditLogsEnabled
+	flattened["metrics_enabled"] = controlPlane.MetricsEnabled
 
 	return flattened
 }
@@ -629,6 +666,11 @@ func expandControlPlaneOptions(controlPlane map[string]any) (
 	if value, ok := controlPlane["audit_logs_enabled"]; ok {
 		v := value.(bool)
 		result.AuditLogsEnabled = &v
+	}
+
+	if value, ok := controlPlane["metrics_enabled"]; ok {
+		v := value.(bool)
+		result.MetricsEnabled = &v
 	}
 
 	// default to disabled

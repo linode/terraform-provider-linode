@@ -99,6 +99,10 @@ var frameworkDatasourceSchema = schema.Schema{
 								Description: "Enables audit logs on the cluster's control plane.",
 								Computed:    true,
 							},
+							"metrics_enabled": schema.BoolAttribute{
+								Description: "Enables metrics on the cluster's control plane.",
+								Computed:    true,
+							},
 						},
 					},
 				},

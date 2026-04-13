@@ -34,21 +34,23 @@ type FirewallDataSourceModel struct {
 // FirewallResourceModel describes the Terraform resource data model to match the
 // resource schema.
 type FirewallResourceModel struct {
-	ID             types.String      `tfsdk:"id"`
-	Label          types.String      `tfsdk:"label"`
-	Tags           types.Set         `tfsdk:"tags"`
-	Disabled       types.Bool        `tfsdk:"disabled"`
-	Inbound        []RuleModel       `tfsdk:"inbound"`
-	InboundPolicy  types.String      `tfsdk:"inbound_policy"`
-	Outbound       []RuleModel       `tfsdk:"outbound"`
-	OutboundPolicy types.String      `tfsdk:"outbound_policy"`
-	Linodes        types.Set         `tfsdk:"linodes"`
-	NodeBalancers  types.Set         `tfsdk:"nodebalancers"`
-	Interfaces     types.Set         `tfsdk:"interfaces"`
-	Devices        types.List        `tfsdk:"devices"`
-	Status         types.String      `tfsdk:"status"`
-	Created        timetypes.RFC3339 `tfsdk:"created"`
-	Updated        timetypes.RFC3339 `tfsdk:"updated"`
+	ID              types.String      `tfsdk:"id"`
+	Label           types.String      `tfsdk:"label"`
+	Tags            types.Set         `tfsdk:"tags"`
+	Disabled        types.Bool        `tfsdk:"disabled"`
+	Inbound         []RuleModel       `tfsdk:"inbound"`
+	InboundRuleSet  types.List        `tfsdk:"inbound_ruleset"`
+	InboundPolicy   types.String      `tfsdk:"inbound_policy"`
+	Outbound        []RuleModel       `tfsdk:"outbound"`
+	OutboundRuleSet types.List        `tfsdk:"outbound_ruleset"`
+	OutboundPolicy  types.String      `tfsdk:"outbound_policy"`
+	Linodes         types.Set         `tfsdk:"linodes"`
+	NodeBalancers   types.Set         `tfsdk:"nodebalancers"`
+	Interfaces      types.Set         `tfsdk:"interfaces"`
+	Devices         types.List        `tfsdk:"devices"`
+	Status          types.String      `tfsdk:"status"`
+	Created         timetypes.RFC3339 `tfsdk:"created"`
+	Updated         timetypes.RFC3339 `tfsdk:"updated"`
 }
 
 type RuleModel struct {
@@ -107,15 +109,41 @@ func isDisabled(firewall linodego.Firewall) bool {
 func (data *FirewallResourceModel) ExpandFirewallRuleSet(
 	ctx context.Context, diags *diag.Diagnostics,
 ) (rules linodego.FirewallRuleSet) {
-	rules.Inbound = ExpandFirewallRules(ctx, data.Inbound, diags)
-	if diags.HasError() {
-		return rules
+	// Prepend inbound ruleset references
+	var inboundRulesetIDs []int64
+	if !data.InboundRuleSet.IsNull() && !data.InboundRuleSet.IsUnknown() {
+		diags.Append(data.InboundRuleSet.ElementsAs(ctx, &inboundRulesetIDs, false)...)
+		if diags.HasError() {
+			return rules
+		}
+	}
+	for _, rsID := range inboundRulesetIDs {
+		rules.Inbound = append(rules.Inbound, linodego.FirewallRule{RuleSet: int(rsID)})
 	}
 
-	rules.Outbound = ExpandFirewallRules(ctx, data.Outbound, diags)
+	inlineInbound := ExpandFirewallRules(ctx, data.Inbound, diags)
 	if diags.HasError() {
 		return rules
 	}
+	rules.Inbound = append(rules.Inbound, inlineInbound...)
+
+	// Prepend outbound ruleset references
+	var outboundRulesetIDs []int64
+	if !data.OutboundRuleSet.IsNull() && !data.OutboundRuleSet.IsUnknown() {
+		diags.Append(data.OutboundRuleSet.ElementsAs(ctx, &outboundRulesetIDs, false)...)
+		if diags.HasError() {
+			return rules
+		}
+	}
+	for _, rsID := range outboundRulesetIDs {
+		rules.Outbound = append(rules.Outbound, linodego.FirewallRule{RuleSet: int(rsID)})
+	}
+
+	inlineOutbound := ExpandFirewallRules(ctx, data.Outbound, diags)
+	if diags.HasError() {
+		return rules
+	}
+	rules.Outbound = append(rules.Outbound, inlineOutbound...)
 
 	rules.InboundPolicy = data.InboundPolicy.ValueString()
 	rules.OutboundPolicy = data.OutboundPolicy.ValueString()
@@ -218,19 +246,49 @@ func (data *FirewallResourceModel) flattenRules(
 	preserveKnown bool,
 	diags *diag.Diagnostics,
 ) {
-	inboundRules := FlattenFirewallRules(ctx, ruleSet.Inbound, data.Inbound, preserveKnown, diags)
+	// Separate ruleset references from inline rules
+	inboundRulesetIDs, inlineInbound := separateRulesetRefs(ruleSet.Inbound)
+	outboundRulesetIDs, inlineOutbound := separateRulesetRefs(ruleSet.Outbound)
+
+	inboundRules := FlattenFirewallRules(ctx, inlineInbound, data.Inbound, preserveKnown, diags)
 	if diags.HasError() {
 		return
 	}
-
 	data.Inbound = inboundRules
 
-	outboundRules := FlattenFirewallRules(ctx, ruleSet.Outbound, data.Outbound, preserveKnown, diags)
+	outboundRules := FlattenFirewallRules(ctx, inlineOutbound, data.Outbound, preserveKnown, diags)
 	if diags.HasError() {
 		return
 	}
-
 	data.Outbound = outboundRules
+
+	// Flatten inbound ruleset IDs
+	inboundRSList, newDiags := types.ListValueFrom(ctx, types.Int64Type, inboundRulesetIDs)
+	diags.Append(newDiags...)
+	if diags.HasError() {
+		return
+	}
+	data.InboundRuleSet = helper.KeepOrUpdateValue(data.InboundRuleSet, inboundRSList, preserveKnown)
+
+	// Flatten outbound ruleset IDs
+	outboundRSList, newDiags := types.ListValueFrom(ctx, types.Int64Type, outboundRulesetIDs)
+	diags.Append(newDiags...)
+	if diags.HasError() {
+		return
+	}
+	data.OutboundRuleSet = helper.KeepOrUpdateValue(data.OutboundRuleSet, outboundRSList, preserveKnown)
+}
+
+// separateRulesetRefs splits a rule slice into ruleset ID references and inline rules.
+func separateRulesetRefs(rules []linodego.FirewallRule) (rulesetIDs []int64, inlineRules []linodego.FirewallRule) {
+	for _, r := range rules {
+		if r.RuleSet != 0 {
+			rulesetIDs = append(rulesetIDs, int64(r.RuleSet))
+		} else {
+			inlineRules = append(inlineRules, r)
+		}
+	}
+	return
 }
 
 func (data *FirewallResourceModel) flattenFirewallForResource(
@@ -349,6 +407,9 @@ func (data *FirewallResourceModel) CopyFrom(
 		data.Inbound = other.Inbound
 		data.Outbound = other.Outbound
 	}
+
+	data.InboundRuleSet = helper.KeepOrUpdateValue(data.InboundRuleSet, other.InboundRuleSet, preserveKnown)
+	data.OutboundRuleSet = helper.KeepOrUpdateValue(data.OutboundRuleSet, other.OutboundRuleSet, preserveKnown)
 }
 
 func (state *FirewallResourceModel) RulesAndPoliciesHaveChanges(
@@ -371,7 +432,8 @@ func (state *FirewallResourceModel) RulesAndPoliciesHaveChanges(
 	}
 
 	return (!oldInbound.Equal(newInbound) || !oldOutbound.Equal(newOutbound) ||
-		!state.InboundPolicy.Equal(plan.InboundPolicy) || !state.OutboundPolicy.Equal(plan.OutboundPolicy))
+		!state.InboundPolicy.Equal(plan.InboundPolicy) || !state.OutboundPolicy.Equal(plan.OutboundPolicy) ||
+		!state.InboundRuleSet.Equal(plan.InboundRuleSet) || !state.OutboundRuleSet.Equal(plan.OutboundRuleSet))
 }
 
 func (state *FirewallResourceModel) LinodesOrNodeBalancersOrInterfacesHaveChanges(
