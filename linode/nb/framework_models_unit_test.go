@@ -120,6 +120,46 @@ func TestFlattenNodeBalancer(t *testing.T) {
 	assert.True(t, types.StringValue(label).Equal(nodeBalancerModel.Label))
 }
 
+func TestFlattenNodeBalancerIPv4(t *testing.T) {
+	reservedIP := "198.51.100.5"
+	nodeBalancer := &linodego.NodeBalancer{
+		ID:   456,
+		IPv4: &reservedIP,
+	}
+
+	t.Run("preserves user-provided IPv4 when preserveKnown=true", func(t *testing.T) {
+		model := &NodeBalancerModel{
+			IPv4: types.StringValue(reservedIP),
+		}
+
+		diags := model.Flatten(context.Background(), nodeBalancer, nil, nil, true)
+		assert.False(t, diags.HasError())
+		assert.Equal(t, types.StringValue(reservedIP), model.IPv4)
+	})
+
+	t.Run("updates IPv4 from API when preserveKnown=false", func(t *testing.T) {
+		apiIP := "203.0.113.7"
+		model := &NodeBalancerModel{
+			IPv4: types.StringValue(apiIP),
+		}
+
+		nb := &linodego.NodeBalancer{ID: 457, IPv4: &reservedIP}
+		diags := model.Flatten(context.Background(), nb, nil, nil, false)
+		assert.False(t, diags.HasError())
+		assert.Equal(t, types.StringValue(reservedIP), model.IPv4)
+	})
+
+	t.Run("sets IPv4 from API when model IPv4 is unknown", func(t *testing.T) {
+		model := &NodeBalancerModel{
+			IPv4: types.StringUnknown(),
+		}
+
+		diags := model.Flatten(context.Background(), nodeBalancer, nil, nil, true)
+		assert.False(t, diags.HasError())
+		assert.Equal(t, types.StringValue(reservedIP), model.IPv4)
+	})
+}
+
 func TestUpgradeResourceStateValue(t *testing.T) {
 	t.Run("ValidFloatConversion", func(t *testing.T) {
 		value := "42.5"

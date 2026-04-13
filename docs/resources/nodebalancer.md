@@ -41,6 +41,23 @@ resource "linode_nodebalancer" "foobar" {
 }
 ```
 
+The following example shows how to create a NodeBalancer with a pre-reserved IPv4 address.
+
+```hcl
+resource "linode_networking_ip" "my_reserved_ip" {
+    region   = "us-east"
+    type     = "ipv4"
+    public   = true
+    reserved = true
+}
+
+resource "linode_nodebalancer" "foobar" {
+    label  = "mynodebalancer"
+    region = "us-east"
+    ipv4   = linode_networking_ip.my_reserved_ip.address
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -58,6 +75,8 @@ The following arguments are supported:
   * **NOTE: This argument may not be generally available.**
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
+
+* `ipv4` - (Optional) The Public IPv4 address to assign to this NodeBalancer. When provided, the address must be a reserved IPv4 address that is unassigned and owned by the account. *Changing `ipv4` forces the creation of a new Linode NodeBalancer.*
 
 ## Attributes Reference
 

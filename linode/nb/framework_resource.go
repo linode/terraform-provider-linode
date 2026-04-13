@@ -96,6 +96,10 @@ func (r *Resource) Create(
 		}
 	}
 
+	if !data.IPv4.IsNull() {
+		createOpts.IPv4 = data.IPv4.ValueStringPointer()
+	}
+
 	tflog.Debug(ctx, "client.CreateNodeBalancer(...)", map[string]any{
 		"options": createOpts,
 	})
