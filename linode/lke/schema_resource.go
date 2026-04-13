@@ -240,10 +240,10 @@ var resourceSchema = map[string]*schema.Schema{
 					}, false),
 				},
 				"isolation": {
-					Type:     schema.TypeList,
-					MaxItems: 1,
-					Optional: true,
-					Computed: true,
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Computed:    true,
 					Description: "Isolation configuration for the node pool.",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{

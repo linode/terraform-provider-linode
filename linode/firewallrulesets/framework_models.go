@@ -11,9 +11,9 @@ import (
 )
 
 type RuleSetFilterModel struct {
-	ID       types.String                          `tfsdk:"id"`
-	Filters  frameworkfilter.FiltersModelType       `tfsdk:"filter"`
-	RuleSets []firewallruleset.RuleSetBaseModel     `tfsdk:"rulesets"`
+	ID       types.String                       `tfsdk:"id"`
+	Filters  frameworkfilter.FiltersModelType   `tfsdk:"filter"`
+	RuleSets []firewallruleset.RuleSetBaseModel `tfsdk:"rulesets"`
 }
 
 func (data *RuleSetFilterModel) parseRuleSets(

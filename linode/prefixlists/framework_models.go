@@ -11,9 +11,9 @@ import (
 )
 
 type PrefixListFilterModel struct {
-	ID          types.String                      `tfsdk:"id"`
-	Filters     frameworkfilter.FiltersModelType   `tfsdk:"filter"`
-	PrefixLists []prefixlist.PrefixListBaseModel   `tfsdk:"prefix_lists"`
+	ID          types.String                     `tfsdk:"id"`
+	Filters     frameworkfilter.FiltersModelType `tfsdk:"filter"`
+	PrefixLists []prefixlist.PrefixListBaseModel `tfsdk:"prefix_lists"`
 }
 
 func (data *PrefixListFilterModel) parsePrefixLists(
