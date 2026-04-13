@@ -96,7 +96,7 @@ func (r *Resource) Create(
 		}
 	}
 
-	if !data.IPv4.IsNull() {
+	if !data.IPv4.IsNull() && !data.IPv4.IsUnknown() {
 		createOpts.IPv4 = data.IPv4.ValueStringPointer()
 	}
 
