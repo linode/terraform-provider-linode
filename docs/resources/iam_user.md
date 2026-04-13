@@ -7,7 +7,7 @@ description: |-
 # Resource: linode\_iam\_user
 
 Manages IAM information about a Linode user
-For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-iam-users-role-permissions).
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/put-iam-users-role-permissions).
 
 ## Example Usage
 
