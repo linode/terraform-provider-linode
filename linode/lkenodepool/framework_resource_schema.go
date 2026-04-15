@@ -72,8 +72,16 @@ var resourceSchema = schema.Schema{
 		"disk_encryption": schema.StringAttribute{
 			Description: "The disk encryption policy for nodes in this pool.",
 			Computed:    true,
+			Optional:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifier.RequiresReplaceIfConfigured(),
+			},
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(linodego.InstanceDiskEncryptionEnabled),
+					string(linodego.InstanceDiskEncryptionDisabled),
+				),
 			},
 		},
 		"tags": schema.SetAttribute{
