@@ -7,8 +7,7 @@ import (
 )
 
 type TemplateData struct {
-	Label  string
-	Region string
+	Label string
 }
 
 func DataSource(t testing.TB, label string) string {
