@@ -140,6 +140,8 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 
 	resName := "linode_instance_disk.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
+	initialImage := "linode/debian12"
+	replacementImage := "linode/debian13"
 	rootPass := acctest.RandString(64)
 
 	var instance linodego.Instance
@@ -150,11 +152,12 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.BootedResize(t, label, testRegion, 2048, rootPass),
+				Config: tmpl.BootedResizeWithImage(t, label, testRegion, 2048, initialImage, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", label),
 					resource.TestCheckResourceAttr(resName, "size", "2048"),
+					resource.TestCheckResourceAttr(resName, "image", initialImage),
 					resource.TestCheckResourceAttr(resName, "status", "ready"),
 
 					resource.TestCheckResourceAttrSet(resName, "linode_id"),
@@ -162,12 +165,13 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 			},
 			// Resize up
 			{
-				Config: tmpl.BootedResize(t, label, testRegion, 2049, rootPass),
+				Config: tmpl.BootedResizeWithImage(t, label, testRegion, 2049, initialImage, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttr(resName, "label", label),
 					resource.TestCheckResourceAttr(resName, "size", "2049"),
+					resource.TestCheckResourceAttr(resName, "image", initialImage),
 					resource.TestCheckResourceAttr(resName, "status", "ready"),
 
 					resource.TestCheckResourceAttrSet(resName, "linode_id"),
@@ -179,7 +183,7 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 						t.Fatalf("expected instance to be running, found %s", instance.Status)
 					}
 				},
-				Config: tmpl.BootedResize(t, label, testRegion, 2049, rootPass),
+				Config: tmpl.BootedResizeWithImage(t, label, testRegion, 2049, initialImage, rootPass),
 			},
 			{
 				ResourceName:            resName,
@@ -187,6 +191,22 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       resourceImportStateID,
 				ImportStateVerifyIgnore: []string{"image", "root_pass"},
+			},
+			{
+				PreConfig: func() {
+					if instance.Status != linodego.InstanceRunning {
+						t.Fatalf("expected instance to be running before image replacement, found %s", instance.Status)
+					}
+				},
+				Config: tmpl.BootedResizeWithImage(t, label, testRegion, 2049, replacementImage, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", label),
+					resource.TestCheckResourceAttr(resName, "size", "2049"),
+					resource.TestCheckResourceAttr(resName, "image", replacementImage),
+					resource.TestCheckResourceAttr(resName, "status", "ready"),
+					resource.TestCheckResourceAttrSet(resName, "linode_id"),
+				),
 			},
 		},
 	})
