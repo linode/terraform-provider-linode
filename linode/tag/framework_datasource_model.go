@@ -2,6 +2,7 @@ package tag
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -54,6 +55,8 @@ func (data *DataSourceModel) FlattenTaggedObjects(
 				m.ID = types.StringValue(ip.Address)
 			}
 		default:
+			diags.AddWarning("Unknown tagged object type",
+				fmt.Sprintf("tagged object type %q is not recognised; ID will be empty", obj.Type))
 			m.ID = types.StringValue("")
 		}
 
