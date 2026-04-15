@@ -1,0 +1,16 @@
+{{ define "iam_entities_data_basic" }}
+
+resource "linode_volume" "test_volume" {
+    label = "{{.VolumeLabel}}"
+    region = "{{.Region}}"
+    tags = ["tf_test"]
+}
+
+data "linode_iam_entities" "test_iam_entities" {
+    filter {
+        name = "label"
+        values = [linode_volume.test_volume.label]
+    }
+}
+
+{{ end }}
