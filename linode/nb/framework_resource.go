@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -392,7 +393,7 @@ func upgradeNodebalancerResourceStateV0toV1(
 		Region:             nbDataV0.Region,
 		ClientConnThrottle: nbDataV0.ClientConnThrottle,
 		Hostname:           nbDataV0.Hostname,
-		IPv4:               nbDataV0.IPv4,
+		IPv4:               iptypes.NewIPv4AddressValue(nbDataV0.IPv4.ValueString()),
 		IPv6:               nbDataV0.IPv6,
 		Created:            timetypes.RFC3339{StringValue: nbDataV0.Created},
 		Updated:            timetypes.RFC3339{StringValue: nbDataV0.Updated},

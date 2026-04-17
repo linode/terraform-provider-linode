@@ -1,6 +1,7 @@
 package nb
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -136,8 +137,9 @@ var frameworkResourceSchema = schema.Schema{
 				"When provided, the address must be a reserved IPv4 address " +
 				"that is unassigned and owned by the account. " +
 				"*Changing `ipv4` forces the creation of a new Linode NodeBalancer.*",
-			Optional: true,
-			Computed: true,
+			Optional:   true,
+			Computed:   true,
+			CustomType: iptypes.IPv4AddressType{},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 				stringplanmodifier.RequiresReplace(),
