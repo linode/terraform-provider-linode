@@ -136,7 +136,11 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The Public IPv4 Address of this NodeBalancer. " +
 				"When provided, the address must be a reserved IPv4 address " +
 				"that is unassigned and owned by the account. " +
-				"*Changing `ipv4` forces the creation of a new Linode NodeBalancer.*",
+				"*Changing `ipv4` forces the creation of a new Linode NodeBalancer.* " +
+				"Note: once `ipv4` is set, removing it from configuration will not revert " +
+				"the NodeBalancer to an auto-assigned address — the prior value is retained " +
+				"in state. To switch back to an auto-assigned address, the resource must be " +
+				"explicitly replaced (e.g. via `terraform taint` or by destroying and recreating it).",
 			Optional:   true,
 			Computed:   true,
 			CustomType: iptypes.IPv4AddressType{},
