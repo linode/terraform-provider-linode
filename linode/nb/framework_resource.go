@@ -393,7 +393,7 @@ func upgradeNodebalancerResourceStateV0toV1(
 		Region:             nbDataV0.Region,
 		ClientConnThrottle: nbDataV0.ClientConnThrottle,
 		Hostname:           nbDataV0.Hostname,
-		IPv4:               iptypes.NewIPv4AddressValue(nbDataV0.IPv4.ValueString()),
+		IPv4:               iptypes.NewIPv4AddressPointerValue(nbDataV0.IPv4.ValueStringPointer()),
 		IPv6:               nbDataV0.IPv6,
 		Created:            timetypes.RFC3339{StringValue: nbDataV0.Created},
 		Updated:            timetypes.RFC3339{StringValue: nbDataV0.Updated},
