@@ -251,7 +251,11 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		}
 	}
 
-	resp.Diagnostics.Append(plan.FlattenIPAddress(foundIP, true)...)
+	// Do not preserve known plan values here: computed attributes may already
+	// be known in plan (for example via UseStateForUnknown plan modifiers), and
+	// preserving them would prevent this post-update refresh from applying the
+	// latest API values.
+	resp.Diagnostics.Append(plan.FlattenIPAddress(foundIP, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
