@@ -73,10 +73,9 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 	},
 	"interface_generation": {
-		Type: schema.TypeString,
-		Description: "The interface type for the Linode. " +
-			"NOTE: Linode Interfaces may not currently be available to all users.",
-		Computed: true,
+		Type:        schema.TypeString,
+		Description: "The interface type for the Linode. ",
+		Computed:    true,
 	},
 	"ip_address": {
 		Type: schema.TypeString,
