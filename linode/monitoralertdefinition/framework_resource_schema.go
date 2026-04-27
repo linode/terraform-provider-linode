@@ -9,10 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/linodego"
 )
 
 var dimensionFilterNestedObj = schema.NestedAttributeObject{
@@ -295,6 +297,52 @@ var frameworkResourceSchema = schema.Schema{
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
+		},
+		"scope": schema.StringAttribute{
+			Optional: true,
+			Computed: true,
+			Description: "The scope of the alert definition. Allowed values: account, entity, region. " +
+				"Defaults to entity.",
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(linodego.AlertDefinitionScopeAccount),
+					string(linodego.AlertDefinitionScopeEntity),
+					string(linodego.AlertDefinitionScopeRegion),
+				),
+			},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"regions": schema.ListAttribute{
+			ElementType: types.StringType,
+			Optional:    true,
+			Computed:    true,
+			Description: "The regions the alert definition applies to. Only used for region-scoped alerts.",
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"entities": schema.SingleNestedAttribute{
+			Attributes: map[string]schema.Attribute{
+				"url": schema.StringAttribute{
+					Computed:    true,
+					Description: "The URL to list entities associated with the alert definition.",
+				},
+				"count": schema.Int64Attribute{
+					Computed:    true,
+					Description: "The number of entities associated with the alert definition.",
+				},
+				"has_more_resources": schema.BoolAttribute{
+					Computed:    true,
+					Description: "Whether there are additional entities associated with the alert.",
+				},
+			},
+			Computed: true,
+			PlanModifiers: []planmodifier.Object{
+				objectplanmodifier.UseStateForUnknown(),
+			},
+			Description: "Entity metadata for the alert definition.",
 		},
 	},
 }

@@ -63,6 +63,17 @@ func (r *Resource) Create(
 		Severity:    severity,
 	}
 
+	if !data.Scope.IsUnknown() && !data.Scope.IsNull() {
+		createOpts.Scope = linodego.AlertDefinitionScope(data.Scope.ValueString())
+	}
+
+	if !data.Regions.IsUnknown() && !data.Regions.IsNull() {
+		resp.Diagnostics.Append(data.Regions.ElementsAs(ctx, &createOpts.Regions, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	if !data.TriggerConditions.IsUnknown() && !data.TriggerConditions.IsNull() {
 		createOpts.TriggerConditions = flattenTriggerConditions(ctx, data.TriggerConditions, &resp.Diagnostics)
 	}
@@ -200,7 +211,8 @@ func (r *Resource) Update(
 		state.RuleCriteria.Equal(plan.RuleCriteria) &&
 		state.EntityIDs.Equal(plan.EntityIDs) &&
 		state.ChannelIDs.Equal(plan.ChannelIDs) &&
-		state.Status.Equal(plan.Status)
+		state.Status.Equal(plan.Status) &&
+		state.Regions.Equal(plan.Regions)
 
 	if !isEqual {
 		severity := helper.FrameworkSafeInt64ToInt(plan.Severity.ValueInt64(), &resp.Diagnostics)
@@ -219,6 +231,13 @@ func (r *Resource) Update(
 
 		if !plan.EntityIDs.IsUnknown() && !plan.EntityIDs.IsNull() {
 			resp.Diagnostics.Append(plan.EntityIDs.ElementsAs(ctx, &updateOpts.EntityIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+		}
+
+		if !plan.Regions.IsUnknown() && !plan.Regions.IsNull() {
+			resp.Diagnostics.Append(plan.Regions.ElementsAs(ctx, &updateOpts.Regions, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}

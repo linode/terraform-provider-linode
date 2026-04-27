@@ -69,6 +69,13 @@ func TestAlertDefinitionModel_FlattenAlertDefinition(t *testing.T) {
 		CreatedBy:         "admin",
 		UpdatedBy:         "admin",
 		Class:             "system",
+		Scope:             linodego.AlertDefinitionScopeEntity,
+		Regions:           []string{"us-east"},
+		Entities: linodego.AlertDefinitionEntities{
+			URL:              "/v4/monitor/services/dbaas/alert-definitions/42/entities",
+			Count:            2,
+			HasMoreResources: false,
+		},
 	}
 
 	var model AlertDefinitionResourceModel
@@ -86,6 +93,10 @@ func TestAlertDefinitionModel_FlattenAlertDefinition(t *testing.T) {
 	assert.Equal(t, types.StringValue("admin"), model.CreatedBy)
 	assert.Equal(t, types.StringValue("admin"), model.UpdatedBy)
 	assert.Equal(t, types.StringValue("system"), model.Class)
+	assert.Equal(t, types.StringValue("entity"), model.Scope)
+	assert.False(t, model.Regions.IsNull())
+	assert.Equal(t, 1, len(model.Regions.Elements()))
+	assert.False(t, model.Entities.IsNull())
 	assert.Equal(t, timetypes.NewRFC3339TimePointerValue(&now), model.Created)
 	assert.Equal(t, timetypes.NewRFC3339TimePointerValue(&now), model.Updated)
 	assert.False(t, model.ChannelIDs.IsNull())

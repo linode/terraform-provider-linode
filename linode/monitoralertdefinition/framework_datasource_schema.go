@@ -189,4 +189,31 @@ var AlertDefinitionAttributes = map[string]schema.Attribute{
 		Computed:    true,
 		Description: "Plan type for Managed Database clusters (shared or dedicated).",
 	},
+	"scope": schema.StringAttribute{
+		Computed:    true,
+		Description: "The scope of the alert definition. Allowed values: account, entity, region.",
+	},
+	"regions": schema.ListAttribute{
+		ElementType: types.StringType,
+		Computed:    true,
+		Description: "The regions the alert definition applies to. Only used for region-scoped alerts.",
+	},
+	"entities": schema.SingleNestedAttribute{
+		Attributes: map[string]schema.Attribute{
+			"url": schema.StringAttribute{
+				Computed:    true,
+				Description: "The URL to list entities associated with the alert definition.",
+			},
+			"count": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The number of entities associated with the alert definition.",
+			},
+			"has_more_resources": schema.BoolAttribute{
+				Computed:    true,
+				Description: "Whether there are additional entities associated with the alert.",
+			},
+		},
+		Computed:    true,
+		Description: "Entity metadata for the alert definition.",
+	},
 }

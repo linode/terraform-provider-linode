@@ -38,6 +38,9 @@ type AlertDefinitionDataSourceModel struct {
 	CreatedBy         types.String      `tfsdk:"created_by"`
 	UpdatedBy         types.String      `tfsdk:"updated_by"`
 	Class             types.String      `tfsdk:"class"`
+	Scope             types.String      `tfsdk:"scope"`
+	Regions           types.List        `tfsdk:"regions"`
+	Entities          types.Object      `tfsdk:"entities"`
 }
 
 type RuleCriteriaModel struct {
@@ -73,6 +76,20 @@ type TriggerConditionsModel struct {
 	EvaluationPeriodSeconds types.Int64  `tfsdk:"evaluation_period_seconds"`
 	PollingIntervalSeconds  types.Int64  `tfsdk:"polling_interval_seconds"`
 	TriggerOccurrences      types.Int64  `tfsdk:"trigger_occurrences"`
+}
+
+type EntitiesModel struct {
+	URL              types.String `tfsdk:"url"`
+	Count            types.Int64  `tfsdk:"count"`
+	HasMoreResources types.Bool   `tfsdk:"has_more_resources"`
+}
+
+var entitiesObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"url":                types.StringType,
+		"count":              types.Int64Type,
+		"has_more_resources": types.BoolType,
+	},
 }
 
 var alertChannelObjectType = types.ObjectType{
@@ -141,6 +158,25 @@ func (data *AlertDefinitionDataSourceModel) FlattenDataSourceModel(
 	data.CreatedBy = helper.KeepOrUpdateString(data.CreatedBy, alertDefinition.CreatedBy, preserveKnown)
 	data.UpdatedBy = helper.KeepOrUpdateString(data.UpdatedBy, alertDefinition.UpdatedBy, preserveKnown)
 	data.Class = helper.KeepOrUpdateString(data.Class, alertDefinition.Class, preserveKnown)
+	data.Scope = helper.KeepOrUpdateString(data.Scope, string(alertDefinition.Scope), preserveKnown)
+
+	data.Regions = helper.KeepOrUpdateList(
+		types.StringType,
+		data.Regions,
+		helper.StringSliceToFrameworkValueSlice(alertDefinition.Regions),
+		preserveKnown,
+		&diags,
+	)
+
+	if diags.HasError() {
+		return diags
+	}
+
+	entities := flattenEntities(ctx, alertDefinition.Entities, &diags)
+	if diags.HasError() {
+		return diags
+	}
+	data.Entities = helper.KeepOrUpdateValue(data.Entities, entities, preserveKnown)
 
 	data.EntityIDs = helper.KeepOrUpdateList(
 		types.StringType,
@@ -239,7 +275,27 @@ func (data *AlertDefinitionResourceModel) flattenResourceModel(
 	data.CreatedBy = helper.KeepOrUpdateString(data.CreatedBy, alertDefinition.CreatedBy, preserveKnown)
 	data.UpdatedBy = helper.KeepOrUpdateString(data.UpdatedBy, alertDefinition.UpdatedBy, preserveKnown)
 	data.Class = helper.KeepOrUpdateString(data.Class, alertDefinition.Class, preserveKnown)
+	data.Scope = helper.KeepOrUpdateString(data.Scope, string(alertDefinition.Scope), preserveKnown)
 	data.WaitFor = helper.KeepOrUpdateBool(data.WaitFor, data.WaitFor.ValueBool(), preserveKnown)
+
+	data.Regions = helper.KeepOrUpdateList(
+		types.StringType,
+		data.Regions,
+		helper.StringSliceToFrameworkValueSlice(alertDefinition.Regions),
+		preserveKnown,
+		&diags,
+	)
+
+	if diags.HasError() {
+		return diags
+	}
+
+	entities := flattenEntities(ctx, alertDefinition.Entities, &diags)
+	if diags.HasError() {
+		return diags
+	}
+	data.Entities = helper.KeepOrUpdateValue(data.Entities, entities, preserveKnown)
+
 	data.EntityIDs = helper.KeepOrUpdateList(
 		types.StringType,
 		data.EntityIDs,
@@ -448,6 +504,22 @@ func flattenAlertChannels(
 	return aChannelList, channelIDs, nil
 }
 
+func flattenEntities(
+	ctx context.Context,
+	entities linodego.AlertDefinitionEntities,
+	diags *diag.Diagnostics,
+) types.Object {
+	model := EntitiesModel{
+		URL:              types.StringValue(entities.URL),
+		Count:            types.Int64Value(int64(entities.Count)),
+		HasMoreResources: types.BoolValue(entities.HasMoreResources),
+	}
+
+	obj, d := types.ObjectValueFrom(ctx, entitiesObjectType.AttrTypes, model)
+	diags.Append(d...)
+	return obj
+}
+
 func flattenRuleCriteriaOpts(
 	ctx context.Context,
 	ruleCriteria types.Object,
@@ -567,6 +639,9 @@ func (data *AlertDefinitionResourceModel) CopyFrom(other AlertDefinitionResource
 	data.CreatedBy = helper.KeepOrUpdateValue(data.CreatedBy, other.CreatedBy, preserveKnown)
 	data.UpdatedBy = helper.KeepOrUpdateValue(data.UpdatedBy, other.UpdatedBy, preserveKnown)
 	data.Class = helper.KeepOrUpdateValue(data.Class, other.Class, preserveKnown)
+	data.Scope = helper.KeepOrUpdateValue(data.Scope, other.Scope, preserveKnown)
+	data.Regions = helper.KeepOrUpdateValue(data.Regions, other.Regions, preserveKnown)
+	data.Entities = helper.KeepOrUpdateValue(data.Entities, other.Entities, preserveKnown)
 	data.EntityIDs = helper.KeepOrUpdateValue(data.EntityIDs, other.EntityIDs, preserveKnown)
 	data.ChannelIDs = helper.KeepOrUpdateValue(data.ChannelIDs, other.ChannelIDs, preserveKnown)
 	data.AlertChannels = helper.KeepOrUpdateValue(data.AlertChannels, other.AlertChannels, preserveKnown)
