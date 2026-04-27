@@ -72,6 +72,9 @@ func TestAccDataSourceAlertDefinitions_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("alert_definitions").AtSliceIndex(0).AtMapKey("created_by"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("alert_definitions").AtSliceIndex(0).AtMapKey("updated_by"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("alert_definitions").AtSliceIndex(0).AtMapKey("class"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("alert_definitions").AtSliceIndex(0).AtMapKey("scope"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("alert_definitions").AtSliceIndex(0).AtMapKey("regions"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("alert_definitions").AtSliceIndex(0).AtMapKey("entities"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(
 						resName,
 						tfjsonpath.New("alert_definitions").AtSliceIndex(0).AtMapKey("alert_channels").AtSliceIndex(0).AtMapKey("id"),
