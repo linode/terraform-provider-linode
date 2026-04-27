@@ -62,6 +62,8 @@ The following arguments are supported:
 * `description` - (Optional) A description for the alert definition.
 * `entity_ids` - (Optional) A list of entity IDs to associate with the alert definition.
 * `status` - (Optional) The status of the alert definition.
+* `scope` - (Optional) The scope of the alert definition. Allowed values: `account`, `entity`, `region`. Defaults to `entity`.
+* `regions` - (Optional) The regions the alert definition applies to. Only used for region-scoped alerts.
 * `wait_for` - (Optional) Whether to wait for the alert definition to be ready before completing the resource creation.
 
 ### rule_criteria
@@ -112,7 +114,16 @@ In addition to all arguments above, the following attributes are exported:
 * `created_by` - For a user alert definition, this is the user on your account that created it. For a system alert definition, this is returned as system.
 * `updated_by` - For a user alert definition, this is the user on your account that last updated it. For a system alert definition, this is returned as system. If it hasn't been updated, this value is the same as created_by.
 * `class` - "The plan type for the Managed Database cluster, either shared or dedicated. This only applies to a system alert for a service_type of dbaas (Managed Databases). For user alerts for dbaas, this is returned as null.",
+* [`entities`](#entities) - Entity metadata for the alert definition.
 * [`alert_channels`](#alert_channels) - A list of alert channel objects associated with the alert definition.
+
+### entities
+
+The following attributes are exported in the `entities` block:
+
+* `url` - The URL to list entities associated with the alert definition.
+* `count` - The number of entities associated with the alert definition.
+* `has_more_resources` - Whether there are additional entities associated with the alert.
 
 ### alert_channels
 
