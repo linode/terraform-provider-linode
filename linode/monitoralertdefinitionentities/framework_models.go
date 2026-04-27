@@ -12,8 +12,6 @@ type EntityFilterModel struct {
 	ID          types.String                     `tfsdk:"id"`
 	ServiceType types.String                     `tfsdk:"service_type"`
 	AlertID     types.Int64                      `tfsdk:"alert_id"`
-	OrderBy     types.String                     `tfsdk:"order_by"`
-	Order       types.String                     `tfsdk:"order"`
 	Filters     frameworkfilter.FiltersModelType `tfsdk:"filter"`
 	Entities    []EntityDataSourceModel          `tfsdk:"entities"`
 }

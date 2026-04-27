@@ -45,14 +45,6 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The unique identifier for the alert definition.",
 			Required:    true,
 		},
-		"order_by": schema.StringAttribute{
-			Description: "The attribute to order the results by.",
-			Optional:    true,
-		},
-		"order": schema.StringAttribute{
-			Description: "The order in which results are returned (asc or desc).",
-			Optional:    true,
-		},
 		"entities": schema.ListNestedAttribute{
 			Description: "The returned list of entities associated with the alert definition.",
 			Computed:    true,
