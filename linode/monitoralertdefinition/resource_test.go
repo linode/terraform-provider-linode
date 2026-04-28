@@ -164,7 +164,7 @@ func TestAccResourceAlertDefinition_basic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       resourceImportStateID,
-				ImportStateVerifyIgnore: []string{"wait_for"},
+				ImportStateVerifyIgnore: []string{"wait_for", "channel_ids", "entity_ids"},
 			},
 			{
 				Config: tmpl.Updates(t, alertLabel, aggregateFunctionUpdate, alertChannels, triggerOccurrencesUpdate),

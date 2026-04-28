@@ -15,15 +15,15 @@ import (
 // AlertDefinitionResourceModel describes the Terraform resource model to match the resource schema.
 type AlertDefinitionResourceModel struct {
 	AlertDefinitionDataSourceModel
-	EntityIDs types.List `tfsdk:"entity_ids"`
-	WaitFor   types.Bool `tfsdk:"wait_for"`
+	ChannelIDs types.List `tfsdk:"channel_ids"`
+	EntityIDs  types.List `tfsdk:"entity_ids"`
+	WaitFor    types.Bool `tfsdk:"wait_for"`
 }
 
 // AlertDefinitionDataSourceModel describes the Terraform data source model to match the data source schema.
 type AlertDefinitionDataSourceModel struct {
 	ID                types.Int64       `tfsdk:"id"`
 	ServiceType       types.String      `tfsdk:"service_type"`
-	ChannelIDs        types.List        `tfsdk:"channel_ids"`
 	Description       types.String      `tfsdk:"description"`
 	Label             types.String      `tfsdk:"label"`
 	Status            types.String      `tfsdk:"status"`
@@ -183,23 +183,11 @@ func (data *AlertDefinitionDataSourceModel) FlattenDataSourceModel(
 		data.Updated, timetypes.NewRFC3339TimePointerValue(alertDefinition.Updated), preserveKnown,
 	)
 
-	channels, channelIDs, d := flattenAlertChannels(ctx, alertDefinition.AlertChannels)
+	channels, d := flattenAlertChannels(ctx, alertDefinition.AlertChannels)
 	if d != nil {
 		diags.Append(d...)
 		return diags
 	}
-
-	cIDs, newDiags := types.ListValue(types.Int64Type, helper.IntSliceToFrameworkValueSlice(channelIDs))
-	diags.Append(newDiags...)
-	if diags.HasError() {
-		return diags
-	}
-
-	data.ChannelIDs = helper.KeepOrUpdateValue(
-		data.ChannelIDs,
-		cIDs,
-		preserveKnown,
-	)
 
 	data.AlertChannels = helper.KeepOrUpdateValue(
 		data.AlertChannels,
@@ -288,23 +276,11 @@ func (data *AlertDefinitionResourceModel) flattenResourceModel(
 		data.Updated, timetypes.NewRFC3339TimePointerValue(alertDefinition.Updated), preserveKnown,
 	)
 
-	channels, channelIDs, d := flattenAlertChannels(ctx, alertDefinition.AlertChannels)
+	channels, d := flattenAlertChannels(ctx, alertDefinition.AlertChannels)
 	if d != nil {
 		diags.Append(d...)
 		return diags
 	}
-
-	cIDs, newDiags := types.ListValue(types.Int64Type, helper.IntSliceToFrameworkValueSlice(channelIDs))
-	diags.Append(newDiags...)
-	if diags.HasError() {
-		return diags
-	}
-
-	data.ChannelIDs = helper.KeepOrUpdateValue(
-		data.ChannelIDs,
-		cIDs,
-		preserveKnown,
-	)
 
 	data.AlertChannels = helper.KeepOrUpdateValue(
 		data.AlertChannels,
@@ -454,27 +430,23 @@ func (m *RuleCriteriaModel) flattenRuleCriteria(
 func flattenAlertChannels(
 	ctx context.Context,
 	alertChannels []linodego.AlertChannelEnvelope,
-) (types.List, []int, diag.Diagnostics) {
+) (types.List, diag.Diagnostics) {
 	aChannelModels := make([]AlertChannelModel, len(alertChannels))
-	channelIDs := make([]int, len(alertChannels))
 
 	for i, channel := range alertChannels {
 		aChannelModels[i].ID = types.Int64Value(int64(channel.ID))
 		aChannelModels[i].Label = types.StringValue(channel.Label)
 		aChannelModels[i].Type = types.StringValue(channel.Type)
 		aChannelModels[i].URL = types.StringValue(channel.URL)
-
-		// Collect channel IDs
-		channelIDs[i] = channel.ID
 	}
 
 	aChannelList, diag := types.ListValueFrom(ctx, alertChannelObjectType, aChannelModels)
 
 	if diag != nil {
-		return types.ListNull(alertChannelObjectType), nil, diag
+		return types.ListNull(alertChannelObjectType), diag
 	}
 
-	return aChannelList, channelIDs, nil
+	return aChannelList, nil
 }
 
 func flattenEntities(

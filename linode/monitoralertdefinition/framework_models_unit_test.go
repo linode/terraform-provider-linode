@@ -96,8 +96,6 @@ func TestAlertDefinitionModel_FlattenAlertDefinition(t *testing.T) {
 	assert.False(t, model.Entities.IsNull())
 	assert.Equal(t, timetypes.NewRFC3339TimePointerValue(&now), model.Created)
 	assert.Equal(t, timetypes.NewRFC3339TimePointerValue(&now), model.Updated)
-	assert.False(t, model.ChannelIDs.IsNull())
-	assert.Equal(t, 1, len(model.ChannelIDs.Elements()))
 	assert.False(t, model.AlertChannels.IsNull())
 	assert.Equal(t, 1, len(model.AlertChannels.Elements()))
 	assert.False(t, model.RuleCriteria.IsNull())

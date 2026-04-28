@@ -9,7 +9,6 @@ import (
 var filterConfig = frameworkfilter.Config{
 	"id":           {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 	"service_type": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"channel_ids":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 	"description":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"label":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"status":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},

@@ -95,11 +95,6 @@ var AlertDefinitionAttributes = map[string]schema.Attribute{
 		Required:    true,
 		Description: "The Akamai Cloud Computing service being monitored.",
 	},
-	"channel_ids": schema.ListAttribute{
-		ElementType: types.Int64Type,
-		Computed:    true,
-		Description: "The identifiers for the alert channels to use for the alert.",
-	},
 	"description": schema.StringAttribute{
 		Computed:    true,
 		Description: "An additional description for the alert definition.",
