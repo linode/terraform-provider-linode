@@ -183,10 +183,6 @@ var frameworkResourceSchema = schema.Schema{
 		"entity_ids": schema.ListAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
-			Computed:    true,
-			PlanModifiers: []planmodifier.List{
-				listplanmodifier.UseStateForUnknown(),
-			},
 			Description: "The id for each individual entity from a service_type.",
 		},
 		"label": schema.StringAttribute{
@@ -239,14 +235,6 @@ var frameworkResourceSchema = schema.Schema{
 				"or system for one that applies to all users on your account.",
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
-			},
-		},
-		"has_more_resources": schema.BoolAttribute{
-			Computed: true,
-			Description: "Whether there are additional entity_ids associated with the alert for which " +
-				"the user doesn't have at least read-only access.",
-			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"alert_channels": schema.ListNestedAttribute{

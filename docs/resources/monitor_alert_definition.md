@@ -108,7 +108,6 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier assigned to the alert definition.
 * `type` - The type of alert. This can be either user for an alert specific to the current user, or system for one that applies to all users on your account.
-* `has_more_resources` - Whether there are additional entity_ids associated with the alert for which the user doesn't have at least read-only access.
 * `created` - The date and time the alert definition was created.
 * `updated` - The date and time the alert definition was last updated.
 * `created_by` - For a user alert definition, this is the user on your account that created it. For a system alert definition, this is returned as system.

@@ -15,7 +15,8 @@ import (
 // AlertDefinitionResourceModel describes the Terraform resource model to match the resource schema.
 type AlertDefinitionResourceModel struct {
 	AlertDefinitionDataSourceModel
-	WaitFor types.Bool `tfsdk:"wait_for"`
+	EntityIDs types.List `tfsdk:"entity_ids"`
+	WaitFor   types.Bool `tfsdk:"wait_for"`
 }
 
 // AlertDefinitionDataSourceModel describes the Terraform data source model to match the data source schema.
@@ -24,14 +25,12 @@ type AlertDefinitionDataSourceModel struct {
 	ServiceType       types.String      `tfsdk:"service_type"`
 	ChannelIDs        types.List        `tfsdk:"channel_ids"`
 	Description       types.String      `tfsdk:"description"`
-	EntityIDs         types.List        `tfsdk:"entity_ids"`
 	Label             types.String      `tfsdk:"label"`
 	Status            types.String      `tfsdk:"status"`
 	Severity          types.Int64       `tfsdk:"severity"`
 	RuleCriteria      types.Object      `tfsdk:"rule_criteria"`
 	TriggerConditions types.Object      `tfsdk:"trigger_conditions"`
 	Type              types.String      `tfsdk:"type"`
-	HasMoreResources  types.Bool        `tfsdk:"has_more_resources"`
 	AlertChannels     types.List        `tfsdk:"alert_channels"`
 	Created           timetypes.RFC3339 `tfsdk:"created"`
 	Updated           timetypes.RFC3339 `tfsdk:"updated"`
@@ -154,7 +153,6 @@ func (data *AlertDefinitionDataSourceModel) FlattenDataSourceModel(
 	data.Status = helper.KeepOrUpdateString(data.Status, string(alertDefinition.Status), preserveKnown)
 	data.Severity = helper.KeepOrUpdateInt64(data.Severity, int64(alertDefinition.Severity), preserveKnown)
 	data.Type = helper.KeepOrUpdateString(data.Type, alertDefinition.Type, preserveKnown)
-	data.HasMoreResources = helper.KeepOrUpdateBool(data.HasMoreResources, alertDefinition.HasMoreResources, preserveKnown)
 	data.CreatedBy = helper.KeepOrUpdateString(data.CreatedBy, alertDefinition.CreatedBy, preserveKnown)
 	data.UpdatedBy = helper.KeepOrUpdateString(data.UpdatedBy, alertDefinition.UpdatedBy, preserveKnown)
 	data.Class = helper.KeepOrUpdateString(data.Class, alertDefinition.Class, preserveKnown)
@@ -177,18 +175,6 @@ func (data *AlertDefinitionDataSourceModel) FlattenDataSourceModel(
 		return diags
 	}
 	data.Entities = helper.KeepOrUpdateValue(data.Entities, entities, preserveKnown)
-
-	data.EntityIDs = helper.KeepOrUpdateList(
-		types.StringType,
-		data.EntityIDs,
-		helper.StringSliceToFrameworkValueSlice(alertDefinition.EntityIDs),
-		preserveKnown,
-		&diags,
-	)
-
-	if diags.HasError() {
-		return diags
-	}
 
 	data.Created = helper.KeepOrUpdateValue(
 		data.Created, timetypes.NewRFC3339TimePointerValue(alertDefinition.Created), preserveKnown,
@@ -271,7 +257,6 @@ func (data *AlertDefinitionResourceModel) flattenResourceModel(
 	data.Status = helper.KeepOrUpdateString(data.Status, string(alertDefinition.Status), preserveKnown)
 	data.Severity = helper.KeepOrUpdateInt64(data.Severity, int64(alertDefinition.Severity), preserveKnown)
 	data.Type = helper.KeepOrUpdateString(data.Type, alertDefinition.Type, preserveKnown)
-	data.HasMoreResources = helper.KeepOrUpdateBool(data.HasMoreResources, alertDefinition.HasMoreResources, preserveKnown)
 	data.CreatedBy = helper.KeepOrUpdateString(data.CreatedBy, alertDefinition.CreatedBy, preserveKnown)
 	data.UpdatedBy = helper.KeepOrUpdateString(data.UpdatedBy, alertDefinition.UpdatedBy, preserveKnown)
 	data.Class = helper.KeepOrUpdateString(data.Class, alertDefinition.Class, preserveKnown)
@@ -295,18 +280,6 @@ func (data *AlertDefinitionResourceModel) flattenResourceModel(
 		return diags
 	}
 	data.Entities = helper.KeepOrUpdateValue(data.Entities, entities, preserveKnown)
-
-	data.EntityIDs = helper.KeepOrUpdateList(
-		types.StringType,
-		data.EntityIDs,
-		helper.StringSliceToFrameworkValueSlice(alertDefinition.EntityIDs),
-		preserveKnown,
-		&diags,
-	)
-
-	if diags.HasError() {
-		return diags
-	}
 
 	data.Created = helper.KeepOrUpdateValue(
 		data.Created, timetypes.NewRFC3339TimePointerValue(alertDefinition.Created), preserveKnown,
@@ -635,7 +608,6 @@ func (data *AlertDefinitionResourceModel) CopyFrom(other AlertDefinitionResource
 	data.Status = helper.KeepOrUpdateValue(data.Status, other.Status, preserveKnown)
 	data.Severity = helper.KeepOrUpdateValue(data.Severity, other.Severity, preserveKnown)
 	data.Type = helper.KeepOrUpdateValue(data.Type, other.Type, preserveKnown)
-	data.HasMoreResources = helper.KeepOrUpdateValue(data.HasMoreResources, other.HasMoreResources, preserveKnown)
 	data.CreatedBy = helper.KeepOrUpdateValue(data.CreatedBy, other.CreatedBy, preserveKnown)
 	data.UpdatedBy = helper.KeepOrUpdateValue(data.UpdatedBy, other.UpdatedBy, preserveKnown)
 	data.Class = helper.KeepOrUpdateValue(data.Class, other.Class, preserveKnown)

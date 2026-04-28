@@ -55,14 +55,12 @@ func TestAlertDefinitionModel_FlattenAlertDefinition(t *testing.T) {
 		ID:                42,
 		ServiceType:       "monitoring",
 		Description:       "High CPU usage",
-		EntityIDs:         []string{"123", "456"},
 		Label:             "CPU Alert",
 		Status:            "active",
 		Severity:          2,
 		RuleCriteria:      ruleCriteria,
 		TriggerConditions: triggerConditions,
 		Type:              "user",
-		HasMoreResources:  false,
 		AlertChannels:     alertChannels,
 		Created:           &now,
 		Updated:           &now,
@@ -89,7 +87,6 @@ func TestAlertDefinitionModel_FlattenAlertDefinition(t *testing.T) {
 	assert.Equal(t, types.StringValue("active"), model.Status)
 	assert.Equal(t, types.Int64Value(2), model.Severity)
 	assert.Equal(t, types.StringValue("user"), model.Type)
-	assert.Equal(t, types.BoolValue(false), model.HasMoreResources)
 	assert.Equal(t, types.StringValue("admin"), model.CreatedBy)
 	assert.Equal(t, types.StringValue("admin"), model.UpdatedBy)
 	assert.Equal(t, types.StringValue("system"), model.Class)
@@ -103,8 +100,6 @@ func TestAlertDefinitionModel_FlattenAlertDefinition(t *testing.T) {
 	assert.Equal(t, 1, len(model.ChannelIDs.Elements()))
 	assert.False(t, model.AlertChannels.IsNull())
 	assert.Equal(t, 1, len(model.AlertChannels.Elements()))
-	assert.False(t, model.EntityIDs.IsNull())
-	assert.Equal(t, 2, len(model.EntityIDs.Elements()))
 	assert.False(t, model.RuleCriteria.IsNull())
 	assert.False(t, model.TriggerConditions.IsNull())
 }

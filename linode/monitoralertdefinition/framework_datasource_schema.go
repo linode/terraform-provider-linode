@@ -104,11 +104,6 @@ var AlertDefinitionAttributes = map[string]schema.Attribute{
 		Computed:    true,
 		Description: "An additional description for the alert definition.",
 	},
-	"entity_ids": schema.ListAttribute{
-		ElementType: types.StringType,
-		Computed:    true,
-		Description: "The id for each individual entity from a service_type.",
-	},
 	"label": schema.StringAttribute{
 		Computed:    true,
 		Description: "The name of the alert definition.",
@@ -157,10 +152,6 @@ var AlertDefinitionAttributes = map[string]schema.Attribute{
 	"type": schema.StringAttribute{
 		Computed:    true,
 		Description: "The type of alert.",
-	},
-	"has_more_resources": schema.BoolAttribute{
-		Computed:    true,
-		Description: "Whether there are additional entity_ids associated with the alert.",
 	},
 	"alert_channels": schema.ListNestedAttribute{
 		NestedObject: alertChannelDataSourceNestedObj,
