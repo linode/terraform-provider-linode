@@ -313,11 +313,12 @@ func changeInstanceConfigDevice(
 	deviceMap linodego.InstanceConfigDeviceMap,
 	namedSlot string,
 	device *linodego.InstanceConfigDevice,
-) linodego.InstanceConfigDeviceMap {
+) (linodego.InstanceConfigDeviceMap, error) {
 	tDevice := device
 	if tDevice != nil && emptyInstanceConfigDevice(*tDevice) {
 		tDevice = nil
 	}
+
 	switch namedSlot {
 	case "sda":
 		deviceMap.SDA = tDevice
@@ -335,9 +336,123 @@ func changeInstanceConfigDevice(
 		deviceMap.SDG = tDevice
 	case "sdh":
 		deviceMap.SDH = tDevice
+	case "sdi":
+		deviceMap.SDI = tDevice
+	case "sdj":
+		deviceMap.SDJ = tDevice
+	case "sdk":
+		deviceMap.SDK = tDevice
+	case "sdl":
+		deviceMap.SDL = tDevice
+	case "sdm":
+		deviceMap.SDM = tDevice
+	case "sdn":
+		deviceMap.SDN = tDevice
+	case "sdo":
+		deviceMap.SDO = tDevice
+	case "sdp":
+		deviceMap.SDP = tDevice
+	case "sdq":
+		deviceMap.SDQ = tDevice
+	case "sdr":
+		deviceMap.SDR = tDevice
+	case "sds":
+		deviceMap.SDS = tDevice
+	case "sdt":
+		deviceMap.SDT = tDevice
+	case "sdu":
+		deviceMap.SDU = tDevice
+	case "sdv":
+		deviceMap.SDV = tDevice
+	case "sdw":
+		deviceMap.SDW = tDevice
+	case "sdx":
+		deviceMap.SDX = tDevice
+	case "sdy":
+		deviceMap.SDY = tDevice
+	case "sdz":
+		deviceMap.SDZ = tDevice
+	case "sdaa":
+		deviceMap.SDAA = tDevice
+	case "sdab":
+		deviceMap.SDAB = tDevice
+	case "sdac":
+		deviceMap.SDAC = tDevice
+	case "sdad":
+		deviceMap.SDAD = tDevice
+	case "sdae":
+		deviceMap.SDAE = tDevice
+	case "sdaf":
+		deviceMap.SDAF = tDevice
+	case "sdag":
+		deviceMap.SDAG = tDevice
+	case "sdah":
+		deviceMap.SDAH = tDevice
+	case "sdai":
+		deviceMap.SDAI = tDevice
+	case "sdaj":
+		deviceMap.SDAJ = tDevice
+	case "sdak":
+		deviceMap.SDAK = tDevice
+	case "sdal":
+		deviceMap.SDAL = tDevice
+	case "sdam":
+		deviceMap.SDAM = tDevice
+	case "sdan":
+		deviceMap.SDAN = tDevice
+	case "sdao":
+		deviceMap.SDAO = tDevice
+	case "sdap":
+		deviceMap.SDAP = tDevice
+	case "sdaq":
+		deviceMap.SDAQ = tDevice
+	case "sdar":
+		deviceMap.SDAR = tDevice
+	case "sdas":
+		deviceMap.SDAS = tDevice
+	case "sdat":
+		deviceMap.SDAT = tDevice
+	case "sdau":
+		deviceMap.SDAU = tDevice
+	case "sdav":
+		deviceMap.SDAV = tDevice
+	case "sdaw":
+		deviceMap.SDAW = tDevice
+	case "sdax":
+		deviceMap.SDAX = tDevice
+	case "sday":
+		deviceMap.SDAY = tDevice
+	case "sdaz":
+		deviceMap.SDAZ = tDevice
+	case "sdba":
+		deviceMap.SDBA = tDevice
+	case "sdbb":
+		deviceMap.SDBB = tDevice
+	case "sdbc":
+		deviceMap.SDBC = tDevice
+	case "sdbd":
+		deviceMap.SDBD = tDevice
+	case "sdbe":
+		deviceMap.SDBE = tDevice
+	case "sdbf":
+		deviceMap.SDBF = tDevice
+	case "sdbg":
+		deviceMap.SDBG = tDevice
+	case "sdbh":
+		deviceMap.SDBH = tDevice
+	case "sdbi":
+		deviceMap.SDBI = tDevice
+	case "sdbj":
+		deviceMap.SDBJ = tDevice
+	case "sdbk":
+		deviceMap.SDBK = tDevice
+	case "sdbl":
+		deviceMap.SDBL = tDevice
+	default:
+		return deviceMap, fmt.Errorf("invalid config device slot name: %s", namedSlot)
 	}
 
-	return deviceMap
+	return deviceMap, nil
 }
 
 // emptyInstanceConfigDevice returns true only when neither the disk or volume have been assigned to a config device.
@@ -345,19 +460,83 @@ func emptyInstanceConfigDevice(dev linodego.InstanceConfigDevice) bool {
 	return (dev.DiskID == 0 && dev.VolumeID == 0)
 }
 
+func configDeviceSlice(deviceMap linodego.InstanceConfigDeviceMap) []*linodego.InstanceConfigDevice {
+	return []*linodego.InstanceConfigDevice{
+		deviceMap.SDA,
+		deviceMap.SDB,
+		deviceMap.SDC,
+		deviceMap.SDD,
+		deviceMap.SDE,
+		deviceMap.SDF,
+		deviceMap.SDG,
+		deviceMap.SDH,
+		deviceMap.SDI,
+		deviceMap.SDJ,
+		deviceMap.SDK,
+		deviceMap.SDL,
+		deviceMap.SDM,
+		deviceMap.SDN,
+		deviceMap.SDO,
+		deviceMap.SDP,
+		deviceMap.SDQ,
+		deviceMap.SDR,
+		deviceMap.SDS,
+		deviceMap.SDT,
+		deviceMap.SDU,
+		deviceMap.SDV,
+		deviceMap.SDW,
+		deviceMap.SDX,
+		deviceMap.SDY,
+		deviceMap.SDZ,
+		deviceMap.SDAA,
+		deviceMap.SDAB,
+		deviceMap.SDAC,
+		deviceMap.SDAD,
+		deviceMap.SDAE,
+		deviceMap.SDAF,
+		deviceMap.SDAG,
+		deviceMap.SDAH,
+		deviceMap.SDAI,
+		deviceMap.SDAJ,
+		deviceMap.SDAK,
+		deviceMap.SDAL,
+		deviceMap.SDAM,
+		deviceMap.SDAN,
+		deviceMap.SDAO,
+		deviceMap.SDAP,
+		deviceMap.SDAQ,
+		deviceMap.SDAR,
+		deviceMap.SDAS,
+		deviceMap.SDAT,
+		deviceMap.SDAU,
+		deviceMap.SDAV,
+		deviceMap.SDAW,
+		deviceMap.SDAX,
+		deviceMap.SDAY,
+		deviceMap.SDAZ,
+		deviceMap.SDBA,
+		deviceMap.SDBB,
+		deviceMap.SDBC,
+		deviceMap.SDBD,
+		deviceMap.SDBE,
+		deviceMap.SDBF,
+		deviceMap.SDBG,
+		deviceMap.SDBH,
+		deviceMap.SDBI,
+		deviceMap.SDBJ,
+		deviceMap.SDBK,
+		deviceMap.SDBL,
+	}
+}
+
 // emptyConfigDeviceMap returns true only when none of the disks in a config device map have been assigned.
 func emptyConfigDeviceMap(dmap linodego.InstanceConfigDeviceMap) bool {
-	drives := []*linodego.InstanceConfigDevice{
-		dmap.SDA, dmap.SDB, dmap.SDC, dmap.SDD, dmap.SDE, dmap.SDF, dmap.SDG, dmap.SDH,
-	}
-	empty := true
-	for _, drive := range drives {
-		if drive != nil && !emptyInstanceConfigDevice(*drive) {
-			empty = false
-			break
+	for _, device := range configDeviceSlice(dmap) {
+		if device != nil && !emptyInstanceConfigDevice(*device) {
+			return false
 		}
 	}
-	return empty
+	return true
 }
 
 type volumeDetacher func(context.Context, int, string) error
@@ -1116,10 +1295,7 @@ func applyInstanceMigration(
 func detachConfigVolumes(
 	ctx context.Context, dmap linodego.InstanceConfigDeviceMap, detacher volumeDetacher,
 ) error {
-	// Preallocate our slice of config devices
-	drives := []*linodego.InstanceConfigDevice{
-		dmap.SDA, dmap.SDB, dmap.SDC, dmap.SDD, dmap.SDE, dmap.SDF, dmap.SDG, dmap.SDH,
-	}
+	drives := configDeviceSlice(dmap)
 
 	// Make a buffered error channel for our goroutines to send error values back on
 	errCh := make(chan error, len(drives))

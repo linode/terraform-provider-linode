@@ -61,6 +61,17 @@ var frameworkResourceSchemaVPCs = schema.NestedAttributeObject{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
+		"ipv6_range": schema.StringAttribute{
+			Description: "A CIDR range for the VPC's IPv6 addresses. " +
+				"The NodeBalancer sources IP addresses from this range " +
+				"when routing traffic to the backend VPC nodes.",
+			Optional: true,
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
 		"ipv4_range_auto_assign": schema.BoolAttribute{
 			Description: "Enables the use of a larger ipv4_range subnet for multiple NodeBalancers " +
 				"within the same VPC by allocating smaller /30 subnets for " +
@@ -182,8 +193,8 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "A list of VPCs to be assigned to this NodeBalancer.",
 			Optional:    true,
 			PlanModifiers: []planmodifier.List{
-				listplanmodifier.RequiresReplace(),
 				listplanmodifier.UseStateForUnknown(),
+				listplanmodifier.RequiresReplace(),
 			},
 			NestedObject: frameworkResourceSchemaVPCs,
 		},

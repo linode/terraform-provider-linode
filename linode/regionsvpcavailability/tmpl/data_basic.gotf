@@ -1,0 +1,5 @@
+{{ define "regions_vpc_availability_data_basic" }}
+
+data "linode_regions_vpc_availability" "test" {}
+
+{{ end }}

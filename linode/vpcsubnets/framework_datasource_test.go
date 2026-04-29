@@ -36,7 +36,7 @@ func TestAccDataSourceVPCSubnets_basic_smoke(t *testing.T) {
 
 	resourceName := "data.linode_vpc_subnets.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"}, "core")
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
@@ -69,6 +69,11 @@ func TestAccDataSourceVPCSubnets_basic_smoke(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("databases"),
+						knownvalue.ListSizeExact(0),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("nodebalancers"),
 						knownvalue.ListSizeExact(0),
 					),
 					statecheck.ExpectKnownValue(

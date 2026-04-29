@@ -49,7 +49,7 @@ jobs:
         with:
           go-version: '1.x'
 
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v4
 
       - name: Install Dependencies
         run: make deps
@@ -222,7 +222,7 @@ jobs:
     steps:
       - name: Notify Slack
         id: main_message
-        uses: slackapi/slack-github-action@v2.1.1
+        uses: slackapi/slack-github-action@v3
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -254,7 +254,7 @@ jobs:
 
       - name: Test summary thread
         if: success()
-        uses: slackapi/slack-github-action@v2.1.1
+        uses: slackapi/slack-github-action@v3
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}

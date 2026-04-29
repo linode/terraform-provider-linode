@@ -517,8 +517,83 @@ func LinodeIsLockedWithCannotDeleteSubresources(
 ) (locked bool, err error) {
 	linode, err := client.GetInstance(ctx, linodeID)
 	if err != nil {
-		return
+		return locked, err
 	}
 
 	return slices.Contains(linode.Locks, linodego.LockTypeCannotDeleteWithSubresources), nil
+}
+
+var configDeviceKeys = []string{
+	"sda",
+	"sdb",
+	"sdc",
+	"sdd",
+	"sde",
+	"sdf",
+	"sdg",
+	"sdh",
+	"sdi",
+	"sdj",
+	"sdk",
+	"sdl",
+	"sdm",
+	"sdn",
+	"sdo",
+	"sdp",
+	"sdq",
+	"sdr",
+	"sds",
+	"sdt",
+	"sdu",
+	"sdv",
+	"sdw",
+	"sdx",
+	"sdy",
+	"sdz",
+	"sdaa",
+	"sdab",
+	"sdac",
+	"sdad",
+	"sdae",
+	"sdaf",
+	"sdag",
+	"sdah",
+	"sdai",
+	"sdaj",
+	"sdak",
+	"sdal",
+	"sdam",
+	"sdan",
+	"sdao",
+	"sdap",
+	"sdaq",
+	"sdar",
+	"sdas",
+	"sdat",
+	"sdau",
+	"sdav",
+	"sdaw",
+	"sdax",
+	"sday",
+	"sdaz",
+	"sdba",
+	"sdbb",
+	"sdbc",
+	"sdbd",
+	"sdbe",
+	"sdbf",
+	"sdbg",
+	"sdbh",
+	"sdbi",
+	"sdbj",
+	"sdbk",
+	"sdbl",
+}
+
+// GetConfigDeviceKeys returns a slice of valid config device keys.
+// [sda, sdb, ..., sdbk, sdbl]
+//
+// The returned slice is a clone and is safe for callers to modify.
+func GetConfigDeviceKeys() []string {
+	return slices.Clone(configDeviceKeys[:])
 }

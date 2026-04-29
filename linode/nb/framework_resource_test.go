@@ -33,7 +33,7 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"nodebalancers"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityNodeBalancers}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -240,7 +240,7 @@ func TestAccResourceNodeBalancer_vpc(t *testing.T) {
 	resName := "linode_nodebalancer.test"
 	nodebalancerName := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{"NodeBalancers", "VPCs"}, "core")
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -268,6 +268,11 @@ func TestAccResourceNodeBalancer_vpc(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resName,
 						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv4_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv6_range"),
 						knownvalue.NotNull(),
 					),
 				},

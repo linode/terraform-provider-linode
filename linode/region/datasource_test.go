@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/region/tmpl"
 )
@@ -18,7 +19,7 @@ var (
 )
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"linodes"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

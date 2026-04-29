@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbvpcs/tmpl"
 )
@@ -22,7 +23,7 @@ func TestAccDataSource_basic(t *testing.T) {
 
 	label := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{"NodeBalancers", "VPCs"}, "core")
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,6 +62,11 @@ func TestAccDataSource_basic(t *testing.T) {
 						dataSourceName,
 						firstConfigPath.AtMapKey("ipv4_range"),
 						knownvalue.StringExact("10.0.0.4/30"),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						firstConfigPath.AtMapKey("ipv6_range"),
+						knownvalue.NotNull(),
 					),
 				},
 			},

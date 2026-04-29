@@ -29,6 +29,7 @@ import (
 )
 
 var (
+	enterpriseRegion     string
 	k8sVersions          []string
 	k8sVersionLatest     string
 	k8sVersionPrevious   string
@@ -75,7 +76,7 @@ func init() {
 		k8sVersionPrevious = k8sVersions[len(k8sVersions)-2]
 	}
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"kubernetes"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLKE}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -91,6 +92,11 @@ func init() {
 		log.Print("no enterprise k8s versions found")
 	} else {
 		k8sVersionEnterprise = enterpriseVersions[0].ID
+	}
+
+	enterpriseRegion, err = acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -725,23 +731,9 @@ func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 func TestAccResourceLKECluster_enterprise(t *testing.T) {
 	t.Parallel()
 
-	k8sVersionEnterprise = "v1.31.9+lke5" // currently only this version works with BYO VPC
-
-	if k8sVersionEnterprise == "" {
-		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
-	}
-
-	enterpriseRegion := "no-osl-1" // currently only oslo region works with BYO VPC
-
-	// TODO: revert to dynamic selection once more regions available
-	//enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-
 	client, err := acceptance.GetTestClient()
 	if err != nil {
-		log.Fatalf("failed to get client: %s", err)
+		t.Fatalf("failed to get client: %s", err)
 	}
 
 	firewall, err := client.CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
@@ -752,7 +744,7 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 		},
 	})
 	if err != nil {
-		t.Errorf("failed creating firewall: %v", err)
+		t.Fatalf("failed creating firewall: %v", err)
 	}
 
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
@@ -827,14 +819,12 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 			},
 		})
 	})
+
+	client.DeleteFirewall(context.Background(), firewall.ID)
 }
 
 func TestAccResourceLKECluster_enterpriseNoPools(t *testing.T) {
 	t.Parallel()
-
-	k8sVersionEnterprise = "v1.31.9+lke7"
-
-	enterpriseRegion := "us-ord"
 
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf-test")
@@ -864,10 +854,6 @@ func TestAccResourceLKECluster_enterpriseNoPools(t *testing.T) {
 
 func TestAccResourceLKECluster_enterpriseWithPoolSkipDeletePoll(t *testing.T) {
 	t.Parallel()
-
-	k8sVersionEnterprise = "v1.31.9+lke7"
-
-	enterpriseRegion := "us-ord"
 
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf-test")
@@ -917,6 +903,32 @@ func TestAccResourceLKECluster_standardNoPools(t *testing.T) {
 			{
 				Config:      tmpl.StandardNoPools(t, clusterName, k8sVersionLatest, testRegion),
 				ExpectError: regexp.MustCompile("at least one pool is required for standard tier clusters"),
+			},
+		},
+	})
+}
+
+func TestAccResourceLKECluster_updateStrategyImplicitTier(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf-test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.TierConditionalWithUpdateStrategy(
+					t,
+					clusterName,
+					k8sVersionLatest,
+					testRegion,
+					"",
+					"rolling_update",
+				),
+				ExpectError: regexp.MustCompile(
+					"`update_strategy` can only be configured when tier is set to \\\"enterprise\\\"",
+				),
 			},
 		},
 	})
