@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/volumes/tmpl"
 )
@@ -22,7 +23,7 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Block Storage"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityBlockStorage}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

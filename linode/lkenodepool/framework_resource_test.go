@@ -61,7 +61,7 @@ func init() {
 
 		k8sVersion = k8sVersions[len(k8sVersions)-1]
 
-		region, err := acceptance.GetRandomRegionWithCaps([]string{"kubernetes"}, "core")
+		region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLKE}, "core")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -114,9 +114,19 @@ func TestAccResourceNodePool_basic(t *testing.T) {
 	clusterLabel := acctest.RandomWithPrefix("tf_test_")
 	poolTag := acctest.RandomWithPrefix("tf_test_")
 
+	// This test validates disk_encryption, so we need a region that supports both LKE and Disk Encryption
+	diskEncRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{linodego.CapabilityLKE, linodego.CapabilityDiskEncryption}, "core",
+	)
+	if err != nil {
+		t.Skipf("No region with LKE + Disk Encryption capabilities: %v", err)
+	}
+
 	templateData := createTemplateData()
 	templateData.ClusterLabel = clusterLabel
 	templateData.PoolTag = poolTag
+	templateData.Region = diskEncRegion
+	templateData.DiskEncryption = "enabled"
 	templateData.AutoscalerEnabled = true
 	templateData.AutoscalerMin = 1
 	templateData.AutoscalerMax = 2
@@ -135,7 +145,7 @@ func TestAccResourceNodePool_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkNodePoolExists,
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
-					resource.TestCheckResourceAttrSet(resName, "disk_encryption"),
+					resource.TestCheckResourceAttr(resName, "disk_encryption", "enabled"),
 					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "external"),
 					resource.TestCheckResourceAttr(resName, "tags.1", poolTag),
@@ -431,7 +441,7 @@ func TestAccResourceNodePoolEnterprise_basic(t *testing.T) {
 
 	enterpriseK8sVersion := versions[0].ID
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityKubernetesEnterprise}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -503,7 +513,7 @@ func TestAccResourceNodePoolEnterprise_withFirewall(t *testing.T) {
 
 	enterpriseK8sVersion := versions[0].ID
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityKubernetesEnterprise}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

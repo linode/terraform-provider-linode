@@ -37,6 +37,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalltemplate"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalltemplates"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/iamentities"
+	"github.com/linode/terraform-provider-linode/v3/linode/iamuser"
 	"github.com/linode/terraform-provider-linode/v3/linode/image"
 	"github.com/linode/terraform-provider-linode/v3/linode/images"
 	"github.com/linode/terraform-provider-linode/v3/linode/instancedisk"
@@ -91,6 +93,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/rdns"
 	"github.com/linode/terraform-provider-linode/v3/linode/region"
 	"github.com/linode/terraform-provider-linode/v3/linode/regions"
+	"github.com/linode/terraform-provider-linode/v3/linode/regionsvpcavailability"
+	"github.com/linode/terraform-provider-linode/v3/linode/regionvpcavailability"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkeys"
 	"github.com/linode/terraform-provider-linode/v3/linode/stackscript"
@@ -149,6 +153,7 @@ func (p *FrameworkProvider) Schema(
 		Attributes: map[string]schema.Attribute{
 			"token": schema.StringAttribute{
 				Optional:    true,
+				Sensitive:   true,
 				Description: "The token that allows you access to your Linode account",
 			},
 			"config_path": schema.StringAttribute{
@@ -243,6 +248,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		accountsettings.NewResource,
 		firewall.NewResource,
 		firewalldevice.NewResource,
+		iamuser.NewResource,
 		image.NewResource,
 		instancedisk.NewResource,
 		instanceip.NewResource,
@@ -310,6 +316,8 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nbtypes.NewDataSource,
 		instancetype.NewDataSource,
 		instancetypes.NewDataSource,
+		iamentities.NewDataSource,
+		iamuser.NewDataSource,
 		image.NewDataSource,
 		images.NewDataSource,
 		accountlogin.NewDataSource,
@@ -367,5 +375,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		consumerimagesharegroup.NewDataSource,
 		consumerimagesharegroupimageshares.NewDataSource,
 		lkenodepool.NewDataSource,
+		regionvpcavailability.NewDataSource,
+		regionsvpcavailability.NewDataSource,
 	}
 }

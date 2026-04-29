@@ -37,7 +37,7 @@ func resizeDiskSync(
 	timeoutSeconds int,
 ) diag.Diagnostics {
 	return runDiskOperation(
-		ctx, client, meta, linodeID, timeoutSeconds,
+		ctx, client, meta, linodeID, timeoutSeconds, false,
 		func() (resultDiag diag.Diagnostics) {
 			disk, err := client.GetInstanceDisk(ctx, linodeID, diskID)
 			if err != nil {
@@ -111,8 +111,10 @@ func runDiskOperation(
 	meta *helper.FrameworkProviderMeta,
 	linodeID int,
 	timeoutSeconds int,
+	skipReboot bool,
 	callOperation func() diag.Diagnostics,
 ) (resultDiag diag.Diagnostics) {
+	tflog.Debug(ctx, "Enter runDiskOperation")
 	originalStatus, err := helper.WaitForInstanceNonTransientStatus(
 		ctx, client, linodeID, timeoutSeconds,
 	)
@@ -143,7 +145,17 @@ func runDiskOperation(
 		return resultDiag
 	}
 
+	if skipReboot {
+		tflog.Info(ctx, "Skipping reboot after disk operation", map[string]any{
+			"linode_id": linodeID,
+		})
+		return resultDiag
+	}
+
 	// Check if instance has disks before booting
+	tflog.Trace(ctx, "client.ListInstanceDisks(...)", map[string]any{
+		"linode_id": linodeID,
+	})
 	disks, err := client.ListInstanceDisks(ctx, linodeID, nil)
 	if err != nil {
 		resultDiag.AddError("Failed to list instance disks after operation", err.Error())
