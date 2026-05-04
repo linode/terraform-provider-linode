@@ -189,7 +189,6 @@ var InterfaceSchema = &schema.Resource{
 						Type: schema.TypeString,
 						Description: "The public IP that will be used for the " +
 							"one-to-one NAT purpose.",
-						Computed: true,
 						Optional: true,
 						DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 							if new == "any" && old != "" {
