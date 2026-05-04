@@ -87,6 +87,7 @@ func TestAccResourceVolume_basic_smoke(t *testing.T) {
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttrSet(resName, "status"),
 					resource.TestCheckResourceAttrSet(resName, "size"),
+					resource.TestCheckResourceAttrSet(resName, "io_ready"),
 					resource.TestCheckResourceAttr(resName, "label", volumeName),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "encryption", "enabled"),
