@@ -41,6 +41,7 @@ func Resource() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			customDiffValidateOptionalCount,
 			customDiffValidatePoolForStandardTier,
+			customDiffValidateUpdateStrategyWithTier,
 			linodediffs.ComputedWithDefault("tags", []string{}),
 			linodediffs.CaseInsensitiveSet("tags"),
 			helper.SDKv2ValidateFieldRequiresAPIVersion(
@@ -597,6 +598,48 @@ func customDiffValidatePoolForStandardTier(ctx context.Context, diff *schema.Res
 		if pool.IsNull() || pool.LengthInt() == 0 {
 			return fmt.Errorf("at least one pool is required for standard tier clusters")
 		}
+	}
+
+	return nil
+}
+
+// customDiffValidateUpdateStrategyWithTier ensures that update_strategy
+// can only be configured when tier is explicitly set to "enterprise".
+//
+// This validation is implemented as a custom diff using cty to validate
+// across pool attributes and the cluster tier, preventing false positives
+// during updates by validating only the user's config.
+func customDiffValidateUpdateStrategyWithTier(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	tier := diff.GetRawConfig().GetAttr("tier")
+	tierIsEnterprise := tier.IsKnown() && !tier.IsNull() && tier.AsString() == TierEnterprise
+	if tierIsEnterprise {
+		return nil
+	}
+
+	pools, ok := diff.Get("pool").([]any)
+	if !ok {
+		return fmt.Errorf("failed to parse pool config")
+	}
+
+	invalidPools := make([]string, 0)
+
+	for index, pool := range pools {
+		poolMap, ok := pool.(map[string]any)
+		if !ok {
+			continue
+		}
+
+		updateStrategy, ok := poolMap["update_strategy"].(string)
+		if ok && updateStrategy != "" {
+			invalidPools = append(invalidPools, fmt.Sprintf("pool.%d", index))
+		}
+	}
+
+	if len(invalidPools) > 0 {
+		return fmt.Errorf(
+			"%s: `update_strategy` can only be configured when tier is set to \"enterprise\"",
+			strings.Join(invalidPools, ", "),
+		)
 	}
 
 	return nil

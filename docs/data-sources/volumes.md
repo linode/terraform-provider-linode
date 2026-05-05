@@ -64,6 +64,8 @@ Each Linode volume will be stored in the `volumes` attribute and will export the
 
 * `filesystem_path` - The full filesystem path for the Volume based on the Volume's label. Path is /dev/disk/by-id/scsi-0LinodeVolume + Volume label.
 
+* `io_ready` - Indicates whether the volume is successfully attached to a Linode and ready for read and write operations.
+
 ## Filterable Fields
 
 * `label`

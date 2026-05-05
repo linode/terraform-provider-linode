@@ -64,6 +64,16 @@ In addition to all arguments above, the following attributes are exported:
 
     * `range` - An IPv6 address range in CIDR notation.
 
+* `nodebalancers` - A list of NodeBalancers assigned to the VPC Subnet.
+
+  * `id` - ID of a NodeBalancer assigned to the VPC Subnet.
+
+  * `ipv4_range` - IPv4 range assigned to the NodeBalancer.
+  
+  * `ipv6_ranges` - A list of IPv6 ranges assigned to the NodeBalancer.
+
+    * `range` - An IPv6 address range in CIDR notation.
+
 * `created` - The date and time when the VPC Subnet was created.
 
 * `updated` - The date and time when the VPC Subnet was last updated.

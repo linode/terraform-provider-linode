@@ -28,6 +28,7 @@ func Provider() *schema.Provider {
 			"token": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Sensitive:   true,
 				Description: "The token that allows you access to your Linode account",
 			},
 			"config_path": {
