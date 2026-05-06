@@ -303,7 +303,7 @@ func (f FilterConfig) GetFilterID(d *schema.ResourceData) (string, error) {
 		return "", err
 	}
 
-	hash := sha3.Sum512(result)
+	hash := sha3.Sum512(result) //nolint:govet
 	return base64.StdEncoding.EncodeToString(hash[:]), nil
 }
 

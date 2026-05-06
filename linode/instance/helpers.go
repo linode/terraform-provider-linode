@@ -891,7 +891,7 @@ func rootPasswordState(val any) string {
 
 // hashString hashes a string.
 func hashString(key string) string {
-	hash := sha3.Sum512([]byte(key))
+	hash := sha3.Sum512([]byte(key)) //nolint:govet
 	return base64.StdEncoding.EncodeToString(hash[:])
 }
 

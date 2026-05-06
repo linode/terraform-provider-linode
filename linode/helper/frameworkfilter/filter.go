@@ -140,7 +140,7 @@ func (f Config) GenerateID(filters []FilterModel) (types.String, diag.Diagnostic
 		)
 	}
 
-	hash := sha3.Sum512(filterJSON)
+	hash := sha3.Sum512(filterJSON) //nolint:govet
 	return types.StringValue(base64.StdEncoding.EncodeToString(hash[:])), nil
 }
 
