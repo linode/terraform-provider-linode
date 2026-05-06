@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/linode/linodego"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFlattenMonitorAlertChannel_AllFields(t *testing.T) {
@@ -40,52 +41,25 @@ func TestFlattenMonitorAlertChannel_AllFields(t *testing.T) {
 
 	got := flattenMonitorAlertChannel(context.Background(), input)
 
-	if got.ID.ValueInt64() != 123 {
-		t.Fatalf("expected id=123, got %d", got.ID.ValueInt64())
-	}
-	if got.Label.ValueString() != "test-channel" {
-		t.Fatalf("expected label=test-channel, got %s", got.Label.ValueString())
-	}
-	if got.Type.ValueString() != "user" {
-		t.Fatalf("expected type=user, got %s", got.Type.ValueString())
-	}
-	if got.ChannelType.ValueString() != "email" {
-		t.Fatalf("expected channel_type=email, got %s", got.ChannelType.ValueString())
-	}
-	if got.CreatedBy.ValueString() != "creator" {
-		t.Fatalf("expected created_by=creator, got %s", got.CreatedBy.ValueString())
-	}
-	if got.UpdatedBy.ValueString() != "updater" {
-		t.Fatalf("expected updated_by=updater, got %s", got.UpdatedBy.ValueString())
-	}
+	require.Equal(t, int64(123), got.ID.ValueInt64())
+	require.Equal(t, "test-channel", got.Label.ValueString())
+	require.Equal(t, "user", got.Type.ValueString())
+	require.Equal(t, "email", got.ChannelType.ValueString())
+	require.Equal(t, "creator", got.CreatedBy.ValueString())
+	require.Equal(t, "updater", got.UpdatedBy.ValueString())
 
-	if got.Alerts == nil {
-		t.Fatal("expected alerts to be set")
-	}
-	if got.Alerts.URL.ValueString() != "/v4/monitor/alerts" {
-		t.Fatalf("expected alerts.url=/v4/monitor/alerts, got %s", got.Alerts.URL.ValueString())
-	}
-	if got.Alerts.Type.ValueString() != "cpu" {
-		t.Fatalf("expected alerts.type=cpu, got %s", got.Alerts.Type.ValueString())
-	}
-	if got.Alerts.AlertCount.ValueInt64() != 5 {
-		t.Fatalf("expected alerts.alert_count=5, got %d", got.Alerts.AlertCount.ValueInt64())
-	}
+	require.NotNil(t, got.Alerts)
+	require.Equal(t, "/v4/monitor/alerts", got.Alerts.URL.ValueString())
+	require.Equal(t, "cpu", got.Alerts.Type.ValueString())
+	require.Equal(t, int64(5), got.Alerts.AlertCount.ValueInt64())
 
-	if got.Details == nil || got.Details.Email == nil {
-		t.Fatal("expected details.email to be set")
-	}
+	require.NotNil(t, got.Details)
+	require.NotNil(t, got.Details.Email)
 	var usernames []string
 	diags := got.Details.Email.Usernames.ElementsAs(context.Background(), &usernames, false)
-	if diags.HasError() {
-		t.Fatalf("failed to decode usernames: %v", diags)
-	}
-	if len(usernames) != 2 || usernames[0] != "alice" || usernames[1] != "bob" {
-		t.Fatalf("unexpected usernames: %#v", usernames)
-	}
-	if got.Details.Email.RecipientType.ValueString() != "user" {
-		t.Fatalf("expected recipient_type=user, got %s", got.Details.Email.RecipientType.ValueString())
-	}
+	require.False(t, diags.HasError(), "failed to decode usernames")
+	require.Equal(t, []string{"alice", "bob"}, usernames)
+	require.Equal(t, "user", got.Details.Email.RecipientType.ValueString())
 }
 
 func TestFlattenMonitorAlertChannel_NilNested(t *testing.T) {
@@ -109,9 +83,7 @@ func TestFlattenMonitorAlertChannel_NilNested(t *testing.T) {
 	}
 
 	got := flattenMonitorAlertChannel(context.Background(), input)
-	if got.Details != nil {
-		t.Fatalf("expected details=nil, got %#v", got.Details)
-	}
+	require.Nil(t, got.Details)
 }
 
 func TestParseMonitorAlertChannels(t *testing.T) {
@@ -153,13 +125,7 @@ func TestParseMonitorAlertChannels(t *testing.T) {
 		},
 	})
 
-	if len(model.MonitorAlertChannels) != 2 {
-		t.Fatalf("expected 2 channels, got %d", len(model.MonitorAlertChannels))
-	}
-	if model.MonitorAlertChannels[0].ID.ValueInt64() != 10 {
-		t.Fatalf("expected first id=10, got %d", model.MonitorAlertChannels[0].ID.ValueInt64())
-	}
-	if model.MonitorAlertChannels[1].ID.ValueInt64() != 20 {
-		t.Fatalf("expected second id=20, got %d", model.MonitorAlertChannels[1].ID.ValueInt64())
-	}
+	require.Len(t, model.MonitorAlertChannels, 2)
+	require.Equal(t, int64(10), model.MonitorAlertChannels[0].ID.ValueInt64())
+	require.Equal(t, int64(20), model.MonitorAlertChannels[1].ID.ValueInt64())
 }
