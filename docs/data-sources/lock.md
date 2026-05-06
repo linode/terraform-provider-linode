@@ -6,13 +6,11 @@ description: |-
 
 # Data Source: linode\_lock
 
-~> **Early Access:** Lock functionality is in early access and may not be available to all users.
-
 ~> **Important** Only unrestricted users can view locks. Restricted users cannot access lock information even if they have permissions for the resource.
 
 Provides information about a Linode Lock. Locks prevent accidental deletion, rebuild operations, and service transfers of resources.
 
-For more information, see the Linode APIv4 docs (TBD).
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-resource-lock).
 
 ## Example Usage
 

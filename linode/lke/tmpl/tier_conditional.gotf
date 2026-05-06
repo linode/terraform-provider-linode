@@ -13,6 +13,9 @@ resource "linode_lke_cluster" "test" {
     pool {
         type  = "g6-standard-1"
         count = 1
+{{ if ne .UpdateStrategy "" }}
+        update_strategy = "{{ .UpdateStrategy }}"
+{{ end }}
     }
 }
 
