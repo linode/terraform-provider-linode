@@ -62,6 +62,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/lock"
 	"github.com/linode/terraform-provider-linode/v3/linode/locks"
 	"github.com/linode/terraform-provider-linode/v3/linode/maintenancepolicies"
+	"github.com/linode/terraform-provider-linode/v3/linode/monitoralertchannels"
 	"github.com/linode/terraform-provider-linode/v3/linode/monitoralertdefinition"
 	"github.com/linode/terraform-provider-linode/v3/linode/monitoralertdefinitions"
 	"github.com/linode/terraform-provider-linode/v3/linode/nb"
@@ -382,5 +383,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		lkenodepool.NewDataSource,
 		regionvpcavailability.NewDataSource,
 		regionsvpcavailability.NewDataSource,
+		monitoralertchannels.NewDataSource,
 	}
 }
