@@ -7,6 +7,7 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
+	"id":    {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"label": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
