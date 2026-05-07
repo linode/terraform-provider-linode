@@ -25,6 +25,7 @@ type VolumeDataSourceModel struct {
 	Created        types.String `tfsdk:"created"`
 	Updated        types.String `tfsdk:"updated"`
 	Encryption     types.String `tfsdk:"encryption"`
+	IOReady        types.Bool   `tfsdk:"io_ready"`
 }
 
 func (data *VolumeDataSourceModel) ParseComputedAttributes(
@@ -46,6 +47,7 @@ func (data *VolumeDataSourceModel) ParseComputedAttributes(
 	data.Created = types.StringValue(volume.Created.Format(time.RFC3339))
 	data.Updated = types.StringValue(volume.Updated.Format(time.RFC3339))
 	data.Encryption = types.StringValue(volume.Encryption)
+	data.IOReady = types.BoolValue(volume.IOReady)
 
 	return diags
 }
@@ -79,6 +81,7 @@ type VolumeResourceModel struct {
 	Status         types.String   `tfsdk:"status"`
 	Timeouts       timeouts.Value `tfsdk:"timeouts"`
 	Encryption     types.String   `tfsdk:"encryption"`
+	IOReady        types.Bool     `tfsdk:"io_ready"`
 }
 
 func (data *VolumeResourceModel) FlattenVolume(volume *linodego.Volume, preserveKnown bool) diag.Diagnostics {
@@ -95,6 +98,7 @@ func (data *VolumeResourceModel) FlattenVolume(volume *linodego.Volume, preserve
 	data.Region = helper.KeepOrUpdateString(data.Region, volume.Region, preserveKnown)
 	data.Size = helper.KeepOrUpdateInt64(data.Size, int64(volume.Size), preserveKnown)
 	data.Encryption = helper.KeepOrUpdateString(data.Encryption, volume.Encryption, preserveKnown)
+	data.IOReady = helper.KeepOrUpdateBool(data.IOReady, volume.IOReady, preserveKnown)
 
 	// planned breaking change:
 	// 	data.LinodeID = helper.KeepOrUpdateIntPointer(data.LinodeID, volume.LinodeID, preserveKnown)
@@ -128,6 +132,7 @@ func (data *VolumeResourceModel) CopyFrom(other VolumeResourceModel, preserveKno
 	data.Label = helper.KeepOrUpdateValue(data.Label, other.Label, preserveKnown)
 	data.Region = helper.KeepOrUpdateValue(data.Region, other.Region, preserveKnown)
 	data.Encryption = helper.KeepOrUpdateValue(data.Encryption, other.Encryption, preserveKnown)
+	data.IOReady = helper.KeepOrUpdateValue(data.IOReady, other.IOReady, preserveKnown)
 	data.Size = helper.KeepOrUpdateValue(data.Size, other.Size, preserveKnown)
 	data.LinodeID = helper.KeepOrUpdateValue(data.LinodeID, other.LinodeID, preserveKnown)
 	data.FilesystemPath = helper.KeepOrUpdateValue(data.FilesystemPath, other.FilesystemPath, preserveKnown)
