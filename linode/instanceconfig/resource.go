@@ -306,8 +306,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if shouldUpdate {
 		if powerOffRequired {
-			if err := instancehelpers.ShutdownInstanceForVPCInterfaceUpdate(
+			if err := instancehelpers.ShutdownInstanceForOfflineOperation(
 				ctx, &client, meta.(*helper.ProviderMeta).Config.SkipImplicitReboots, linodeID, helper.GetDeadlineSeconds(ctx, d),
+				"VPC interface update",
 			); err != nil {
 				return diag.Errorf("failed to shutdown linode instance for VPC interface update: %s", err)
 			}
@@ -321,8 +322,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 
 		if shouldPowerBackOn {
-			instancehelpers.BootInstanceAfterVPCInterfaceUpdate(
+			instancehelpers.BootInstanceAfterOfflineOperation(
 				ctx, meta.(*helper.ProviderMeta), linodeID, id, helper.GetDeadlineSeconds(ctx, d),
+				"VPC interface update",
 			)
 		}
 	}
@@ -356,6 +358,19 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	inst, err := client.GetInstance(ctx, linodeID)
 	if err != nil {
 		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
+	}
+
+	locked, err := helper.LinodeIsLockedWithCannotDeleteSubresources(ctx, &client, linodeID)
+	if err != nil {
+		return diag.Errorf("failed to get locks of Linode: %s", err)
+	}
+
+	if locked {
+		return diag.Errorf(
+			"can't delete config %d in Linode %d: the resource lock on the Linode prohibits deletion "+
+				"of its subresources, which includes this config",
+			id, linodeID,
+		)
 	}
 
 	// Shutdown the instance if the config is in use

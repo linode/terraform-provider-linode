@@ -5,7 +5,6 @@ package lke_test
 import (
 	"context"
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -163,35 +162,27 @@ func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 	t.Parallel()
 
-	enterpriseRegion := "no-osl-1" // currently only oslo region works with BYO VPC
-
-	// TODO: revert to dynamic selection once more regions available
-	//enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
+	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	var k8sVersionEnterprise string
 
-	k8sVersionEnterprise = "v1.31.9+lke5" // currently only this version works with BYO VPC
-
-	// TODO: revert to select versions from the k8s versions list once more versions available
-	//client, err := acceptance.GetTestClient()
-	//
-	//enterpriseVersions, err := client.ListLKETierVersions(context.Background(), "enterprise", nil)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//if len(enterpriseVersions) < 1 {
-	//	t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
-	//} else {
-	//	k8sVersionEnterprise = enterpriseVersions[0].ID
-	//}
-
 	client, err := acceptance.GetTestClient()
 	if err != nil {
-		log.Fatalf("failed to get client: %s", err)
+		t.Fatalf("failed to get client: %s", err)
+	}
+
+	enterpriseVersions, err := client.ListLKETierVersions(context.Background(), "enterprise", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(enterpriseVersions) < 1 {
+		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
+	} else {
+		k8sVersionEnterprise = enterpriseVersions[0].ID
 	}
 
 	firewall, err := client.CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
@@ -202,7 +193,7 @@ func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 		},
 	})
 	if err != nil {
-		t.Errorf("failed creating firewall: %v", err)
+		t.Fatalf("failed creating firewall: %v", err)
 	}
 
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {

@@ -31,4 +31,4 @@ data "linode_account_settings" "example" {}
 
 * `object_storage` - A string describing the status of this account’s Object Storage service enrollment.
 
-* `maintenance_policy` - The default maintenance policy for this account. (**Note: v4beta only.**)
+* `maintenance_policy` - The default maintenance policy for this account.

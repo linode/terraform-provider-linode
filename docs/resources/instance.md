@@ -156,7 +156,7 @@ The following arguments are supported:
 
 * `locks` - (Read-Only) A list of locks applied to this Linode.
 
-* `maintenance_policy` - (Optional) The maintenance policy of this Linode instance. Examples are `"linode/migrate"` and `"linode/power_off_on"`. Defaults to the default maintenance policy of the account. (**Note: v4beta only.**)
+* `maintenance_policy` - (Optional) The maintenance policy of this Linode instance. Examples are `"linode/migrate"` and `"linode/power_off_on"`. Defaults to the default maintenance policy of the account.
 
 * `private_ip` - (Optional) If true, the created Linode will have private networking enabled, allowing use of the 192.168.128.0/17 network within the Linode's region. It can be enabled on an existing Linode but it can't be disabled.
 
@@ -200,8 +200,6 @@ The following arguments are supported:
 
 * `disk_encryption` - (Optional) The disk encryption policy for this instance. (`enabled`, `disabled`; default `enabled` in supported regions)
 
-  * **NOTE: Disk encryption may not currently be available to all users.**
-
 * `ipv4` - (Optional) A set of reserved IPv4 addresses to assign to this Linode on creation.
 
   * **NOTE: IP reservation is not currently available to all users.**
@@ -216,7 +214,7 @@ Just as the Linode API provides, these fields are for the most common provisioni
 
 * `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with `private/`. See [images](https://api.linode.com/v4/images) for more information on the Images available for you to use. Examples are `linode/debian12`, `linode/fedora39`, `linode/ubuntu22.04`, `linode/arch`, and `private/12345`. See all images [here](https://api.linode.com/v4/linode/images) (Requires a personal access token; docs [here](https://techdocs.akamai.com/linode-api/reference/get-images)). *This value can not be imported.* *Changing `image` forces the creation of a new Linode Instance.*
 
-* `root_pass` - (Required with `image`) The initial password for the `root` user account. *This value can not be imported.* *Changing `root_pass` forces the creation of a new Linode Instance.* *If omitted, a random password will be generated but will not be stored in Terraform state.*
+* `root_pass` - (Required with `image`) The initial password for the `root` user account. Updating this field in-place causes Terraform to request a root password reset via the Linode API, which may require powering the Linode off and back on to apply the change. When `skip_implicit_reboots` is enabled and the instance is running, the provider may be unable to perform the required reboot and the update can fail. Plan for potential downtime when changing this value. *This value can not be imported.* *If omitted, a random password will be generated but will not be stored in Terraform state.*
 
 * `authorized_keys` - (Optional with `image`) A list of SSH public keys to deploy for the root user on the newly created Linode. *This value can not be imported.* *Changing `authorized_keys` forces the creation of a new Linode Instance.*
 
@@ -260,7 +258,7 @@ By specifying the `disk` and `config` fields for a Linode instance, it is possib
 
   * `authorized_users` - (Optional with `image`) A list of Linode usernames. If the usernames have associated SSH keys, the keys will be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. *This value can not be imported.* *Changing `authorized_users` forces the creation of a new Linode Instance.*
 
-  * `root_pass` - (Required with `image`) The initial password for the `root` user account. *This value can not be imported.* *Changing `root_pass` forces the creation of a new Linode Instance.* *If omitted, a random password will be generated but will not be stored in Terraform state.*
+  * `root_pass` - (Required with `image`) The initial password for the `root` user account. Updating this field in-place causes Terraform to request a root password reset via the Linode API, which may require powering the Linode off and back on to apply the change. When `skip_implicit_reboots` is enabled and the instance is running, the provider may be unable to perform the required reboot and the update can fail. Plan for potential downtime when changing this value. *This value can not be imported.* *If omitted, a random password will be generated but will not be stored in Terraform state.*
 
   * `stackscript_id` - (Optional with `image`) The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript. *This value can not be imported.* *Changing `stackscript_id` forces the creation of a new Linode Instance.*
 
@@ -288,7 +286,7 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
   * `devices` - (Optional) A list of `disk` or `volume` attachments for this `config`.  If the `boot_config_label` omits a `devices` block, the Linode will not be booted.
 
-    * `sda` ... `sdh` - (Optional) The SDA-SDH slots, represent the Linux block device nodes for the first 8 disks attached to the Linode.  Each device must be suplied sequentially.  The device can be either a Disk or a Volume identified by `disk_label` or `volume_id`. Only one disk identifier is permitted per slot. Devices mapped from `sde` through `sdh` are unavailable in `"fullvirt"` `virt_mode`.
+    * `sda` ... `sdbl` - (Optional) Device slots for attaching disks and volumes (named `sda`-`sdz`, `sdaa`-`sdaz`, `sdba`-`sdbl`). The maximum number of available devices is determined by the instance type's RAM (up to 64 devices). Each slot accepts either a Disk or Volume via `disk_label` or `volume_id`.
 
       * `disk_label` - (Optional) The `label` of the `disk` to map to this `device` slot.
 

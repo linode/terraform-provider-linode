@@ -1,5 +1,7 @@
 {{ define "interface_public_ipv4" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_instance" "test" {
     label = "{{.Label}}"
     region = "{{.Region}}"
@@ -9,6 +11,7 @@ resource "linode_instance" "test" {
 
 resource "linode_interface" "test" {
     linode_id = linode_instance.test.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
     
     public = {
         ipv4 = {

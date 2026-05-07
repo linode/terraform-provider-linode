@@ -20,12 +20,9 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegroupimageshares"
 	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegrouptoken"
 	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegrouptokens"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/v3/linode/databaseengines"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlv2"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresql"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlv2"
 	"github.com/linode/terraform-provider-linode/v3/linode/databases"
@@ -40,6 +37,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalltemplate"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalltemplates"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/iamentities"
+	"github.com/linode/terraform-provider-linode/v3/linode/iamuser"
 	"github.com/linode/terraform-provider-linode/v3/linode/image"
 	"github.com/linode/terraform-provider-linode/v3/linode/images"
 	"github.com/linode/terraform-provider-linode/v3/linode/instancedisk"
@@ -94,6 +93,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/rdns"
 	"github.com/linode/terraform-provider-linode/v3/linode/region"
 	"github.com/linode/terraform-provider-linode/v3/linode/regions"
+	"github.com/linode/terraform-provider-linode/v3/linode/regionsvpcavailability"
+	"github.com/linode/terraform-provider-linode/v3/linode/regionvpcavailability"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkeys"
 	"github.com/linode/terraform-provider-linode/v3/linode/stackscript"
@@ -152,6 +153,7 @@ func (p *FrameworkProvider) Schema(
 		Attributes: map[string]schema.Attribute{
 			"token": schema.StringAttribute{
 				Optional:    true,
+				Sensitive:   true,
 				Description: "The token that allows you access to your Linode account",
 			},
 			"config_path": schema.StringAttribute{
@@ -185,6 +187,10 @@ func (p *FrameworkProvider) Schema(
 			"skip_instance_delete_poll": schema.BoolAttribute{
 				Optional:    true,
 				Description: "Skip waiting for a linode_instance resource to finish deleting.",
+			},
+			"skip_lke_cluster_delete_poll": schema.BoolAttribute{
+				Optional:    true,
+				Description: "Skip waiting for all Linode instances in an LKE cluster to be deleted.",
 			},
 			"skip_implicit_reboots": schema.BoolAttribute{
 				Optional:    true,
@@ -242,6 +248,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		accountsettings.NewResource,
 		firewall.NewResource,
 		firewalldevice.NewResource,
+		iamuser.NewResource,
 		image.NewResource,
 		instancedisk.NewResource,
 		instanceip.NewResource,
@@ -301,9 +308,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		instancenetworking.NewDataSource,
 		objcluster.NewDataSource,
 		domainrecord.NewDataSource,
-		databasepostgresql.NewDataSource,
 		volume.NewDataSource,
-		databasemysql.NewDataSource,
 		domainzonefile.NewDataSource,
 		domain.NewDataSource,
 		user.NewDataSource,
@@ -311,11 +316,12 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nbtypes.NewDataSource,
 		instancetype.NewDataSource,
 		instancetypes.NewDataSource,
+		iamentities.NewDataSource,
+		iamuser.NewDataSource,
 		image.NewDataSource,
 		images.NewDataSource,
 		accountlogin.NewDataSource,
 		accountlogins.NewDataSource,
-		databasebackups.NewDataSource,
 		databases.NewDataSource,
 		databaseengines.NewDataSource,
 		region.NewDataSource,
@@ -368,5 +374,8 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		consumerimagesharegrouptokens.NewDataSource,
 		consumerimagesharegroup.NewDataSource,
 		consumerimagesharegroupimageshares.NewDataSource,
+		lkenodepool.NewDataSource,
+		regionvpcavailability.NewDataSource,
+		regionsvpcavailability.NewDataSource,
 	}
 }

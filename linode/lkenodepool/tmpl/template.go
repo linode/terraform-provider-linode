@@ -28,6 +28,7 @@ type TemplateData struct {
 	Label             string
 	FirewallID        *int
 	UpdateStrategy    string
+	DiskEncryption    string
 }
 
 func Generate(t testing.TB, data *TemplateData) string {
@@ -36,4 +37,16 @@ func Generate(t testing.TB, data *TemplateData) string {
 
 func EnterpriseBasic(t testing.TB, data *TemplateData) string {
 	return acceptance.ExecuteTemplate(t, "lke_e_nodepool", *data)
+}
+
+func DataBasic(t testing.TB, data *TemplateData) string {
+	return acceptance.ExecuteTemplate(t, "lke_nodepool_data_basic", *data)
+}
+
+func DataClusterNotFound(t testing.TB, data *TemplateData) string {
+	return acceptance.ExecuteTemplate(t, "lke_nodepool_data_cluster_not_found", *data)
+}
+
+func DataNodePoolNotFound(t testing.TB, data *TemplateData) string {
+	return acceptance.ExecuteTemplate(t, "lke_nodepool_data_nodepool_not_found", *data)
 }
