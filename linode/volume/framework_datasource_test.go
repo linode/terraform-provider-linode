@@ -32,6 +32,7 @@ func TestAccDataSourceVolume_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "linode_id", "0"),
 					resource.TestCheckResourceAttrSet(resourceName, "created"),
 					resource.TestCheckResourceAttrSet(resourceName, "updated"),
+					resource.TestCheckResourceAttrSet(resourceName, "io_ready"),
 					resource.TestCheckResourceAttr(resourceName, "encryption", "enabled"),
 				),
 			},
