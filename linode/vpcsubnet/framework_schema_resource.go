@@ -45,6 +45,16 @@ var DatabaseObjectType = types.ObjectType{
 	},
 }
 
+var NodebalancerObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"id":         types.Int64Type,
+		"ipv4_range": types.StringType,
+		"ipv6_ranges": types.ListType{
+			ElemType: IPV6RangeObjectType,
+		},
+	},
+}
+
 var ResourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"range": schema.StringAttribute{
@@ -127,6 +137,13 @@ var frameworkResourceSchema = schema.Schema{
 		"databases": schema.ListAttribute{
 			Computed:    true,
 			ElementType: DatabaseObjectType,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"nodebalancers": schema.ListAttribute{
+			Computed:    true,
+			ElementType: NodebalancerObjectType,
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.UseStateForUnknown(),
 			},

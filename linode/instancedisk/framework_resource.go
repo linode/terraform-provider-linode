@@ -366,7 +366,7 @@ func (r *Resource) Delete(
 	defer cancel()
 
 	d := runDiskOperation(
-		ctx, client, r.Meta, linodeID, timeoutSeconds, func() (resultDiag diag.Diagnostics) {
+		ctx, client, r.Meta, linodeID, timeoutSeconds, true, func() (resultDiag diag.Diagnostics) {
 			tflog.Info(ctx, "Deleting instance disk")
 			p, err := client.NewEventPollerWithSecondary(
 				ctx,

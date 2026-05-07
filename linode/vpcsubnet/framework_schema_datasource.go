@@ -55,5 +55,9 @@ var frameworkDatasourceSchema = schema.Schema{
 			Computed:    true,
 			ElementType: DatabaseObjectType,
 		},
+		"nodebalancers": schema.ListAttribute{
+			Computed:    true,
+			ElementType: NodebalancerObjectType,
+		},
 	},
 }
