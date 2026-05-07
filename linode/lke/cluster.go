@@ -467,6 +467,12 @@ func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, dec
 				}
 			}
 
+			if declaredDE, ok := declaredPool["disk_encryption"].(string); ok && declaredDE != "" {
+				if string(apiPool.DiskEncryption) != declaredDE {
+					continue
+				}
+			}
+
 			// Pair the API pool with the declared pool
 			result[i] = apiPool
 			delete(apiPools, apiPool.ID)
