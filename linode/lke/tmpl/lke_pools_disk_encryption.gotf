@@ -1,0 +1,23 @@
+{{ define "lke_pools_disk_encryption" }}
+
+resource "linode_lke_cluster" "test" {
+    label       = "{{.Label}}"
+    region      = "{{ .Region }}"
+    k8s_version = "{{.K8sVersion}}"
+    tags        = ["test"]
+    tier = "standard"
+
+    pool {
+        type  = "g6-standard-2"
+        count = 2
+        disk_encryption = "enabled"
+    }
+
+    pool {
+        type = "g6-standard-1"
+        count = 1
+        disk_encryption = "disabled"
+    }
+}
+
+{{ end }}

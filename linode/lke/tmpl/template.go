@@ -193,3 +193,8 @@ func TierConditionalWithUpdateStrategy(t testing.TB, name, version, region, tier
 		TemplateData{Label: name, K8sVersion: version, Region: region, Tier: tier, UpdateStrategy: updateStrategy},
 	)
 }
+
+func DiskEncryptionPools(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_pools_disk_encryption", TemplateData{Label: name, K8sVersion: version, Region: region})
+}

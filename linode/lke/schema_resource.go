@@ -212,6 +212,7 @@ var resourceSchema = map[string]*schema.Schema{
 				"disk_encryption": {
 					Type:        schema.TypeString,
 					Description: "The disk encryption policy for the nodes in this pool.",
+					Optional:    true,
 					Computed:    true,
 				},
 				"nodes": {

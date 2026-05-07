@@ -1085,3 +1085,29 @@ func TestAccResourceLKECluster_tierNoAccess(t *testing.T) {
 		},
 	})
 }
+
+func TestAccResourceLKECluster_poolDiskEncryption(t *testing.T) {
+	t.Parallel()
+
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.DiskEncryptionPools(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.disk_encryption", "enabled"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.count", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.disk_encryption", "disabled"),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+					),
+				},
+			},
+		})
+	})
+}
