@@ -87,6 +87,7 @@ func TestSetNodePoolCreateOptions(t *testing.T) {
 
 	assert.Equal(t, "k8s_version", *createOpts.K8sVersion)
 	assert.Equal(t, "on_recycle", string(*createOpts.UpdateStrategy))
+	assert.Equal(t, "disabled", string(*createOpts.DiskEncryption))
 }
 
 func TestSetNodePoolUpdateOptions(t *testing.T) {
@@ -114,6 +115,19 @@ func TestSetNodePoolUpdateOptions(t *testing.T) {
 	assert.Equal(t, "on_recycle", string(*updateOpts.UpdateStrategy))
 }
 
+func TestSetNodePoolCreateOptions_DiskEncryptionUnset(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	nodePoolModel.DiskEncryption = types.StringNull()
+
+	var createOpts linodego.LKENodePoolCreateOptions
+	var diags diag.Diagnostics
+
+	nodePoolModel.SetNodePoolCreateOptions(context.Background(), &createOpts, &diags, "enterprise")
+
+	assert.False(t, diags.HasError())
+	assert.Nil(t, createOpts.DiskEncryption)
+}
+
 func createNodePoolModel() *NodePoolModel {
 	tags, _ := types.SetValueFrom(context.Background(), types.StringType, []string{"production", "web-server"})
 	nodes, _ := flattenLKENodePoolLinodeList([]linodego.LKENodePoolLinode{
@@ -138,6 +152,7 @@ func createNodePoolModel() *NodePoolModel {
 		},
 		K8sVersion:     types.StringValue("k8s_version"),
 		UpdateStrategy: types.StringValue("on_recycle"),
+		DiskEncryption: types.StringValue(string(linodego.InstanceDiskEncryptionDisabled)),
 	}
 
 	nodePoolModel.Labels = types.MapValueMust(types.StringType, map[string]attr.Value{})
