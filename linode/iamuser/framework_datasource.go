@@ -1,4 +1,4 @@
-package monitoralertdefinition
+package iamuser
 
 import (
 	"context"
@@ -17,8 +17,8 @@ func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
-				Name:   "linode_monitor_alert_definition",
-				Schema: &FrameworkDataSourceSchema,
+				Name:   "linode_iam_user",
+				Schema: &frameworkSchema,
 			},
 		),
 	}
@@ -31,32 +31,36 @@ func (d *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data."+d.Config.Name)
 
-	var data AlertDefinitionDataSourceModel
 	client := d.Meta.Client
+	var data IAMUserDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := data.ID.ValueInt64()
+	ctx = tflog.SetField(ctx, "username", data.Username.ValueString())
 
-	ctx = tflog.SetField(ctx, "alert_definition_id", id)
-
-	alertDefinition, err := client.GetMonitorAlertDefinition(ctx, data.ServiceType.ValueString(), int(id))
+	perms, err := client.GetUserRolePermissions(ctx, data.Username.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to get Alert Definition %d for service type %s", id, data.ServiceType.ValueString()),
+			fmt.Sprintf("Error listing permissions: %s", data.Username.ValueString()),
 			err.Error(),
 		)
 		return
 	}
 
-	resp.Diagnostics.Append(data.FlattenDataSourceModel(ctx, alertDefinition, false)...)
-
-	if resp.Diagnostics.HasError() {
+	if perms == nil {
+		resp.Diagnostics.AddError(
+			"Permissions not found.",
+			fmt.Sprintf("Permissions for %s was not found", data.Username.ValueString()),
+		)
 		return
 	}
 
+	resp.Diagnostics.Append(data.ParseIAMUserModel(ctx, perms)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

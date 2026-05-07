@@ -22,6 +22,7 @@ var dataSourceVPCObjType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"subnet_id":  types.Int64Type,
 		"ipv4_range": types.StringType,
+		"ipv6_range": types.StringType,
 	},
 }
 
@@ -95,6 +96,12 @@ var dataSourceAttributesVPC = map[string]schema.Attribute{
 				},
 				"ipv4_range": schema.StringAttribute{
 					Description: "A CIDR range for the VPC's IPv4 addresses. " +
+						"The NodeBalancer sources IP addresses from this range " +
+						"when routing traffic to the backend VPC nodes.",
+					Computed: true,
+				},
+				"ipv6_range": schema.StringAttribute{
+					Description: "A CIDR range for the VPC's IPv6 addresses. " +
 						"The NodeBalancer sources IP addresses from this range " +
 						"when routing traffic to the backend VPC nodes.",
 					Computed: true,

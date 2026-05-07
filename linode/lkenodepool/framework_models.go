@@ -263,6 +263,10 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 			p.UpdateStrategy = linodego.Pointer(linodego.LKENodePoolUpdateStrategy(pool.UpdateStrategy.ValueString()))
 		}
 	}
+
+	if !pool.DiskEncryption.IsNull() && !pool.DiskEncryption.IsUnknown() {
+		p.DiskEncryption = linodego.Pointer(linodego.InstanceDiskEncryption(pool.DiskEncryption.ValueString()))
+	}
 }
 
 func (pool *NodePoolModel) SetNodePoolUpdateOptions(
