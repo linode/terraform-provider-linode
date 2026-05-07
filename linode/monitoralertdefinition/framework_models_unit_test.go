@@ -55,20 +55,25 @@ func TestAlertDefinitionModel_FlattenAlertDefinition(t *testing.T) {
 		ID:                42,
 		ServiceType:       "monitoring",
 		Description:       "High CPU usage",
-		EntityIDs:         []string{"123", "456"},
 		Label:             "CPU Alert",
 		Status:            "active",
 		Severity:          2,
 		RuleCriteria:      ruleCriteria,
 		TriggerConditions: triggerConditions,
 		Type:              "user",
-		HasMoreResources:  false,
 		AlertChannels:     alertChannels,
 		Created:           &now,
 		Updated:           &now,
 		CreatedBy:         "admin",
 		UpdatedBy:         "admin",
 		Class:             "system",
+		Scope:             linodego.AlertDefinitionScopeEntity,
+		Regions:           []string{"us-east"},
+		Entities: linodego.AlertDefinitionEntities{
+			URL:              "/v4/monitor/services/dbaas/alert-definitions/42/entities",
+			Count:            2,
+			HasMoreResources: false,
+		},
 	}
 
 	var model AlertDefinitionResourceModel
@@ -82,18 +87,17 @@ func TestAlertDefinitionModel_FlattenAlertDefinition(t *testing.T) {
 	assert.Equal(t, types.StringValue("active"), model.Status)
 	assert.Equal(t, types.Int64Value(2), model.Severity)
 	assert.Equal(t, types.StringValue("user"), model.Type)
-	assert.Equal(t, types.BoolValue(false), model.HasMoreResources)
 	assert.Equal(t, types.StringValue("admin"), model.CreatedBy)
 	assert.Equal(t, types.StringValue("admin"), model.UpdatedBy)
 	assert.Equal(t, types.StringValue("system"), model.Class)
+	assert.Equal(t, types.StringValue("entity"), model.Scope)
+	assert.False(t, model.Regions.IsNull())
+	assert.Equal(t, 1, len(model.Regions.Elements()))
+	assert.False(t, model.Entities.IsNull())
 	assert.Equal(t, timetypes.NewRFC3339TimePointerValue(&now), model.Created)
 	assert.Equal(t, timetypes.NewRFC3339TimePointerValue(&now), model.Updated)
-	assert.False(t, model.ChannelIDs.IsNull())
-	assert.Equal(t, 1, len(model.ChannelIDs.Elements()))
 	assert.False(t, model.AlertChannels.IsNull())
 	assert.Equal(t, 1, len(model.AlertChannels.Elements()))
-	assert.False(t, model.EntityIDs.IsNull())
-	assert.Equal(t, 2, len(model.EntityIDs.Elements()))
 	assert.False(t, model.RuleCriteria.IsNull())
 	assert.False(t, model.TriggerConditions.IsNull())
 }

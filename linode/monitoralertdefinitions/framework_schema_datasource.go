@@ -7,21 +7,18 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"id":                 {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
-	"service_type":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"channel_ids":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
-	"description":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"entity_ids":         {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"label":              {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"status":             {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"severity":           {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
-	"type":               {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"has_more_resources": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
-	"created":            {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"updated":            {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"created_by":         {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"updated_by":         {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"class":              {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"id":           {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"service_type": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"description":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"label":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"status":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"severity":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"type":         {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"created":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"updated":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"created_by":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"updated_by":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"class":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDatasourceSchema = schema.Schema{

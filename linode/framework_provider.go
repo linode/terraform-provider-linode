@@ -64,6 +64,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/maintenancepolicies"
 	"github.com/linode/terraform-provider-linode/v3/linode/monitoralertchannels"
 	"github.com/linode/terraform-provider-linode/v3/linode/monitoralertdefinition"
+	"github.com/linode/terraform-provider-linode/v3/linode/monitoralertdefinitionentities"
 	"github.com/linode/terraform-provider-linode/v3/linode/monitoralertdefinitions"
 	"github.com/linode/terraform-provider-linode/v3/linode/nb"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbconfig"
@@ -380,6 +381,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		consumerimagesharegroupimageshares.NewDataSource,
 		monitoralertdefinition.NewDataSource,
 		monitoralertdefinitions.NewDataSource,
+		monitoralertdefinitionentities.NewDataSource,
 		lkenodepool.NewDataSource,
 		regionvpcavailability.NewDataSource,
 		regionsvpcavailability.NewDataSource,

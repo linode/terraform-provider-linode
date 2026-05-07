@@ -61,16 +61,25 @@ Each alert definition will be stored in the `alert_definitions` attribute and wi
 * [`rule_criteria`](#rule_criteria) - The criteria expression for the alert.
 * [`trigger_conditions`](#trigger_conditions) - The conditions that need to be met to send a notification for the alert.
 * `description` - A description for the alert definition.
-* `entity_ids` - A list of entity IDs to associate with the alert definition.
 * `status` -  The status of the alert definition.
 * `type` - The type of alert. This can be either user for an alert specific to the current user, or system for one that applies to all users on your account.
-* `has_more_resources` - Whether there are additional entity_ids associated with the alert for which the user doesn't have at least read-only access.
 * `created` - The date and time the alert definition was created.
 * `updated` - The date and time the alert definition was last updated.
 * `created_by` - For a user alert definition, this is the user on your account that created it. For a system alert definition, this is returned as system.
 * `updated_by` - For a user alert definition, this is the user on your account that last updated it. For a system alert definition, this is returned as system. If it hasn't been updated, this value is the same as created_by.
 * `class` - "The plan type for the Managed Database cluster, either shared or dedicated. This only applies to a system alert for a service_type of dbaas (Managed Databases). For user alerts for dbaas, this is returned as null.",
+* `scope` - The scope of the alert definition. Possible values: `account`, `entity`, `region`.
+* `regions` - The regions the alert definition applies to. Only used for region-scoped alerts.
+* [`entities`](#entities) - Entity metadata for the alert definition.
 * [`alert_channels`](#alert_channels) - A list of alert channel objects associated with the alert definition.
+
+### entities
+
+The following attributes are exported in the `entities` block:
+
+* `url` - The URL to list entities associated with the alert definition.
+* `count` - The number of entities associated with the alert definition.
+* `has_more_resources` - Whether there are additional entities associated with the alert.
 
 ### rule_criteria
 

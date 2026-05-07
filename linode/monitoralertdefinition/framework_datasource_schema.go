@@ -95,19 +95,9 @@ var AlertDefinitionAttributes = map[string]schema.Attribute{
 		Required:    true,
 		Description: "The Akamai Cloud Computing service being monitored.",
 	},
-	"channel_ids": schema.ListAttribute{
-		ElementType: types.Int64Type,
-		Computed:    true,
-		Description: "The identifiers for the alert channels to use for the alert.",
-	},
 	"description": schema.StringAttribute{
 		Computed:    true,
 		Description: "An additional description for the alert definition.",
-	},
-	"entity_ids": schema.ListAttribute{
-		ElementType: types.StringType,
-		Computed:    true,
-		Description: "The id for each individual entity from a service_type.",
 	},
 	"label": schema.StringAttribute{
 		Computed:    true,
@@ -158,10 +148,6 @@ var AlertDefinitionAttributes = map[string]schema.Attribute{
 		Computed:    true,
 		Description: "The type of alert.",
 	},
-	"has_more_resources": schema.BoolAttribute{
-		Computed:    true,
-		Description: "Whether there are additional entity_ids associated with the alert.",
-	},
 	"alert_channels": schema.ListNestedAttribute{
 		NestedObject: alertChannelDataSourceNestedObj,
 		Computed:     true,
@@ -188,5 +174,32 @@ var AlertDefinitionAttributes = map[string]schema.Attribute{
 	"class": schema.StringAttribute{
 		Computed:    true,
 		Description: "Plan type for Managed Database clusters (shared or dedicated).",
+	},
+	"scope": schema.StringAttribute{
+		Computed:    true,
+		Description: "The scope of the alert definition. Allowed values: account, entity, region.",
+	},
+	"regions": schema.ListAttribute{
+		ElementType: types.StringType,
+		Computed:    true,
+		Description: "The regions the alert definition applies to. Only used for region-scoped alerts.",
+	},
+	"entities": schema.SingleNestedAttribute{
+		Attributes: map[string]schema.Attribute{
+			"url": schema.StringAttribute{
+				Computed:    true,
+				Description: "The URL to list entities associated with the alert definition.",
+			},
+			"count": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The number of entities associated with the alert definition.",
+			},
+			"has_more_resources": schema.BoolAttribute{
+				Computed:    true,
+				Description: "Whether there are additional entities associated with the alert.",
+			},
+		},
+		Computed:    true,
+		Description: "Entity metadata for the alert definition.",
 	},
 }
