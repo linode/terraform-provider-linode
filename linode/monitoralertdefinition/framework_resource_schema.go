@@ -300,6 +300,7 @@ var frameworkResourceSchema = schema.Schema{
 			},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifier.RequiresReplace(),
 			},
 		},
 		"regions": schema.ListAttribute{
