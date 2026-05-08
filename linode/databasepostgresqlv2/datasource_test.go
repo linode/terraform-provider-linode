@@ -71,7 +71,7 @@ func TestAccDataSource_basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr(dataSourceName, "pending_updates.#", "0"),
 
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_password_encryption", "md5"),
+					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_password_encryption", "scram-sha-256"),
 					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_stat_monitor_enable", "false"),
 					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pglookout_max_failover_replication_time_lag", "60"),
 				),
