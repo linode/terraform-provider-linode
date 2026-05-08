@@ -3,7 +3,7 @@
 data "linode_reserved_ip_types" "foobar" {
     filter {
         name   = "id"
-        values = ["reserved-ip"]
+        values = ["reserved-ipv4"]
     }
 }
 
