@@ -1673,7 +1673,7 @@ func getPlacementGroupCreateOptions(ctx context.Context, d *schema.ResourceData)
 func validateImageAuthRequirements(
 	_ context.Context,
 	d *schema.ResourceDiff,
-	_ interface{},
+	_ any,
 ) error {
 	imageRaw, imageSet := d.GetOk("image")
 	if !imageSet || imageRaw.(string) == "" {
@@ -1682,12 +1682,12 @@ func validateImageAuthRequirements(
 
 	hasKeys := false
 	if v, ok := d.GetOk("authorized_keys"); ok {
-		hasKeys = len(v.([]interface{})) > 0
+		hasKeys = len(v.([]any)) > 0
 	}
 
 	hasUsers := false
 	if v, ok := d.GetOk("authorized_users"); ok {
-		hasUsers = len(v.([]interface{})) > 0
+		hasUsers = len(v.([]any)) > 0
 	}
 
 	hasRootPass := false
@@ -1695,7 +1695,7 @@ func validateImageAuthRequirements(
 		hasRootPass = v.(string) != ""
 	}
 
-	if !(hasKeys || hasUsers || hasRootPass) {
+	if !hasKeys && !hasUsers && !hasRootPass {
 		return fmt.Errorf(
 			"when 'image' is set, at least one of " +
 				"'authorized_keys', 'authorized_users', or 'root_pass' must be specified",
