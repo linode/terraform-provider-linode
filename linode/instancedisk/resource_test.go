@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -298,4 +299,46 @@ func resourceImportStateID(s *terraform.State) (string, error) {
 	}
 
 	return "", fmt.Errorf("Error finding linode_instance_disk")
+}
+
+func TestAccResourceInstanceDisk_imageAuthKeysOnly(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance_disk.foobar"
+	label := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ImageAuthKeysOnly(t, label, testRegion, 2048),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", label),
+					resource.TestCheckResourceAttr(resName, "size", "2048"),
+					resource.TestCheckResourceAttr(resName, "status", "ready"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstanceDisk_imageNoAuth(t *testing.T) {
+	t.Parallel()
+
+	label := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.ImageNoAuth(t, label, testRegion, 2048),
+				ExpectError: regexp.MustCompile("Insufficient Authentication"),
+			},
+		},
+	})
 }
