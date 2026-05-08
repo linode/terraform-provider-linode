@@ -28,6 +28,7 @@ type TemplateData struct {
 	Label             string
 	FirewallID        *int
 	UpdateStrategy    string
+	DiskEncryption    string
 }
 
 func Generate(t testing.TB, data *TemplateData) string {

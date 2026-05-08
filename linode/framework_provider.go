@@ -37,6 +37,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalltemplate"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalltemplates"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/iamentities"
+	"github.com/linode/terraform-provider-linode/v3/linode/iamuser"
 	"github.com/linode/terraform-provider-linode/v3/linode/image"
 	"github.com/linode/terraform-provider-linode/v3/linode/images"
 	"github.com/linode/terraform-provider-linode/v3/linode/instancedisk"
@@ -60,8 +62,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/lock"
 	"github.com/linode/terraform-provider-linode/v3/linode/locks"
 	"github.com/linode/terraform-provider-linode/v3/linode/maintenancepolicies"
-	"github.com/linode/terraform-provider-linode/v3/linode/monitoralertdefinition"
-	"github.com/linode/terraform-provider-linode/v3/linode/monitoralertdefinitions"
 	"github.com/linode/terraform-provider-linode/v3/linode/nb"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbconfigs"
@@ -95,6 +95,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/regions"
 	"github.com/linode/terraform-provider-linode/v3/linode/regionsvpcavailability"
 	"github.com/linode/terraform-provider-linode/v3/linode/regionvpcavailability"
+	"github.com/linode/terraform-provider-linode/v3/linode/reservedip"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkeys"
 	"github.com/linode/terraform-provider-linode/v3/linode/stackscript"
@@ -153,6 +154,7 @@ func (p *FrameworkProvider) Schema(
 		Attributes: map[string]schema.Attribute{
 			"token": schema.StringAttribute{
 				Optional:    true,
+				Sensitive:   true,
 				Description: "The token that allows you access to your Linode account",
 			},
 			"config_path": schema.StringAttribute{
@@ -247,6 +249,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		accountsettings.NewResource,
 		firewall.NewResource,
 		firewalldevice.NewResource,
+		iamuser.NewResource,
 		image.NewResource,
 		instancedisk.NewResource,
 		instanceip.NewResource,
@@ -261,6 +264,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		placementgroup.NewResource,
 		placementgroupassignment.NewResource,
 		instancereservedipassignment.NewResource,
+		reservedip.NewResource,
 		rdns.NewResource,
 		sshkey.NewResource,
 		stackscript.NewResource,
@@ -278,7 +282,6 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		consumerimagesharegrouptoken.NewResource,
 		firewallsettings.NewResource,
 		linodeinterface.NewResource,
-		monitoralertdefinition.NewResource,
 	}
 }
 
@@ -315,6 +318,8 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nbtypes.NewDataSource,
 		instancetype.NewDataSource,
 		instancetypes.NewDataSource,
+		iamentities.NewDataSource,
+		iamuser.NewDataSource,
 		image.NewDataSource,
 		images.NewDataSource,
 		accountlogin.NewDataSource,
@@ -371,8 +376,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		consumerimagesharegrouptokens.NewDataSource,
 		consumerimagesharegroup.NewDataSource,
 		consumerimagesharegroupimageshares.NewDataSource,
-		monitoralertdefinition.NewDataSource,
-		monitoralertdefinitions.NewDataSource,
 		lkenodepool.NewDataSource,
 		regionvpcavailability.NewDataSource,
 		regionsvpcavailability.NewDataSource,

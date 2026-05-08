@@ -2,6 +2,7 @@ package helper
 
 import (
 	"context"
+	"crypto/sha3"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -18,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
-	"golang.org/x/crypto/sha3"
 )
 
 // validFilterValueTypes is a list of valid underlying types for filterable fields.

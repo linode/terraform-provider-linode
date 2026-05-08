@@ -3,6 +3,7 @@
 package instance
 
 import (
+	"net"
 	"reflect"
 	"testing"
 	"time"
@@ -354,5 +355,50 @@ func TestFlattenInstanceSpecs(t *testing.T) {
 				t.Errorf("Mismatch for key %s: Expected %d, but got %d", key, expectedValue, resultValue)
 			}
 		}
+	}
+}
+
+func TestFlattenInstanceIPv4(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    []*net.IP
+		expected []string
+	}{
+		{
+			name:     "nil input",
+			input:    nil,
+			expected: []string{},
+		},
+		{
+			name:     "empty input",
+			input:    []*net.IP{},
+			expected: []string{},
+		},
+		{
+			name: "single public IPv4",
+			input: func() []*net.IP {
+				ip := net.ParseIP("192.0.2.1")
+				return []*net.IP{&ip}
+			}(),
+			expected: []string{"192.0.2.1"},
+		},
+		{
+			name: "multiple IPs including reserved",
+			input: func() []*net.IP {
+				ip1 := net.ParseIP("203.0.113.5")
+				ip2 := net.ParseIP("192.168.128.10")
+				return []*net.IP{&ip1, &ip2}
+			}(),
+			expected: []string{"203.0.113.5", "192.168.128.10"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := flattenInstanceIPv4(tt.input)
+			if !reflect.DeepEqual(result, tt.expected) {
+				t.Errorf("flattenInstanceIPv4(%v) = %v, want %v", tt.input, result, tt.expected)
+			}
+		})
 	}
 }

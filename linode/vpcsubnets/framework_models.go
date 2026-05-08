@@ -26,14 +26,15 @@ type Model struct {
 // NOTE: This is redefined because of divergence between this model and the
 // singular data source's model. We should investigate using composition in the future.
 type ModelVPCSubnet struct {
-	ID        types.Int64       `tfsdk:"id"`
-	Label     types.String      `tfsdk:"label"`
-	IPv4      types.String      `tfsdk:"ipv4"`
-	IPv6      types.List        `tfsdk:"ipv6"`
-	Linodes   types.List        `tfsdk:"linodes"`
-	Created   timetypes.RFC3339 `tfsdk:"created"`
-	Updated   timetypes.RFC3339 `tfsdk:"updated"`
-	Databases types.List        `tfsdk:"databases"`
+	ID            types.Int64       `tfsdk:"id"`
+	Label         types.String      `tfsdk:"label"`
+	IPv4          types.String      `tfsdk:"ipv4"`
+	IPv6          types.List        `tfsdk:"ipv6"`
+	Linodes       types.List        `tfsdk:"linodes"`
+	Created       timetypes.RFC3339 `tfsdk:"created"`
+	Updated       timetypes.RFC3339 `tfsdk:"updated"`
+	Databases     types.List        `tfsdk:"databases"`
+	Nodebalancers types.List        `tfsdk:"nodebalancers"`
 }
 
 func (model *Model) FlattenSubnets(
@@ -120,6 +121,26 @@ func (model *Model) FlattenSubnets(
 			}
 
 			s.Databases = helper.KeepOrUpdateValue(s.Databases, databasesList, preserveKnown)
+
+			nodebalancers := make([]types.Object, len(subnet.Nodebalancers))
+
+			for i, nb := range subnet.Nodebalancers {
+				nbObj, d := vpcsubnet.FlattenSubnetNodebalancer(ctx, nb)
+				diags.Append(d...)
+				if diags.HasError() {
+					return s
+				}
+
+				nodebalancers[i] = *nbObj
+			}
+
+			nodebalancersList, d := types.ListValueFrom(ctx, vpcsubnet.NodebalancerObjectType, nodebalancers)
+			diags.Append(d...)
+			if diags.HasError() {
+				return s
+			}
+
+			s.Nodebalancers = helper.KeepOrUpdateValue(s.Nodebalancers, nodebalancersList, preserveKnown)
 
 			return s
 		},

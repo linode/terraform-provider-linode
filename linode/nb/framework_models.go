@@ -357,11 +357,13 @@ func (d *NBFirewallModel) FlattenFirewall(firewall *linodego.Firewall, preserveK
 type BaseVPCModel struct {
 	SubnetID  types.Int64  `tfsdk:"subnet_id"`
 	IPv4Range types.String `tfsdk:"ipv4_range"`
+	IPv6Range types.String `tfsdk:"ipv6_range"`
 }
 
 func (m *BaseVPCModel) FlattenVPCConfig(vpcConfig *linodego.NodeBalancerVPCConfig) {
 	m.SubnetID = types.Int64Value(int64(vpcConfig.SubnetID))
 	m.IPv4Range = types.StringValue(vpcConfig.IPv4Range)
+	m.IPv6Range = types.StringValue(vpcConfig.IPv6Range)
 }
 
 type ResourceVPCModel struct {
@@ -384,6 +386,7 @@ func (m *ResourceVPCModel) ToLinodego() (*linodego.NodeBalancerVPCOptions, diag.
 	return &linodego.NodeBalancerVPCOptions{
 		SubnetID:            subnetID,
 		IPv4Range:           m.IPv4Range.ValueString(),
+		IPv6Range:           m.IPv6Range.ValueString(),
 		IPv4RangeAutoAssign: m.IPv4RangeAutoAssign.ValueBool(),
 	}, d
 }
