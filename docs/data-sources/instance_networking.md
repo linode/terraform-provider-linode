@@ -7,7 +7,7 @@ description: |-
 # Data Source: linode\_instance\_networking
 
 Provides details about the networking configuration of an Instance.
-For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-linode-config-interfaces).
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-linode-ips).
 
 ## Example Usage
 
