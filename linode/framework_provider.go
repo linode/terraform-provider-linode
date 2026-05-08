@@ -95,6 +95,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/regions"
 	"github.com/linode/terraform-provider-linode/v3/linode/regionsvpcavailability"
 	"github.com/linode/terraform-provider-linode/v3/linode/regionvpcavailability"
+	"github.com/linode/terraform-provider-linode/v3/linode/reservedip"
 	"github.com/linode/terraform-provider-linode/v3/linode/reservediptypes"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkeys"
@@ -264,6 +265,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		placementgroup.NewResource,
 		placementgroupassignment.NewResource,
 		instancereservedipassignment.NewResource,
+		reservedip.NewResource,
 		rdns.NewResource,
 		sshkey.NewResource,
 		stackscript.NewResource,
