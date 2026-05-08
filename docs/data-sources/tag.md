@@ -8,6 +8,8 @@ description: |-
 
 Provides information about a Linode Tag, including the objects associated with it.
 
+For more information, see the [Linode APIv4 documentation](https://techdocs.akamai.com/linode-api/reference/get-tagged-objects).
+
 ## Example Usage
 
 ```hcl
