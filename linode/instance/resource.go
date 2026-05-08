@@ -34,6 +34,7 @@ func Resource() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			linodediffs.ComputedWithDefault("tags", []string{}),
 			linodediffs.CaseInsensitiveSet("tags"),
+			validateImageAuthRequirements,
 		),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -284,15 +285,18 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			createOpts.AuthorizedUsers = append(createOpts.AuthorizedUsers, user.(string))
 		}
 		createOpts.RootPass = d.Get("root_pass").(string)
-		if createOpts.RootPass == "" {
-			var err error
-			createOpts.RootPass, err = helper.CreateRandomRootPassword()
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
 		createOpts.Image = d.Get("image").(string)
+
+		// When an image is provided, at least one authentication method must be specified
+		if createOpts.Image != "" &&
+			createOpts.RootPass == "" &&
+			len(createOpts.AuthorizedKeys) == 0 &&
+			len(createOpts.AuthorizedUsers) == 0 {
+			return diag.Errorf(
+				"when `image` is provided, at least one of `root_pass`, `authorized_keys`, " +
+					"or `authorized_users` must be specified",
+			)
+		}
 
 		if !bootedNull {
 			createOpts.Booted = &booted

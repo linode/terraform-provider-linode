@@ -934,3 +934,32 @@ func DataWithLock(t testing.TB, label, region, lockType string) string {
 			LockType: lockType,
 		})
 }
+
+func ImageAuthKeysOnly(t testing.TB, label, pubKey, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_image_auth_keys_only", TemplateData{
+			Label:  label,
+			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}
+
+func ImageAuthUsersOnly(t testing.TB, label, pubKey, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_image_auth_users_only", TemplateData{
+			Label:  label,
+			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}
+
+func ImageNoAuth(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_image_no_auth", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}

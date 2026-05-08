@@ -1,0 +1,22 @@
+{{ define "instance_image_auth_users_only" }}
+
+{{ template "e2e_test_firewall" . }}
+
+data "linode_profile" "profile" {}
+
+resource "linode_sshkey" "key" {
+    label = "tf_test_authorized_keys"
+    ssh_key = "{{.PubKey}}"
+}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    image = "{{.Image}}"
+    region = "{{ .Region }}"
+    authorized_users = [ "${data.linode_profile.profile.username}" ]
+    firewall_id = linode_firewall.e2e_test_firewall.id
+}
+
+{{ end }}
+

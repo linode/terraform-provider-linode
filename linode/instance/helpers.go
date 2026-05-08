@@ -612,12 +612,6 @@ func createInstanceDisk(
 
 		if rootPass, ok := disk["root_pass"]; ok && rootPass != "" {
 			diskOpts.RootPass = rootPass.(string)
-		} else {
-			var err error
-			diskOpts.RootPass, err = helper.CreateRandomRootPassword()
-			if err != nil {
-				return nil, err
-			}
 		}
 
 		if authorizedKeys, ok := disk["authorized_keys"]; ok {
@@ -1674,4 +1668,39 @@ func getPlacementGroupCreateOptions(ctx context.Context, d *schema.ResourceData)
 	}
 
 	return &pgOptions
+}
+
+func validateImageAuthRequirements(
+	_ context.Context,
+	d *schema.ResourceDiff,
+	_ interface{},
+) error {
+	imageRaw, imageSet := d.GetOk("image")
+	if !imageSet || imageRaw.(string) == "" {
+		return nil
+	}
+
+	hasKeys := false
+	if v, ok := d.GetOk("authorized_keys"); ok {
+		hasKeys = len(v.([]interface{})) > 0
+	}
+
+	hasUsers := false
+	if v, ok := d.GetOk("authorized_users"); ok {
+		hasUsers = len(v.([]interface{})) > 0
+	}
+
+	hasRootPass := false
+	if v, ok := d.GetOk("root_pass"); ok {
+		hasRootPass = v.(string) != ""
+	}
+
+	if !(hasKeys || hasUsers || hasRootPass) {
+		return fmt.Errorf(
+			"when 'image' is set, at least one of " +
+				"'authorized_keys', 'authorized_users', or 'root_pass' must be specified",
+		)
+	}
+
+	return nil
 }

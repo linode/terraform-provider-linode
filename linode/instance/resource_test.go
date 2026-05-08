@@ -121,6 +121,77 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_imageAuthKeysOnly(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ImageAuthKeysOnly(t, instanceName, acceptance.PublicKeyMaterial, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_imageAuthUsersOnly(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ImageAuthUsersOnly(t, instanceName, acceptance.PublicKeyMaterial, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_imageNoAuth(t *testing.T) {
+	t.Parallel()
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.ImageNoAuth(t, instanceName, testRegion),
+				ExpectError: regexp.MustCompile("at least one of 'authorized_keys', 'authorized_users', or 'root_pass' must be specified"),
+			},
+		},
+	})
+}
+
 func TestAccResourceInstance_vpu(t *testing.T) {
 	t.Parallel()
 

@@ -444,7 +444,6 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:      true,
 		ForceNew:      true,
 		StateFunc:     sshKeyState,
-		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"authorized_users": {
@@ -456,15 +455,15 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:      true,
 		ForceNew:      true,
 		StateFunc:     sshKeyState,
-		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"root_pass": {
-		Type:        schema.TypeString,
-		Description: "The password that will be initially assigned to the 'root' user account.",
-		Sensitive:   true,
-		Optional:    true,
-		StateFunc:   rootPasswordState,
+		Type: schema.TypeString,
+		Description: "The password that will be initially assigned to the 'root' user account. " +
+			"When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified.",
+		Sensitive: true,
+		Optional:  true,
+		StateFunc: rootPasswordState,
 		ValidateFunc: validation.StringLenBetween(
 			helper.RootPassMinimumCharacters,
 			helper.RootPassMaximumCharacters),
