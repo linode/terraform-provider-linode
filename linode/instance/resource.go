@@ -307,6 +307,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			createOpts.SwapSize = &swapSize
 		}
 
+		if kernel, ok := d.GetOk("kernel"); ok {
+			createOpts.Kernel = linodego.Pointer(kernel.(string))
+		}
+
+		if bootSize, ok := d.GetOk("boot_size"); ok {
+			createOpts.BootSize = linodego.Pointer(bootSize.(int))
+		}
+
 		createOpts.StackScriptID = d.Get("stackscript_id").(int)
 
 		if stackscriptDataRaw, ok := d.GetOk("stackscript_data"); ok {

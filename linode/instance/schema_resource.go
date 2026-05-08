@@ -479,6 +479,24 @@ var resourceSchema = map[string]*schema.Schema{
 		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
+	"kernel": {
+		Type: schema.TypeString,
+		Description: "The kernel to deploy with when creating a Linode from an Image. " +
+			"Example values are `linode/latest-64bit`, `linode/grub2`,  etc. " +
+			"See all kernels [here](https://api.linode.com/v4/linode/kernels).",
+		Optional:     true,
+		ForceNew:     true,
+		ValidateFunc: validation.StringLenBetween(1, 100),
+	},
+	"boot_size": {
+		Type: schema.TypeInt,
+		Description: "The size of the boot disk in MB for the newly-created Linode. " +
+			"Must be at least 8192 MB. The combined boot_size and swap_size must not " +
+			"exceed the total disk size provided by the instance's plan.",
+		Optional:     true,
+		ForceNew:     true,
+		ValidateFunc: validation.IntAtLeast(8192),
+	},
 	"backups_enabled": {
 		Type: schema.TypeBool,
 		Description: "If this field is set to true, the created Linode will automatically be enrolled in the " +
