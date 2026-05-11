@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
@@ -98,7 +99,7 @@ func TestFlattenNodeBalancer(t *testing.T) {
 	assert.Equal(t, types.Int64Value(10), nodeBalancerModel.ClientConnThrottle)
 	assert.Equal(t, types.Int64Value(5), nodeBalancerModel.ClientUDPSessThrottle)
 	assert.Equal(t, types.StringPointerValue(&hostname), nodeBalancerModel.Hostname)
-	assert.Equal(t, types.StringPointerValue(&IPv4), nodeBalancerModel.IPv4)
+	assert.Equal(t, iptypes.NewIPv4AddressPointerValue(&IPv4), nodeBalancerModel.IPv4)
 	assert.Equal(t, types.StringPointerValue(&IPv6), nodeBalancerModel.IPv6)
 
 	assert.NotNil(t, nodeBalancerModel.Created)
@@ -118,6 +119,47 @@ func TestFlattenNodeBalancer(t *testing.T) {
 	assert.Equal(t, types.StringValue("10.0.0.4/30"), vpcConfigModel[0].IPv4Range)
 
 	assert.True(t, types.StringValue(label).Equal(nodeBalancerModel.Label))
+}
+
+func TestFlattenNodeBalancerIPv4(t *testing.T) {
+	reservedIP := "198.51.100.5"
+	nodeBalancer := &linodego.NodeBalancer{
+		ID:   456,
+		IPv4: &reservedIP,
+	}
+
+	t.Run("preserves user-provided IPv4 when preserveKnown=true", func(t *testing.T) {
+		userProvidedIP := "203.0.113.7"
+		model := &NodeBalancerModel{
+			IPv4: iptypes.NewIPv4AddressValue(userProvidedIP),
+		}
+
+		diags := model.Flatten(context.Background(), nodeBalancer, nil, nil, true)
+		assert.False(t, diags.HasError())
+		assert.Equal(t, iptypes.NewIPv4AddressValue(userProvidedIP), model.IPv4)
+	})
+
+	t.Run("updates IPv4 from API when preserveKnown=false", func(t *testing.T) {
+		apiIP := "203.0.113.7"
+		model := &NodeBalancerModel{
+			IPv4: iptypes.NewIPv4AddressValue(apiIP),
+		}
+
+		nb := &linodego.NodeBalancer{ID: 457, IPv4: &reservedIP}
+		diags := model.Flatten(context.Background(), nb, nil, nil, false)
+		assert.False(t, diags.HasError())
+		assert.Equal(t, iptypes.NewIPv4AddressValue(reservedIP), model.IPv4)
+	})
+
+	t.Run("sets IPv4 from API when model IPv4 is unknown", func(t *testing.T) {
+		model := &NodeBalancerModel{
+			IPv4: iptypes.NewIPv4AddressUnknown(),
+		}
+
+		diags := model.Flatten(context.Background(), nodeBalancer, nil, nil, true)
+		assert.False(t, diags.HasError())
+		assert.Equal(t, iptypes.NewIPv4AddressValue(reservedIP), model.IPv4)
+	})
 }
 
 func TestUpgradeResourceStateValue(t *testing.T) {
