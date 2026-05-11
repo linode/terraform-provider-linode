@@ -440,7 +440,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Type: schema.TypeList,
 		Elem: &schema.Schema{Type: schema.TypeString},
 		Description: "A list of SSH public keys to deploy for the root user on the newly created Linode. " +
-			"Only accepted if 'image' is provided.",
+			"When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified.",
 		Optional:      true,
 		ForceNew:      true,
 		StateFunc:     sshKeyState,
@@ -450,8 +450,8 @@ var resourceSchema = map[string]*schema.Schema{
 		Type: schema.TypeList,
 		Elem: &schema.Schema{Type: schema.TypeString},
 		Description: "A list of Linode usernames. If the usernames have associated SSH keys, the keys will " +
-			"be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. Only accepted if " +
-			"'image' is provided.",
+			"be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. " +
+			"When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified.",
 		Optional:      true,
 		ForceNew:      true,
 		StateFunc:     sshKeyState,
@@ -481,7 +481,7 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 	"kernel": {
 		Type: schema.TypeString,
-		Description: "The kernel to deploy with when creating a Linode from an Image. " +
+		Description: "The kernel to deploy with when creating a Linode. " +
 			"Example values are `linode/latest-64bit`, `linode/grub2`,  etc. " +
 			"See all kernels [here](https://api.linode.com/v4/linode/kernels).",
 		Optional:     true,

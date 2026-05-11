@@ -292,10 +292,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			createOpts.RootPass == "" &&
 			len(createOpts.AuthorizedKeys) == 0 &&
 			len(createOpts.AuthorizedUsers) == 0 {
-			return diag.Errorf(
-				"when `image` is provided, at least one of `root_pass`, `authorized_keys`, " +
-					"or `authorized_users` must be specified",
-			)
+			return diag.Errorf(imageAuthRequiredMessage)
 		}
 
 		if !bootedNull {

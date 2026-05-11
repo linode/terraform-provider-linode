@@ -230,9 +230,9 @@ Just as the Linode API provides, these fields are for the most common provisioni
 
 * `root_pass` - (Optional with `image`) The initial password for the `root` user account. When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified. Updating this field in-place causes Terraform to request a root password reset via the Linode API, which may require powering the Linode off and back on to apply the change. When `skip_implicit_reboots` is enabled and the instance is running, the provider may be unable to perform the required reboot and the update can fail. Plan for potential downtime when changing this value. *This value can not be imported.*
 
-* `authorized_keys` - (Optional with `image`) A list of SSH public keys to deploy for the root user on the newly created Linode. When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified. *This value can not be imported.* *Changing `authorized_keys` forces the creation of a new Linode Instance.*
+* `authorized_keys` - (Optional) A list of SSH public keys to deploy for the root user on the newly created Linode. When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified. *This value can not be imported.* *Changing `authorized_keys` forces the creation of a new Linode Instance.*
 
-* `authorized_users` - (Optional with `image`) A list of Linode usernames. If the usernames have associated SSH keys, the keys will be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified. *This value can not be imported.* *Changing `authorized_users` forces the creation of a new Linode Instance.*
+* `authorized_users` - (Optional) A list of Linode usernames. If the usernames have associated SSH keys, the keys will be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified. *This value can not be imported.* *Changing `authorized_users` forces the creation of a new Linode Instance.*
 
 * `stackscript_id` - (Optional with `image`) The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript. *This value can not be imported.* *Changing `stackscript_id` forces the creation of a new Linode Instance.*
 
@@ -240,7 +240,7 @@ Just as the Linode API provides, these fields are for the most common provisioni
 
 * `swap_size` - (Optional with `image`) When deploying from an Image, this field is optional with a Linode API default of 512mb, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.
 
-* `kernel` - (Optional) The kernel to deploy with when creating a Linode from an Image. Example values are `linode/latest-64bit`, `linode/grub2`, etc. See all kernels [here](https://api.linode.com/v4/linode/kernels). *This value can not be imported.* *Changing `kernel` forces the creation of a new Linode Instance.*
+* `kernel` - (Optional) The kernel to deploy with when creating a Linode. Example values are `linode/latest-64bit`, `linode/grub2`, etc. See all kernels [here](https://api.linode.com/v4/linode/kernels). *This value can not be imported.* *Changing `kernel` forces the creation of a new Linode Instance.*
 
 * `boot_size` - (Optional) The size of the boot disk in MB for the newly-created Linode. Must be at least 8192 MB. The combined `boot_size` and `swap_size` must not exceed the total disk size provided by the instance's plan. *This value can not be imported.* *Changing `boot_size` forces the creation of a new Linode Instance.*
 

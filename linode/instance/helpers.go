@@ -1670,6 +1670,9 @@ func getPlacementGroupCreateOptions(ctx context.Context, d *schema.ResourceData)
 	return &pgOptions
 }
 
+const imageAuthRequiredMessage = "when 'image' is set, at least one of " +
+	"'authorized_keys', 'authorized_users', or 'root_pass' must be specified"
+
 func validateImageAuthRequirements(
 	_ context.Context,
 	d *schema.ResourceDiff,
@@ -1696,10 +1699,7 @@ func validateImageAuthRequirements(
 	}
 
 	if !hasKeys && !hasUsers && !hasRootPass {
-		return fmt.Errorf(
-			"when 'image' is set, at least one of " +
-				"'authorized_keys', 'authorized_users', or 'root_pass' must be specified",
-		)
+		return fmt.Errorf(imageAuthRequiredMessage)
 	}
 
 	return nil
