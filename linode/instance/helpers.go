@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha3"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net"
 	"reflect"
@@ -1699,7 +1700,7 @@ func validateImageAuthRequirements(
 	}
 
 	if !hasKeys && !hasUsers && !hasRootPass {
-		return fmt.Errorf(imageAuthRequiredMessage)
+		return errors.New(imageAuthRequiredMessage)
 	}
 
 	return nil
