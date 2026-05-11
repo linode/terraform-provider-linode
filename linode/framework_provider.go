@@ -96,6 +96,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/regionsvpcavailability"
 	"github.com/linode/terraform-provider-linode/v3/linode/regionvpcavailability"
 	"github.com/linode/terraform-provider-linode/v3/linode/reservedip"
+	"github.com/linode/terraform-provider-linode/v3/linode/reservediptypes"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkeys"
 	"github.com/linode/terraform-provider-linode/v3/linode/stackscript"
@@ -379,5 +380,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		lkenodepool.NewDataSource,
 		regionvpcavailability.NewDataSource,
 		regionsvpcavailability.NewDataSource,
+		reservediptypes.NewDataSource,
 	}
 }
