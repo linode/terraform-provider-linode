@@ -98,6 +98,16 @@ func TestAccResourceNetworkingIP_ephemeral(t *testing.T) {
 						tfjsonpath.New("vpc_nat_1_1"),
 						knownvalue.Null(),
 					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("tags"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("assigned_entity"),
+						knownvalue.NotNull(),
+					),
 				},
 			},
 		},
@@ -174,6 +184,16 @@ func TestAccResourceNetworkingIP_reserved(t *testing.T) {
 						resourceName,
 						tfjsonpath.New("vpc_nat_1_1"),
 						knownvalue.Null(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("tags"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("assigned_entity"),
+						knownvalue.NotNull(),
 					),
 				},
 			},

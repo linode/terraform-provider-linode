@@ -18,12 +18,13 @@ type ResourceModel struct {
 	Type     types.String `tfsdk:"type"`
 	RDNS     types.String `tfsdk:"rdns"`
 
-	Address    types.String `tfsdk:"address"`
-	Gateway    types.String `tfsdk:"gateway"`
-	SubnetMask types.String `tfsdk:"subnet_mask"`
-	Prefix     types.Int64  `tfsdk:"prefix"`
-	VPCNAT1To1 types.Object `tfsdk:"vpc_nat_1_1"`
-	Tags       types.Set    `tfsdk:"tags"`
+	Address        types.String `tfsdk:"address"`
+	Gateway        types.String `tfsdk:"gateway"`
+	SubnetMask     types.String `tfsdk:"subnet_mask"`
+	Prefix         types.Int64  `tfsdk:"prefix"`
+	VPCNAT1To1     types.Object `tfsdk:"vpc_nat_1_1"`
+	Tags           types.Set    `tfsdk:"tags"`
+	AssignedEntity types.Object `tfsdk:"assigned_entity"`
 }
 
 func (m *ResourceModel) FlattenIPAddress(
@@ -64,6 +65,13 @@ func (m *ResourceModel) FlattenIPAddress(
 		return d
 	}
 
+	assignedEntity, assignedEntityDiags := instancenetworking.FlattenAssignedEntity(ip.AssignedEntity)
+	d.Append(assignedEntityDiags...)
+	if d.HasError() {
+		return d
+	}
+	m.AssignedEntity = helper.KeepOrUpdateValue(m.AssignedEntity, assignedEntity, preserveKnown)
+
 	return nil
 }
 
@@ -82,4 +90,5 @@ func (m *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	m.Prefix = helper.KeepOrUpdateValue(m.Prefix, other.Prefix, preserveKnown)
 	m.VPCNAT1To1 = helper.KeepOrUpdateValue(m.VPCNAT1To1, other.VPCNAT1To1, preserveKnown)
 	m.Tags = helper.KeepOrUpdateValue(m.Tags, other.Tags, preserveKnown)
+	m.AssignedEntity = helper.KeepOrUpdateValue(m.AssignedEntity, other.AssignedEntity, preserveKnown)
 }

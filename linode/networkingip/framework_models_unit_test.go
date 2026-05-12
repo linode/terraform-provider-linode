@@ -67,6 +67,11 @@ func TestResourceModelParseInstanceIP(t *testing.T) {
 	assert.Contains(t, data.Tags.String(), "tag1")
 	assert.Contains(t, data.Tags.String(), "tag2")
 
+	// assigned_entity is populated
+	assert.False(t, data.AssignedEntity.IsNull())
+	assert.Contains(t, data.AssignedEntity.String(), "my-linode")
+	assert.Contains(t, data.AssignedEntity.String(), "/v4/linode/instances/12345")
+
 	var vpcNAT1To1 vpcNAT1To1Model
 
 	diags.Append(
@@ -165,6 +170,7 @@ func TestResourceModelParseReservedIPWithTags(t *testing.T) {
 	assert.Equal(t, 2, len(data.Tags.Elements()))
 	assert.Contains(t, data.Tags.String(), "prod")
 	assert.Contains(t, data.Tags.String(), "web")
+	assert.True(t, data.AssignedEntity.IsNull())
 }
 
 func TestResourceModelParseEmptyTags(t *testing.T) {
@@ -190,6 +196,7 @@ func TestResourceModelParseEmptyTags(t *testing.T) {
 	}
 
 	assert.Equal(t, 0, len(data.Tags.Elements()))
+	assert.True(t, data.AssignedEntity.IsNull())
 }
 
 func TestDataSourceModelParseTags(t *testing.T) {

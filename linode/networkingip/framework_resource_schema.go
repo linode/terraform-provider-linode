@@ -117,5 +117,10 @@ var frameworkResourceSchema = schema.Schema{
 				setplanmodifier.UseStateForUnknown(),
 			},
 		},
+		"assigned_entity": schema.ObjectAttribute{
+			Description:    "The entity this IP address has been assigned to. This is null if the address is not assigned to an entity.",
+			Computed:       true,
+			AttributeTypes: instancenetworking.AssignedEntityObjectType.AttrTypes,
+		},
 	},
 }
