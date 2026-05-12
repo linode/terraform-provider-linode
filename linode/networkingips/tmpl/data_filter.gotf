@@ -8,11 +8,9 @@ resource "linode_networking_ip" "test" {
 }
 
 data "linode_networking_ips" "filtered" {
-    depends_on = [linode_networking_ip.test]
-
     filter {
-        name = "reserved"
-        values = ["true"]
+        name   = "address"
+        values = [linode_networking_ip.test.address]
     }
 }
 
