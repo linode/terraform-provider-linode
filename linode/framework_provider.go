@@ -101,6 +101,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/sshkeys"
 	"github.com/linode/terraform-provider-linode/v3/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/v3/linode/stackscripts"
+	"github.com/linode/terraform-provider-linode/v3/linode/tag"
 	"github.com/linode/terraform-provider-linode/v3/linode/token"
 	"github.com/linode/terraform-provider-linode/v3/linode/user"
 	"github.com/linode/terraform-provider-linode/v3/linode/users"
@@ -381,5 +382,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		regionvpcavailability.NewDataSource,
 		regionsvpcavailability.NewDataSource,
 		reservediptypes.NewDataSource,
+		tag.NewDataSource,
 	}
 }
