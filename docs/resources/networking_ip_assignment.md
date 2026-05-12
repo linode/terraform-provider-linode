@@ -47,6 +47,16 @@ The following attributes can be defined under each entry in the `assignments` fi
 
 * `tags` - (Computed) A set of tags associated with this IP address. Populated from the IP address details after assignment.
 
+* `assigned_entity` - (Computed) The entity this IP address has been assigned to. Populated from the IP address details after assignment.
+
+  * `id` - The ID of the entity.
+
+  * `label` - The label of the entity.
+
+  * `type` - The type of the entity.
+
+  * `url` - The URL of the entity.
+
 ## Attribute Reference
 
 * `id` - The unique ID of this resource.

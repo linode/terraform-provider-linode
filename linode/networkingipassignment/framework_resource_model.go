@@ -11,8 +11,9 @@ type NetworkingIPModel struct {
 }
 
 type AssignmentModel struct {
-	Address  types.String `tfsdk:"address"`
-	LinodeID types.Int64  `tfsdk:"linode_id"`
-	Reserved types.Bool   `tfsdk:"reserved"`
-	Tags     types.Set    `tfsdk:"tags"`
+	Address        types.String `tfsdk:"address"`
+	LinodeID       types.Int64  `tfsdk:"linode_id"`
+	Reserved       types.Bool   `tfsdk:"reserved"`
+	Tags           types.Set    `tfsdk:"tags"`
+	AssignedEntity types.Object `tfsdk:"assigned_entity"`
 }

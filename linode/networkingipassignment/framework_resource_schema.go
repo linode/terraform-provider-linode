@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -45,6 +46,11 @@ var frameworkResourceSchema = schema.Schema{
 						Computed:    true,
 						Description: "A set of tags associated with this IP address.",
 						ElementType: types.StringType,
+					},
+					"assigned_entity": schema.ObjectAttribute{
+						Description:    "The entity this IP address has been assigned to. This is null if the address is not assigned to an entity.",
+						Computed:       true,
+						AttributeTypes: instancenetworking.AssignedEntityObjectType.AttrTypes,
 					},
 				},
 			},

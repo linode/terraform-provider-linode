@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
 func NewResource() resource.Resource {
@@ -65,11 +66,12 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// Generate a unique ID for this resource
 	plan.ID = types.StringValue(fmt.Sprintf("%s-%d", plan.Region.ValueString(), len(plan.Assignments)))
 
-	// Computed fields (reserved, tags) are left null here and will be
+	// Computed fields (reserved, tags, assigned_entity) are left null here and will be
 	// populated by Read on the next refresh.
 	for i := range plan.Assignments {
 		plan.Assignments[i].Reserved = types.BoolNull()
 		plan.Assignments[i].Tags = types.SetNull(types.StringType)
+		plan.Assignments[i].AssignedEntity = types.ObjectNull(instancenetworking.AssignedEntityObjectType.AttrTypes)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
@@ -102,10 +104,11 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		}
 
 		retained = append(retained, AssignmentModel{
-			Address:  types.StringValue(ip.Address),
-			LinodeID: types.Int64Value(int64(ip.LinodeID)),
-			Reserved: types.BoolValue(ip.Reserved),
-			Tags:     flattenTagsList(ip.Tags, &resp.Diagnostics),
+			Address:        types.StringValue(ip.Address),
+			LinodeID:       types.Int64Value(int64(ip.LinodeID)),
+			Reserved:       types.BoolValue(ip.Reserved),
+			Tags:           flattenTagsList(ip.Tags, &resp.Diagnostics),
+			AssignedEntity: flattenAssignedEntity(ip.AssignedEntity, &resp.Diagnostics),
 		})
 	}
 	state.Assignments = retained
@@ -168,4 +171,10 @@ func flattenTagsList(tags []string, diags *diag.Diagnostics) types.Set {
 	set, d := types.SetValue(types.StringType, elems)
 	diags.Append(d...)
 	return set
+}
+
+func flattenAssignedEntity(entity *linodego.ReservedIPAssignedEntity, diags *diag.Diagnostics) types.Object {
+	result, d := instancenetworking.FlattenAssignedEntity(entity)
+	diags.Append(d...)
+	return result
 }
