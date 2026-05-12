@@ -217,12 +217,33 @@ func flattenIP(network *linodego.InstanceIP) (
 	}
 	result["tags"] = tagsSet
 
+	assignedEntity, assignedEntityDiags := flattenAssignedEntity(network.AssignedEntity)
+	if assignedEntityDiags.HasError() {
+		return nil, assignedEntityDiags
+	}
+	result["assigned_entity"] = assignedEntity
+
 	obj, d := types.ObjectValue(networkObjectType.AttrTypes, result)
 	if d.HasError() {
 		return nil, d
 	}
 
 	return &obj, nil
+}
+
+func flattenAssignedEntity(entity *linodego.ReservedIPAssignedEntity) (basetypes.ObjectValue, diag.Diagnostics) {
+	if entity == nil {
+		return types.ObjectNull(assignedEntityObjectType.AttrTypes), nil
+	}
+
+	result := map[string]attr.Value{
+		"id":    types.Int64Value(int64(entity.ID)),
+		"label": types.StringValue(entity.Label),
+		"type":  types.StringValue(entity.Type),
+		"url":   types.StringValue(entity.URL),
+	}
+
+	return types.ObjectValue(assignedEntityObjectType.AttrTypes, result)
 }
 
 func flattenVPCIPByValue(vpc linodego.VPCIP) (

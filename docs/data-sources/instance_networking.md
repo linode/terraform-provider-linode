@@ -63,7 +63,15 @@ A list of private IP Address objects belonging to this Linode.
 
 * `address` - The private IPv4 address.
 
+* `assigned_entity` - The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity.
+  * `id` - The ID of the entity.
+  * `label` - The label of the entity.
+  * `type` - The type of the entity.
+  * `url` - The URL of the entity.
+
 * `gateway` - The default gateway for this address.
+
+* `interface_id` - The Linode interface ID that this IP address is assigned to.
 
 * `linode_id` - The ID of the Linode this address currently belongs to.
 
@@ -75,9 +83,18 @@ A list of private IP Address objects belonging to this Linode.
 
 * `region` - (Filterable) The Region this address resides in.
 
+* `reserved` - Whether this IP address is a reserved IP.
+
 * `subnet_mask` - The mask that separates host bits from network bits for this address.
 
+* `tags` - A set of tags associated with this IP address.
+
 * `type` - The type of address this is.
+
+* `vpc_nat_1_1` - IPv4 address configured as a 1:1 NAT for this Interface.
+  * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
+  * `subnet_id` - The `id` of the VPC Subnet for this Interface.
+  * `vpc_id` - The `id` of the VPC configured for this Interface.
 
 ### Public
 
@@ -107,6 +124,12 @@ A list of public IP Address objects belonging to this Linode.
 
 * `type` - The type of address this is.
 
+* `assigned_entity` - The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity.
+  * `id` - The ID of the entity.
+  * `label` - The label of the entity.
+  * `type` - The type of the entity.
+  * `url` - The URL of the entity.
+
 * `vpc_nat_1_1` - IPv4 address configured as a 1:1 NAT for this Interface.
   * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
   * `subnet_id` - The `id` of the VPC Subnet for this Interface.
@@ -117,6 +140,12 @@ A list of public IP Address objects belonging to this Linode.
 A list of reserved IP Address objects belonging to this Linode.
 
 * `address` - The IP address.
+
+* `assigned_entity` - The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity.
+  * `id` - The ID of the entity.
+  * `label` - The label of the entity.
+  * `type` - The type of the entity.
+  * `url` - The URL of the entity.
 
 * `gateway` - (Nullable) The default gateway for this address.
 
@@ -150,6 +179,12 @@ A list of reserved IP Address objects belonging to this Linode.
 A list of shared IP Address objects assigned to this Linode.
 
 * `address` - The IP address.
+
+* `assigned_entity` - The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity.
+  * `id` - The ID of the entity.
+  * `label` - The label of the entity.
+  * `type` - The type of the entity.
+  * `url` - The URL of the entity.
 
 * `gateway` - (Nullable) The default gateway for this address.
 
@@ -233,7 +268,15 @@ A link-local IPv6 address that exists in Linode’s system.
 
 * `address` - The IPv6 link-local address.
 
+* `assigned_entity` - The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity.
+  * `id` - The ID of the entity.
+  * `label` - The label of the entity.
+  * `type` - The type of the entity.
+  * `url` - The URL of the entity.
+
 * `gateway` - The default gateway for this address.
+
+* `interface_id` - The Linode interface ID that this IP address is assigned to.
 
 * `linode_id` - The ID of the Linode this address currently belongs to.
 
@@ -245,9 +288,18 @@ A link-local IPv6 address that exists in Linode’s system.
 
 * `region` - (Filterable) The Region this address resides in.
 
+* `reserved` - Whether this IP address is a reserved IP.
+
 * `subnet_mask` - The subnet mask.
 
+* `tags` - A set of tags associated with this IP address.
+
 * `type` - The type of address this is.
+
+* `vpc_nat_1_1` - IPv4 address configured as a 1:1 NAT for this Interface.
+  * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
+  * `subnet_id` - The `id` of the VPC Subnet for this Interface.
+  * `vpc_id` - The `id` of the VPC configured for this Interface.
 
 ### SLAAC
 
@@ -255,7 +307,15 @@ A SLAAC IPv6 address object that exists in Linode’s system.
 
 * `address` - The address.
 
+* `assigned_entity` - The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity.
+  * `id` - The ID of the entity.
+  * `label` - The label of the entity.
+  * `type` - The type of the entity.
+  * `url` - The URL of the entity.
+
 * `gateway` - The default gateway for this address.
+
+* `interface_id` - The Linode interface ID that this IP address is assigned to.
 
 * `linode_id` - The ID of the Linode this address currently belongs to.
 
@@ -267,6 +327,15 @@ A SLAAC IPv6 address object that exists in Linode’s system.
 
 * `region` - (Filterable) The Region this address resides in.
 
+* `reserved` - Whether this IP address is a reserved IP.
+
 * `subnet_mask` - The subnet mask.
 
+* `tags` - A set of tags associated with this IP address.
+
 * `type` - The type of address this is.
+
+* `vpc_nat_1_1` - IPv4 address configured as a 1:1 NAT for this Interface.
+  * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
+  * `subnet_id` - The `id` of the VPC Subnet for this Interface.
+  * `vpc_id` - The `id` of the VPC configured for this Interface.

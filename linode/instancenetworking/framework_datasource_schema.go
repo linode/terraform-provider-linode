@@ -14,21 +14,31 @@ var VPCNAT1To1Type = types.ObjectType{
 	},
 }
 
+var assignedEntityObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"id":    types.Int64Type,
+		"label": types.StringType,
+		"type":  types.StringType,
+		"url":   types.StringType,
+	},
+}
+
 var networkObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
-		"address":      types.StringType,
-		"gateway":      types.StringType,
-		"prefix":       types.Int64Type,
-		"rdns":         types.StringType,
-		"region":       types.StringType,
-		"subnet_mask":  types.StringType,
-		"type":         types.StringType,
-		"public":       types.BoolType,
-		"linode_id":    types.Int64Type,
-		"interface_id": types.Int64Type,
-		"vpc_nat_1_1":  VPCNAT1To1Type,
-		"reserved":     types.BoolType,
-		"tags":         types.SetType{ElemType: types.StringType},
+		"address":         types.StringType,
+		"gateway":         types.StringType,
+		"prefix":          types.Int64Type,
+		"rdns":            types.StringType,
+		"region":          types.StringType,
+		"subnet_mask":     types.StringType,
+		"type":            types.StringType,
+		"public":          types.BoolType,
+		"linode_id":       types.Int64Type,
+		"interface_id":    types.Int64Type,
+		"vpc_nat_1_1":     VPCNAT1To1Type,
+		"reserved":        types.BoolType,
+		"tags":            types.SetType{ElemType: types.StringType},
+		"assigned_entity": assignedEntityObjectType,
 	},
 }
 
