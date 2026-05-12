@@ -35,6 +35,12 @@ var testInstanceIP = &linodego.InstanceIP{
 		SubnetID: 456,
 		VPCID:    123,
 	},
+	AssignedEntity: &linodego.ReservedIPAssignedEntity{
+		ID:    12345,
+		Label: "my-linode",
+		Type:  "linode",
+		URL:   "/v4/linode/instances/12345",
+	},
 }
 
 func TestResourceModelParseInstanceIP(t *testing.T) {
@@ -105,6 +111,11 @@ func TestDataSourceModelParseInstanceIP(t *testing.T) {
 	assert.Equal(t, 2, len(data.Tags.Elements()))
 	assert.Contains(t, data.Tags.String(), "tag1")
 	assert.Contains(t, data.Tags.String(), "tag2")
+
+	// assigned_entity is populated
+	assert.False(t, data.AssignedEntity.IsNull())
+	assert.Contains(t, data.AssignedEntity.String(), "my-linode")
+	assert.Contains(t, data.AssignedEntity.String(), "/v4/linode/instances/12345")
 
 	var vpcNAT1To1 vpcNAT1To1Model
 

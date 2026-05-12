@@ -217,7 +217,7 @@ func flattenIP(network *linodego.InstanceIP) (
 	}
 	result["tags"] = tagsSet
 
-	assignedEntity, assignedEntityDiags := flattenAssignedEntity(network.AssignedEntity)
+	assignedEntity, assignedEntityDiags := FlattenAssignedEntity(network.AssignedEntity)
 	if assignedEntityDiags.HasError() {
 		return nil, assignedEntityDiags
 	}
@@ -231,9 +231,9 @@ func flattenIP(network *linodego.InstanceIP) (
 	return &obj, nil
 }
 
-func flattenAssignedEntity(entity *linodego.ReservedIPAssignedEntity) (basetypes.ObjectValue, diag.Diagnostics) {
+func FlattenAssignedEntity(entity *linodego.ReservedIPAssignedEntity) (basetypes.ObjectValue, diag.Diagnostics) {
 	if entity == nil {
-		return types.ObjectNull(assignedEntityObjectType.AttrTypes), nil
+		return types.ObjectNull(AssignedEntityObjectType.AttrTypes), nil
 	}
 
 	result := map[string]attr.Value{
@@ -243,7 +243,7 @@ func flattenAssignedEntity(entity *linodego.ReservedIPAssignedEntity) (basetypes
 		"url":   types.StringValue(entity.URL),
 	}
 
-	return types.ObjectValue(assignedEntityObjectType.AttrTypes, result)
+	return types.ObjectValue(AssignedEntityObjectType.AttrTypes, result)
 }
 
 func flattenVPCIPByValue(vpc linodego.VPCIP) (

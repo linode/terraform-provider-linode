@@ -311,11 +311,13 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		})
 		err := client.DeleteReservedIPAddress(ctx, state.Address.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Failed to delete Reserved IP",
-				err.Error(),
-			)
-			return
+			if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
+				resp.Diagnostics.AddError(
+					"Failed to delete Reserved IP",
+					err.Error(),
+				)
+				return
+			}
 		}
 	}
 }

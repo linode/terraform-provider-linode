@@ -14,7 +14,7 @@ var VPCNAT1To1Type = types.ObjectType{
 	},
 }
 
-var assignedEntityObjectType = types.ObjectType{
+var AssignedEntityObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"id":    types.Int64Type,
 		"label": types.StringType,
@@ -38,7 +38,7 @@ var networkObjectType = types.ObjectType{
 		"vpc_nat_1_1":     VPCNAT1To1Type,
 		"reserved":        types.BoolType,
 		"tags":            types.SetType{ElemType: types.StringType},
-		"assigned_entity": assignedEntityObjectType,
+		"assigned_entity": AssignedEntityObjectType,
 	},
 }
 
