@@ -26,6 +26,7 @@ type InstanceIPModel struct {
 	IPVPCNAT1To1     types.List   `tfsdk:"vpc_nat_1_1"`
 	Reserved         types.Bool   `tfsdk:"reserved"`
 	Tags             types.Set    `tfsdk:"tags"`
+	AssignedEntity   types.Object `tfsdk:"assigned_entity"`
 }
 
 func (m *InstanceIPModel) flattenInstanceIP(
@@ -78,6 +79,13 @@ func (m *InstanceIPModel) flattenInstanceIP(
 	tags := helper.StringSliceToFrameworkValueSlice(ip.Tags)
 	m.Tags = helper.KeepOrUpdateSet(types.StringType, m.Tags, tags, preserveKnown, &diags)
 
+	assignedEntity, assignedEntityDiags := instancenetworking.FlattenAssignedEntity(ip.AssignedEntity)
+	diags.Append(assignedEntityDiags...)
+	if diags.HasError() {
+		return diags
+	}
+	m.AssignedEntity = helper.KeepOrUpdateValue(m.AssignedEntity, assignedEntity, preserveKnown)
+
 	return diags
 }
 
@@ -107,6 +115,7 @@ func (m *InstanceIPModel) CopyFrom(
 		preserveKnown,
 	)
 	m.Tags = helper.KeepOrUpdateValue(m.Tags, other.Tags, preserveKnown)
+	m.AssignedEntity = helper.KeepOrUpdateValue(m.AssignedEntity, other.AssignedEntity, preserveKnown)
 
 	return diags
 }
