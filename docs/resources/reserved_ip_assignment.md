@@ -28,9 +28,9 @@ The following arguments are supported:
 
 * `address` - (Required) The reserved IPv4 address to assign to the Linode.
 
-* `public` - (Optional) Whether the IP address is public. Defaults to `true`. Changing this forces creation of a new resource.
+* `public` - (Optional) Whether the IP address is public. Defaults to `true`. This must match the reserved IP's existing public/private status. Changing this forces creation of a new resource.
 
-* `rdns` - (Optional) The reverse DNS assigned to this address.
+* `rdns` - (Optional) The reverse DNS assigned to this address. Configured via a separate API call after the IP is assigned.
 
 * `apply_immediately` - (Optional) If true, the instance will be rebooted to update network interfaces. Defaults to `false`.
 
