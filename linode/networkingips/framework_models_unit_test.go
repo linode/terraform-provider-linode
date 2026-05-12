@@ -22,6 +22,12 @@ func TestIPAddressModelParseTags(t *testing.T) {
 		Region:     "us-mia",
 		Reserved:   true,
 		Tags:       []string{"alpha", "beta"},
+		AssignedEntity: &linodego.ReservedIPAssignedEntity{
+			ID:    100,
+			Label: "my-linode",
+			Type:  "linode",
+			URL:   "/v4/linode/instances/100",
+		},
 	}
 
 	model := &IPAddressModel{}
@@ -33,6 +39,10 @@ func TestIPAddressModelParseTags(t *testing.T) {
 	assert.Equal(t, 2, len(model.Tags.Elements()))
 	assert.Contains(t, model.Tags.String(), "alpha")
 	assert.Contains(t, model.Tags.String(), "beta")
+
+	assert.False(t, model.AssignedEntity.IsNull())
+	assert.Contains(t, model.AssignedEntity.String(), "my-linode")
+	assert.Contains(t, model.AssignedEntity.String(), "/v4/linode/instances/100")
 }
 
 func TestIPAddressModelParseEmptyTags(t *testing.T) {
@@ -49,6 +59,7 @@ func TestIPAddressModelParseEmptyTags(t *testing.T) {
 	assert.False(t, diags.HasError())
 
 	assert.Equal(t, 0, len(model.Tags.Elements()))
+	assert.True(t, model.AssignedEntity.IsNull())
 }
 
 func TestFilterModelParseIPAddresses(t *testing.T) {

@@ -84,6 +84,11 @@ func TestAccDataSourceNetworkingIP_list(t *testing.T) {
 						tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("tags"),
 						knownvalue.NotNull(),
 					),
+					statecheck.ExpectKnownValue(
+						dataResourceName,
+						tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("assigned_entity"),
+						knownvalue.Null(),
+					),
 				},
 			},
 		},
@@ -121,6 +126,11 @@ func TestAccDataSourceNetworkingIP_filterReserved(t *testing.T) {
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("public"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("prefix"), knownvalue.Int64Exact(24)),
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("subnet_mask"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(
+						dataResourceName,
+						tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("assigned_entity"),
+						knownvalue.Null(),
+					),
 				},
 			},
 		},
