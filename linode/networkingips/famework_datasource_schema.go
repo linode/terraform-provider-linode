@@ -13,7 +13,7 @@ var filterConfig = frameworkfilter.Config{
 	"rdns":     {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"address":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"prefix":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
-	"reserved": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
+	"reserved": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
 
 	"gateway":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"subnet_mask": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},

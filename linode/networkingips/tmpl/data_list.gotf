@@ -1,17 +1,5 @@
 {{ define "networking_ip_data_list" }}
 
-resource "linode_networking_ip" "test" {
-    type     = "ipv4"
-    region   = "us-mia"
-    reserved = true
-    public   = true
-}
-
-data "linode_networking_ips" "list" {
-    filter {
-        name   = "address"
-        values = [linode_networking_ip.test.address]
-    }
-}
+data "linode_networking_ips" "list" {}
 
 {{ end }}
