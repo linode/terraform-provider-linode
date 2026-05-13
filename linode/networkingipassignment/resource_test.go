@@ -57,11 +57,21 @@ func TestAccResourceNetworkingIPsAssign(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "assignments.0.address"),
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
-					// reserved, tags, and assigned_entity are null after create and
-					// populated only on subsequent refresh via GET /networking/ips/{address}.
+					// Computed fields are null immediately after create; they are
+					// populated on the next refresh via GET /networking/ips/{address}.
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assignments").AtSliceIndex(0).AtMapKey("reserved"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assignments").AtSliceIndex(0).AtMapKey("tags"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assignments").AtSliceIndex(0).AtMapKey("assigned_entity"), knownvalue.Null()),
+				},
+			},
+			{
+				// A subsequent plan/apply triggers Read which populates computed fields
+				// via GET /networking/ips/{address}.
+				Config: tmpl.NetworkingIPsAssign(t, instanceName, testRegion),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assignments").AtSliceIndex(0).AtMapKey("reserved"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assignments").AtSliceIndex(0).AtMapKey("tags"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assignments").AtSliceIndex(0).AtMapKey("assigned_entity"), knownvalue.NotNull()),
 				},
 			},
 			// Removed ImportState step as it's no longer supported

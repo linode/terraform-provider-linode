@@ -9,6 +9,11 @@ resource "linode_networking_ip" "test" {
 
 data "linode_networking_ips" "filtered" {
     filter {
+        name   = "reserved"
+        values = ["true"]
+    }
+
+    filter {
         name   = "address"
         values = [linode_networking_ip.test.address]
     }
