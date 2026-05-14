@@ -60,6 +60,8 @@ The following arguments are supported:
   * `cannot_delete` - Prevents the resource from being deleted, rebuilt, or transferred to another account.
   * `cannot_delete_with_subresources` - Prevents the resource from being deleted, rebuilt, or transferred, and also prevents deletion of subresources (disks, configs, interfaces, and IP addresses).
 
+-> **Note** The cannot_delete_with_subresources form of lock_type that's available with other resources does not apply to an entity_type of lkecluster or lkenodepool
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
