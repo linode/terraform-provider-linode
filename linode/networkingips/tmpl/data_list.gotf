@@ -1,5 +1,14 @@
 {{ define "networking_ip_data_list" }}
 
-data "linode_networking_ips" "list" {}
+resource "linode_networking_ip" "test" {
+    type     = "ipv4"
+    region   = "{{ .Region }}"
+    reserved = true
+    public   = true
+}
+
+data "linode_networking_ips" "list" {
+    depends_on = [linode_networking_ip.test]
+}
 
 {{ end }}

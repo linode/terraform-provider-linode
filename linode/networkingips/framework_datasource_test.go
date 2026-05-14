@@ -37,7 +37,7 @@ func TestAccDataSourceNetworkingIP_list(t *testing.T) {
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataList(t),
+				Config: tmpl.DataList(t, testRegion),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						dataResourceName,
