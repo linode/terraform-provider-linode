@@ -43,23 +43,25 @@ The following attributes can be defined under each entry in the `assignments` fi
 
 * `linode_id` - (Required) The ID of the Linode to which the IP address will be assigned.
 
-* `reserved` - (Computed) Whether this IP address is a reserved IP. Populated from the IP address details after assignment.
-
-* `tags` - (Computed) A set of tags associated with this IP address. Populated from the IP address details after assignment.
-
-* `assigned_entity` - (Computed) The entity this IP address has been assigned to. Populated from the IP address details after assignment.
-
-  * `id` - The ID of the entity.
-
-  * `label` - The label of the entity.
-
-  * `type` - The type of the entity.
-
-  * `url` - The URL of the entity.
-
 ## Attribute Reference
 
 * `id` - The unique ID of this resource.
+
+* `assignments` - The list of IP/Linode assignments. In addition to the configurable arguments above, each entry exposes the following computed attributes after assignment:
+
+  * `reserved` - Whether this IP address is a reserved IP.
+
+  * `tags` - A set of tags associated with this IP address.
+
+  * `assigned_entity` - The entity this IP address has been assigned to.
+
+    * `id` - The ID of the entity.
+
+    * `label` - The label of the entity.
+
+    * `type` - The type of the entity.
+
+    * `url` - The URL of the entity.
 
 ## Import
 
