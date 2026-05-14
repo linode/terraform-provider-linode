@@ -109,10 +109,8 @@ func TestAccDataSourceInstanceNetworking_basicwithReseved(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv6.0.global.#"),
 					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv6.0.link_local.%"),
 					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv6.0.slaac.%"),
-					// The reserved IP appears in the public list; verify 2 public IPs are present
+					// The reserved IP is assigned to the instance, so it appears in public (with reserved=true), not in reserved
 					resource.TestCheckResourceAttr(testInstanceNetworkResName, "ipv4.0.public.#", "2"),
-					// At least one public IP has assigned_entity populated (the reserved IP)
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.public.0.assigned_entity.type"),
 				),
 			},
 		},

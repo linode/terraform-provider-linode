@@ -36,7 +36,7 @@ The following arguments are supported:
 
 The following arguments are only available when reserving an IP address:
 
-* `reserved` - (Optional) Whether this IP address should be a reserved IP. Changing this value on an assigned IP triggers an in-place update (not replacement). Setting `reserved = true` converts an ephemeral IP to reserved. Setting `reserved = false` converts a reserved IP to ephemeral (or deletes it if unassigned).
+* `reserved` - (Optional) Whether this IP address should be a reserved IP. Changing this value on an assigned IP triggers an in-place update (not replacement). Setting `reserved = true` converts an ephemeral IP to reserved. Setting `reserved = false` converts a reserved IP to ephemeral when the address is assigned. If the reserved IP is unassigned, the provider deletes the IP during the update and returns an `IP Address Deleted During Update` error; after this occurs, remove the resource from your Terraform configuration so future applies succeed.
 
 * `region` - (Optional) The region where the reserved IP should be allocated.
 
