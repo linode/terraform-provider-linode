@@ -154,10 +154,17 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	var devices *linodego.InstanceConfigDeviceMap
+	var err error
 	if devicesBlock, ok := d.GetOk("device"); ok {
-		devices = expandDevicesBlock(devicesBlock)
+		devices, err = expandDevicesBlock(devicesBlock)
+		if err != nil {
+			return diag.Errorf("failed to expand devices block: %s", err)
+		}
 	} else if devicesBlock, ok := d.GetOk("devices"); ok {
-		devices = expandDevicesNamedBlock(devicesBlock)
+		devices, err = expandDevicesNamedBlock(devicesBlock)
+		if err != nil {
+			return diag.Errorf("failed to expand devices named block: %s", err)
+		}
 	}
 	if devices != nil {
 		createOpts.Devices = *devices
@@ -213,14 +220,20 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if d.HasChange("device") {
 		if devices, ok := d.GetOk("device"); ok {
-			putRequest.Devices = expandDevicesBlock(devices)
+			putRequest.Devices, err = expandDevicesBlock(devices)
+			if err != nil {
+				return diag.Errorf("failed to expand devices block: %s", err)
+			}
 		}
 		shouldUpdate = true
 	}
 
 	if d.HasChange("devices") {
 		if devices, ok := d.GetOk("devices"); ok {
-			putRequest.Devices = expandDevicesNamedBlock(devices)
+			putRequest.Devices, err = expandDevicesNamedBlock(devices)
+			if err != nil {
+				return diag.Errorf("failed to expand devices named block: %s", err)
+			}
 		}
 		shouldUpdate = true
 	}
