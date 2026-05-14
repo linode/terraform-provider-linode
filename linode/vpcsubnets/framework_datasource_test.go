@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/vpcsubnets/tmpl"
 )
@@ -35,7 +36,7 @@ func TestAccDataSourceVPCSubnets_basic_smoke(t *testing.T) {
 
 	resourceName := "data.linode_vpc_subnets.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"}, "core")
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
@@ -72,6 +73,11 @@ func TestAccDataSourceVPCSubnets_basic_smoke(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("nodebalancers"),
+						knownvalue.ListSizeExact(0),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
 						tfjsonpath.New("vpc_subnets").
 							AtSliceIndex(0).
 							AtMapKey("linodes").
@@ -104,8 +110,13 @@ func TestAccDataSourceVPCSubnets_dualStack(t *testing.T) {
 	resourceName := "data.linode_vpc_subnets.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
-	// TODO (VPC Dual Stack): Remove region hardcoding
-	targetRegion := "no-osl-1"
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+		linodego.CapabilityVPCs,
+		linodego.CapabilityVPCDualStack,
+	}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -162,7 +173,7 @@ func TestAccDataSourceVPCSubnets_filterByLabel(t *testing.T) {
 
 	resourceName := "data.linode_vpc_subnets.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"}, "core")
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}

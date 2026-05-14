@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/volume/tmpl"
 )
@@ -31,6 +32,7 @@ func TestAccDataSourceVolume_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "linode_id", "0"),
 					resource.TestCheckResourceAttrSet(resourceName, "created"),
 					resource.TestCheckResourceAttrSet(resourceName, "updated"),
+					resource.TestCheckResourceAttrSet(resourceName, "io_ready"),
 					resource.TestCheckResourceAttr(resourceName, "encryption", "enabled"),
 				),
 			},
@@ -46,7 +48,7 @@ func TestAccDataSourceVolume_withBlockStorageEncryption(t *testing.T) {
 
 	// Resolve a region with support for Block Storage Encryption
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{"Linodes", "Block Storage Encryption"},
+		[]string{linodego.CapabilityLinodes, linodego.CapabilityBlockStorageEncryption},
 		"core",
 	)
 	if err != nil {

@@ -334,6 +334,21 @@ func (r *Resource) Delete(
 		return
 	}
 
+	locked, err := helper.LinodeIsLockedWithCannotDeleteSubresources(ctx, client, linodeID)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to Get Locks of Linode", err.Error())
+		return
+	}
+
+	if locked {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Can't Delete Disk %d in Linode %d", id, linodeID),
+			"the resource lock on the Linode prohibits deletion "+
+				"of its subresources, which includes this disk",
+		)
+		return
+	}
+
 	deleteTimeout, diags := state.Timeouts.Delete(ctx, DefaultVolumeDeleteTimeout)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -351,7 +366,7 @@ func (r *Resource) Delete(
 	defer cancel()
 
 	d := runDiskOperation(
-		ctx, client, r.Meta, linodeID, timeoutSeconds, func() (resultDiag diag.Diagnostics) {
+		ctx, client, r.Meta, linodeID, timeoutSeconds, true, func() (resultDiag diag.Diagnostics) {
 			tflog.Info(ctx, "Deleting instance disk")
 			p, err := client.NewEventPollerWithSecondary(
 				ctx,

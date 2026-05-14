@@ -3,6 +3,7 @@ package instanceconfig
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/instance"
 )
 
@@ -33,7 +34,7 @@ var resourceSchema = map[string]*schema.Schema{
 
 	"devices": {
 		Type:          schema.TypeList,
-		Elem:          &schema.Resource{Schema: devicesSchema},
+		Elem:          &schema.Resource{Schema: devicesSchema()},
 		Optional:      true,
 		Computed:      true,
 		MaxItems:      1,
@@ -108,76 +109,30 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 }
 
-var devicesSchema = map[string]*schema.Schema{
-	"sda": {
-		Type:        schema.TypeList,
-		Description: deviceDescription,
-		MaxItems:    1,
-		Optional:    true,
-		Elem:        &schema.Resource{Schema: deviceSchema},
-	},
-	"sdb": {
-		Type:        schema.TypeList,
-		Description: deviceDescription,
-		MaxItems:    1,
-		Optional:    true,
-		Elem:        &schema.Resource{Schema: deviceSchema},
-	},
-	"sdc": {
-		Type:        schema.TypeList,
-		Description: deviceDescription,
-		MaxItems:    1,
-		Optional:    true,
-		Elem:        &schema.Resource{Schema: deviceSchema},
-	},
-	"sdd": {
-		Type:        schema.TypeList,
-		Description: deviceDescription,
-		MaxItems:    1,
-		Optional:    true,
-		Elem:        &schema.Resource{Schema: deviceSchema},
-	},
-	"sde": {
-		Type:        schema.TypeList,
-		Description: deviceDescription,
-		MaxItems:    1,
-		Optional:    true,
-		Elem:        &schema.Resource{Schema: deviceSchema},
-	},
-	"sdf": {
-		Type:        schema.TypeList,
-		Description: deviceDescription,
-		MaxItems:    1,
-		Optional:    true,
-		Elem:        &schema.Resource{Schema: deviceSchema},
-	},
-	"sdg": {
-		Type:        schema.TypeList,
-		Description: deviceDescription,
-		MaxItems:    1,
-		Optional:    true,
-		Elem:        &schema.Resource{Schema: deviceSchema},
-	},
-	"sdh": {
-		Type:        schema.TypeList,
-		Description: deviceDescription,
-		MaxItems:    1,
-		Optional:    true,
-		Elem:        &schema.Resource{Schema: deviceSchema},
-	},
+func devicesSchema() map[string]*schema.Schema {
+	result := make(map[string]*schema.Schema, 64)
+
+	for _, key := range helper.GetConfigDeviceKeys() {
+		result[key] = &schema.Schema{
+			Type:        schema.TypeList,
+			Description: deviceDescription,
+			MaxItems:    1,
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: deviceSchema},
+		}
+	}
+
+	return result
 }
 
 var deviceV2Schema = map[string]*schema.Schema{
 	"device_name": {
 		Type:        schema.TypeString,
 		Required:    true,
-		Description: "The Disk ID to map to this disk slot",
+		Description: "The device slot identifier (for example, sda, sdb) to map a disk or volume into",
 		ValidateDiagFunc: validation.ToDiagFunc(
 			validation.StringInSlice(
-				[]string{
-					"sda", "sdb", "sdc", "sdd",
-					"sde", "sdf", "sdg", "sdh",
-				},
+				helper.GetConfigDeviceKeys(),
 				false,
 			),
 		),

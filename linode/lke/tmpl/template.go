@@ -119,6 +119,11 @@ func EnterpriseNoPools(t testing.TB, name, version, region string) string {
 		"lke_no_pools", TemplateData{Label: name, K8sVersion: version, Region: region, Tier: "enterprise"})
 }
 
+func EnterpriseWithPoolSkipDeletePoll(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_enterprise_with_pool_skip_delete_poll", TemplateData{Label: name, K8sVersion: version, Region: region})
+}
+
 func StandardNoPools(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_no_pools", TemplateData{Label: name, K8sVersion: version, Region: region, Tier: "standard"})
@@ -180,4 +185,21 @@ func TierConditional(t testing.TB, name, version, region, tier string) string {
 		"lke_cluster_tier_conditional",
 		TemplateData{Label: name, K8sVersion: version, Region: region, Tier: tier},
 	)
+}
+
+func TierConditionalWithUpdateStrategy(t testing.TB, name, version, region, tier, updateStrategy string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_tier_conditional",
+		TemplateData{Label: name, K8sVersion: version, Region: region, Tier: tier, UpdateStrategy: updateStrategy},
+	)
+}
+
+func DiskEncryptionPools(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_pools_disk_encryption", TemplateData{Label: name, K8sVersion: version, Region: region})
+}
+
+func DiskEncryptionPoolsUpdated(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_pools_disk_encryption_updated", TemplateData{Label: name, K8sVersion: version, Region: region})
 }

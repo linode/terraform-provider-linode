@@ -13,102 +13,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/stringplanmodifiers"
 )
 
-func TestUseStateForUnknownIfNotNull(t *testing.T) {
-	testCases := map[string]struct {
-		request  planmodifier.StringRequest
-		expected *planmodifier.StringResponse
-	}{
-		"null-state": {
-			// resource creation - state is null
-			request: planmodifier.StringRequest{
-				State: tfsdk.State{
-					Raw: tftypes.NewValue(tftypes.Object{}, nil),
-				},
-				StateValue:  types.StringNull(),
-				PlanValue:   types.StringUnknown(),
-				ConfigValue: types.StringNull(),
-			},
-			expected: &planmodifier.StringResponse{
-				PlanValue: types.StringUnknown(),
-			},
-		},
-		"known-plan": {
-			// the plan is already known, don't change it
-			request: planmodifier.StringRequest{
-				State: tfsdk.State{
-					Raw: tftypes.NewValue(tftypes.Object{}, map[string]tftypes.Value{}),
-				},
-				StateValue:  types.StringValue("old-value"),
-				PlanValue:   types.StringValue("new-value"),
-				ConfigValue: types.StringNull(),
-			},
-			expected: &planmodifier.StringResponse{
-				PlanValue: types.StringValue("new-value"),
-			},
-		},
-		"unknown-config": {
-			// the config is unknown, don't interfere
-			request: planmodifier.StringRequest{
-				State: tfsdk.State{
-					Raw: tftypes.NewValue(tftypes.Object{}, map[string]tftypes.Value{}),
-				},
-				StateValue:  types.StringValue("state-value"),
-				PlanValue:   types.StringUnknown(),
-				ConfigValue: types.StringUnknown(),
-			},
-			expected: &planmodifier.StringResponse{
-				PlanValue: types.StringUnknown(),
-			},
-		},
-		"null-state-value": {
-			// the state value is null, don't use it
-			request: planmodifier.StringRequest{
-				State: tfsdk.State{
-					Raw: tftypes.NewValue(tftypes.Object{}, map[string]tftypes.Value{}),
-				},
-				StateValue:  types.StringNull(),
-				PlanValue:   types.StringUnknown(),
-				ConfigValue: types.StringNull(),
-			},
-			expected: &planmodifier.StringResponse{
-				PlanValue: types.StringUnknown(),
-			},
-		},
-		"use-state-value": {
-			// should use the state value
-			request: planmodifier.StringRequest{
-				State: tfsdk.State{
-					Raw: tftypes.NewValue(tftypes.Object{}, map[string]tftypes.Value{}),
-				},
-				StateValue:  types.StringValue("state-value"),
-				PlanValue:   types.StringUnknown(),
-				ConfigValue: types.StringNull(),
-			},
-			expected: &planmodifier.StringResponse{
-				PlanValue: types.StringValue("state-value"),
-			},
-		},
-	}
-
-	for name, testCase := range testCases {
-		name, testCase := name, testCase
-
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			req := testCase.request
-			resp := &planmodifier.StringResponse{
-				PlanValue: req.PlanValue,
-			}
-			stringplanmodifiers.UseStateForUnknownIfNotNull().PlanModifyString(context.Background(), req, resp)
-
-			if !resp.PlanValue.Equal(testCase.expected.PlanValue) {
-				t.Errorf("expected %s, got %s", testCase.expected.PlanValue, resp.PlanValue)
-			}
-		})
-	}
-}
-
 func TestUseStateForUnknownIf(t *testing.T) {
 	testCases := map[string]struct {
 		request   planmodifier.StringRequest
@@ -186,8 +90,6 @@ func TestUseStateForUnknownIf(t *testing.T) {
 	}
 
 	for name, testCase := range testCases {
-		name, testCase := name, testCase
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 

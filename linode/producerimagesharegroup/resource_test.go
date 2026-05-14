@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroup/tmpl"
 )
@@ -46,7 +47,7 @@ func TestAccResourceImageShareGroup_updates(t *testing.T) {
 
 	resourceName := "linode_producer_image_share_group.foobar"
 	label := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Linodes"}, "core")
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		t.Fatalf("failed to get test region: %s", err)
 	}

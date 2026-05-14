@@ -165,6 +165,29 @@ resource "linode_lke_cluster" "my-cluster" {
 }
 ```
 
+Creating an LKE cluster with disk encryption:
+
+```terraform
+resource "linode_lke_cluster" "my-cluster" {
+    label       = "my-cluster"
+    k8s_version = "1.32"
+    region      = "us-central"
+    tags        = ["prod"]
+
+    pool {
+        type            = "g6-standard-2"
+        count           = 2
+        disk_encryption = "enabled"
+    }
+
+    pool {
+        type            = "g6-standard-1"
+        count           = 1
+        disk_encryption = "disabled"
+    }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -220,6 +243,8 @@ The following arguments are supported in the `pool` specification block:
   * `value` - (Required) The Kubernetes taint value.
 
 * [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
+
+* `disk_encryption` - (Optional) The disk encryption policy for nodes in this pool. Must be `enabled` or `disabled`. If omitted, the account default encryption policy is applied. Changing this value will cause the pool to be replaced (deleted and recreated).
 
 * `k8s_version` - (Optional) The k8s version of the nodes in this Node Pool. For LKE enterprise only and may not currently available to all users even under v4beta.
 
@@ -278,10 +303,6 @@ In addition to all arguments above, the following attributes are exported:
 * `pool` - Additional nested attributes:
 
   * `id` - The ID of the Node Pool.
-
-  * `disk_encryption` - The disk encryption policy for nodes in this pool.
-
-    * **NOTE: Disk encryption may not currently be available to all users.**
 
   * [`nodes`](#nodes) - The nodes in the Node Pool.
 

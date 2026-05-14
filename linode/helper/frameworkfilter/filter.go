@@ -2,6 +2,7 @@ package frameworkfilter
 
 import (
 	"context"
+	"crypto/sha3"
 	"encoding/base64"
 	"encoding/json"
 	"strconv"
@@ -13,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
-	"golang.org/x/crypto/sha3"
 )
 
 // ListFunc is a wrapper for functions that will list and return values from the API.
@@ -140,7 +140,7 @@ func (f Config) GenerateID(filters []FilterModel) (types.String, diag.Diagnostic
 		)
 	}
 
-	hash := sha3.Sum512(filterJSON)
+	hash := sha3.Sum512(filterJSON) //nolint:govet
 	return types.StringValue(base64.StdEncoding.EncodeToString(hash[:])), nil
 }
 

@@ -2,6 +2,7 @@ package instance
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 var instanceDataSourceSchema = map[string]*schema.Schema{
@@ -128,10 +129,9 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 	},
 	"disk_encryption": {
-		Type: schema.TypeString,
-		Description: "The disk encryption policy for this Instance." +
-			"NOTE: Disk encryption may not currently be available to all users.",
-		Computed: true,
+		Type:        schema.TypeString,
+		Description: "The disk encryption policy for this Instance.",
+		Computed:    true,
 	},
 	"lke_cluster_id": {
 		Type:        schema.TypeInt,
@@ -326,60 +326,11 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 				},
 				"devices": {
 					Type: schema.TypeList,
-					Description: "Device sda-sdh can be either a Disk or Volume identified by disk_label or " +
+					Description: "Device sda-sdbl can be either a Disk or Volume identified by disk_label or " +
 						"volume_id. Only one type per slot allowed.",
 					Computed: true,
 					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"sda": {
-								Type:        schema.TypeList,
-								Description: "",
-								Computed:    true,
-								Elem:        resourceDeviceDisk(),
-							},
-							"sdb": {
-								Type:        schema.TypeList,
-								Description: deviceDescription,
-								Computed:    true,
-								Elem:        resourceDeviceDisk(),
-							},
-							"sdc": {
-								Type:        schema.TypeList,
-								Description: deviceDescription,
-								Computed:    true,
-								Elem:        resourceDeviceDisk(),
-							},
-							"sdd": {
-								Type:        schema.TypeList,
-								Description: deviceDescription,
-								Computed:    true,
-								Elem:        resourceDeviceDisk(),
-							},
-							"sde": {
-								Type:        schema.TypeList,
-								Description: deviceDescription,
-								Computed:    true,
-								Elem:        resourceDeviceDisk(),
-							},
-							"sdf": {
-								Type:        schema.TypeList,
-								Description: deviceDescription,
-								Computed:    true,
-								Elem:        resourceDeviceDisk(),
-							},
-							"sdg": {
-								Type:        schema.TypeList,
-								Description: deviceDescription,
-								Computed:    true,
-								Elem:        resourceDeviceDisk(),
-							},
-							"sdh": {
-								Type:        schema.TypeList,
-								Description: deviceDescription,
-								Computed:    true,
-								Elem:        resourceDeviceDisk(),
-							},
-						},
+						Schema: dataSourceDevicesSchema(),
 					},
 				},
 				"interface": {
@@ -485,4 +436,19 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 			},
 		},
 	},
+}
+
+func dataSourceDevicesSchema() map[string]*schema.Schema {
+	result := make(map[string]*schema.Schema, 64)
+
+	for _, key := range helper.GetConfigDeviceKeys() {
+		result[key] = &schema.Schema{
+			Type:        schema.TypeList,
+			Description: deviceDescription,
+			Computed:    true,
+			Elem:        resourceDeviceDisk(),
+		}
+	}
+
+	return result
 }

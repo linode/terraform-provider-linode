@@ -17,6 +17,7 @@ func GetFrameworkProviderModelFromSDKv2ProviderConfig(config *Config) *Framework
 		ConfigProfile:                types.StringValue(config.ConfigProfile),
 		SkipInstanceReadyPoll:        types.BoolValue(config.SkipInstanceReadyPoll),
 		SkipInstanceDeletePoll:       types.BoolValue(config.SkipInstanceDeletePoll),
+		SkipLKEClusterDeletePoll:     types.BoolValue(config.SkipLKEClusterDeletePoll),
 		SkipImplicitReboots:          types.BoolValue(config.SkipImplicitReboots),
 		DisableInternalCache:         types.BoolValue(config.DisableInternalCache),
 		MinRetryDelayMilliseconds:    types.Int64Value(int64(config.MinRetryDelayMilliseconds)),
@@ -41,8 +42,9 @@ type FrameworkProviderModel struct {
 	ConfigPath    types.String `tfsdk:"config_path"`
 	ConfigProfile types.String `tfsdk:"config_profile"`
 
-	SkipInstanceReadyPoll  types.Bool `tfsdk:"skip_instance_ready_poll"`
-	SkipInstanceDeletePoll types.Bool `tfsdk:"skip_instance_delete_poll"`
+	SkipInstanceReadyPoll    types.Bool `tfsdk:"skip_instance_ready_poll"`
+	SkipInstanceDeletePoll   types.Bool `tfsdk:"skip_instance_delete_poll"`
+	SkipLKEClusterDeletePoll types.Bool `tfsdk:"skip_lke_cluster_delete_poll"`
 
 	SkipImplicitReboots types.Bool `tfsdk:"skip_implicit_reboots"`
 

@@ -25,7 +25,7 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Block Storage"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityBlockStorage}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -87,6 +87,7 @@ func TestAccResourceVolume_basic_smoke(t *testing.T) {
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttrSet(resName, "status"),
 					resource.TestCheckResourceAttrSet(resName, "size"),
+					resource.TestCheckResourceAttrSet(resName, "io_ready"),
 					resource.TestCheckResourceAttr(resName, "label", volumeName),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "encryption", "enabled"),
@@ -389,7 +390,7 @@ func TestAccResourceVolume_encryptionExplicitEnabled(t *testing.T) {
 	volumeName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_volume.foobar"
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps(nil, "core")
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -418,7 +419,7 @@ func TestAccResourceVolume_encryptionExplicitDisabled(t *testing.T) {
 	volumeName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_volume.foobar"
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps(nil, "core")
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -447,7 +448,7 @@ func TestAccResourceVolume_encryptionChangeForcesReplace(t *testing.T) {
 	volumeName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_volume.foobar"
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps(nil, "core")
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		t.Fatal(err)
 	}

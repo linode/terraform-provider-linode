@@ -23,7 +23,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/stringplanmodifiers"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -77,7 +76,7 @@ var frameworkResourceSchema = schema.Schema{
 			Description:   "The base64-encoded SSL CA certificate for the Managed Database.",
 			Computed:      true,
 			Sensitive:     true,
-			PlanModifiers: []planmodifier.String{stringplanmodifiers.UseStateForUnknownIfNotNull()},
+			PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
 		},
 		"cluster_size": schema.Int64Attribute{
 			Optional:    true,
@@ -194,13 +193,13 @@ var frameworkResourceSchema = schema.Schema{
 			Description:   "The randomly generated root password for the Managed Database instance.",
 			Computed:      true,
 			Sensitive:     true,
-			PlanModifiers: []planmodifier.String{stringplanmodifiers.UseStateForUnknownIfNotNull()},
+			PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
 		},
 		"root_username": schema.StringAttribute{
 			Description:   "The root username for the Managed Database instance.",
 			Computed:      true,
 			Sensitive:     true,
-			PlanModifiers: []planmodifier.String{stringplanmodifiers.UseStateForUnknownIfNotNull()},
+			PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
 		},
 		"ssl_connection": schema.BoolAttribute{
 			Computed:    true,

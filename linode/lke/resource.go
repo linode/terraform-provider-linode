@@ -23,7 +23,7 @@ import (
 const (
 	createLKETimeout = 35 * time.Minute
 	updateLKETimeout = 40 * time.Minute
-	deleteLKETimeout = 15 * time.Minute
+	deleteLKETimeout = 20 * time.Minute
 	TierEnterprise   = "enterprise"
 	TierStandard     = "standard"
 )
@@ -41,6 +41,7 @@ func Resource() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			customDiffValidateOptionalCount,
 			customDiffValidatePoolForStandardTier,
+			customDiffValidateUpdateStrategyWithTier,
 			linodediffs.ComputedWithDefault("tags", []string{}),
 			linodediffs.CaseInsensitiveSet("tags"),
 			helper.SDKv2ValidateFieldRequiresAPIVersion(
@@ -225,15 +226,22 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			firewallId = linodego.Pointer(poolSpec["firewall_id"].(int))
 		}
 
+		var diskEncryption *linodego.InstanceDiskEncryption
+		if v, ok := poolSpec["disk_encryption"].(string); ok && v != "" {
+			de := linodego.InstanceDiskEncryption(v)
+			diskEncryption = &de
+		}
+
 		createOpts.NodePools = append(createOpts.NodePools, linodego.LKENodePoolCreateOptions{
-			Label:      label,
-			FirewallID: firewallId,
-			Type:       poolSpec["type"].(string),
-			Tags:       helper.ExpandStringSet(poolSpec["tags"].(*schema.Set)),
-			Taints:     expandNodePoolTaints(helper.ExpandObjectSet(poolSpec["taint"].(*schema.Set))),
-			Labels:     helper.StringAnyMapToTyped[string](poolSpec["labels"].(map[string]any)),
-			Count:      count,
-			Autoscaler: autoscaler,
+			Label:          label,
+			FirewallID:     firewallId,
+			DiskEncryption: diskEncryption,
+			Type:           poolSpec["type"].(string),
+			Tags:           helper.ExpandStringSet(poolSpec["tags"].(*schema.Set)),
+			Taints:         expandNodePoolTaints(helper.ExpandObjectSet(poolSpec["taint"].(*schema.Set))),
+			Labels:         helper.StringAnyMapToTyped[string](poolSpec["labels"].(map[string]any)),
+			Count:          count,
+			Autoscaler:     autoscaler,
 		})
 	}
 
@@ -445,22 +453,48 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_lke_cluster")
 
-	client := meta.(*helper.ProviderMeta).Client
+	providerMeta := meta.(*helper.ProviderMeta)
+	client := providerMeta.Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed parsing Linode LKE Cluster ID: %s", err)
 	}
 
+	skipDeletePoll := providerMeta.Config.SkipLKEClusterDeletePoll
+
+	// Collect all Linode instance IDs from node pools before deleting the cluster
+	// so we can poll for their deletion afterwards.
+	var oldNodes []linodego.LKENodePoolLinode
+	if !skipDeletePoll {
+		tflog.Trace(ctx, "client.ListLKENodePools(...)")
+		pools, err := client.ListLKENodePools(ctx, id, nil)
+		if err != nil {
+			if linodego.IsNotFound(err) {
+				tflog.Warn(ctx, "LKE cluster not found when listing node pools, assuming already deleted")
+				return nil
+			}
+			return diag.Errorf("failed to list node pools for LKE cluster %d: %s", id, err)
+		}
+		for _, pool := range pools {
+			oldNodes = append(oldNodes, pool.Linodes...)
+		}
+		tflog.Debug(ctx, "Collected Linode instances from LKE cluster node pools", map[string]any{
+			"nodes": oldNodes,
+		})
+	}
+
 	tflog.Debug(ctx, "client.DeleteLKECluster(...)")
 	err = client.DeleteLKECluster(ctx, id)
 	if err != nil {
-		return diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
+		if !linodego.IsNotFound(err) {
+			return diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
+		}
 	}
 	timeoutSeconds, err := helper.SafeFloat64ToInt(
-		d.Timeout(schema.TimeoutCreate).Seconds(),
+		d.Timeout(schema.TimeoutDelete).Seconds(),
 	)
 	if err != nil {
-		return diag.Errorf("failed to convert float64 creation timeout to int: %s", err)
+		return diag.Errorf("failed to convert float64 deletion timeout to int: %s", err)
 	}
 
 	tflog.Debug(ctx, "Deleted LKE cluster, waiting for all nodes deleted...")
@@ -473,11 +507,21 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if err != nil {
 		// If we're getting a 404, it's safe to say the cluster has been
 		// deleted.
-		if linodego.IsNotFound(err) {
-			return nil
+		if !linodego.IsNotFound(err) {
+			return diag.FromErr(err)
 		}
+	}
 
-		return diag.FromErr(err)
+	// Wait for each Linode instance to be fully deleted
+	if !skipDeletePoll {
+		if err := waitForNodesDeleted(
+			ctx,
+			client,
+			providerMeta.Config.EventPollMilliseconds,
+			oldNodes,
+		); err != nil {
+			return diag.Errorf("failed waiting for Linode instances to be deleted: %s", err)
+		}
 	}
 
 	return nil
@@ -561,6 +605,48 @@ func customDiffValidatePoolForStandardTier(ctx context.Context, diff *schema.Res
 		if pool.IsNull() || pool.LengthInt() == 0 {
 			return fmt.Errorf("at least one pool is required for standard tier clusters")
 		}
+	}
+
+	return nil
+}
+
+// customDiffValidateUpdateStrategyWithTier ensures that update_strategy
+// can only be configured when tier is explicitly set to "enterprise".
+//
+// This validation is implemented as a custom diff using cty to validate
+// across pool attributes and the cluster tier, preventing false positives
+// during updates by validating only the user's config.
+func customDiffValidateUpdateStrategyWithTier(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	tier := diff.GetRawConfig().GetAttr("tier")
+	tierIsEnterprise := tier.IsKnown() && !tier.IsNull() && tier.AsString() == TierEnterprise
+	if tierIsEnterprise {
+		return nil
+	}
+
+	pools, ok := diff.Get("pool").([]any)
+	if !ok {
+		return fmt.Errorf("failed to parse pool config")
+	}
+
+	invalidPools := make([]string, 0)
+
+	for index, pool := range pools {
+		poolMap, ok := pool.(map[string]any)
+		if !ok {
+			continue
+		}
+
+		updateStrategy, ok := poolMap["update_strategy"].(string)
+		if ok && updateStrategy != "" {
+			invalidPools = append(invalidPools, fmt.Sprintf("pool.%d", index))
+		}
+	}
+
+	if len(invalidPools) > 0 {
+		return fmt.Errorf(
+			"%s: `update_strategy` can only be configured when tier is set to \"enterprise\"",
+			strings.Join(invalidPools, ", "),
+		)
 	}
 
 	return nil

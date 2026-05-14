@@ -63,16 +63,6 @@ func UseStateForUnknownUnlessTheseChanged(expressions ...path.Expression) planmo
 	)
 }
 
-// UseStateForUnknownIfNotNull is a convenience wrapper to only use the state value
-// in place of unknown values in plans if its value is not null.
-func UseStateForUnknownIfNotNull() planmodifier.Set {
-	return UseStateForUnknownIf(
-		func(ctx context.Context, request planmodifier.SetRequest, resp *UseStateForUnknownIfFuncResponse) {
-			resp.UseState = !request.StateValue.IsNull()
-		},
-	)
-}
-
 type UseStateForUnknownIfFunc func(context.Context, planmodifier.SetRequest, *UseStateForUnknownIfFuncResponse)
 
 type UseStateForUnknownIfFuncResponse struct {
