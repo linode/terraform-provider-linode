@@ -1,0 +1,5 @@
+{{ define "alert_definitions_data_basic" }}
+
+data "linode_monitor_alert_definitions" "foobar" {}
+
+{{ end }}
