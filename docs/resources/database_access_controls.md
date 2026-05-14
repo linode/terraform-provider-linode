@@ -25,7 +25,7 @@ resource "linode_instance" "my-instance" {
   label = "myinstance"
   region = "us-southeast"
   type = "g6-nanode-1"
-  image = "linode/alpine3.19"
+  image = "linode/arch"
 }
 
 resource "linode_database_mysql" "my-db" {
