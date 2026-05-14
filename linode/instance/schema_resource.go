@@ -575,8 +575,7 @@ var resourceSchema = map[string]*schema.Schema{
 			"The default value is determined by the interfaces_for_new_linodes " +
 			"setting in the account settings. " +
 			"If the interface_generation option is set to linode, " +
-			"legacy configuration interfaces can no longer be used on the Linode. " +
-			"NOTE: Linode Interfaces may not currently be available to all users.",
+			"legacy configuration interfaces can no longer be used on the Linode.",
 		Optional: true,
 		Computed: true,
 		ForceNew: true,
