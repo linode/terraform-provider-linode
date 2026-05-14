@@ -21,6 +21,21 @@ type BaseModel struct {
 	Created      timetypes.RFC3339 `tfsdk:"created"`
 }
 
+func (data BaseModel) RegionOrCluster() (regionOrCluster string) {
+	if data.Region.ValueString() != "" {
+		regionOrCluster = data.Region.ValueString()
+	} else {
+		regionOrCluster = data.Cluster.ValueString()
+	}
+	return
+}
+
+func (data BaseModel) BucketLabel() (label string) {
+	// Label is a required attribute, so there is no need
+	// to check whether it is null or unknown.
+	return data.Label.ValueString()
+}
+
 type DataSourceModel struct {
 	BaseModel
 }

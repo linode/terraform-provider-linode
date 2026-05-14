@@ -75,66 +75,13 @@ func (data ResourceModel) getObjectBody(diags *diag.Diagnostics) (body *s3manage
 	return s3manager.ReadSeekCloser(bytes.NewReader(contentBytes))
 }
 
-func (data ResourceModel) GetObjectStorageKeys(
-	ctx context.Context,
-	client *linodego.Client,
-	config *helper.FrameworkProviderModel,
-	permissions string,
-	endpointType *linodego.ObjectStorageEndpointType,
-	diags *diag.Diagnostics,
-) (*ObjectKeys, func()) {
-	result := &ObjectKeys{}
-
-	result.AccessKey = data.AccessKey.ValueString()
-	result.SecretKey = data.SecretKey.ValueString()
-
-	if result.Ok() {
-		return result, nil
-	}
-
-	result.AccessKey = config.ObjAccessKey.ValueString()
-	result.SecretKey = config.ObjSecretKey.ValueString()
-
-	if result.Ok() {
-		return result, nil
-	}
-
-	if config.ObjUseTempKeys.ValueBool() {
-		clusterOrRegion := data.GetRegionOrCluster(ctx, diags)
-		if diags.HasError() {
-			return nil, nil
-		}
-
-		objKey := fwCreateTempKeys(ctx, client, data.Bucket.ValueString(), clusterOrRegion, permissions, nil, diags)
-		if diags.HasError() {
-			return nil, nil
-		}
-
-		result.AccessKey = objKey.AccessKey
-		result.SecretKey = objKey.SecretKey
-
-		teardownTempKeysCleanUp := func() {
-			cleanUpTempKeys(ctx, client, objKey.ID)
-		}
-
-		return result, teardownTempKeysCleanUp
-	}
-
-	diags.AddError(
-		"Keys Not Found",
-		"`access_key` and `secret_key` are Required but not Configured",
-	)
-
-	return nil, nil
-}
-
 func (plan *ResourceModel) ComputeEndpointIfUnknown(ctx context.Context, client *linodego.Client, diags *diag.Diagnostics) {
 	if !plan.Endpoint.IsUnknown() {
 		return
 	}
 
 	bucketName := plan.Bucket.ValueString()
-	regionOrCluster := plan.GetRegionOrCluster(ctx, diags)
+	regionOrCluster := plan.RegionOrCluster(ctx, diags)
 	if diags.HasError() {
 		return
 	}
@@ -161,7 +108,7 @@ func (data *ResourceModel) GenerateObjectStorageObjectID(apply bool, preserveKno
 	return id
 }
 
-func (data ResourceModel) GetRegionOrCluster(ctx context.Context, diags *diag.Diagnostics) string {
+func (data ResourceModel) RegionOrCluster(ctx context.Context, diags *diag.Diagnostics) string {
 	if !data.Region.IsNull() && !data.Region.IsUnknown() {
 		return data.Region.ValueString()
 	} else {
@@ -172,6 +119,17 @@ func (data ResourceModel) GetRegionOrCluster(ctx context.Context, diags *diag.Di
 	}
 
 	return data.Cluster.ValueString()
+}
+
+func (data ResourceModel) ObjectStorageKeys() ObjectKeys {
+	return ObjectKeys{
+		AccessKey: data.AccessKey.ValueString(),
+		SecretKey: data.SecretKey.ValueString(),
+	}
+}
+
+func (data ResourceModel) BucketLabel() string {
+	return data.Bucket.ValueString()
 }
 
 func (data *ResourceModel) FlattenObject(
