@@ -1,0 +1,31 @@
+{{ define "monitor_logs_destination_basic" }}
+
+resource "linode_object_storage_bucket" "test" {
+  region = "{{.Region}}"
+  label  = "{{.Label}}-bucket"
+}
+
+resource "linode_object_storage_key" "test" {
+  label = "{{.Label}}-key"
+
+  bucket_access {
+    region      = linode_object_storage_bucket.test.region
+    bucket_name = linode_object_storage_bucket.test.label
+    permissions = "read_write"
+  }
+}
+
+resource "linode_monitor_logs_destination" "foobar" {
+  label = "{{.Label}}"
+  type  = "akamai_object_storage"
+
+  akamai_object_storage_details {
+    access_key_id     = linode_object_storage_key.test.access_key
+    access_key_secret = linode_object_storage_key.test.secret_key
+    bucket_name       = linode_object_storage_bucket.test.label
+    host              = linode_object_storage_bucket.test.hostname
+  }
+}
+
+{{ end }}
+

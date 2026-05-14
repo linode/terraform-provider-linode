@@ -1,0 +1,17 @@
+{{ define "monitor_logs_destination_custom_https" }}
+
+resource "linode_monitor_logs_destination" "foobar" {
+  label = "{{.Label}}"
+  type  = "custom_https"
+
+  custom_https_details {
+    endpoint_url = "{{.EndpointURL}}"
+
+    authentication {
+      type = "none"
+    }
+  }
+}
+
+{{ end }}
+

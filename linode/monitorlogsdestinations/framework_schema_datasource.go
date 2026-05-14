@@ -12,6 +12,7 @@ var filterConfig = frameworkfilter.Config{
 	"type":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"status": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 }
+
 var frameworkDataSourceSchema = schema.Schema{
 	Description: "Provides a list of Linode Monitor Logs Destinations.",
 	Attributes: map[string]schema.Attribute{
