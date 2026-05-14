@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
 func NewResource() resource.Resource {
@@ -63,6 +66,14 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// Generate a unique ID for this resource
 	plan.ID = types.StringValue(fmt.Sprintf("%s-%d", plan.Region.ValueString(), len(plan.Assignments)))
 
+	// Computed fields (reserved, tags, assigned_entity) are left null here and will be
+	// populated by Read on the next refresh.
+	for i := range plan.Assignments {
+		plan.Assignments[i].Reserved = types.BoolNull()
+		plan.Assignments[i].Tags = types.SetNull(types.StringType)
+		plan.Assignments[i].AssignedEntity = types.ObjectNull(instancenetworking.AssignedEntityObjectType.AttrTypes)
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
@@ -77,12 +88,12 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 
 	client := r.Meta.Client
 
-	for i, assignment := range state.Assignments {
+	retained := make([]AssignmentModel, 0, len(state.Assignments))
+	for _, assignment := range state.Assignments {
 		ip, err := client.GetIPAddress(ctx, assignment.Address.ValueString())
 		if err != nil {
 			if linodego.IsNotFound(err) {
-				// IP not found, remove it from state
-				state.Assignments = append(state.Assignments[:i], state.Assignments[i+1:]...)
+				// IP not found; drop it from state.
 				continue
 			}
 			resp.Diagnostics.AddError(
@@ -92,11 +103,15 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 			return
 		}
 
-		state.Assignments[i] = AssignmentModel{
-			Address:  types.StringValue(ip.Address),
-			LinodeID: types.Int64Value(int64(ip.LinodeID)),
-		}
+		retained = append(retained, AssignmentModel{
+			Address:        types.StringValue(ip.Address),
+			LinodeID:       types.Int64Value(int64(ip.LinodeID)),
+			Reserved:       types.BoolValue(ip.Reserved),
+			Tags:           flattenTagsList(ip.Tags, &resp.Diagnostics),
+			AssignedEntity: flattenAssignedEntity(ip.AssignedEntity, &resp.Diagnostics),
+		})
 	}
+	state.Assignments = retained
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -146,4 +161,20 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 
 	resp.State.RemoveResource(ctx)
+}
+
+func flattenTagsList(tags []string, diags *diag.Diagnostics) types.Set {
+	elems := make([]attr.Value, len(tags))
+	for i, t := range tags {
+		elems[i] = types.StringValue(t)
+	}
+	set, d := types.SetValue(types.StringType, elems)
+	diags.Append(d...)
+	return set
+}
+
+func flattenAssignedEntity(entity *linodego.ReservedIPAssignedEntity, diags *diag.Diagnostics) types.Object {
+	result, d := instancenetworking.FlattenAssignedEntity(entity)
+	diags.Append(d...)
+	return result
 }

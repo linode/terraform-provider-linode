@@ -1,12 +1,12 @@
 package networkingipassignment
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -15,24 +15,44 @@ var frameworkResourceSchema = schema.Schema{
 			Computed:    true,
 			Description: "The ID of the IP assignment operation.",
 			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(), // Use the state when ID is unknown.
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"region": schema.StringAttribute{
 			Required:    true,
 			Description: "The region for the IP assignments.",
 		},
-		"assignments": schema.ListAttribute{
-			ElementType: types.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"address":   types.StringType,
-					"linode_id": types.Int64Type,
-				},
-			},
+		"assignments": schema.ListNestedAttribute{
 			Optional: true,
 			PlanModifiers: []planmodifier.List{
-				listplanmodifier.UseStateForUnknown(), // Ensure the list uses state when unknown.
+				listplanmodifier.UseStateForUnknown(),
 				listplanmodifier.RequiresReplace(),
+			},
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"address": schema.StringAttribute{
+						Required:    true,
+						Description: "The IPv4 address or IPv6 range to assign.",
+					},
+					"linode_id": schema.Int64Attribute{
+						Required:    true,
+						Description: "The ID of the Linode to which the IP address will be assigned.",
+					},
+					"reserved": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Whether this IP address is a reserved IP.",
+					},
+					"tags": schema.SetAttribute{
+						Computed:    true,
+						Description: "A set of tags associated with this IP address.",
+						ElementType: types.StringType,
+					},
+					"assigned_entity": schema.ObjectAttribute{
+						Description:    "The entity this IP address has been assigned to. This is null if the address is not assigned to an entity.",
+						Computed:       true,
+						AttributeTypes: instancenetworking.AssignedEntityObjectType.AttrTypes,
+					},
+				},
 			},
 		},
 	},

@@ -15,27 +15,67 @@ func TestParseInstanceIPAddressResponse(t *testing.T) {
 		IPv4: &linodego.InstanceIPv4Response{
 			Public: []*linodego.InstanceIP{
 				{
-					Address: "1.2.3.4",
-					Type:    "ipv4",
-					Public:  true,
+					Address:  "1.2.3.4",
+					Type:     "ipv4",
+					Public:   true,
+					Reserved: false,
+					Tags:     []string{"web"},
+					AssignedEntity: &linodego.ReservedIPAssignedEntity{
+						ID:    12345,
+						Label: "my-linode",
+						Type:  "linode",
+						URL:   "/v4/linode/instances/12345",
+					},
 				},
 			},
 			Private: []*linodego.InstanceIP{
 				{
-					Address: "10.0.0.1",
-					Type:    "ipv4",
-					Public:  false,
+					Address:        "10.0.0.1",
+					Type:           "ipv4",
+					Public:         false,
+					Reserved:       false,
+					Tags:           []string{},
+					AssignedEntity: nil,
+				},
+			},
+			Reserved: []*linodego.InstanceIP{
+				{
+					Address:  "5.6.7.8",
+					Type:     "ipv4",
+					Public:   true,
+					Reserved: true,
+					Tags:     []string{"reserved-tag"},
+					AssignedEntity: &linodego.ReservedIPAssignedEntity{
+						ID:    99999,
+						Label: "reserved-linode",
+						Type:  "linode",
+						URL:   "/v4/linode/instances/99999",
+					},
+				},
+			},
+			Shared: []*linodego.InstanceIP{
+				{
+					Address:        "9.8.7.6",
+					Type:           "ipv4",
+					Public:         true,
+					Reserved:       false,
+					Tags:           []string{"shared-tag"},
+					AssignedEntity: nil,
 				},
 			},
 		},
 		IPv6: &linodego.InstanceIPv6Response{
 			LinkLocal: &linodego.InstanceIP{
-				Address: "fe80::1",
-				Type:    "ipv6",
+				Address:        "fe80::1",
+				Type:           "ipv6",
+				Tags:           []string{},
+				AssignedEntity: nil,
 			},
 			SLAAC: &linodego.InstanceIP{
-				Address: "fe80::1",
-				Type:    "ipv6",
+				Address:        "fe80::1",
+				Type:           "ipv6",
+				Tags:           []string{},
+				AssignedEntity: nil,
 			},
 		},
 	}
@@ -47,7 +87,19 @@ func TestParseInstanceIPAddressResponse(t *testing.T) {
 
 	assert.False(t, diags.HasError())
 
-	assert.Contains(t, dataSourceModel.IPV4.String(), "1.2.3.4")
+	ipv4Str := dataSourceModel.IPV4.String()
+	assert.Contains(t, ipv4Str, "1.2.3.4")
+	assert.Contains(t, ipv4Str, "5.6.7.8")
+	assert.Contains(t, ipv4Str, "9.8.7.6")
+	assert.Contains(t, ipv4Str, "web")
+	assert.Contains(t, ipv4Str, "reserved-tag")
+	assert.Contains(t, ipv4Str, "shared-tag")
+	// assigned_entity fields for public IP
+	assert.Contains(t, ipv4Str, "my-linode")
+	assert.Contains(t, ipv4Str, "/v4/linode/instances/12345")
+	// assigned_entity fields for reserved IP
+	assert.Contains(t, ipv4Str, "reserved-linode")
+	assert.Contains(t, ipv4Str, "/v4/linode/instances/99999")
 	assert.Contains(t, dataSourceModel.IPV6.String(), "fe80::1")
 }
 
@@ -64,6 +116,7 @@ func TestParseInstanceIPAddressResponse_VPCDualStack(t *testing.T) {
 					Address: "1.2.3.4",
 					Type:    "ipv4",
 					Public:  true,
+					Tags:    []string{},
 				},
 			},
 			VPC: []*linodego.VPCIP{
@@ -86,10 +139,12 @@ func TestParseInstanceIPAddressResponse_VPCDualStack(t *testing.T) {
 			LinkLocal: &linodego.InstanceIP{
 				Address: "fe80::1",
 				Type:    "ipv6",
+				Tags:    []string{},
 			},
 			SLAAC: &linodego.InstanceIP{
 				Address: "2600:3c00::1",
 				Type:    "ipv6",
+				Tags:    []string{},
 			},
 			VPC: []linodego.VPCIP{
 				{

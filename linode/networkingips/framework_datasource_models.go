@@ -10,18 +10,20 @@ import (
 )
 
 type IPAddressModel struct {
-	Address     types.String `tfsdk:"address"`
-	Type        types.String `tfsdk:"type"`
-	Region      types.String `tfsdk:"region"`
-	RDNS        types.String `tfsdk:"rdns"`
-	Prefix      types.Int64  `tfsdk:"prefix"`
-	Gateway     types.String `tfsdk:"gateway"`
-	SubnetMask  types.String `tfsdk:"subnet_mask"`
-	Public      types.Bool   `tfsdk:"public"`
-	LinodeID    types.Int64  `tfsdk:"linode_id"`
-	InterfaceID types.Int64  `tfsdk:"interface_id"`
-	Reserved    types.Bool   `tfsdk:"reserved"`
-	VPCNAT1To1  types.Object `tfsdk:"vpc_nat_1_1"`
+	Address        types.String `tfsdk:"address"`
+	Type           types.String `tfsdk:"type"`
+	Region         types.String `tfsdk:"region"`
+	RDNS           types.String `tfsdk:"rdns"`
+	Prefix         types.Int64  `tfsdk:"prefix"`
+	Gateway        types.String `tfsdk:"gateway"`
+	SubnetMask     types.String `tfsdk:"subnet_mask"`
+	Public         types.Bool   `tfsdk:"public"`
+	LinodeID       types.Int64  `tfsdk:"linode_id"`
+	InterfaceID    types.Int64  `tfsdk:"interface_id"`
+	Reserved       types.Bool   `tfsdk:"reserved"`
+	VPCNAT1To1     types.Object `tfsdk:"vpc_nat_1_1"`
+	Tags           types.Set    `tfsdk:"tags"`
+	AssignedEntity types.Object `tfsdk:"assigned_entity"`
 }
 
 func (m *IPAddressModel) ParseIP(ip linodego.InstanceIP) diag.Diagnostics {
@@ -43,6 +45,19 @@ func (m *IPAddressModel) ParseIP(ip linodego.InstanceIP) diag.Diagnostics {
 	}
 
 	m.VPCNAT1To1 = vpcNAT1To1
+
+	tags := helper.StringSliceToFrameworkValueSlice(ip.Tags)
+	tagsSet, tagsDiags := types.SetValue(types.StringType, tags)
+	if tagsDiags.HasError() {
+		return tagsDiags
+	}
+	m.Tags = tagsSet
+
+	assignedEntity, assignedEntityDiags := instancenetworking.FlattenAssignedEntity(ip.AssignedEntity)
+	if assignedEntityDiags.HasError() {
+		return assignedEntityDiags
+	}
+	m.AssignedEntity = assignedEntity
 
 	return nil
 }
