@@ -23,7 +23,7 @@ resource "linode_rdns" "foo" {
 }
 
 resource "linode_instance" "foo" {
-   image = "linode/alpine3.19"
+   image = "linode/arch"
    region = "ca-east"
    type = "g6-dedicated-2"
 }

@@ -1085,3 +1085,85 @@ func TestAccResourceLKECluster_tierNoAccess(t *testing.T) {
 		},
 	})
 }
+
+func TestAccResourceLKECluster_poolDiskEncryption(t *testing.T) {
+	t.Parallel()
+
+	diskEncryptionRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{linodego.CapabilityLKE, linodego.CapabilityDiskEncryption}, "core",
+	)
+	if err != nil {
+		t.Skipf("Skipping test: no region with LKE and Disk Encryption capabilities: %s", err)
+	}
+
+	var cluster linodego.LKECluster
+	var initialPoolIDs []int
+
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.DiskEncryptionPools(t, clusterName, k8sVersionLatest, diskEncryptionRegion),
+					Check: resource.ComposeTestCheckFunc(
+						checkLKEExists(&cluster),
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.disk_encryption", "enabled"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.count", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.disk_encryption", "disabled"),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						// Capture initial pool IDs for comparison
+						func(s *terraform.State) error {
+							rs := s.RootModule().Resources[resourceClusterName]
+							pool0ID, _ := strconv.Atoi(rs.Primary.Attributes["pool.0.id"])
+							pool1ID, _ := strconv.Atoi(rs.Primary.Attributes["pool.1.id"])
+							initialPoolIDs = []int{pool0ID, pool1ID}
+							return nil
+						},
+					),
+				},
+				{
+					// Change disk_encryption values — pools should be replaced, cluster should not
+					Config: tmpl.DiskEncryptionPoolsUpdated(t, clusterName, k8sVersionLatest, diskEncryptionRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.disk_encryption", "disabled"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.count", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.disk_encryption", "enabled"),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						// Verify cluster ID is unchanged (no cluster recreation)
+						func(s *terraform.State) error {
+							rs := s.RootModule().Resources[resourceClusterName]
+							clusterID, _ := strconv.Atoi(rs.Primary.ID)
+							if clusterID != cluster.ID {
+								return fmt.Errorf(
+									"expected cluster ID to remain %d, but got %d (cluster was recreated)",
+									cluster.ID, clusterID,
+								)
+							}
+							return nil
+						},
+						// Verify pool IDs have changed (pools were replaced)
+						func(s *terraform.State) error {
+							rs := s.RootModule().Resources[resourceClusterName]
+							pool0ID, _ := strconv.Atoi(rs.Primary.Attributes["pool.0.id"])
+							pool1ID, _ := strconv.Atoi(rs.Primary.Attributes["pool.1.id"])
+							if pool0ID == initialPoolIDs[0] {
+								return fmt.Errorf("expected pool.0.id to change after disk_encryption update, but it remained %d", pool0ID)
+							}
+							if pool1ID == initialPoolIDs[1] {
+								return fmt.Errorf("expected pool.1.id to change after disk_encryption update, but it remained %d", pool1ID)
+							}
+							return nil
+						},
+					),
+				},
+			},
+		})
+	})
+}

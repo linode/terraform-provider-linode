@@ -5,7 +5,7 @@ resource "linode_instance_disk" "foobar" {
   linode_id = linode_instance.foobar.id
   size = linode_instance.foobar.specs.0.disk
 
-  image = "linode/{{ if .Image }}{{ .Image }}{{ else }}alpine3.20{{ end }}"
+  image = "linode/{{ if .Image }}{{ .Image }}{{ else }}arch{{ end }}"
   root_pass = "{{ .RootPass }}"
 }
 
