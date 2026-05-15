@@ -3,6 +3,7 @@
 package monitorlogsdestination_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -44,6 +45,10 @@ func TestAccDataSourceLogsDestination_basic(t *testing.T) {
 						knownvalue.StringExact(label+"-bucket"),
 					),
 				},
+			},
+			{
+				Config:      tmpl.DataNotFound(t),
+				ExpectError: regexp.MustCompile(`\[404\]`),
 			},
 		},
 	})

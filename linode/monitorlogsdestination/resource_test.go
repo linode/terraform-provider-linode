@@ -6,8 +6,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -89,6 +91,13 @@ func TestAccResourceLogsDestination_basic(t *testing.T) {
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"akamai_object_storage_details.access_key_secret"},
 			},
+			{
+				// Short sleep before the automatic post-test destroy to allow any
+				// pending bucket activity to settle, preventing a "bucket not
+				// empty" failure during obj_bucket_force_delete cleanup.
+				PreConfig: func() { time.Sleep(15 * time.Second) },
+				Config:    tmpl.Basic(t, label, region),
+			},
 		},
 	})
 }
@@ -121,6 +130,30 @@ func TestAccResourceLogsDestination_update(t *testing.T) {
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("label"), knownvalue.StringExact(label+"-updated")),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("type"), knownvalue.StringExact("akamai_object_storage")),
 				},
+			},
+			{
+				// Short sleep before the automatic post-test destroy to allow any
+				// pending bucket activity to settle, preventing a "bucket not
+				// empty" failure during obj_bucket_force_delete cleanup.
+				PreConfig: func() { time.Sleep(15 * time.Second) },
+				Config:    tmpl.Updates(t, label, region),
+			},
+		},
+	})
+}
+
+func TestAccResourceLogsDestination_invalidType(t *testing.T) {
+	t.Parallel()
+
+	label := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.InvalidType(t, label),
+				ExpectError: regexp.MustCompile(`value must be one of`),
 			},
 		},
 	})
