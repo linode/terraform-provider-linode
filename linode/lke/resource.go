@@ -116,15 +116,9 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	}
 
 	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane, acl)
-
-	// Only standard LKE has a dashboard URL
+	// Only standard LKE used to had a dashboard URL
 	if cluster.Tier == TierStandard {
-		dashboard, err := client.GetLKEClusterDashboard(ctx, id)
-		if err != nil {
-			return diag.Errorf("failed to get dashboard URL for LKE cluster %d: %s", id, err)
-		}
-
-		d.Set("dashboard_url", dashboard.URL)
+		d.Set("dashboard_url", "")
 	}
 
 	d.Set("label", cluster.Label)
