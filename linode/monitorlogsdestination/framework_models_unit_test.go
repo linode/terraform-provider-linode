@@ -188,3 +188,54 @@ func TestParseLogsDestination_DataSource(t *testing.T) {
 	assert.Equal(t, "eu-central-1.linodeobjects.com", m.Details.Host)
 	assert.Equal(t, "/ds-logs", m.Details.Path)
 }
+
+func TestParseLogsDestination_DataSource_CustomHTTPS(t *testing.T) {
+	createdTime := time.Date(2024, time.August, 1, 0, 0, 0, 0, time.UTC)
+	updatedTime := time.Date(2024, time.August, 2, 0, 0, 0, 0, time.UTC)
+
+	dest := &linodego.LogsDestination{
+		ID:        55,
+		Label:     "https-ds-dest",
+		Type:      linodego.LogsDestinationTypeCustomHTTPS,
+		Status:    "active",
+		CreatedBy: "creator",
+		UpdatedBy: "updater",
+		Created:   &createdTime,
+		Updated:   &updatedTime,
+		Version:   3,
+		Details: linodego.LogsDestinationDetails{
+			EndpointURL:     "https://logs.example.com/ingest",
+			ContentType:     "application/json",
+			DataCompression: "gzip",
+			Authentication: &linodego.LogsDestinationCustomHTTPSAuthDetails{
+				Type: "basic",
+			},
+			ClientCertificateDetails: &linodego.LogsDestinationClientCertificateDetails{
+				TLSHostname: "logs.example.com",
+			},
+		},
+	}
+
+	m := &LogsDestinationDataSourceModel{}
+	m.ParseLogsDestination(dest)
+
+	assert.Equal(t, types.Int64Value(55), m.ID)
+	assert.Equal(t, types.StringValue("https-ds-dest"), m.Label)
+	assert.Equal(t, types.StringValue("custom_https"), m.Type)
+	assert.Equal(t, types.StringValue("active"), m.Status)
+	assert.Equal(t, types.StringValue("creator"), m.CreatedBy)
+	assert.Equal(t, types.StringValue("updater"), m.UpdatedBy)
+	assert.Equal(t, types.Int64Value(3), m.Version)
+
+	assert.NotNil(t, m.Details)
+	assert.Equal(t, "https://logs.example.com/ingest", m.Details.EndpointURL)
+	assert.Equal(t, "application/json", m.Details.ContentType)
+	assert.Equal(t, "gzip", m.Details.DataCompression)
+	assert.Equal(t, "basic", m.Details.AuthenticationType)
+	assert.Equal(t, "logs.example.com", m.Details.TLSHostname)
+
+	// OBJ storage fields must be empty for a custom_https destination.
+	assert.Empty(t, m.Details.AccessKeyID)
+	assert.Empty(t, m.Details.BucketName)
+	assert.Empty(t, m.Details.Host)
+}

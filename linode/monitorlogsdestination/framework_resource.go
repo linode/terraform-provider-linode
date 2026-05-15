@@ -53,7 +53,7 @@ func (r *Resource) Create(
 		if data.AkamaiObjectStorageDetails == nil {
 			resp.Diagnostics.AddError(
 				"Missing akamai_object_storage_details",
-				"akamai_object_storage_details block is required when type is akamai_object_storage.",
+				"akamai_object_storage_details is required when type is akamai_object_storage.",
 			)
 			return
 		}
@@ -74,7 +74,7 @@ func (r *Resource) Create(
 		if data.CustomHTTPSDetails == nil {
 			resp.Diagnostics.AddError(
 				"Missing custom_https_details",
-				"custom_https_details block is required when type is custom_https.",
+				"custom_https_details is required when type is custom_https.",
 			)
 			return
 		}

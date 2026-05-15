@@ -4,10 +4,12 @@ resource "linode_monitor_logs_destination" "foobar" {
   label = "{{.Label}}"
   type  = "custom_https"
 
-  custom_https_details {
-    endpoint_url = "{{.EndpointURL}}"
+  custom_https_details = {
+    endpoint_url     = "{{.EndpointURL}}"
+    content_type     = "application/json"
+    data_compression = "none"
 
-    authentication {
+    authentication = {
       type = "none"
     }
   }

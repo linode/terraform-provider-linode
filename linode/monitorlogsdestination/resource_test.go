@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/monitorlogsdestination/tmpl"
@@ -53,7 +54,7 @@ func sweep(prefix string) error {
 func TestAccResourceLogsDestination_basic(t *testing.T) {
 	t.Parallel()
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Object Storage"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityObjectStorage}, "core")
 	if err != nil {
 		t.Skipf("could not get region with Object Storage: %s", err)
 	}
@@ -86,7 +87,7 @@ func TestAccResourceLogsDestination_basic(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"akamai_object_storage_details.0.access_key_secret"},
+				ImportStateVerifyIgnore: []string{"akamai_object_storage_details.access_key_secret"},
 			},
 		},
 	})
@@ -95,7 +96,7 @@ func TestAccResourceLogsDestination_basic(t *testing.T) {
 func TestAccResourceLogsDestination_update(t *testing.T) {
 	t.Parallel()
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Object Storage"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityObjectStorage}, "core")
 	if err != nil {
 		t.Skipf("could not get region with Object Storage: %s", err)
 	}

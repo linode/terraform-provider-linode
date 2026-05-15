@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/monitorlogsdestination/tmpl"
 )
@@ -17,7 +18,7 @@ import (
 func TestAccDataSourceLogsDestination_basic(t *testing.T) {
 	t.Parallel()
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Object Storage"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityObjectStorage}, "core")
 	if err != nil {
 		t.Skipf("could not get region with Object Storage: %s", err)
 	}
