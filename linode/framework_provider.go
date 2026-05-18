@@ -68,6 +68,9 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/monitoralertdefinitions"
 	"github.com/linode/terraform-provider-linode/v3/linode/monitorlogsdestination"
 	"github.com/linode/terraform-provider-linode/v3/linode/monitorlogsdestinations"
+	"github.com/linode/terraform-provider-linode/v3/linode/monitorlogsstream"
+	"github.com/linode/terraform-provider-linode/v3/linode/monitorlogsstreamhistory"
+	"github.com/linode/terraform-provider-linode/v3/linode/monitorlogsstreams"
 	"github.com/linode/terraform-provider-linode/v3/linode/nb"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbconfigs"
@@ -287,6 +290,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		firewallsettings.NewResource,
 		linodeinterface.NewResource,
 		monitorlogsdestination.NewResource,
+		monitorlogsstream.NewResource,
 		monitoralertdefinition.NewResource,
 	}
 }
@@ -390,6 +394,9 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		regionsvpcavailability.NewDataSource,
 		monitorlogsdestination.NewDataSource,
 		monitorlogsdestinations.NewDataSource,
+		monitorlogsstream.NewDataSource,
+		monitorlogsstreamhistory.NewDataSource,
+		monitorlogsstreams.NewDataSource,
 		monitoralertchannels.NewDataSource,
 	}
 }
