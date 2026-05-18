@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/monitorlogsdestination/tmpl"
@@ -167,7 +168,11 @@ func checkLogsDestinationDestroy(s *terraform.State) error {
 		}
 
 		_, err = client.GetLogsDestination(context.Background(), id)
-		if err == nil {
+		if err != nil {
+			if !linodego.IsNotFound(err) {
+				return fmt.Errorf("error getting logs destination with ID %d: %s", id, err)
+			}
+		} else {
 			return fmt.Errorf("logs destination with ID %d still exists", id)
 		}
 	}
