@@ -33,6 +33,25 @@ type NodeBalancerModel struct {
 	Tags                  types.Set           `tfsdk:"tags"`
 	Firewalls             types.List          `tfsdk:"firewalls"`
 	VPCs                  types.List          `tfsdk:"vpcs"`
+	LKECluster            types.List        `tfsdk:"lke_cluster"`
+}
+
+// LKEClusterModel represents the lke_cluster nested object.
+type LKEClusterModel struct {
+	ID    types.Int64  `tfsdk:"id"`
+	Label types.String `tfsdk:"label"`
+	Type  types.String `tfsdk:"type"`
+	URL   types.String `tfsdk:"url"`
+}
+
+// LKEClusterObjectType is the attr.Type for LKEClusterModel.
+var LKEClusterObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"id":    types.Int64Type,
+		"label": types.StringType,
+		"type":  types.StringType,
+		"url":   types.StringType,
+	},
 }
 
 type FirewallModel struct {
@@ -126,6 +145,12 @@ func (data *NodeBalancerModel) Flatten(
 	//		 In the meantime, enabling preserveKnown will break the diff logic for computed fields.
 	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, vpcs, false)
 
+	lkeCluster, diags := FlattenLKECluster(ctx, nodebalancer.LKECluster)
+	if diags.HasError() {
+		return diags
+	}
+	data.LKECluster = helper.KeepOrUpdateValue(data.LKECluster, *lkeCluster, preserveKnown)
+
 	return nil
 }
 
@@ -149,6 +174,7 @@ func (data *NodeBalancerModel) CopyFrom(other NodeBalancerModel, preserveKnown b
 	data.Tags = helper.KeepOrUpdateValue(data.Tags, other.Tags, preserveKnown)
 	data.Firewalls = helper.KeepOrUpdateValue(data.Firewalls, other.Firewalls, preserveKnown)
 	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, other.VPCs, preserveKnown)
+	data.LKECluster = helper.KeepOrUpdateValue(data.LKECluster, other.LKECluster, preserveKnown)
 }
 
 func parseNBFirewalls(
@@ -253,6 +279,7 @@ type NodeBalancerDataSourceModel struct {
 	Tags                  types.Set         `tfsdk:"tags"`
 	Firewalls             []NBFirewallModel `tfsdk:"firewalls"`
 	VPCs                  types.List        `tfsdk:"vpcs"`
+	LKECluster            types.List        `tfsdk:"lke_cluster"`
 }
 
 type NBFirewallModel struct {
@@ -325,6 +352,12 @@ func (data *NodeBalancerDataSourceModel) Flatten(
 	}
 
 	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, vpcs, false)
+
+	lkeCluster, diags := FlattenLKECluster(ctx, nodebalancer.LKECluster)
+	if diags.HasError() {
+		return diags
+	}
+	data.LKECluster = *lkeCluster
 
 	return nil
 }
@@ -416,4 +449,26 @@ func vpcModelsToLinodego(
 
 type DataSourceVPCModel struct {
 	BaseVPCModel
+}
+
+// FlattenLKECluster converts a linodego.NodeBalancerLKECluster pointer to a types.List.
+// Returns an empty list when lkeCluster is nil.
+func FlattenLKECluster(
+	ctx context.Context,
+	lkeCluster *linodego.NodeBalancerLKECluster,
+) (*types.List, diag.Diagnostics) {
+	if lkeCluster == nil {
+		result, diags := types.ListValueFrom(ctx, LKEClusterObjectType, []LKEClusterModel{})
+		return &result, diags
+	}
+
+	model := LKEClusterModel{
+		ID:    types.Int64Value(int64(lkeCluster.ID)),
+		Label: types.StringValue(lkeCluster.Label),
+		Type:  types.StringValue(lkeCluster.Type),
+		URL:   types.StringValue(lkeCluster.URL),
+	}
+
+	result, diags := types.ListValueFrom(ctx, LKEClusterObjectType, []LKEClusterModel{model})
+	return &result, diags
 }
