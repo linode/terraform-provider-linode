@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -17,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/monitorlogsdestination/tmpl"
@@ -56,9 +54,14 @@ func sweep(prefix string) error {
 func TestAccResourceLogsDestination_basic(t *testing.T) {
 	t.Parallel()
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityObjectStorage}, "core")
+	endpoint, err := acceptance.GetRandomObjectStorageEndpoint()
 	if err != nil {
-		t.Skipf("could not get region with Object Storage: %s", err)
+		t.Fatal(err)
+	}
+
+	testCluster, err := acceptance.GetEndpointCluster(*endpoint)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	resName := "linode_monitor_logs_destination.foobar"
@@ -70,7 +73,7 @@ func TestAccResourceLogsDestination_basic(t *testing.T) {
 		CheckDestroy:             checkLogsDestinationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, region),
+				Config: tmpl.Basic(t, label, endpoint.Region, testCluster),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("label"), knownvalue.StringExact(label)),
@@ -91,13 +94,6 @@ func TestAccResourceLogsDestination_basic(t *testing.T) {
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"akamai_object_storage_details.access_key_secret"},
 			},
-			{
-				// Short sleep before the automatic post-test destroy to allow any
-				// pending bucket activity to settle, preventing a "bucket not
-				// empty" failure during obj_bucket_force_delete cleanup.
-				PreConfig: func() { time.Sleep(15 * time.Second) },
-				Config:    tmpl.Basic(t, label, region),
-			},
 		},
 	})
 }
@@ -105,9 +101,14 @@ func TestAccResourceLogsDestination_basic(t *testing.T) {
 func TestAccResourceLogsDestination_update(t *testing.T) {
 	t.Parallel()
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityObjectStorage}, "core")
+	endpoint, err := acceptance.GetRandomObjectStorageEndpoint()
 	if err != nil {
-		t.Skipf("could not get region with Object Storage: %s", err)
+		t.Fatal(err)
+	}
+
+	testCluster, err := acceptance.GetEndpointCluster(*endpoint)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	resName := "linode_monitor_logs_destination.foobar"
@@ -119,24 +120,17 @@ func TestAccResourceLogsDestination_update(t *testing.T) {
 		CheckDestroy:             checkLogsDestinationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, region),
+				Config: tmpl.Basic(t, label, endpoint.Region, testCluster),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("label"), knownvalue.StringExact(label)),
 				},
 			},
 			{
-				Config: tmpl.Updates(t, label, region),
+				Config: tmpl.Updates(t, label, endpoint.Region, testCluster),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("label"), knownvalue.StringExact(label+"-updated")),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("type"), knownvalue.StringExact("akamai_object_storage")),
 				},
-			},
-			{
-				// Short sleep before the automatic post-test destroy to allow any
-				// pending bucket activity to settle, preventing a "bucket not
-				// empty" failure during obj_bucket_force_delete cleanup.
-				PreConfig: func() { time.Sleep(15 * time.Second) },
-				Config:    tmpl.Updates(t, label, region),
 			},
 		},
 	})

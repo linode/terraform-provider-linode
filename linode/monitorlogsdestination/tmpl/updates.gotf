@@ -6,7 +6,11 @@ provider "linode" {
 }
 
 resource "linode_object_storage_bucket" "foobar" {
+  {{if .Region }}
   region = "{{.Region}}"
+  {{else}}
+  cluster = "{{.Cluster}}"
+  {{end}}
   label  = "{{.Label}}-bucket"
 }
 
@@ -14,7 +18,11 @@ resource "linode_object_storage_key" "foobar" {
   label = "{{.Label}}-key"
 
   bucket_access {
-    region      = linode_object_storage_bucket.foobar.region
+    {{if .Region }}
+    region = linode_object_storage_bucket.foobar.region
+    {{else}}
+    cluster = linode_object_storage_bucket.foobar.cluster
+    {{end}}
     bucket_name = linode_object_storage_bucket.foobar.label
     permissions = "read_write"
   }

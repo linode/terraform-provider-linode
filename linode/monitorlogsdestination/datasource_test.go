@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/monitorlogsdestination/tmpl"
 )
@@ -19,9 +18,14 @@ import (
 func TestAccDataSourceLogsDestination_basic(t *testing.T) {
 	t.Parallel()
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityObjectStorage}, "core")
+	endpoint, err := acceptance.GetRandomObjectStorageEndpoint()
 	if err != nil {
-		t.Skipf("could not get region with Object Storage: %s", err)
+		t.Fatal(err)
+	}
+
+	testCluster, err := acceptance.GetEndpointCluster(*endpoint)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	dataName := "data.linode_monitor_logs_destination.foobar"
@@ -32,7 +36,7 @@ func TestAccDataSourceLogsDestination_basic(t *testing.T) {
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, label, region),
+				Config: tmpl.DataBasic(t, label, endpoint.Region, testCluster),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("label"), knownvalue.StringExact(label)),
 					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("type"), knownvalue.StringExact("akamai_object_storage")),
