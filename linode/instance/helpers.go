@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"crypto/sha3"
 	"encoding/base64"
 	"fmt"
 	"net"
@@ -17,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"golang.org/x/crypto/sha3"
 )
 
 type diskSpec map[string]any
@@ -891,7 +891,7 @@ func rootPasswordState(val any) string {
 
 // hashString hashes a string.
 func hashString(key string) string {
-	hash := sha3.Sum512([]byte(key))
+	hash := sha3.Sum512([]byte(key)) //nolint:govet
 	return base64.StdEncoding.EncodeToString(hash[:])
 }
 

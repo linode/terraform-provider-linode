@@ -144,7 +144,7 @@ func TestAccResourceNodeBalancerNode_vpc(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resName,
 						tfjsonpath.New("address"),
-						knownvalue.StringExact("10.0.0.5:80"),
+						knownvalue.StringExact("10.0.0.10:80"),
 					),
 					statecheck.ExpectKnownValue(
 						resName,

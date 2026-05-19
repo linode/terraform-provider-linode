@@ -2,6 +2,37 @@
 
 {{ template "e2e_test_firewall" . }}
 
+resource "linode_vpc" "test" {
+    label = "{{ .Label }}"
+    region = "{{ .Config.NodeBalancer.Region }}"
+}
+
+resource "linode_vpc_subnet" "test" {
+    vpc_id = linode_vpc.test.id
+    label = "{{ .Label }}"
+    ipv4 = "10.0.0.0/24"
+}
+
+resource "linode_instance" "test" {
+    label  = "{{ .Label }}"
+    region = "{{ .Config.NodeBalancer.Region }}"
+    type   = "g6-nanode-1"
+    booted = false
+}
+
+resource "linode_instance_config" "test" {
+    linode_id = linode_instance.test.id
+    label     = "test-config"
+
+    interface {
+        purpose   = "vpc"
+        subnet_id = linode_vpc_subnet.test.id
+        ipv4 {
+            vpc = "10.0.0.10"
+        }
+    }
+}
+
 resource "linode_nodebalancer" "test" {
     label = "{{ .Config.NodeBalancer.Label }}"
     region = "{{ .Config.NodeBalancer.Region }}"
@@ -14,6 +45,8 @@ resource "linode_nodebalancer" "test" {
             ipv4_range_auto_assign = true
         }
     ]
+
+    depends_on = [linode_instance_config.test]
 }
 
 resource "linode_nodebalancer_config" "test" {
@@ -32,20 +65,11 @@ resource "linode_nodebalancer_node" "test" {
     nodebalancer_id = linode_nodebalancer.test.id
     config_id       = linode_nodebalancer_config.test.id
     subnet_id       = linode_vpc_subnet.test.id
-    address         = "10.0.0.5:80"
+    address         = "10.0.0.10:80"
     label           = "{{ .Label }}"
     weight          = 50
-}
 
-resource "linode_vpc" "test" {
-    label = "{{ .Label }}"
-    region = "{{ .Config.NodeBalancer.Region }}"
-}
-
-resource "linode_vpc_subnet" "test" {
-    vpc_id = linode_vpc.test.id
-    label = "{{ .Label }}"
-    ipv4 = "10.0.0.0/24"
+    depends_on = [linode_instance_config.test]
 }
 
 {{ end }}

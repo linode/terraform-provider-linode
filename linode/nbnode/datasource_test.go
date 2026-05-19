@@ -82,7 +82,7 @@ func TestAccDataSourceNodeBalancerNode_vpc(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						dsName,
 						tfjsonpath.New("address"),
-						knownvalue.StringExact("10.0.0.5:80"),
+						knownvalue.StringExact("10.0.0.10:80"),
 					),
 					statecheck.ExpectKnownValue(
 						dsName,

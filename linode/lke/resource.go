@@ -226,15 +226,22 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			firewallId = linodego.Pointer(poolSpec["firewall_id"].(int))
 		}
 
+		var diskEncryption *linodego.InstanceDiskEncryption
+		if v, ok := poolSpec["disk_encryption"].(string); ok && v != "" {
+			de := linodego.InstanceDiskEncryption(v)
+			diskEncryption = &de
+		}
+
 		createOpts.NodePools = append(createOpts.NodePools, linodego.LKENodePoolCreateOptions{
-			Label:      label,
-			FirewallID: firewallId,
-			Type:       poolSpec["type"].(string),
-			Tags:       helper.ExpandStringSet(poolSpec["tags"].(*schema.Set)),
-			Taints:     expandNodePoolTaints(helper.ExpandObjectSet(poolSpec["taint"].(*schema.Set))),
-			Labels:     helper.StringAnyMapToTyped[string](poolSpec["labels"].(map[string]any)),
-			Count:      count,
-			Autoscaler: autoscaler,
+			Label:          label,
+			FirewallID:     firewallId,
+			DiskEncryption: diskEncryption,
+			Type:           poolSpec["type"].(string),
+			Tags:           helper.ExpandStringSet(poolSpec["tags"].(*schema.Set)),
+			Taints:         expandNodePoolTaints(helper.ExpandObjectSet(poolSpec["taint"].(*schema.Set))),
+			Labels:         helper.StringAnyMapToTyped[string](poolSpec["labels"].(map[string]any)),
+			Count:          count,
+			Autoscaler:     autoscaler,
 		})
 	}
 
