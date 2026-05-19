@@ -333,5 +333,5 @@ func (r *Resource) Delete(
 	// Wait for the backend to finish flushing logs and releasing object locks
 	// before Terraform continues destroying dependencies (object storage bucket).
 	tflog.Debug(ctx, "Sleeping to allow Linode backend to release S3 objects")
-	time.Sleep(30 * time.Second)
+	time.Sleep(60 * time.Second)
 }
