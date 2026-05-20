@@ -126,6 +126,33 @@ func TestFlattenStream_LKEAuditLogs(t *testing.T) {
 	assert.Equal(t, []int64{1234, 5678}, clusterIDs)
 }
 
+func TestFlattenStream_PreserveKnown_UnknownDetails(t *testing.T) {
+	ctx := context.Background()
+
+	stream := &linodego.Stream{
+		ID:    456,
+		Label: "AuditLog-config",
+		Type:  linodego.StreamTypeAuditLogs,
+		Destinations: []linodego.StreamDestination{
+			{ID: 12345},
+		},
+		Details:   nil,
+		Created:   makeTime("2025-03-20T01:41:09"),
+		Updated:   makeTime("2025-03-20T01:41:09"),
+		CreatedBy: "user",
+		UpdatedBy: "user",
+	}
+
+	m := monitorlogsstream.ResourceModel{
+		Details: types.ObjectUnknown(streamDetailsAttrTypes()),
+	}
+	var diags diag.Diagnostics
+
+	m.FlattenStream(ctx, stream, true, &diags)
+	require.False(t, diags.HasError())
+	assert.True(t, m.Details.IsNull(), "nil API details must become null after create, not unknown")
+}
+
 func TestFlattenStream_PreserveKnown(t *testing.T) {
 	ctx := context.Background()
 
@@ -280,6 +307,7 @@ func TestGetUpdateOptions(t *testing.T) {
 
 	require.NotNil(t, opts.Label)
 	assert.Equal(t, "AuditLog-renamed", *opts.Label)
+	assert.Nil(t, opts.Type, "type changes require replacement, not update")
 	assert.Equal(t, []int{12345}, opts.Destinations)
 	require.NotNil(t, opts.Status)
 	assert.Equal(t, linodego.StreamStatusActive, *opts.Status)

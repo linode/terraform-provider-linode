@@ -156,9 +156,6 @@ func (m *ResourceModel) GetUpdateOptions(
 		Label: linodego.Pointer(m.Label.ValueString()),
 	}
 
-	streamType := linodego.StreamType(m.Type.ValueString())
-	opts.Type = &streamType
-
 	if !m.Status.IsNull() && !m.Status.IsUnknown() {
 		status := linodego.StreamStatus(m.Status.ValueString())
 		opts.Status = &status
@@ -191,9 +188,6 @@ func flattenStreamDetails(
 	diags *diag.Diagnostics,
 ) types.Object {
 	if details == nil {
-		if preserveKnown && !original.IsNull() {
-			return original
-		}
 		return types.ObjectNull(streamDetailsAttrTypes)
 	}
 
