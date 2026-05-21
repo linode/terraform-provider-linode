@@ -81,12 +81,7 @@ func flattenStreamHistoryEntry(
 			entry.Details = detailsObj
 		}
 	} else {
-		nullDetails, d := types.ObjectValue(streamDetailsAttrTypes, map[string]attr.Value{
-			"cluster_ids":                      types.ListValueMust(types.Int64Type, []attr.Value{}),
-			"is_auto_add_all_clusters_enabled": types.BoolNull(),
-		})
-		diags.Append(d...)
-		entry.Details = nullDetails
+		entry.Details = types.ObjectNull(streamDetailsAttrTypes)
 	}
 
 	return entry
