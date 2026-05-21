@@ -6,8 +6,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
@@ -106,6 +108,19 @@ var frameworkResourceSchema = schema.Schema{
 			PlanModifiers: []planmodifier.Object{
 				objectplanmodifier.UseStateForUnknown(),
 			},
+		},
+		"tags": schema.SetAttribute{
+			Description: "A set of tags associated with this IP address.",
+			Computed:    true,
+			ElementType: types.StringType,
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"assigned_entity": schema.ObjectAttribute{
+			Description:    "The entity this IP address has been assigned to. This is null if the address is not assigned to an entity.",
+			Computed:       true,
+			AttributeTypes: instancenetworking.AssignedEntityObjectType.AttrTypes,
 		},
 	},
 }

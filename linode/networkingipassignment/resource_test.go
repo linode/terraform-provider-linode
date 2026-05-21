@@ -11,7 +11,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -53,6 +56,23 @@ func TestAccResourceNetworkingIPsAssign(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "assignments.0.linode_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "assignments.0.address"),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					// Computed fields are null immediately after create; they are
+					// populated on the next refresh via GET /networking/ips/{address}.
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assignments").AtSliceIndex(0).AtMapKey("reserved"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assignments").AtSliceIndex(0).AtMapKey("tags"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assignments").AtSliceIndex(0).AtMapKey("assigned_entity"), knownvalue.Null()),
+				},
+			},
+			{
+				// A subsequent plan/apply triggers Read which populates computed fields
+				// via GET /networking/ips/{address}.
+				Config: tmpl.NetworkingIPsAssign(t, instanceName, testRegion),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assignments").AtSliceIndex(0).AtMapKey("reserved"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assignments").AtSliceIndex(0).AtMapKey("tags"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assignments").AtSliceIndex(0).AtMapKey("assigned_entity"), knownvalue.NotNull()),
+				},
 			},
 			// Removed ImportState step as it's no longer supported
 		},

@@ -69,12 +69,12 @@ func listFunc(
 		"filter": filter,
 	})
 
-	images, err := client.ListIPAddresses(ctx, &linodego.ListOptions{
+	ips, err := client.ListIPAddresses(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return helper.TypedSliceToAny(images), nil
+	return helper.TypedSliceToAny(ips), nil
 }

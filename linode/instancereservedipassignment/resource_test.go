@@ -8,6 +8,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/instancereservedipassignment/tmpl"
@@ -49,6 +52,11 @@ func TestAccInstanceIP_addReservedIP(t *testing.T) {
 					resource.TestCheckResourceAttr(testInstanceIPResName, "region", testRegion),
 					resource.TestCheckResourceAttr(testInstanceIPResName, "type", "ipv4"),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testInstanceIPResName, tfjsonpath.New("reserved"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(testInstanceIPResName, tfjsonpath.New("tags"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(testInstanceIPResName, tfjsonpath.New("assigned_entity"), knownvalue.NotNull()),
+				},
 			},
 		},
 	})

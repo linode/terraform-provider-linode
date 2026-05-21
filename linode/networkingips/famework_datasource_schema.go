@@ -2,22 +2,23 @@ package networkingips
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
 var filterConfig = frameworkfilter.Config{
-	"type":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"region":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"rdns":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"address": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"prefix":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"type":     {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"region":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"rdns":     {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"address":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"prefix":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"reserved": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
 
 	"gateway":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"subnet_mask": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"public":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"linode_id":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
-	"reserved":    {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
 }
 
 var frameworkDatasourceSchema = schema.Schema{
@@ -82,6 +83,16 @@ var frameworkDatasourceSchema = schema.Schema{
 						Description:    "Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.",
 						Computed:       true,
 						AttributeTypes: instancenetworking.VPCNAT1To1Type.AttrTypes,
+					},
+					"tags": schema.SetAttribute{
+						Description: "A set of tags associated with this IP address.",
+						Computed:    true,
+						ElementType: types.StringType,
+					},
+					"assigned_entity": schema.ObjectAttribute{
+						Description:    "The entity this IP address has been assigned to. This is null if the address is not assigned to an entity.",
+						Computed:       true,
+						AttributeTypes: instancenetworking.AssignedEntityObjectType.AttrTypes,
 					},
 				},
 			},

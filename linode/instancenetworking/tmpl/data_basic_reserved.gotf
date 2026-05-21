@@ -8,15 +8,16 @@ resource "linode_instance" "foobar" {
 }
 
 resource "linode_networking_ip" "reserved_ip" {
-  region   = "{{ .Region }}"
-  public   = true
-  type     = "ipv4"
-  reserved = true
+  region    = "{{ .Region }}"
+  public    = true
+  type      = "ipv4"
+  reserved  = true
   linode_id = linode_instance.foobar.id
 }
 
 data "linode_instance_networking" "test" {
-    linode_id = linode_instance.foobar.id
+    linode_id  = linode_instance.foobar.id
+    depends_on = [linode_networking_ip.reserved_ip]
 }
 
 {{ end }}

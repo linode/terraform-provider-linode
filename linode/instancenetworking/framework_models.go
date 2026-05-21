@@ -208,12 +208,42 @@ func flattenIP(network *linodego.InstanceIP) (
 		result["interface_id"] = types.Int64Null()
 	}
 
+	result["reserved"] = types.BoolValue(network.Reserved)
+
+	tags := helper.StringSliceToFrameworkValueSlice(network.Tags)
+	tagsSet, tagsDiags := types.SetValue(types.StringType, tags)
+	if tagsDiags.HasError() {
+		return nil, tagsDiags
+	}
+	result["tags"] = tagsSet
+
+	assignedEntity, assignedEntityDiags := FlattenAssignedEntity(network.AssignedEntity)
+	if assignedEntityDiags.HasError() {
+		return nil, assignedEntityDiags
+	}
+	result["assigned_entity"] = assignedEntity
+
 	obj, d := types.ObjectValue(networkObjectType.AttrTypes, result)
 	if d.HasError() {
 		return nil, d
 	}
 
 	return &obj, nil
+}
+
+func FlattenAssignedEntity(entity *linodego.ReservedIPAssignedEntity) (basetypes.ObjectValue, diag.Diagnostics) {
+	if entity == nil {
+		return types.ObjectNull(AssignedEntityObjectType.AttrTypes), nil
+	}
+
+	result := map[string]attr.Value{
+		"id":    types.Int64Value(int64(entity.ID)),
+		"label": types.StringValue(entity.Label),
+		"type":  types.StringValue(entity.Type),
+		"url":   types.StringValue(entity.URL),
+	}
+
+	return types.ObjectValue(AssignedEntityObjectType.AttrTypes, result)
 }
 
 func flattenVPCIPByValue(vpc linodego.VPCIP) (
