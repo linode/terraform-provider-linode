@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/monitorlogsstream/tmpl"
 )
 
@@ -122,20 +123,20 @@ func getRegionForStreamTest(t *testing.T) string {
 	region, err := acceptance.GetRandomRegionWithCaps(
 		[]string{linodego.CapabilityObjectStorage}, "core")
 	if err != nil {
-		t.Skipf("could not get region with Object Storage: %s", err)
+		t.Fatalf("could not get region with Object Storage: %s", err)
 	}
 
 	return region
 }
 
-func streamIsReady(status linodego.StreamStatus) bool {
+func streamReadyStatus(status linodego.StreamStatus) (ready bool, err error) {
 	switch status {
 	case linodego.StreamStatusActive, linodego.StreamStatusInactive:
-		return true
+		return true, nil
 	case linodego.StreamStatusProvisioning, linodego.StreamStatusDeactivating:
-		return false
+		return false, nil
 	default:
-		return false
+		return false, fmt.Errorf("unexpected log stream status %q", status)
 	}
 }
 
@@ -175,7 +176,11 @@ func waitForLogStreamReady(ctx context.Context, client *linodego.Client, id int,
 		}
 
 		lastStatus = stream.Status
-		if streamIsReady(stream.Status) {
+		ready, statusErr := streamReadyStatus(stream.Status)
+		if statusErr != nil {
+			return fmt.Errorf("log stream %d: %w", id, statusErr)
+		}
+		if ready {
 			return nil
 		}
 
@@ -206,6 +211,32 @@ func testAccCheckLogStreamReady(name string) resource.TestCheckFunc {
 
 		return waitForLogStreamReady(context.Background(), client, id, logStreamProvisionTimeout)
 	}
+}
+
+func checkLogStreamDestroy(s *terraform.State) error {
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_monitor_logs_stream" {
+			continue
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("error parsing logs stream ID %v: %s", rs.Primary.ID, err)
+		}
+
+		_, err = client.GetLogStream(context.Background(), id)
+		if err != nil {
+			if !linodego.IsNotFound(err) {
+				return fmt.Errorf("error getting logs stream with ID %d: %s", id, err)
+			}
+		} else {
+			return fmt.Errorf("logs stream with ID %d still exists", id)
+		}
+	}
+
+	return nil
 }
 
 // lifecycleStateChecks returns state checks for the resource and related data sources.
@@ -247,7 +278,7 @@ func TestAccMonitorLogsStream_lifecycle(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             nil,
+		CheckDestroy:             checkLogStreamDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:            tmpl.Lifecycle(t, label, region),
@@ -289,6 +320,7 @@ func TestAccResourceMonitorLogsStream_lkeAuditLogs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkLogStreamDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.LKEAuditLogs(t, label, clusterID, region),
@@ -340,7 +372,7 @@ func TestAccResourceMonitorLogsStream_invalidDestination(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.InvalidDestination(t, label),
-				ExpectError: regexp.MustCompile(`(?i)400|not found|invalid|destination`),
+				ExpectError: regexp.MustCompile(`\[400\].*\[destination\] Destination not found`),
 			},
 		},
 	})
