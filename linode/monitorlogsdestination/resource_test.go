@@ -5,10 +5,10 @@ package monitorlogsdestination_test
 import (
 	"context"
 	"fmt"
-	"log"
 	"regexp"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -32,7 +32,7 @@ func init() {
 func sweep(prefix string) error {
 	client, err := acceptance.GetTestClient()
 	if err != nil {
-		log.Fatal(fmt.Errorf("error getting client: %s", err))
+		return fmt.Errorf("error getting client: %s", err)
 	}
 
 	destinations, err := client.ListLogsDestinations(context.Background(), nil)
@@ -95,6 +95,15 @@ func TestAccResourceLogsDestination_basic(t *testing.T) {
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"akamai_object_storage_details.access_key_secret"},
 			},
+			// Wait for the backend to finish flushing logs and releasing object locks
+			// before Terraform continues with bucket teardown
+			{
+				Config: tmpl.BucketOnly(t, label, endpoint.Region, testCluster),
+				Check: func(_ *terraform.State) error {
+					time.Sleep(60 * time.Second)
+					return nil
+				},
+			},
 		},
 	})
 }
@@ -131,6 +140,16 @@ func TestAccResourceLogsDestination_update(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("label"), knownvalue.StringExact(label+"-updated")),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("type"), knownvalue.StringExact("akamai_object_storage")),
+				},
+			},
+			// Destroy only the destination first, then sleep to allow the Linode
+			// backend to finish flushing in-flight log objects before the test
+			// framework deletes the bucket in teardown.
+			{
+				Config: tmpl.BucketOnly(t, label, endpoint.Region, testCluster),
+				Check: func(_ *terraform.State) error {
+					time.Sleep(60 * time.Second)
+					return nil
 				},
 			},
 		},

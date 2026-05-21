@@ -5,11 +5,13 @@ package monitorlogsdestination_test
 import (
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/monitorlogsdestination/tmpl"
@@ -53,6 +55,15 @@ func TestAccDataSourceLogsDestination_basic(t *testing.T) {
 			{
 				Config:      tmpl.DataNotFound(t),
 				ExpectError: regexp.MustCompile(`\[404\]`),
+			},
+			// Wait for the backend to finish flushing logs and releasing object locks
+			// before Terraform continues with bucket teardown
+			{
+				Config: tmpl.BucketOnly(t, label, endpoint.Region, testCluster),
+				Check: func(_ *terraform.State) error {
+					time.Sleep(60 * time.Second)
+					return nil
+				},
 			},
 		},
 	})

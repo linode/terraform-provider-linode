@@ -225,19 +225,19 @@ func (m *LogsDestinationDataSourceModel) ParseLogsDestination(dest *linodego.Log
 	flat := &LogsDestinationFlatDetailsModel{}
 	d := dest.Details
 
-	flat.AccessKeyID = d.AccessKeyID
-	flat.BucketName = d.BucketName
-	flat.Host = d.Host
-	flat.Path = d.Path
-	flat.EndpointURL = d.EndpointURL
-	flat.ContentType = d.ContentType
-	flat.DataCompression = d.DataCompression
+	flat.AccessKeyID = types.StringValue(d.AccessKeyID)
+	flat.BucketName = types.StringValue(d.BucketName)
+	flat.Host = types.StringValue(d.Host)
+	flat.Path = types.StringValue(d.Path)
+	flat.EndpointURL = types.StringValue(d.EndpointURL)
+	flat.ContentType = types.StringValue(d.ContentType)
+	flat.DataCompression = types.StringValue(d.DataCompression)
 
 	if d.Authentication != nil {
-		flat.AuthenticationType = string(d.Authentication.Type)
+		flat.AuthenticationType = types.StringValue(string(d.Authentication.Type))
 	}
 	if d.ClientCertificateDetails != nil {
-		flat.TLSHostname = d.ClientCertificateDetails.TLSHostname
+		flat.TLSHostname = types.StringValue(d.ClientCertificateDetails.TLSHostname)
 	}
 
 	m.Details = flat

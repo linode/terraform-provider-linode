@@ -20,3 +20,12 @@ func DataBasic(t testing.TB, label, region, cluster string) string {
 			Cluster: cluster,
 		})
 }
+
+func BucketOnly(t testing.TB, label, region, cluster string) string {
+	return acceptance.ExecuteTemplate(t,
+		"monitor_logs_destinations_bucket_only", TemplateData{
+			Label:   label,
+			Region:  region,
+			Cluster: cluster,
+		})
+}

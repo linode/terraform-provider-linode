@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -329,9 +328,4 @@ func (r *Resource) Delete(
 			err.Error(),
 		)
 	}
-
-	// Wait for the backend to finish flushing logs and releasing object locks
-	// before Terraform continues destroying dependencies (object storage bucket).
-	tflog.Debug(ctx, "Sleeping to allow Linode backend to release S3 objects")
-	time.Sleep(60 * time.Second)
 }
