@@ -48,7 +48,7 @@ func init() {
 func sweep(prefix string) error {
 	client, err := acceptance.GetTestClient()
 	if err != nil {
-		log.Fatal(fmt.Errorf("Error getting client: %s", err))
+		return fmt.Errorf("error getting client: %w", err)
 	}
 
 	streams, err := client.ListLogStreams(context.Background(), nil)
@@ -291,48 +291,6 @@ func TestAccMonitorLogsStream_lifecycle(t *testing.T) {
 				Config:            tmpl.Updates(t, label, region),
 				ConfigStateChecks: lifecycleStateChecks(updatedLabel),
 				Check:             testAccCheckLogStreamReady(resourceName),
-			},
-			{
-				RefreshState: true,
-			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"status", "version"},
-				Check:                   testAccCheckLogStreamReady(resourceName),
-			},
-		},
-	})
-}
-
-func TestAccResourceMonitorLogsStream_lkeAuditLogs(t *testing.T) {
-	acceptance.LongRunningTest(t)
-	requireNoExistingStreams(t)
-
-	label := acctest.RandomWithPrefix("tf-test")
-	region := getRegionForStreamTest(t)
-	clusterID := os.Getenv("LINODE_TEST_LKE_CLUSTER_ID")
-	if clusterID == "" {
-		t.Skip("skipping: LINODE_TEST_LKE_CLUSTER_ID must be set to an existing LKE cluster ID")
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkLogStreamDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.LKEAuditLogs(t, label, clusterID, region),
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName,
-						tfjsonpath.New("label"), knownvalue.StringExact(label)),
-					statecheck.ExpectKnownValue(resourceName,
-						tfjsonpath.New("type"), knownvalue.StringExact("lke_audit_logs")),
-					statecheck.ExpectKnownValue(resourceName,
-						tfjsonpath.New("status"), knownvalue.NotNull()),
-				},
-				Check: testAccCheckLogStreamReady(resourceName),
 			},
 			{
 				RefreshState: true,

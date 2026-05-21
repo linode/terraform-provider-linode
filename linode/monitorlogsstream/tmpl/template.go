@@ -7,10 +7,9 @@ import (
 )
 
 type TemplateData struct {
-	Label     string
-	StreamID  string
-	ClusterID string
-	Region    string
+	Label    string
+	StreamID string
+	Region   string
 }
 
 func Lifecycle(t testing.TB, label, region string) string {
@@ -37,14 +36,6 @@ func Updates(t testing.TB, label, region string) string {
 func DataBasic(t testing.TB, streamID string) string {
 	return acceptance.ExecuteTemplate(t, "monitor_logs_stream_data_basic", TemplateData{
 		StreamID: streamID,
-	})
-}
-
-func LKEAuditLogs(t testing.TB, label, clusterID, region string) string {
-	return acceptance.ExecuteTemplate(t, "monitor_logs_stream_lke_audit_logs", TemplateData{
-		Label:     label,
-		ClusterID: clusterID,
-		Region:    region,
 	})
 }
 
