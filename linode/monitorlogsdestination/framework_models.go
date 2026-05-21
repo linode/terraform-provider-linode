@@ -85,16 +85,16 @@ type LogsDestinationDataSourceModel struct {
 // Only non-sensitive fields returned by the API are included.
 type LogsDestinationFlatDetailsModel struct {
 	// akamai_object_storage fields
-	AccessKeyID string `tfsdk:"access_key_id"`
-	BucketName  string `tfsdk:"bucket_name"`
-	Host        string `tfsdk:"host"`
-	Path        string `tfsdk:"path"`
+	AccessKeyID types.String `tfsdk:"access_key_id"`
+	BucketName  types.String `tfsdk:"bucket_name"`
+	Host        types.String `tfsdk:"host"`
+	Path        types.String `tfsdk:"path"`
 	// custom_https fields
-	EndpointURL        string `tfsdk:"endpoint_url"`
-	ContentType        string `tfsdk:"content_type"`
-	DataCompression    string `tfsdk:"data_compression"`
-	AuthenticationType string `tfsdk:"authentication_type"`
-	TLSHostname        string `tfsdk:"tls_hostname"`
+	EndpointURL        types.String `tfsdk:"endpoint_url"`
+	ContentType        types.String `tfsdk:"content_type"`
+	DataCompression    types.String `tfsdk:"data_compression"`
+	AuthenticationType types.String `tfsdk:"authentication_type"`
+	TLSHostname        types.String `tfsdk:"tls_hostname"`
 }
 
 // FlattenLogsDestination populates the resource model from an API response.
@@ -180,6 +180,8 @@ func (m *LogsDestinationResourceModel) FlattenLogsDestination(
 				}
 			}
 			d.CustomHeaders = headers
+		} else if !preserveKnown {
+			d.CustomHeaders = nil
 		}
 	}
 
@@ -198,11 +200,13 @@ func (m *LogsDestinationResourceModel) CopyFrom(other LogsDestinationResourceMod
 	m.Updated = helper.KeepOrUpdateValue(m.Updated, other.Updated, preserveKnown)
 	m.Version = helper.KeepOrUpdateValue(m.Version, other.Version, preserveKnown)
 
-	if other.AkamaiObjectStorageDetails != nil {
-		m.AkamaiObjectStorageDetails = other.AkamaiObjectStorageDetails
+	if m.AkamaiObjectStorageDetails == nil && other.AkamaiObjectStorageDetails != nil {
+		copied := *other.AkamaiObjectStorageDetails
+		m.AkamaiObjectStorageDetails = &copied
 	}
-	if other.CustomHTTPSDetails != nil {
-		m.CustomHTTPSDetails = other.CustomHTTPSDetails
+	if m.CustomHTTPSDetails == nil && other.CustomHTTPSDetails != nil {
+		copied := *other.CustomHTTPSDetails
+		m.CustomHTTPSDetails = &copied
 	}
 }
 

@@ -17,7 +17,7 @@ var frameworkDataSourceSchema = schema.Schema{
 	Description: "Provides a list of Linode Monitor Logs Destinations.",
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Description: "The data source s unique ID.",
+			Description: "The data source's unique ID.",
 			Computed:    true,
 		},
 		"order":    filterConfig.OrderSchema(),
