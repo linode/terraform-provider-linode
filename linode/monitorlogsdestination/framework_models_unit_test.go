@@ -183,10 +183,10 @@ func TestParseLogsDestination_DataSource(t *testing.T) {
 	assert.Equal(t, types.Int64Value(2), m.Version)
 
 	assert.NotNil(t, m.Details)
-	assert.Equal(t, "DSKEY", m.Details.AccessKeyID)
-	assert.Equal(t, "ds-bucket", m.Details.BucketName)
-	assert.Equal(t, "eu-central-1.linodeobjects.com", m.Details.Host)
-	assert.Equal(t, "/ds-logs", m.Details.Path)
+	assert.Equal(t, types.StringValue("DSKEY"), m.Details.AccessKeyID)
+	assert.Equal(t, types.StringValue("ds-bucket"), m.Details.BucketName)
+	assert.Equal(t, types.StringValue("eu-central-1.linodeobjects.com"), m.Details.Host)
+	assert.Equal(t, types.StringValue("/ds-logs"), m.Details.Path)
 }
 
 func TestParseLogsDestination_DataSource_CustomHTTPS(t *testing.T) {
@@ -228,14 +228,14 @@ func TestParseLogsDestination_DataSource_CustomHTTPS(t *testing.T) {
 	assert.Equal(t, types.Int64Value(3), m.Version)
 
 	assert.NotNil(t, m.Details)
-	assert.Equal(t, "https://logs.example.com/ingest", m.Details.EndpointURL)
-	assert.Equal(t, "application/json", m.Details.ContentType)
-	assert.Equal(t, "gzip", m.Details.DataCompression)
-	assert.Equal(t, "basic", m.Details.AuthenticationType)
-	assert.Equal(t, "logs.example.com", m.Details.TLSHostname)
+	assert.Equal(t, types.StringValue("https://logs.example.com/ingest"), m.Details.EndpointURL)
+	assert.Equal(t, types.StringValue("application/json"), m.Details.ContentType)
+	assert.Equal(t, types.StringValue("gzip"), m.Details.DataCompression)
+	assert.Equal(t, types.StringValue("basic"), m.Details.AuthenticationType)
+	assert.Equal(t, types.StringValue("logs.example.com"), m.Details.TLSHostname)
 
 	// OBJ storage fields must be empty for a custom_https destination.
-	assert.Empty(t, m.Details.AccessKeyID)
-	assert.Empty(t, m.Details.BucketName)
-	assert.Empty(t, m.Details.Host)
+	assert.True(t, m.Details.AccessKeyID.IsNull())
+	assert.True(t, m.Details.BucketName.IsNull())
+	assert.True(t, m.Details.Host.IsNull())
 }

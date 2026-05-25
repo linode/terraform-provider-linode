@@ -225,18 +225,29 @@ func (m *LogsDestinationDataSourceModel) ParseLogsDestination(dest *linodego.Log
 	flat := &LogsDestinationFlatDetailsModel{}
 	d := dest.Details
 
-	flat.AccessKeyID = types.StringValue(d.AccessKeyID)
-	flat.BucketName = types.StringValue(d.BucketName)
-	flat.Host = types.StringValue(d.Host)
-	flat.Path = types.StringValue(d.Path)
-	flat.EndpointURL = types.StringValue(d.EndpointURL)
-	flat.ContentType = types.StringValue(d.ContentType)
-	flat.DataCompression = types.StringValue(d.DataCompression)
+	stringOrNull := func(s string) types.String {
+		if s == "" {
+			return types.StringNull()
+		}
+		return types.StringValue(s)
+	}
 
-	if d.Authentication != nil {
+	flat.AccessKeyID = stringOrNull(d.AccessKeyID)
+	flat.BucketName = stringOrNull(d.BucketName)
+	flat.Host = stringOrNull(d.Host)
+	flat.Path = stringOrNull(d.Path)
+	flat.EndpointURL = stringOrNull(d.EndpointURL)
+	flat.ContentType = stringOrNull(d.ContentType)
+	flat.DataCompression = stringOrNull(d.DataCompression)
+
+	// Handle nested structs gracefully
+	flat.AuthenticationType = types.StringNull()
+	if d.Authentication != nil && d.Authentication.Type != "" {
 		flat.AuthenticationType = types.StringValue(string(d.Authentication.Type))
 	}
-	if d.ClientCertificateDetails != nil {
+
+	flat.TLSHostname = types.StringNull()
+	if d.ClientCertificateDetails != nil && d.ClientCertificateDetails.TLSHostname != "" {
 		flat.TLSHostname = types.StringValue(d.ClientCertificateDetails.TLSHostname)
 	}
 
