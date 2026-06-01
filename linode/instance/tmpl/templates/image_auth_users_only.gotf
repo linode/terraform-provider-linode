@@ -10,6 +10,10 @@ resource "linode_sshkey" "key" {
 }
 
 resource "linode_instance" "foobar" {
+    depends_on = [
+        linode_sshkey.key
+    ]
+
     label = "{{.Label}}"
     type = "g6-nanode-1"
     image = "{{.Image}}"
