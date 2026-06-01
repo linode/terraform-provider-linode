@@ -210,9 +210,11 @@ var resourceSchema = map[string]*schema.Schema{
 					},
 				},
 				"disk_encryption": {
-					Type:        schema.TypeString,
-					Description: "The disk encryption policy for the nodes in this pool.",
-					Computed:    true,
+					Type:         schema.TypeString,
+					Description:  "The disk encryption policy for the nodes in this pool.",
+					Optional:     true,
+					Computed:     true,
+					ValidateFunc: validation.StringInSlice([]string{"enabled", "disabled"}, false),
 				},
 				"nodes": {
 					Type: schema.TypeList,

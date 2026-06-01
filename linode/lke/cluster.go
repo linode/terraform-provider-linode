@@ -29,6 +29,7 @@ type NodePoolSpec struct {
 	UpdateStrategy    *string
 	Label             *string
 	FirewallID        *int
+	DiskEncryption    *string
 }
 
 type NodePoolUpdates struct {
@@ -68,6 +69,11 @@ func ReconcileLKENodePoolSpecs(
 
 		if spec.FirewallID != nil && *spec.FirewallID != 0 {
 			createOpts.FirewallID = spec.FirewallID
+		}
+
+		if spec.DiskEncryption != nil {
+			de := linodego.InstanceDiskEncryption(*spec.DiskEncryption)
+			createOpts.DiskEncryption = &de
 		}
 
 		if spec.Taints != nil {
@@ -128,6 +134,20 @@ func ReconcileLKENodePoolSpecs(
 		// Types cannot be updated on node pools
 		// so we should delete the old one and create a new one
 		if newSpec.Type != oldSpec.Type {
+			if err := createPool(newSpec); err != nil {
+				return result, err
+			}
+
+			deletePool(oldSpec.ID)
+			continue
+		}
+
+		// Disk encryption cannot be updated on node pools
+		// so we should delete the old one and create a new one
+		diskEncryptionChanged := (newSpec.DiskEncryption != nil && oldSpec.DiskEncryption != nil && *newSpec.DiskEncryption != *oldSpec.DiskEncryption) ||
+			(newSpec.DiskEncryption != nil && oldSpec.DiskEncryption == nil) ||
+			(newSpec.DiskEncryption == nil && oldSpec.DiskEncryption != nil)
+		if diskEncryptionChanged {
 			if err := createPool(newSpec); err != nil {
 				return result, err
 			}
@@ -447,6 +467,12 @@ func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, dec
 				}
 			}
 
+			if declaredDE, ok := declaredPool["disk_encryption"].(string); ok && declaredDE != "" {
+				if string(apiPool.DiskEncryption) != declaredDE {
+					continue
+				}
+			}
+
 			// Pair the API pool with the declared pool
 			result[i] = apiPool
 			delete(apiPools, apiPool.ID)
@@ -516,10 +542,16 @@ func expandLinodeLKENodePoolSpecs(pool []any, preserveNoTarget bool) (poolSpecs 
 			firewallIdPtr = &v
 		}
 
+		var diskEncryptionPtr *string
+		if v, ok := specMap["disk_encryption"].(string); ok && v != "" {
+			diskEncryptionPtr = &v
+		}
+
 		poolSpecs = append(poolSpecs, NodePoolSpec{
 			ID:                specMap["id"].(int),
 			Label:             labelPtr,
 			FirewallID:        firewallIdPtr,
+			DiskEncryption:    diskEncryptionPtr,
 			Type:              specMap["type"].(string),
 			Tags:              helper.ExpandStringSet(specMap["tags"].(*schema.Set)),
 			Taints:            helper.ExpandObjectSet(specMap["taint"].(*schema.Set)),

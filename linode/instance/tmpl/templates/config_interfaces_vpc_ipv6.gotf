@@ -40,7 +40,7 @@ resource "linode_instance" "foobar" {
     disk {
         label = "primary"
         size = 8192
-        image = "linode/alpine3.21"
+        image = "linode/arch"
     }
 
 
