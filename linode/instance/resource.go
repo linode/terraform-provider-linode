@@ -34,6 +34,7 @@ func Resource() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			linodediffs.ComputedWithDefault("tags", []string{}),
 			linodediffs.CaseInsensitiveSet("tags"),
+			validateImageAuthRequirements,
 		),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -284,15 +285,15 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			createOpts.AuthorizedUsers = append(createOpts.AuthorizedUsers, user.(string))
 		}
 		createOpts.RootPass = d.Get("root_pass").(string)
-		if createOpts.RootPass == "" {
-			var err error
-			createOpts.RootPass, err = helper.CreateRandomRootPassword()
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
 		createOpts.Image = d.Get("image").(string)
+
+		// When an image is provided, at least one authentication method must be specified
+		if createOpts.Image != "" &&
+			createOpts.RootPass == "" &&
+			len(createOpts.AuthorizedKeys) == 0 &&
+			len(createOpts.AuthorizedUsers) == 0 {
+			return diag.Errorf(imageAuthRequiredMessage)
+		}
 
 		if !bootedNull {
 			createOpts.Booted = &booted
@@ -301,6 +302,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		createOpts.BackupID = d.Get("backup_id").(int)
 		if swapSize := d.Get("swap_size").(int); swapSize > 0 {
 			createOpts.SwapSize = &swapSize
+		}
+
+		if kernel, ok := d.GetOk("kernel"); ok {
+			createOpts.Kernel = linodego.Pointer(kernel.(string))
+		}
+
+		if bootSize, ok := d.GetOk("boot_size"); ok {
+			createOpts.BootSize = linodego.Pointer(bootSize.(int))
 		}
 
 		createOpts.StackScriptID = d.Get("stackscript_id").(int)

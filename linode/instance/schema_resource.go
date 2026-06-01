@@ -440,31 +440,30 @@ var resourceSchema = map[string]*schema.Schema{
 		Type: schema.TypeList,
 		Elem: &schema.Schema{Type: schema.TypeString},
 		Description: "A list of SSH public keys to deploy for the root user on the newly created Linode. " +
-			"Only accepted if 'image' is provided.",
+			"When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified.",
 		Optional:      true,
 		ForceNew:      true,
 		StateFunc:     sshKeyState,
-		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"authorized_users": {
 		Type: schema.TypeList,
 		Elem: &schema.Schema{Type: schema.TypeString},
 		Description: "A list of Linode usernames. If the usernames have associated SSH keys, the keys will " +
-			"be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. Only accepted if " +
-			"'image' is provided.",
+			"be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. " +
+			"When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified.",
 		Optional:      true,
 		ForceNew:      true,
 		StateFunc:     sshKeyState,
-		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"root_pass": {
-		Type:        schema.TypeString,
-		Description: "The password that will be initially assigned to the 'root' user account.",
-		Sensitive:   true,
-		Optional:    true,
-		StateFunc:   rootPasswordState,
+		Type: schema.TypeString,
+		Description: "The password that will be initially assigned to the 'root' user account. " +
+			"When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified.",
+		Sensitive: true,
+		Optional:  true,
+		StateFunc: rootPasswordState,
 		ValidateFunc: validation.StringLenBetween(
 			helper.RootPassMinimumCharacters,
 			helper.RootPassMaximumCharacters),
@@ -479,6 +478,24 @@ var resourceSchema = map[string]*schema.Schema{
 		Default:       nil,
 		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
+	},
+	"kernel": {
+		Type: schema.TypeString,
+		Description: "The kernel to deploy with when creating a Linode. " +
+			"Example values are `linode/latest-64bit`, `linode/grub2`,  etc. " +
+			"See all kernels [here](https://api.linode.com/v4/linode/kernels).",
+		Optional:     true,
+		ForceNew:     true,
+		ValidateFunc: validation.StringLenBetween(1, 100),
+	},
+	"boot_size": {
+		Type: schema.TypeInt,
+		Description: "The size of the boot disk in MB for the newly-created Linode. " +
+			"Must be at least 8192 MB. The combined boot_size and swap_size must not " +
+			"exceed the total disk size provided by the instance's plan.",
+		Optional:     true,
+		ForceNew:     true,
+		ValidateFunc: validation.IntAtLeast(8192),
 	},
 	"backups_enabled": {
 		Type: schema.TypeBool,
