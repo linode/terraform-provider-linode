@@ -121,6 +121,109 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_imageAuthKeysOnly(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ImageAuthKeysOnly(t, instanceName, acceptance.PublicKeyMaterial, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_imageAuthUsersOnly(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ImageAuthUsersOnly(t, instanceName, acceptance.PublicKeyMaterial, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_imageNoAuth(t *testing.T) {
+	t.Parallel()
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.ImageNoAuth(t, instanceName, testRegion),
+				ExpectError: regexp.MustCompile("at least one of 'authorized_keys', 'authorized_users', or 'root_pass' must be specified"),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_kernelBootSize(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(64)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.KernelBootSize(t, instanceName, rootPass, testRegion, "linode/latest-64bit", 9000),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("label"), knownvalue.StringExact(instanceName)),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("image"), knownvalue.StringExact(acceptance.TestImageLatest)),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("region"), knownvalue.StringExact(testRegion)),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("status"), knownvalue.StringExact("running")),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("kernel"), knownvalue.StringExact("linode/latest-64bit")),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("boot_size"), knownvalue.Int64Exact(9000)),
+				},
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+				),
+			},
+		},
+	})
+}
+
 func TestAccResourceInstance_vpu(t *testing.T) {
 	t.Parallel()
 

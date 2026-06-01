@@ -30,6 +30,9 @@ type TemplateData struct {
 
 	DiskEncryption *linodego.InstanceDiskEncryption
 
+	Kernel   string
+	BootSize int
+
 	InterfaceGeneration linodego.InterfaceGeneration
 	NetworkHelper       *bool
 	MaintenancePolicy   string
@@ -932,5 +935,46 @@ func DataWithLock(t testing.TB, label, region, lockType string) string {
 			Label:    label,
 			Region:   region,
 			LockType: lockType,
+		})
+}
+
+func ImageAuthKeysOnly(t testing.TB, label, pubKey, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_image_auth_keys_only", TemplateData{
+			Label:  label,
+			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}
+
+func ImageAuthUsersOnly(t testing.TB, label, pubKey, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_image_auth_users_only", TemplateData{
+			Label:  label,
+			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}
+
+func ImageNoAuth(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_image_no_auth", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}
+
+func KernelBootSize(t testing.TB, label, rootPass, region, kernel string, bootSize int) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_kernel_boot_size", TemplateData{
+			Label:    label,
+			RootPass: rootPass,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			Kernel:   kernel,
+			BootSize: bootSize,
 		})
 }
