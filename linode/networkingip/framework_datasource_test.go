@@ -36,6 +36,7 @@ func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
 	dataResourceName := "data.linode_networking_ip.foobar"
 
 	label := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -43,10 +44,10 @@ func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, label, testRegion),
+				Config: tmpl.DataBasic(t, label, testRegion, rootPass),
 			},
 			{
-				Config: tmpl.DataBasic(t, label, testRegion),
+				Config: tmpl.DataBasic(t, label, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					// statechecks can't compare int linode_id with string id without implementing a custom comparer.
 					// Keep this legacy check for now.

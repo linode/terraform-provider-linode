@@ -8,6 +8,7 @@ resource "linode_instance" "foobar-orig" {
     type = "g6-nanode-1"
     region = "{{ .Region }}"
     image = "linode/arch"
+    root_pass = "{{ .RootPass }}"
     firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
@@ -25,18 +26,19 @@ resource "linode_instance" "foobar" {
     region = "{{ .Region }}"
     disk {
         label = "boot"
-        size = 1000
+        size = 2200
         filesystem = "ext4"
         image = "${linode_image.foobar.id}"
+        root_pass = "{{ .RootPass }}"
     }
     disk {
         label = "swap"
-        size = 800
+        size = 512
         filesystem = "ext4"
     }
     disk {
         label = "logs"
-        size = 600
+        size = 512
         filesystem = "ext4"
     }
     firewall_id = linode_firewall.e2e_test_firewall.id

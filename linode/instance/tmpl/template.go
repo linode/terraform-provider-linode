@@ -147,30 +147,33 @@ func MaintenancePolicy(t testing.TB, label, pubKey, region, rootPass, maintenanc
 		})
 }
 
-func Interfaces(t testing.TB, label, region string) string {
+func Interfaces(t testing.TB, label, region, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_interfaces", TemplateData{
-			Label:  label,
-			Image:  acceptance.TestImageLatest,
-			Region: region,
+			Label:    label,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
 		})
 }
 
-func InterfacesUpdate(t testing.TB, label, region string) string {
+func InterfacesUpdate(t testing.TB, label, region, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_interfaces_update", TemplateData{
-			Label:  label,
-			Image:  acceptance.TestImageLatest,
-			Region: region,
+			Label:    label,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
 		})
 }
 
-func InterfacesUpdateEmpty(t testing.TB, label, region string) string {
+func InterfacesUpdateEmpty(t testing.TB, label, region, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_interfaces_update_empty", TemplateData{
-			Label:  label,
-			Image:  acceptance.TestImageLatest,
-			Region: region,
+			Label:    label,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
 		})
 }
 
@@ -181,6 +184,7 @@ func ExplicitInterfaceGeneration(
 	booted bool,
 	generation linodego.InterfaceGeneration,
 	networkHelper *bool,
+	rootPass string,
 ) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_explicit_interface_generation", TemplateData{
@@ -190,6 +194,7 @@ func ExplicitInterfaceGeneration(
 			InterfaceGeneration: generation,
 			NetworkHelper:       networkHelper,
 			Booted:              booted,
+			RootPass:            rootPass,
 		})
 }
 
@@ -435,12 +440,13 @@ func DiskConfigDeviceBlockExt(t testing.TB, label, instanceType, region string, 
 		})
 }
 
-func DiskBootImage(t testing.TB, label, image, region string) string {
+func DiskBootImage(t testing.TB, label, image, region, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_boot_image", TemplateData{
-			Label:  label,
-			Image:  image,
-			Region: region,
+			Label:    label,
+			Image:    image,
+			Region:   region,
+			RootPass: rootPass,
 		})
 }
 
@@ -455,12 +461,13 @@ func VolumeConfig(t testing.TB, label, pubKey, region string, rootPass string) s
 		})
 }
 
-func PrivateImage(t testing.TB, label, region string) string {
+func PrivateImage(t testing.TB, label, region, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_private_image", TemplateData{
-			Label:  label,
-			Image:  acceptance.TestImageLatest,
-			Region: region,
+			Label:    label,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
 		})
 }
 
@@ -514,12 +521,13 @@ func DiskAuthorizedKeysEmpty(t testing.TB, label, region string, rootPass string
 		})
 }
 
-func StackScript(t testing.TB, label, region string) string {
+func StackScript(t testing.TB, label, region, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_stackscript", TemplateData{
-			Label:  label,
-			Image:  acceptance.TestImageLatest,
-			Region: region,
+			Label:    label,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
 		})
 }
 
@@ -534,13 +542,14 @@ func DiskStackScript(t testing.TB, label, pubKey, region string, rootPass string
 		})
 }
 
-func BootState(t testing.TB, label, region string, booted bool) string {
+func BootState(t testing.TB, label, region string, booted bool, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_boot_state", TemplateData{
-			Label:  label,
-			Image:  acceptance.TestImageLatest,
-			Booted: booted,
-			Region: region,
+			Label:    label,
+			Image:    acceptance.TestImageLatest,
+			Booted:   booted,
+			Region:   region,
+			RootPass: rootPass,
 		})
 }
 
@@ -553,13 +562,14 @@ func BootStateNoImage(t testing.TB, label, region string, booted bool) string {
 		})
 }
 
-func BootStateInterface(t testing.TB, label, region string, booted bool) string {
+func BootStateInterface(t testing.TB, label, region string, booted bool, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_boot_state_interface", TemplateData{
-			Label:  label,
-			Booted: booted,
-			Image:  acceptance.TestImageLatest,
-			Region: region,
+			Label:    label,
+			Booted:   booted,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
 		})
 }
 
@@ -574,7 +584,7 @@ func BootStateConfig(t testing.TB, label, region string, booted bool, rootPass s
 		})
 }
 
-func TypeChangeDisk(t testing.TB, label, instanceType, region string, resizeDisk bool) string {
+func TypeChangeDisk(t testing.TB, label, instanceType, region string, resizeDisk bool, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_type_change_disk", TemplateData{
 			Label:      label,
@@ -582,6 +592,7 @@ func TypeChangeDisk(t testing.TB, label, instanceType, region string, resizeDisk
 			Image:      acceptance.TestImageLatest,
 			ResizeDisk: resizeDisk,
 			Region:     region,
+			RootPass:   rootPass,
 		})
 }
 
@@ -778,6 +789,7 @@ func DataExplicitInterfaceGeneration(
 	image string,
 	generation linodego.InterfaceGeneration,
 	booted bool,
+	rootPass string,
 ) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_explicit_interface_generation", TemplateData{
@@ -786,6 +798,7 @@ func DataExplicitInterfaceGeneration(
 			Image:               image,
 			InterfaceGeneration: generation,
 			Booted:              booted,
+			RootPass:            rootPass,
 		})
 }
 
@@ -799,39 +812,43 @@ func FirewallOnCreation(t testing.TB, label, region string, rootPass string) str
 		})
 }
 
-func VPCInterface(t testing.TB, label, region string) string {
+func VPCInterface(t testing.TB, label, region, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_vpc_interface", TemplateData{
-			Label:  label,
-			Region: region,
-			Image:  acceptance.TestImageLatest,
+			Label:    label,
+			Region:   region,
+			Image:    acceptance.TestImageLatest,
+			RootPass: rootPass,
 		})
 }
 
-func VPCAndPublicInterfaces(t testing.TB, label, region string) string {
+func VPCAndPublicInterfaces(t testing.TB, label, region, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_vpc_public_interface", TemplateData{
-			Label:  label,
-			Region: region,
-			Image:  acceptance.TestImageLatest,
+			Label:    label,
+			Region:   region,
+			Image:    acceptance.TestImageLatest,
+			RootPass: rootPass,
 		})
 }
 
-func PublicAndVPCInterfaces(t testing.TB, label, region string) string {
+func PublicAndVPCInterfaces(t testing.TB, label, region, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_public_vpc_interface", TemplateData{
-			Label:  label,
-			Region: region,
-			Image:  acceptance.TestImageLatest,
+			Label:    label,
+			Region:   region,
+			Image:    acceptance.TestImageLatest,
+			RootPass: rootPass,
 		})
 }
 
-func PublicInterface(t testing.TB, label, region string) string {
+func PublicInterface(t testing.TB, label, region, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_public_interface", TemplateData{
-			Label:  label,
-			Region: region,
-			Image:  acceptance.TestImageLatest,
+			Label:    label,
+			Region:   region,
+			Image:    acceptance.TestImageLatest,
+			RootPass: rootPass,
 		})
 }
 

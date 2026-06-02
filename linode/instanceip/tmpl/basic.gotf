@@ -6,6 +6,7 @@ resource "linode_instance" "foobar" {
     type = "g6-nanode-1"
     region = "{{ .Region }}"
     image = "linode/debian12"
+    root_pass = "{{ .RootPass }}"
 }
 
 resource "linode_instance_ip" "test" {

@@ -9,13 +9,14 @@ import (
 type TemplateData struct {
 	Label               string
 	Region              string
+	RootPass            string
 	AssignedLinodeIndex int
 	Reserved            bool
 }
 
-func DataBasic(t testing.TB, label, region string) string {
+func DataBasic(t testing.TB, label, region, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
-		"networking_ip_data_basic", TemplateData{Label: label, Region: region})
+		"networking_ip_data_basic", TemplateData{Label: label, Region: region, RootPass: rootPass})
 }
 
 func NetworkingIPReservedAssigned(
