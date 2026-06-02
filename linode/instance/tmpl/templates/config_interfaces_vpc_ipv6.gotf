@@ -41,6 +41,7 @@ resource "linode_instance" "foobar" {
         label = "primary"
         size = 8192
         image = "linode/arch"
+        root_pass = "{{ .RootPass }}"
     }
 
 
