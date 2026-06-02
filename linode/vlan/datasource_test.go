@@ -44,6 +44,7 @@ func TestAccDataSourceVLANs_basic(t *testing.T) {
 	vlanName := "tf-test"
 	resourceName := "data.linode_vlans.foolan"
 	label := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -51,11 +52,11 @@ func TestAccDataSourceVLANs_basic(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, instanceName, testRegion, vlanName, label),
+				Config: tmpl.DataBasic(t, instanceName, testRegion, vlanName, label, rootPass),
 			},
 			{
 				PreConfig: preConfigVLANPoll(t, vlanName),
-				Config:    tmpl.DataBasic(t, instanceName, testRegion, vlanName, label),
+				Config:    tmpl.DataBasic(t, instanceName, testRegion, vlanName, label, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.label", vlanName),
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.region", testRegion),
@@ -74,6 +75,7 @@ func TestAccDataSourceVLANs_regex(t *testing.T) {
 	vlanName := "tf-test"
 	resourceName := "data.linode_vlans.foolan"
 	label := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -81,11 +83,11 @@ func TestAccDataSourceVLANs_regex(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataRegex(t, instanceName, testRegion, vlanName, label),
+				Config: tmpl.DataRegex(t, instanceName, testRegion, vlanName, label, rootPass),
 			},
 			{
 				PreConfig: preConfigVLANPoll(t, vlanName),
-				Config:    tmpl.DataRegex(t, instanceName, testRegion, vlanName, label),
+				Config:    tmpl.DataRegex(t, instanceName, testRegion, vlanName, label, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "vlans.#", 0),
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.label", vlanName),

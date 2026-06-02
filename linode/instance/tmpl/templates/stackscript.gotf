@@ -25,6 +25,7 @@ resource "linode_instance" "foobar" {
         "hello" = "cool"
     }
     image = "{{.Image}}"
+    root_pass = "{{ .RootPass }}"
 
     firewall_id = linode_firewall.e2e_test_firewall.id
 }

@@ -62,6 +62,7 @@ func TestAccResourceRDNS_basic(t *testing.T) {
 
 	resName := "linode_rdns.foobar"
 	linodeLabel := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -70,7 +71,7 @@ func TestAccResourceRDNS_basic(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, linodeLabel, testRegion, false),
+				Config: tmpl.Basic(t, linodeLabel, testRegion, rootPass, false),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`.nip.io$`)),
@@ -91,6 +92,7 @@ func TestAccResourceRDNS_update(t *testing.T) {
 
 	label := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_rdns.foobar"
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -99,7 +101,7 @@ func TestAccResourceRDNS_update(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, testRegion, false),
+				Config: tmpl.Basic(t, label, testRegion, rootPass, false),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestCheckResourceAttrPair(resName, "address", "linode_instance.foobar", "ip_address"),
@@ -107,17 +109,17 @@ func TestAccResourceRDNS_update(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Changed(t, label, testRegion, false),
+				Config: tmpl.Changed(t, label, testRegion, rootPass, false),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`)),
 				),
 			},
 			{
-				Config: tmpl.Deleted(t, label, testRegion),
+				Config: tmpl.Deleted(t, label, testRegion, rootPass),
 			},
 			{
-				Config: tmpl.Deleted(t, label, testRegion),
+				Config: tmpl.Deleted(t, label, testRegion, rootPass),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("data.linode_networking_ip.foobar", "rdns", regexp.MustCompile(`.ip.linodeusercontent.com$`)),
 				),
@@ -132,6 +134,7 @@ func TestAccResourceRDNS_waitForAvailable(t *testing.T) {
 
 	label := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_rdns.foobar"
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -140,7 +143,7 @@ func TestAccResourceRDNS_waitForAvailable(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, testRegion, true),
+				Config: tmpl.Basic(t, label, testRegion, rootPass, true),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestCheckResourceAttrPair(resName, "address", "linode_instance.foobar", "ip_address"),
@@ -148,17 +151,17 @@ func TestAccResourceRDNS_waitForAvailable(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Changed(t, label, testRegion, true),
+				Config: tmpl.Changed(t, label, testRegion, rootPass, true),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`)),
 				),
 			},
 			{
-				Config: tmpl.Deleted(t, label, testRegion),
+				Config: tmpl.Deleted(t, label, testRegion, rootPass),
 			},
 			{
-				Config: tmpl.Deleted(t, label, testRegion),
+				Config: tmpl.Deleted(t, label, testRegion, rootPass),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("data.linode_networking_ip.foobar", "rdns", regexp.MustCompile(`.ip.linodeusercontent.com$`)),
 				),
@@ -172,6 +175,7 @@ func TestAccResourceRDNS_waitForAvailableWithTimeout(t *testing.T) {
 
 	resName := "linode_rdns.foobar"
 	linodeLabel := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	createTimeout := "15m"
 	updateTimeout := "15m"
@@ -183,14 +187,14 @@ func TestAccResourceRDNS_waitForAvailableWithTimeout(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.WithTimeout(t, linodeLabel, testRegion, createTimeout, updateTimeout),
+				Config: tmpl.WithTimeout(t, linodeLabel, testRegion, rootPass, createTimeout, updateTimeout),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`.nip.io$`)),
 				),
 			},
 			{
-				Config: tmpl.WithTimeoutUpdated(t, linodeLabel, testRegion, createTimeout, updateTimeout),
+				Config: tmpl.WithTimeoutUpdated(t, linodeLabel, testRegion, rootPass, createTimeout, updateTimeout),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`)),

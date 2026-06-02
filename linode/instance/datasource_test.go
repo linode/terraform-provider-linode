@@ -220,6 +220,7 @@ func TestAccDataSourceInstances_explicitInterfaceGeneration(t *testing.T) {
 
 	resName := "data.linode_instances.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	firstInstancePath := tfjsonpath.New("instances").AtSliceIndex(0)
 
@@ -237,6 +238,7 @@ func TestAccDataSourceInstances_explicitInterfaceGeneration(t *testing.T) {
 					acceptance.TestImageLatest,
 					linodego.GenerationLinode,
 					false,
+					rootPass,
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
