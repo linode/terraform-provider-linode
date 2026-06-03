@@ -34,7 +34,6 @@ func Resource() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			linodediffs.ComputedWithDefault("tags", []string{}),
 			linodediffs.CaseInsensitiveSet("tags"),
-			validateImageAuthRequirements,
 		),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,

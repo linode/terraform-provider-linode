@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha3"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"net"
 	"reflect"
@@ -1673,35 +1672,3 @@ func getPlacementGroupCreateOptions(ctx context.Context, d *schema.ResourceData)
 
 const imageAuthRequiredMessage = "when 'image' is set, at least one of " +
 	"'authorized_keys', 'authorized_users', or 'root_pass' must be specified"
-
-func validateImageAuthRequirements(
-	_ context.Context,
-	d *schema.ResourceDiff,
-	_ any,
-) error {
-	imageRaw, imageSet := d.GetOk("image")
-	if !imageSet || imageRaw.(string) == "" {
-		return nil
-	}
-
-	hasKeys := false
-	if v, ok := d.GetOk("authorized_keys"); ok {
-		hasKeys = len(v.([]any)) > 0
-	}
-
-	hasUsers := false
-	if v, ok := d.GetOk("authorized_users"); ok {
-		hasUsers = len(v.([]any)) > 0
-	}
-
-	hasRootPass := false
-	if v, ok := d.GetOk("root_pass"); ok {
-		hasRootPass = v.(string) != ""
-	}
-
-	if !hasKeys && !hasUsers && !hasRootPass {
-		return errors.New(imageAuthRequiredMessage)
-	}
-
-	return nil
-}
