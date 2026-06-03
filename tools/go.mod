@@ -5,7 +5,7 @@ go 1.25.0
 require (
 	github.com/bflad/tfproviderlint v0.31.0
 	github.com/golangci/golangci-lint/v2 v2.12.2
-	mvdan.cc/gofumpt v0.9.2
+	mvdan.cc/gofumpt v0.10.0
 )
 
 require (
