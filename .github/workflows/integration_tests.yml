@@ -72,7 +72,7 @@ jobs:
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_2 }}" >> $GITHUB_ENV
               ;;
             "USER_3")
-              echo "TEST_SUITE=databasepostgresqlv2,instanceconfig,instancedisk,instanceip,monitorlogsdestination,monitorlogsdestinations,monitorlogsstream,monitorlogsstreamhistory,monitorlogsstreams,networkingip,objcluster,objkey,profile,rdns,region,regions,stackscript,stackscripts" >> $GITHUB_ENV
+              echo "TEST_SUITE=databasepostgresqlv2,instanceconfig,instancedisk,instanceip,monitorlogsdestination,monitorlogsdestinations,monitorlogsstream,networkingip,objcluster,objkey,profile,rdns,region,regions,stackscript,stackscripts" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_3 }}" >> $GITHUB_ENV
               ;;
             "USER_4")

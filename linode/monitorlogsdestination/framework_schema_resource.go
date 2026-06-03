@@ -109,10 +109,10 @@ var frameworkResourceSchema = schema.Schema{
 					Required:    true,
 				},
 				"content_type": schema.StringAttribute{
-					Description: "The content type of the log data. One of: application/json, text/plain.",
+					Description: "The content type of the log data. One of: application/json, application/json; charset=utf-8.",
 					Required:    true,
 					Validators: []validator.String{
-						stringvalidator.OneOf("application/json", "text/plain"),
+						stringvalidator.OneOf("application/json", "application/json; charset=utf-8"),
 					},
 				},
 				"data_compression": schema.StringAttribute{
