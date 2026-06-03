@@ -195,7 +195,10 @@ func (r *Resource) Delete(
 	tflog.Debug(ctx, "client.DeleteLogStream(...)", map[string]any{
 		"id": id,
 	})
-	if err := client.DeleteLogStream(ctx, id); err != nil {
+if err := client.DeleteLogStream(ctx, id); err != nil {
+		if linodego.IsNotFound(err) {
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Failed to delete logs stream.",
 			err.Error(),
