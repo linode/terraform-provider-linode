@@ -4,7 +4,6 @@ package objquota_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -22,16 +21,100 @@ func TestAccDataSourceObjQuota_basic(t *testing.T) {
 
 	client, err := acceptance.GetTestClient()
 	if err != nil {
-		fmt.Errorf("Error getting client: %s", err.Error())
+		t.Fatalf("failed to get test client: %s", err)
 	}
 
 	quotas, err := client.ListObjectStorageQuotas(context.Background(), nil)
 	if err != nil {
-		fmt.Errorf("Error listing quotas: %s", err.Error())
+		t.Fatalf("failed to list quotas: %s", err)
 	}
 
 	if len(quotas) < 1 {
 		t.Skipf("No available Object Storage quota for testing. Skipping now...")
+	}
+
+	selectedQuota := quotas[0]
+	for _, quota := range quotas {
+		if quota.HasUsage {
+			selectedQuota = quota
+			break
+		}
+	}
+
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(
+			resourceName,
+			tfjsonpath.New("id"),
+			knownvalue.StringExact(selectedQuota.QuotaID),
+		),
+		statecheck.ExpectKnownValue(
+			resourceName,
+			tfjsonpath.New("quota_id"),
+			knownvalue.StringExact(selectedQuota.QuotaID),
+		),
+		statecheck.ExpectKnownValue(
+			resourceName,
+			tfjsonpath.New("quota_name"),
+			knownvalue.NotNull(),
+		),
+		statecheck.ExpectKnownValue(
+			resourceName,
+			tfjsonpath.New("endpoint_type"),
+			knownvalue.NotNull(),
+		),
+		statecheck.ExpectKnownValue(
+			resourceName,
+			tfjsonpath.New("s3_endpoint"),
+			knownvalue.NotNull(),
+		),
+		statecheck.ExpectKnownValue(
+			resourceName,
+			tfjsonpath.New("description"),
+			knownvalue.NotNull(),
+		),
+		statecheck.ExpectKnownValue(
+			resourceName,
+			tfjsonpath.New("quota_limit"),
+			knownvalue.NotNull(),
+		),
+		statecheck.ExpectKnownValue(
+			resourceName,
+			tfjsonpath.New("resource_metric"),
+			knownvalue.NotNull(),
+		),
+		statecheck.ExpectKnownValue(
+			resourceName,
+			tfjsonpath.New("quota_type"),
+			knownvalue.StringExact(selectedQuota.QuotaType),
+		),
+		statecheck.ExpectKnownValue(
+			resourceName,
+			tfjsonpath.New("has_usage"),
+			knownvalue.Bool(selectedQuota.HasUsage),
+		),
+	}
+
+	if selectedQuota.HasUsage {
+		checks = append(checks,
+			statecheck.ExpectKnownValue(
+				resourceName,
+				tfjsonpath.New("quota_usage").AtMapKey("quota_limit"),
+				knownvalue.NotNull(),
+			),
+			statecheck.ExpectKnownValue(
+				resourceName,
+				tfjsonpath.New("quota_usage").AtMapKey("usage"),
+				knownvalue.NotNull(),
+			),
+		)
+	} else {
+		checks = append(checks,
+			statecheck.ExpectKnownValue(
+				resourceName,
+				tfjsonpath.New("quota_usage"),
+				knownvalue.Null(),
+			),
+		)
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -39,59 +122,8 @@ func TestAccDataSourceObjQuota_basic(t *testing.T) {
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, quotas[0].QuotaID),
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("id"),
-						knownvalue.StringExact(quotas[0].QuotaID),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("quota_id"),
-						knownvalue.StringExact(quotas[0].QuotaID),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("quota_name"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("endpoint_type"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("s3_endpoint"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("description"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("quota_limit"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("resource_metric"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("quota_usage").AtMapKey("quota_limit"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("quota_usage").AtMapKey("usage"),
-						knownvalue.NotNull(),
-					),
-				},
+				Config:            tmpl.DataBasic(t, selectedQuota.QuotaID),
+				ConfigStateChecks: checks,
 			},
 		},
 	})

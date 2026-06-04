@@ -13,6 +13,8 @@ var filterConfig = frameworkfilter.Config{
 	"description":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"quota_limit":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 	"resource_metric": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"quota_type":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"has_usage":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
 }
 
 var frameworkDataSourceSchema = schema.Schema{
@@ -52,6 +54,14 @@ var frameworkDataSourceSchema = schema.Schema{
 					},
 					"resource_metric": schema.StringAttribute{
 						Description: "The specific Object Storage resource for the quota. ",
+						Computed:    true,
+					},
+					"quota_type": schema.StringAttribute{
+						Description: "The type of the Object Storage quota.",
+						Computed:    true,
+					},
+					"has_usage": schema.BoolAttribute{
+						Description: "Whether usage data is available for this Object Storage quota.",
 						Computed:    true,
 					},
 				},
