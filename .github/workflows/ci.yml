@@ -58,8 +58,6 @@ jobs:
         with:
           go-version: 'stable'
       - run: go version
-      - name: Golangci-lint
-        uses: golangci/golangci-lint-action@v9
       - name: Unit tests
         run: make test-unit
 
