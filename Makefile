@@ -42,7 +42,7 @@ fmt-check:
 test: fmt-check test-unit test-smoke test-int
 
 .PHONY: test-unit
-test-unit: fmt-check
+test-unit:
 	go test -v --tags=unit ./$(if $(PKG_NAME),linode/$(PKG_NAME),linode/...)
 
 IP_ENV_FILE = /tmp/linode/ip_vars.env

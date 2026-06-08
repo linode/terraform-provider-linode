@@ -51,8 +51,10 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v4
 
-      - name: Install Dependencies
-        run: make deps
+      - name: Golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          install-only: true
 
       - name: Install go-junit-report
         run: go install github.com/jstemmer/go-junit-report/v2@latest
