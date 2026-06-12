@@ -49,6 +49,7 @@ func (r *Resource) Create(
 		Label:       data.Label.ValueString(),
 		Region:      data.Region.ValueString(),
 		Description: data.Description.ValueString(),
+		VPCType:     linodego.VPCType(data.VPCType.ValueString()),
 	}
 
 	if !data.IPv6.IsNull() {

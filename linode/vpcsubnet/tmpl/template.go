@@ -92,3 +92,12 @@ func DataNodeBalancer(t testing.TB, label, ipv4, region string) string {
 			Region: region,
 		})
 }
+
+func VPCType(t testing.TB, label, ipv4, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_subnet_vpc_type", TemplateData{
+			Label:  label,
+			IPv4:   ipv4,
+			Region: region,
+		})
+}

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -279,9 +280,10 @@ var resourcePublicInterfaceAttribute = schema.SingleNestedAttribute{
 	Description: "Linode public interface.",
 	Optional:    true,
 	Validators: []validator.Object{
-		objectvalidator.ExactlyOneOf(
+		objectvalidator.ConflictsWith(
 			path.MatchRelative().AtParent().AtName("vlan"),
 			path.MatchRelative().AtParent().AtName("vpc"),
+			path.MatchRelative().AtParent().AtName("rdma_vpc"),
 		),
 	},
 	Attributes: map[string]schema.Attribute{
@@ -391,9 +393,10 @@ var vpcInterfaceSchema = schema.SingleNestedAttribute{
 	Description: "Linode VPC interface.",
 	Optional:    true,
 	Validators: []validator.Object{
-		objectvalidator.ExactlyOneOf(
+		objectvalidator.ConflictsWith(
 			path.MatchRelative().AtParent().AtName("public"),
 			path.MatchRelative().AtParent().AtName("vlan"),
+			path.MatchRelative().AtParent().AtName("rdma_vpc"),
 		),
 	},
 	Attributes: map[string]schema.Attribute{
@@ -406,6 +409,77 @@ var vpcInterfaceSchema = schema.SingleNestedAttribute{
 				int64planmodifier.RequiresReplace(),
 			},
 		},
+	},
+}
+
+var configuredRDMAVPCInterfaceIPv4Address = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"address": schema.StringAttribute{
+			Description: "The IPv4 address for the RDMA VPC interface, or 'auto' to allocate one " +
+				"automatically from the subnet.",
+			Optional: true,
+			Computed: true,
+			Default:  stringdefault.StaticString("auto"),
+		},
+		"primary": schema.BoolAttribute{
+			Description: "Whether this is the primary IPv4 address for the RDMA VPC interface. " +
+				"Exactly one address must be primary.",
+			Optional: true,
+			Computed: true,
+		},
+	},
+}
+
+var resourceRDMAVPCIPv4Attribute = schema.SingleNestedAttribute{
+	Description: "The IPv4 configuration for the RDMA VPC interface.",
+	Optional:    true,
+	Computed:    true,
+	PlanModifiers: []planmodifier.Object{
+		objectplanmodifier.UseStateForUnknown(),
+	},
+	Attributes: map[string]schema.Attribute{
+		"addresses": schema.ListNestedAttribute{
+			Description: "The list of IPv4 addresses for the RDMA VPC interface. " +
+				"Must contain exactly one element.",
+			Optional:     true,
+			Computed:     true,
+			NestedObject: configuredRDMAVPCInterfaceIPv4Address,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+			},
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
+				listvalidator.SizeAtMost(1),
+			},
+		},
+	},
+}
+
+var rdmaVPCInterfaceSchema = schema.SingleNestedAttribute{
+	Description: "Linode RDMA VPC interface. Note that RDMA VPC interfaces cannot be created " +
+		"or deleted via this resource; they must be created as part of a GPUDirect RDMA " +
+		"Linode and can only be updated here.",
+	Optional: true,
+	Validators: []validator.Object{
+		objectvalidator.ConflictsWith(
+			path.MatchRelative().AtParent().AtName("public"),
+			path.MatchRelative().AtParent().AtName("vlan"),
+			path.MatchRelative().AtParent().AtName("vpc"),
+		),
+	},
+	Attributes: map[string]schema.Attribute{
+		"vpc_id": schema.Int64Attribute{
+			Description: "The ID of the parent RDMA VPC.",
+			Computed:    true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
+		},
+		"subnet_id": schema.Int64Attribute{
+			Description: "The ID of the RDMA VPC subnet this interface is attached to.",
+			Required:    true,
+		},
+		"ipv4": resourceRDMAVPCIPv4Attribute,
 	},
 }
 
@@ -463,9 +537,10 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "Linode VLAN interface.",
 			Optional:    true,
 			Validators: []validator.Object{
-				objectvalidator.ExactlyOneOf(
+				objectvalidator.ConflictsWith(
 					path.MatchRelative().AtParent().AtName("public"),
 					path.MatchRelative().AtParent().AtName("vpc"),
+					path.MatchRelative().AtParent().AtName("rdma_vpc"),
 				),
 			},
 			Attributes: map[string]schema.Attribute{
@@ -489,6 +564,7 @@ var frameworkResourceSchema = schema.Schema{
 				},
 			},
 		},
-		"vpc": vpcInterfaceSchema,
+		"vpc":      vpcInterfaceSchema,
+		"rdma_vpc": rdmaVPCInterfaceSchema,
 	},
 }
