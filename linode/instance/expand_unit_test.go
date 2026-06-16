@@ -5,7 +5,7 @@ package instance
 import (
 	"testing"
 
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 func TestExpandInstanceConfigDeviceMap(t *testing.T) {

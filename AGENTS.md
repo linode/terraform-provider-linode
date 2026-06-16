@@ -155,7 +155,7 @@ Common `statecheck` / `knownvalue` helpers:
 
 ## Linode API Client
 
-Uses `github.com/linode/linodego` client. Access via:
+Uses `github.com/linode/linodego/v2` client. Access via:
 - SDKv2: `meta.(*helper.ProviderMeta).Client`
 - Framework: `r.Meta.Client`
 

@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 // validFilterValueTypes is a list of valid underlying types for filterable fields.

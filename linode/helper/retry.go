@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-resty/resty/v2"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 // Workaround for intermittent 5xx errors when retrieving a database from the API

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 

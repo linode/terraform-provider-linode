@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 

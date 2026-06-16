@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 // updateIPAddress wraps the client.UpdateIPAddress(...) retry logic depending on the 'wait_for_available' field.

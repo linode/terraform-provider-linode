@@ -2,7 +2,7 @@ package childaccounts
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/account"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
