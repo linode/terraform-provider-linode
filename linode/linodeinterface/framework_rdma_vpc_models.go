@@ -92,7 +92,7 @@ func (plan *RDMAVPCIPv4AttrModel) GetUpdateOptions(
 	for i, a := range addresses {
 		addressOpts[i] = linodego.RDMAVPCInterfaceIPv4AddressOptions{
 			Address: a.Address.ValueString(),
-			Primary: a.Primary.ValueBool(),
+			Primary: a.Primary.ValueBoolPointer(),
 		}
 	}
 	opts.Addresses = addressOpts
@@ -123,6 +123,9 @@ func (data *RDMAVPCAttrModel) FlattenRDMAVPCInterface(
 		},
 	)
 	if diags.HasError() {
+		return
+	}
+	if flattenedIPv4 == nil {
 		return
 	}
 	data.IPv4 = *flattenedIPv4

@@ -326,6 +326,52 @@ func TestAccResourceVPC_vpcType(t *testing.T) {
 	})
 }
 
+func TestAccResourceVPC_vpcTypeRDMA(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc.foobar"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPCType(t, vpcLabel, testRegion, "rdma"),
+				Check:  checkVPCExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(vpcLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpc_type"),
+						knownvalue.StringExact("rdma"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("region"),
+						knownvalue.StringExact(testRegion),
+					),
+				},
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccResourceVPC_vpcTypeDefault(t *testing.T) {
 	t.Parallel()
 

@@ -25,7 +25,8 @@ func TestRDMAVPCAttrModelGetUpdateOptions(t *testing.T) {
 	require.Equal(t, 352276, opts.SubnetID)
 	require.Len(t, opts.IPv4.Addresses, 1)
 	require.Equal(t, "10.0.0.29", opts.IPv4.Addresses[0].Address)
-	require.True(t, opts.IPv4.Addresses[0].Primary)
+	require.NotNil(t, opts.IPv4.Addresses[0].Primary)
+	require.True(t, *opts.IPv4.Addresses[0].Primary)
 }
 
 func TestRDMAVPCIPv4AttrModelGetUpdateOptions(t *testing.T) {
@@ -39,7 +40,8 @@ func TestRDMAVPCIPv4AttrModelGetUpdateOptions(t *testing.T) {
 	require.True(t, shouldUpdate)
 	require.Len(t, opts.Addresses, 1)
 	require.Equal(t, "10.0.0.29", opts.Addresses[0].Address)
-	require.True(t, opts.Addresses[0].Primary)
+	require.NotNil(t, opts.Addresses[0].Primary)
+	require.True(t, *opts.Addresses[0].Primary)
 }
 
 func createRDMAVPCAttrModel(t *testing.T, subnetID int64, address string) *RDMAVPCAttrModel {

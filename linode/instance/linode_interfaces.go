@@ -21,7 +21,7 @@ var linodeInterfacesSchema = &schema.Schema{
 	Description: "An array of new-generation Linode Interfaces to attach to this Linode at " +
 		"creation. Supports `public`, `vlan`, `vpc`, and `rdma_vpc` interface types. " +
 		"At most one of `public`, `vlan`, `vpc`, or `rdma_vpc` can be specified per interface entry." +
-		"NOTE: This option requires `interface_generation = \"linode\"`.",
+		"NOTE: This option may require `interface_generation = \"linode\"` or depends on your account settings.",
 	Optional:      true,
 	ForceNew:      true,
 	ConflictsWith: []string{"interface", "config", "disk"},
@@ -472,7 +472,7 @@ func expandRDMAVPCInterface(m map[string]any) *linodego.RDMAVPCInterfaceCreateOp
 						ao.Address = v
 					}
 					if v, ok := addrMap["primary"].(bool); ok {
-						ao.Primary = v
+						ao.Primary = &v
 					}
 					addrOpts = append(addrOpts, ao)
 				}

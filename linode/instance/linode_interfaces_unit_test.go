@@ -46,7 +46,7 @@ func TestExpandLinodeInstanceInterfaces_RDMAVPC(t *testing.T) {
 	require.Equal(t, 1234, result[0].RDMAVPC.SubnetID)
 	require.Len(t, result[0].RDMAVPC.IPv4.Addresses, 1)
 	require.Equal(t, "10.0.0.5", result[0].RDMAVPC.IPv4.Addresses[0].Address)
-	require.True(t, result[0].RDMAVPC.IPv4.Addresses[0].Primary)
+	require.True(t, *result[0].RDMAVPC.IPv4.Addresses[0].Primary)
 }
 
 func TestExpandLinodeInstanceInterfaces_Public(t *testing.T) {

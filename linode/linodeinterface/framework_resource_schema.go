@@ -393,7 +393,7 @@ var vpcInterfaceSchema = schema.SingleNestedAttribute{
 	Description: "Linode VPC interface.",
 	Optional:    true,
 	Validators: []validator.Object{
-		objectvalidator.ConflictsWith(
+		objectvalidator.ExactlyOneOf(
 			path.MatchRelative().AtParent().AtName("public"),
 			path.MatchRelative().AtParent().AtName("vlan"),
 			path.MatchRelative().AtParent().AtName("rdma_vpc"),
@@ -440,7 +440,7 @@ var resourceRDMAVPCIPv4Attribute = schema.SingleNestedAttribute{
 	Attributes: map[string]schema.Attribute{
 		"addresses": schema.ListNestedAttribute{
 			Description: "The list of IPv4 addresses for the RDMA VPC interface. " +
-				"Must contain exactly one element.",
+				"Must contain exactly one element if specified.",
 			Optional:     true,
 			Computed:     true,
 			NestedObject: configuredRDMAVPCInterfaceIPv4Address,
@@ -461,7 +461,7 @@ var rdmaVPCInterfaceSchema = schema.SingleNestedAttribute{
 		"Linode and can only be updated here.",
 	Optional: true,
 	Validators: []validator.Object{
-		objectvalidator.ConflictsWith(
+		objectvalidator.ExactlyOneOf(
 			path.MatchRelative().AtParent().AtName("public"),
 			path.MatchRelative().AtParent().AtName("vlan"),
 			path.MatchRelative().AtParent().AtName("vpc"),
@@ -537,7 +537,7 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "Linode VLAN interface.",
 			Optional:    true,
 			Validators: []validator.Object{
-				objectvalidator.ConflictsWith(
+				objectvalidator.ExactlyOneOf(
 					path.MatchRelative().AtParent().AtName("public"),
 					path.MatchRelative().AtParent().AtName("vpc"),
 					path.MatchRelative().AtParent().AtName("rdma_vpc"),
