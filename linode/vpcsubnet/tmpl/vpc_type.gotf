@@ -3,7 +3,7 @@
 resource "linode_vpc" "foobar" {
     label = "{{.Label}}"
     region = "{{.Region}}"
-    vpc_type = "regular"
+    vpc_type = "{{.VPCType}}"
 }
 
 resource "linode_vpc_subnet" "foobar" {

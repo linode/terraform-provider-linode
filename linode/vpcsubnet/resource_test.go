@@ -316,7 +316,7 @@ func TestAccResourceVPCSubnet_vpcType(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.VPCType(t, subnetLabel, "10.0.0.0/24", testRegion),
+				Config: tmpl.VPCType(t, subnetLabel, "10.0.0.0/24", testRegion, "regular"),
 				Check:  checkVPCSubnetExists,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
@@ -343,6 +343,63 @@ func TestAccResourceVPCSubnet_vpcType(t *testing.T) {
 						resName,
 						tfjsonpath.New("created"),
 						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("databases"),
+						knownvalue.ListSizeExact(0),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("nodebalancers"),
+						knownvalue.ListSizeExact(0),
+					),
+				},
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
+func TestAccResourceVPCSubnet_vpcTypeRDMA(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc_subnet.foobar"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPCType(t, subnetLabel, "10.0.0.0/24", testRegion, "rdma"),
+				Check:  checkVPCSubnetExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(subnetLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpc_type"),
+						knownvalue.StringExact("rdma"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv4"),
+						knownvalue.StringExact("10.0.0.0/24"),
 					),
 					statecheck.ExpectKnownValue(
 						resName,

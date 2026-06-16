@@ -280,7 +280,7 @@ var resourcePublicInterfaceAttribute = schema.SingleNestedAttribute{
 	Description: "Linode public interface.",
 	Optional:    true,
 	Validators: []validator.Object{
-		objectvalidator.ConflictsWith(
+		objectvalidator.ExactlyOneOf(
 			path.MatchRelative().AtParent().AtName("vlan"),
 			path.MatchRelative().AtParent().AtName("vpc"),
 			path.MatchRelative().AtParent().AtName("rdma_vpc"),
