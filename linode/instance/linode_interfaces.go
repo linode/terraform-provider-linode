@@ -20,7 +20,7 @@ var linodeInterfacesSchema = &schema.Schema{
 	Type: schema.TypeList,
 	Description: "An array of new-generation Linode Interfaces to attach to this Linode at " +
 		"creation. Supports `public`, `vlan`, `vpc`, and `rdma_vpc` interface types. " +
-		"At most one of `public`, `vlan`, `vpc`, or `rdma_vpc` can be specified per interface entry." +
+		"At most one of `public`, `vlan`, `vpc`, or `rdma_vpc` can be specified per interface entry. " +
 		"NOTE: This option requires `interface_generation = \"linode\"`.",
 	Optional:      true,
 	ForceNew:      true,
@@ -316,9 +316,9 @@ func expandLinodeInstanceInterfaces(raw []any) ([]linodego.LinodeInstanceInterfa
 			}
 		}
 
-		if typeCount > 1 {
+		if typeCount != 1 {
 			return nil, fmt.Errorf(
-				"linode_interfaces[%d]: at most one of `public`, `vlan`, `vpc`, or `rdma_vpc` can be specified, got %d",
+				"linode_interfaces[%d]: exactly one of `public`, `vlan`, `vpc`, or `rdma_vpc` must be specified, got %d",
 				i, typeCount,
 			)
 		}
