@@ -2,7 +2,7 @@ package helper
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 // GetFrameworkProviderModelFromSDKv2ProviderConfig is used by crossplane-provider-linode to convert from SDKv2 to FrameworkModel

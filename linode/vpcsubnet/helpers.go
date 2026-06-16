@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 // shouldRetryOn400sForDatabasePropagation returns whether all attached databases

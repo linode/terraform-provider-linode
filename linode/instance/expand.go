@@ -3,7 +3,7 @@ package instance
 import (
 	"fmt"
 
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 // expandInstanceConfigDeviceMap converts a terraform linode_instance config.*.devices map to a InstanceConfigDeviceMap
