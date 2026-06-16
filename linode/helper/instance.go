@@ -86,25 +86,22 @@ func rebootInstance(
 		return fmt.Errorf("failed to initialize event poller: %s", err)
 	}
 
-	err = client.RebootInstance(ctx, instance.ID, bootConfig)
+	instanceRebootOptions := linodego.InstanceRebootOptions{
+		ConfigID: &bootConfig,
+	}
+
+	err = client.RebootInstance(ctx, instance.ID, instanceRebootOptions)
 	if err != nil {
 		return fmt.Errorf("Error rebooting Instance [%d]: %s", instance.ID, err)
 	}
 
-	deadlineSeconds := 600
-	if deadline, ok := ctx.Deadline(); ok {
-		deadlineSeconds = int(time.Until(deadline).Seconds())
-	}
-	_, err = p.WaitForFinished(ctx, deadlineSeconds)
+	_, err = p.WaitForFinished(ctx)
 	if err != nil {
 		return fmt.Errorf("Error waiting for Instance [%d] to finish rebooting: %s", instance.ID, err)
 	}
 
-	if deadline, ok := ctx.Deadline(); ok {
-		deadlineSeconds = int(time.Until(deadline).Seconds())
-	}
 	if _, err = client.WaitForInstanceStatus(
-		ctx, instance.ID, linodego.InstanceRunning, deadlineSeconds,
+		ctx, instance.ID, linodego.InstanceRunning,
 	); err != nil {
 		return fmt.Errorf("Timed-out waiting for Linode instance [%d] to boot: %s", instance.ID, err)
 	}
@@ -290,7 +287,12 @@ func ExpandConfigInterface(ifaceMap map[string]any) linodego.InstanceConfigInter
 
 		if ifaceMap["ipv4"] != nil {
 			if ipv4 := ifaceMap["ipv4"].([]any); len(ipv4) > 0 {
-				result.IPv4 = ExpandInterfaceIPv4(ipv4[0])
+				if expanded := ExpandInterfaceIPv4(ipv4[0]); expanded != nil {
+					result.IPv4 = &linodego.VPCIPv4CreateOptions{
+						VPC:     expanded.VPC,
+						NAT1To1: expanded.NAT1To1,
+					}
+				}
 			}
 		}
 
@@ -416,13 +418,17 @@ func BootInstanceSync(
 
 	tflog.Debug(ctx, "client.BootInstance(...)")
 
-	if err := client.BootInstance(ctx, instanceID, configID); err != nil {
+	bootInstanceOption := linodego.InstanceBootOptions{
+		ConfigID: &configID,
+	}
+
+	if err := client.BootInstance(ctx, instanceID, bootInstanceOption); err != nil {
 		return fmt.Errorf("failed to boot instance: %s", err)
 	}
 
 	tflog.Debug(ctx, "Waiting for instance boot to finish")
 
-	if _, err := p.WaitForFinished(ctx, deadlineSeconds); err != nil {
+	if _, err := p.WaitForFinished(ctx); err != nil {
 		return fmt.Errorf("failed to wait for instance boot: %s", err)
 	}
 
@@ -436,8 +442,7 @@ func BootInstanceSync(
 func ShutDownInstanceSync(
 	ctx context.Context,
 	client *linodego.Client,
-	instanceID,
-	deadlineSeconds int,
+	instanceID int,
 ) error {
 	ctx = tflog.SetField(ctx, "instance_id", instanceID)
 
@@ -456,7 +461,7 @@ func ShutDownInstanceSync(
 
 	tflog.Debug(ctx, "Waiting for instance shutdown to finish")
 
-	if _, err := p.WaitForFinished(ctx, deadlineSeconds); err != nil {
+	if _, err := p.WaitForFinished(ctx); err != nil {
 		return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 	}
 
@@ -499,7 +504,6 @@ func WaitForInstanceNonTransientStatus(
 		ctx,
 		instance.ID,
 		targetStatus,
-		timeoutSeconds,
 	)
 	if err != nil {
 		return "", fmt.Errorf("failed to wait for instance to reach status %s: %w", targetStatus, err)

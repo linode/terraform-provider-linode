@@ -8,7 +8,6 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"group":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"tags":   {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"domain": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 

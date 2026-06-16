@@ -2,6 +2,7 @@ package firewalls
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -21,21 +22,44 @@ type FirewallRuleModel struct {
 	IPv6     []types.String `tfsdk:"ipv6"`
 }
 
-func (data *FirewallRuleModel) ParseRule(rule linodego.FirewallRule) {
-	data.Label = types.StringValue(rule.Label)
-	data.Action = types.StringValue(rule.Action)
-	data.Protocol = types.StringValue(string(rule.Protocol))
-	data.Ports = types.StringValue(rule.Ports)
+func (data *FirewallRuleModel) ParseRule(rule any) {
+	switch r := rule.(type) {
+	case linodego.FirewallRuleInbound:
+		data.Label = types.StringValue(r.Label)
+		data.Action = types.StringValue(r.Action)
+		data.Protocol = types.StringValue(string(r.Protocol))
+		data.Ports = types.StringValue(r.Ports)
 
-	data.IPv4 = []types.String{}
-	data.IPv6 = []types.String{}
+		data.IPv4 = []types.String{}
+		data.IPv6 = []types.String{}
 
-	if rule.Addresses.IPv4 != nil {
-		data.IPv4 = helper.StringSliceToFramework(*rule.Addresses.IPv4)
-	}
+		if r.Addresses.IPv4 != nil {
+			data.IPv4 = helper.StringSliceToFramework(r.Addresses.IPv4)
+		}
 
-	if rule.Addresses.IPv6 != nil {
-		data.IPv6 = helper.StringSliceToFramework(*rule.Addresses.IPv6)
+		if r.Addresses.IPv6 != nil {
+			data.IPv6 = helper.StringSliceToFramework(r.Addresses.IPv6)
+		}
+
+	case linodego.FirewallRuleOutbound:
+		data.Label = types.StringValue(r.Label)
+		data.Action = types.StringValue(r.Action)
+		data.Protocol = types.StringValue(string(r.Protocol))
+		data.Ports = types.StringValue(r.Ports)
+
+		data.IPv4 = []types.String{}
+		data.IPv6 = []types.String{}
+
+		if r.Addresses.IPv4 != nil {
+			data.IPv4 = helper.StringSliceToFramework(r.Addresses.IPv4)
+		}
+
+		if r.Addresses.IPv6 != nil {
+			data.IPv6 = helper.StringSliceToFramework(r.Addresses.IPv6)
+		}
+
+	default:
+		panic(fmt.Sprintf("unsupported firewall rule type %T", rule))
 	}
 }
 
@@ -51,7 +75,7 @@ func (data *FirewallDeviceModel) parseDevice(device linodego.FirewallDevice) {
 	data.ID = types.Int64Value(int64(device.ID))
 	data.EntityID = types.Int64Value(int64(device.Entity.ID))
 	data.Type = types.StringValue(string(device.Entity.Type))
-	data.Label = types.StringValue(device.Entity.Label)
+	data.Label = types.StringPointerValue(device.Entity.Label)
 	data.URL = types.StringValue(device.Entity.URL)
 }
 
@@ -78,7 +102,7 @@ type FirewallModel struct {
 
 func (data *FirewallModel) parseFirewall(
 	firewall linodego.Firewall,
-	rules linodego.FirewallRuleSet,
+	rules linodego.FirewallRules,
 	devices []linodego.FirewallDevice,
 ) {
 	data.ID = types.Int64Value(int64(firewall.ID))
