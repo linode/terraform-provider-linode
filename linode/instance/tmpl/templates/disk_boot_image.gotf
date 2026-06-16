@@ -12,6 +12,7 @@ resource "linode_instance" "foobar" {
         size = 5000
         filesystem = "ext4"
         image = "{{.Image}}"
+        root_pass = "{{ .RootPass }}"
     }
     disk {
         label = "swap"

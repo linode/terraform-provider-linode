@@ -16,6 +16,7 @@ resource "linode_instance" "foobar" {
     type = "g6-nanode-1"
     region = "{{ .Region }}"
     image = "{{.Image}}"
+    root_pass = "{{ .RootPass }}"
 
     interface {
         purpose = "vpc"

@@ -35,16 +35,17 @@ func TestAccDataSourceInstanceNetworking_basic(t *testing.T) {
 	var instance linodego.Instance
 
 	name := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, name, testRegion),
+				Config: tmpl.DataBasic(t, name, testRegion, rootPass),
 			},
 			{
-				Config: tmpl.DataBasic(t, name, testRegion),
+				Config: tmpl.DataBasic(t, name, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.private.#"),
@@ -65,16 +66,17 @@ func TestAccDataSourceInstanceNetworking_vpc(t *testing.T) {
 
 	instanceVPCIP := "10.0.0.3"
 	name := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(16) + "!A1a"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataVPC(t, name, testRegion, "10.0.0.0/24", instanceVPCIP),
+				Config: tmpl.DataVPC(t, name, testRegion, "10.0.0.0/24", instanceVPCIP, rootPass),
 			},
 			{
-				Config: tmpl.DataVPC(t, name, testRegion, "10.0.0.0/24", instanceVPCIP),
+				Config: tmpl.DataVPC(t, name, testRegion, "10.0.0.0/24", instanceVPCIP, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.vpc.#"),
 					resource.TestCheckResourceAttr(testInstanceNetworkResName, "ipv4.0.vpc.0.address", instanceVPCIP),
@@ -90,16 +92,17 @@ func TestAccDataSourceInstanceNetworking_basicwithReseved(t *testing.T) {
 	var instance linodego.Instance
 
 	name := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic_withReservedField(t, name, testRegion),
+				Config: tmpl.DataBasic_withReservedField(t, name, testRegion, rootPass),
 			},
 			{
-				Config: tmpl.DataBasic_withReservedField(t, name, testRegion),
+				Config: tmpl.DataBasic_withReservedField(t, name, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.private.#"),

@@ -32,13 +32,15 @@ func TestAccInstanceIP_basic(t *testing.T) {
 	var instance linodego.Instance
 
 	name := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, name, testRegion, true),
+				Config: tmpl.Basic(t, name, testRegion, true, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
@@ -54,7 +56,7 @@ func TestAccInstanceIP_basic(t *testing.T) {
 				PreConfig: func() {
 					acceptance.AssertInstanceReboot(t, true, &instance)
 				},
-				Config: tmpl.Basic(t, name, testRegion, true),
+				Config: tmpl.Basic(t, name, testRegion, true, rootPass),
 			},
 		},
 	})
@@ -66,13 +68,15 @@ func TestAccInstanceIP_noboot(t *testing.T) {
 	var instance linodego.Instance
 
 	name := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.NoBoot(t, name, testRegion, true),
+				Config: tmpl.NoBoot(t, name, testRegion, true, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
@@ -85,7 +89,7 @@ func TestAccInstanceIP_noboot(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.NoBoot(t, name, testRegion, true),
+				Config: tmpl.NoBoot(t, name, testRegion, true, rootPass),
 				PreConfig: func() {
 					acceptance.AssertInstanceReboot(t, false, &instance)
 				},
@@ -100,13 +104,15 @@ func TestAccInstanceIP_noApply(t *testing.T) {
 	var instance linodego.Instance
 
 	name := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, name, testRegion, false),
+				Config: tmpl.Basic(t, name, testRegion, false, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
@@ -122,7 +128,7 @@ func TestAccInstanceIP_noApply(t *testing.T) {
 				PreConfig: func() {
 					acceptance.AssertInstanceReboot(t, false, &instance)
 				},
-				Config: tmpl.Basic(t, name, testRegion, false),
+				Config: tmpl.Basic(t, name, testRegion, false, rootPass),
 			},
 		},
 	})

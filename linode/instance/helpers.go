@@ -612,12 +612,6 @@ func createInstanceDisk(
 
 		if rootPass, ok := disk["root_pass"]; ok && rootPass != "" {
 			diskOpts.RootPass = rootPass.(string)
-		} else {
-			var err error
-			diskOpts.RootPass, err = helper.CreateRandomRootPassword()
-			if err != nil {
-				return nil, err
-			}
 		}
 
 		if authorizedKeys, ok := disk["authorized_keys"]; ok {
@@ -891,7 +885,7 @@ func rootPasswordState(val any) string {
 
 // hashString hashes a string.
 func hashString(key string) string {
-	hash := sha3.Sum512([]byte(key))
+	hash := sha3.Sum512([]byte(key)) //nolint:govet
 	return base64.StdEncoding.EncodeToString(hash[:])
 }
 
@@ -1675,3 +1669,6 @@ func getPlacementGroupCreateOptions(ctx context.Context, d *schema.ResourceData)
 
 	return &pgOptions
 }
+
+const imageAuthRequiredMessage = "when 'image' is set, at least one of " +
+	"'authorized_keys', 'authorized_users', or 'root_pass' must be specified"

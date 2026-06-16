@@ -96,13 +96,21 @@ func (r *Resource) Create(
 		return
 	}
 
-	if plan.RootPass.IsNull() {
-		createOpts.RootPass = helper.FrameworkCreateRandomRootPassword(&resp.Diagnostics)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	} else {
+	if !plan.RootPass.IsNull() {
 		createOpts.RootPass = plan.RootPass.ValueString()
+	}
+
+	// When an image is provided, at least one authentication method must be specified
+	if createOpts.Image != "" &&
+		createOpts.RootPass == "" &&
+		len(createOpts.AuthorizedKeys) == 0 &&
+		len(createOpts.AuthorizedUsers) == 0 {
+		resp.Diagnostics.AddError(
+			"Insufficient Authentication",
+			"When `image` is provided, at least one of `root_pass`, `authorized_keys`, "+
+				"or `authorized_users` must be specified.",
+		)
+		return
 	}
 
 	p, err := client.NewEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionDiskCreate)
