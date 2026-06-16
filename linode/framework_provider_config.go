@@ -297,7 +297,12 @@ func (fp *FrameworkProvider) InitLinodeClient(
 		}
 	}
 
-	client := linodego.NewClient(oauth2Client)
+	client, err := linodego.NewClient(oauth2Client)
+	if err != nil {
+		diags.AddError("Failed to create Client", err.Error())
+		return nil
+	}
+
 	// Load the config file if it exists
 	if _, err := os.Stat(configPath); err == nil {
 		tflog.Info(ctx, "Using Linode profile", map[string]any{
