@@ -783,27 +783,6 @@ func GetRandomRegionWithCaps(capabilities []string, regionType string, filters .
 	return regions[rand.Intn(len(regions))], nil
 }
 
-// Deprecated: Cluster is now deprecated in favor of Region.
-// GetRandomOBJCluster gets a random Object Storage cluster.
-func GetRandomOBJCluster() (string, error) {
-	client, err := GetTestClient()
-	if err != nil {
-		return "", err
-	}
-
-	clusters, err := client.ListObjectStorageClusters(context.Background(), nil)
-	if err != nil {
-		return "", err
-	}
-
-	if len(clusters) < 1 {
-		return "", fmt.Errorf("no clusters found")
-	}
-
-	// #nosec G404 -- Test data, doesn't need to be cryptography
-	return clusters[rand.Intn(len(clusters))].ID, nil
-}
-
 func GetTestClient() (*linodego.Client, error) {
 	token := os.Getenv("LINODE_TOKEN")
 	if token == "" {
