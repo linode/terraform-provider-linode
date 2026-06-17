@@ -13,7 +13,6 @@ type TemplateData struct {
 	PubKey   string
 	Type     string
 	Image    string
-	Group    string
 	Tag      string
 	Region   string
 	RootPass string

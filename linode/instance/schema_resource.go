@@ -324,12 +324,6 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed:     true,
 		ValidateFunc: validation.StringLenBetween(3, 50),
 	},
-	"group": {
-		Type:        schema.TypeString,
-		Description: "The display group of the Linode instance.",
-		Deprecated:  "Group label is deprecated. We recommend using tags instead.",
-		Optional:    true,
-	},
 	"tags": {
 		Type:        schema.TypeSet,
 		Elem:        &schema.Schema{Type: schema.TypeString},

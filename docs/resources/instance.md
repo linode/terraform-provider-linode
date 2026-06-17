@@ -218,8 +218,6 @@ The following arguments are supported:
 
   * **NOTE: IP reservation is not currently available to all users.**
 
-* `group` - (Optional, Deprecated) A deprecated property denoting a group label for this Linode. We recommend using the `tags` attribute instead.
-
 ### Simplified Resource Arguments
 
 Just as the Linode API provides, these fields are for the most common provisioning use case, a single data disk, a single swap disk, and a single config.  These arguments are not compatible with `disk` and `config` fields, described later.

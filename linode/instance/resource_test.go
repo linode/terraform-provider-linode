@@ -104,7 +104,6 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
 					resource.TestCheckResourceAttrSet(resName, "host_uuid"),
 					resource.TestMatchResourceAttr(resName, "ipv6", regexp.MustCompile(`/128$`)),
@@ -246,7 +245,6 @@ func TestAccResourceInstance_vpu(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g1-accelerated-netint-vpu-t1u1-s"),
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "region", "us-lax"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
 					resource.TestCheckResourceAttrSet(resName, "host_uuid"),
 					resource.TestCheckResourceAttrSet(resName, "specs.0.accelerated_devices"),
@@ -311,7 +309,6 @@ func TestAccResourceInstance_authorizedUsers(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
 				),
 			},
@@ -373,7 +370,6 @@ func TestAccResourceInstance_interfaces(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
@@ -430,7 +426,6 @@ func TestAccResourceInstance_config(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "60"),
 
@@ -474,7 +469,7 @@ func TestAccResourceInstance_configPair(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					checkComputeInstanceConfigs(&instance, testConfig("configa", testConfigKernel("linode/latest-64bit"))),
 					checkComputeInstanceConfigs(&instance, testConfig("configb", testConfigKernel("linode/latest-32bit"))),
@@ -512,7 +507,7 @@ func TestAccResourceInstance_configInterfaces(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 
 					resource.TestCheckResourceAttr(resName, "config.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
@@ -582,9 +577,7 @@ func TestAccResourceInstance_configInterfacesNoReboot(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
-
-					resource.TestCheckResourceAttr(resName, "config.#", "1"),
+					resource.Tource.TestCheckResourceAttr(resName, "config.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vlan"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.0.label", "tf-really-cool-vlan"),
@@ -656,7 +649,7 @@ func TestAccResourceInstance_disk(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "status", "offline"),
 					resource.TestCheckResourceAttr(resName, "config.#", "0"),
@@ -698,7 +691,7 @@ func TestAccResourceInstance_diskImage(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
 					checkComputeInstanceDisk(&instance, "disk", 3000),
@@ -738,7 +731,7 @@ func TestAccResourceInstance_diskPair(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "512"),
 					checkInstanceDisks(&instance,
 						testDisk("diska", testDiskSize(3000), testDiskExists(&instanceDisk)),
@@ -779,7 +772,7 @@ func TestAccResourceInstance_diskAndConfig(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					checkComputeInstanceConfigs(&instance,
 						testConfig("config", testConfigKernel("linode/latest-64bit")),
@@ -826,7 +819,7 @@ func TestAccResourceInstance_disksAndConfigs(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "512"),
 					checkInstanceDiskExists(&instance, "diska", &instanceDisk),
 					// TODO(displague) create checkInstanceDisks helper (like Configs)
@@ -918,7 +911,7 @@ func TestAccResourceInstance_volumeAndConfig(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "boot_config_label", "config"),
 					checkInstanceDiskExists(&instance, "disk", &instanceDisk),
 					// TODO(displague) create checkInstanceDisks helper (like Configs)
@@ -960,7 +953,7 @@ func TestAccResourceInstance_privateImage(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					checkInstanceDisks(&instance,
 						testDisk("boot", testDiskSize(2200)),
 						testDisk("swap", testDiskSize(512)),
@@ -999,7 +992,7 @@ func TestAccResourceInstance_noImage(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 				),
 			},
 
@@ -1031,7 +1024,7 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 				),
 			},
 			{
@@ -1039,7 +1032,6 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
 				),
 			},
 		},
@@ -1170,7 +1162,7 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						acceptance.CheckInstanceExists(resName, &instance),
 						resource.TestCheckResourceAttr(resName, "label", instanceName),
-						resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 						resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
 						resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/sda"),
 						resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "true"),
@@ -1182,7 +1174,7 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						acceptance.CheckInstanceExists(resName, &instance),
 						resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
-						resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
+
 						// changed kernel, not label
 						resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
 						resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-32bit"),
@@ -1218,7 +1210,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "config.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
 					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
@@ -1240,7 +1232,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "config.1.label", "configb"),
 					resource.TestCheckResourceAttr(resName, "config.1.kernel", "linode/latest-32bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					checkComputeInstanceConfigs(&instance,
 						testConfig("configa", testConfigExists(&configA), testConfigKernel("linode/latest-64bit")),
@@ -1259,7 +1251,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "config.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
 					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
@@ -1282,7 +1274,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					checkComputeInstanceConfigs(&instance,
 						testConfig("configb", testConfigKernel("linode/latest-64bit")),
@@ -1925,7 +1917,7 @@ func TestAccResourceInstance_stackScriptInstance(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 				),
 			},
 

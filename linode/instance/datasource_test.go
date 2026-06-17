@@ -49,7 +49,6 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "instances.0.image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "instances.0.region", region),
 					resource.TestCheckResourceAttr(resName, "instances.0.maintenance_policy", maintenancePolicy),
-					resource.TestCheckResourceAttr(resName, "instances.0.group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "instances.0.swap_size", "256"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.disk_encryption"),
 					resource.TestCheckResourceAttr(resName, "instances.0.ipv4.#", "2"),
