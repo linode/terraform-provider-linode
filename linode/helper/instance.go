@@ -86,8 +86,14 @@ func rebootInstance(
 		return fmt.Errorf("failed to initialize event poller: %s", err)
 	}
 
+	var configID *int
+
+	if bootConfig != 0 {
+		configID = &bootConfig
+	}
+
 	instanceRebootOptions := linodego.InstanceRebootOptions{
-		ConfigID: &bootConfig,
+		ConfigID: configID,
 	}
 
 	err = client.RebootInstance(ctx, instance.ID, instanceRebootOptions)
