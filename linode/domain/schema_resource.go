@@ -26,12 +26,6 @@ var resourceSchema = map[string]*schema.Schema{
 		Required:     true,
 		ForceNew:     true,
 	},
-	"group": {
-		Type:         schema.TypeString,
-		Description:  "The group this Domain belongs to. This is for display purposes only.",
-		ValidateFunc: validation.StringLenBetween(0, 50),
-		Optional:     true,
-	},
 	"status": {
 		Type:         schema.TypeString,
 		Description:  "Used to control whether this Domain is currently being rendered.",

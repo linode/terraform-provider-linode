@@ -177,16 +177,21 @@ func (r *Resource) Update(
 			return
 		}
 
-		ruleSet := plan.ExpandFirewallRuleSet(ctx, &resp.Diagnostics)
+		rules := plan.ExpandFirewallRules(ctx, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 
-		firewallRuleSet, err := client.UpdateFirewallRules(ctx, id, ruleSet)
+		updateOpts := linodego.FirewallRulesUpdateOptions{
+			Inbound:        rules.Inbound,
+			Outbound:       rules.Outbound,
+			InboundPolicy:  rules.InboundPolicy,
+			OutboundPolicy: rules.OutboundPolicy,
+		}
+
+		firewallRuleSet, err := client.UpdateFirewallRules(ctx, id, updateOpts)
 		if err != nil {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to Update Rules for Firewall %d", id), err.Error(),
-			)
+			resp.Diagnostics.AddError(fmt.Sprintf("Failed to Update Firewall Rules %d", id), err.Error())
 			return
 		}
 

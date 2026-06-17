@@ -11,7 +11,6 @@ type DomainModel struct {
 	ID          types.Int64    `tfsdk:"id"`
 	Domain      types.String   `tfsdk:"domain"`
 	Type        types.String   `tfsdk:"type"`
-	Group       types.String   `tfsdk:"group"`
 	Status      types.String   `tfsdk:"status"`
 	Description types.String   `tfsdk:"description"`
 	MasterIPs   []types.String `tfsdk:"master_ips"`
@@ -28,7 +27,6 @@ func (m *DomainModel) ParseDomain(domain *linodego.Domain) {
 	m.ID = types.Int64Value(int64(domain.ID))
 	m.Domain = types.StringValue(domain.Domain)
 	m.Type = types.StringValue(string(domain.Type))
-	m.Group = types.StringValue(domain.Group)
 	m.Status = types.StringValue(string(domain.Status))
 	m.Description = types.StringValue(domain.Description)
 	m.MasterIPs = helper.StringSliceToFramework(domain.MasterIPs)

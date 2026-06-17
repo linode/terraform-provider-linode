@@ -63,8 +63,7 @@ func ReconcileSuspensionSync(
 		databaseID,
 		databaseEngine,
 		desiredStatus,
-		int(timeout.Seconds()),
-	); err != nil {
+		); err != nil {
 		return fmt.Errorf("failed to wait for database status %s: %w", desiredStatus, err)
 	}
 

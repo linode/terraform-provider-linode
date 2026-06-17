@@ -79,7 +79,10 @@ func (c *Config) Client(ctx context.Context) (*linodego.Client, error) {
 		),
 	}
 
-	client := linodego.NewClient(oauth2Client)
+	client, err := linodego.NewClient(oauth2Client)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Linode client: %w", err)
+	}
 
 	client.SetBaseURL(DefaultLinodeURL)
 

@@ -58,9 +58,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	if err := d.Set("type", domain.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("failed to set type: %w", err))
 	}
-	if err := d.Set("group", domain.Group); err != nil {
-		return diag.FromErr(fmt.Errorf("failed to set group: %w", err))
-	}
 	if err := d.Set("status", domain.Status); err != nil {
 		return diag.FromErr(fmt.Errorf("failed to set status: %w", err))
 	}
@@ -103,7 +100,6 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	createOpts := linodego.DomainCreateOptions{
 		Domain:      d.Get("domain").(string),
 		Type:        linodego.DomainType(d.Get("type").(string)),
-		Group:       d.Get("group").(string),
 		Description: d.Get("description").(string),
 		SOAEmail:    d.Get("soa_email").(string),
 		RetrySec:    d.Get("retry_sec").(int),
@@ -165,7 +161,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	updateOpts := linodego.DomainUpdateOptions{
 		Domain:      d.Get("domain").(string),
 		Status:      linodego.DomainStatus(d.Get("status").(string)),
-		Group:       d.Get("group").(string),
 		Description: d.Get("description").(string),
 		SOAEmail:    d.Get("soa_email").(string),
 		RetrySec:    d.Get("retry_sec").(int),
