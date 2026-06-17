@@ -81,7 +81,7 @@ Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and wil
 
 * [`transfer`](#transfer) - The network transfer stats for the current month
 
-* [`lke_cluster`](#lke_cluster) - The LKE cluster that manages this NodeBalancer, if any. The value is null if this NodeBalancer isn't related to an LKE cluster.
+* [`lke_cluster`](#lke_cluster) - The LKE cluster that manages this NodeBalancer, if any. The list will be empty if this NodeBalancer isn't related to an LKE cluster.
 
 ### transfer
 

@@ -165,6 +165,8 @@ func TestAccDataSourceNodeBalancer_lkeClusterAPL(t *testing.T) {
 	acceptance.LongRunningTest(t)
 	t.Parallel()
 
+	acceptance.PreCheck(t)
+
 	if lkeRegion == "" || k8sVersion == "" {
 		t.Skip("no LKE-capable region or K8s version available")
 	}

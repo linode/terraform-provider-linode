@@ -59,7 +59,11 @@ func init() {
 	if err != nil {
 		log.Printf("WARNING: failed to list LKE versions: %s", err)
 	} else if len(versions) > 0 {
-		k8sVersion = versions[len(versions)-1].ID
+		for _, v := range versions {
+			if k8sVersion == "" || v.ID > k8sVersion {
+				k8sVersion = v.ID
+			}
+		}
 	}
 }
 

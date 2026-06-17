@@ -98,7 +98,7 @@ This resource exports the following attributes:
 
 * [`vpcs`](#vpcs) - A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
-* [`lke_cluster`](#lke_cluster) - The LKE cluster that manages this NodeBalancer, if any. The value is null if this NodeBalancer isn't related to an LKE cluster.
+* [`lke_cluster`](#lke_cluster) - The LKE cluster that manages this NodeBalancer, if any. The list will be empty if this NodeBalancer isn't related to an LKE cluster.
 
 ### transfer
 

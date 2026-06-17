@@ -57,7 +57,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * [`vpcs`](#vpcs) - A list of VPCs assigned to this NodeBalancer.
 
-* [`lke_cluster`](#lke_cluster) - The LKE cluster that manages this NodeBalancer, if any. The value is null if this NodeBalancer isn't related to an LKE cluster.
+* [`lke_cluster`](#lke_cluster) - The LKE cluster that manages this NodeBalancer, if any. The list will be empty if this NodeBalancer isn't related to an LKE cluster.
 
 ### transfer
 
