@@ -127,7 +127,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	d.Set("region", instance.Region)
 	d.Set("maintenance_policy", instance.MaintenancePolicy)
 	d.Set("watchdog_enabled", instance.WatchdogEnabled)
-	d.Set("group", instance.Group)
 	d.Set("tags", instance.Tags)
 	d.Set("capabilities", instance.Capabilities)
 	d.Set("locks", instance.Locks)

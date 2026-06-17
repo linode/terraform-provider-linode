@@ -70,8 +70,6 @@ Each Linode instance will be stored in the `instances` attribute and will export
 * `type` - The Linode type defines the pricing, CPU, disk, and RAM specs of the instance. Examples are `"g6-nanode-1"`, `"g6-standard-2"`, `"g6-highmem-16"`, `"g6-dedicated-16"`, etc. See all types [here](https://api.linode.com/v4/linode/types).
 
 * `label` - The Linode's label is for display purposes only.
-  
-* `group` - The display group of the Linode instance.
 
 * `tags` - A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
@@ -274,8 +272,6 @@ The following arguments are available in a `range` configuration block of an [`i
   * `label` - The label of the Placement Group. This field can only contain ASCII letters, digits and dashes.
 
 ## Filterable Fields
-
-* `group`
 
 * `id`
 
