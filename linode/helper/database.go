@@ -128,7 +128,7 @@ func ExpandMaintenanceWindow(window map[string]any) (linodego.DatabaseMaintenanc
 }
 
 func WaitForDatabaseUpdated(ctx context.Context, client linodego.Client, dbID int,
-	dbType linodego.DatabaseEngineType, minStart *time.Time, timeoutSeconds int,
+	dbType linodego.DatabaseEngineType, minStart *time.Time,
 ) error {
 	if minStart == nil {
 		return fmt.Errorf("nil minimum starting time")

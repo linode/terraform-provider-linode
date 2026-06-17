@@ -398,8 +398,7 @@ func BootInstanceSync(
 	ctx context.Context,
 	client *linodego.Client,
 	instanceID,
-	configID,
-	deadlineSeconds int,
+	configID int,
 ) error {
 	ctx = SetLogFieldBulk(
 		ctx,
@@ -476,7 +475,6 @@ func WaitForInstanceNonTransientStatus(
 	ctx context.Context,
 	client *linodego.Client,
 	linodeID int,
-	timeoutSeconds int,
 ) (linodego.InstanceStatus, error) {
 	instance, err := client.GetInstance(ctx, linodeID)
 	if err != nil {

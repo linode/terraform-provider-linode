@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"regexp"
 	"time"
 
@@ -77,18 +76,14 @@ func OBJBucketDelete500Retry() func(response *http.Response, err error) bool {
 
 func GenericRetryCondition(statusCode int, pathPattern *regexp.Regexp) func(response *http.Response, err error) bool {
 	return func(response *http.Response, _ error) bool {
-		if response.StatusCode != statusCode || response.Request == nil {
+		if response == nil ||
+			response.Request == nil ||
+			response.Request.URL == nil ||
+			response.StatusCode != statusCode {
 			return false
 		}
 
-		requestURL, err := url.ParseRequestURI(response.Request.RequestURI)
-		if err != nil {
-			log.Printf("[WARN] failed to parse request URL: %s", err)
-			return false
-		}
-
-		// Check whether the string matches
-		return pathPattern.MatchString(requestURL.Path)
+		return pathPattern.MatchString(response.Request.URL.Path)
 	}
 }
 

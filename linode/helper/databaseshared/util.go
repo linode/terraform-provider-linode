@@ -11,7 +11,7 @@ import (
 var ValidDatabaseTypes = []string{"postgresql", "mysql"}
 
 func WaitForUpdated(ctx context.Context, client linodego.Client, dbID int,
-	dbType linodego.DatabaseEngineType, minStart *time.Time, timeoutSeconds int,
+	dbType linodego.DatabaseEngineType, minStart *time.Time,
 ) error {
 	if minStart == nil {
 		return fmt.Errorf("nil minimum starting time")
