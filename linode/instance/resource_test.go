@@ -508,7 +508,6 @@ func TestAccResourceInstance_configInterfaces(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 
-
 					resource.TestCheckResourceAttr(resName, "config.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vlan"),
@@ -577,7 +576,7 @@ func TestAccResourceInstance_configInterfacesNoReboot(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.Tource.TestCheckResourceAttr(resName, "config.#", "1"),
+					resource.TestCheckResourceAttr(resName, "config.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vlan"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.0.label", "tf-really-cool-vlan"),
@@ -992,7 +991,6 @@ func TestAccResourceInstance_noImage(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-
 				),
 			},
 
@@ -1024,7 +1022,6 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
-
 				),
 			},
 			{
@@ -1917,7 +1914,6 @@ func TestAccResourceInstance_stackScriptInstance(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-
 				),
 			},
 
