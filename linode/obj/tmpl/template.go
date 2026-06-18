@@ -11,22 +11,10 @@ import (
 type TemplateData struct {
 	Bucket  objectbucket.TemplateData
 	Key     objectkey.TemplateData
-	Cluster string
 	Region  string
 
 	Content string
 	Source  string
-}
-
-func BasicWithCluster(t testing.TB, name, cluster, keyName, content, source string) string {
-	return acceptance.ExecuteTemplate(t,
-		"object_object_basic", TemplateData{
-			Bucket:  objectbucket.TemplateData{Label: name, Cluster: cluster},
-			Key:     objectkey.TemplateData{Label: keyName},
-			Content: content,
-			Source:  source,
-			Cluster: cluster,
-		})
 }
 
 func Basic(t testing.TB, name, region, keyName, content, source string) string {

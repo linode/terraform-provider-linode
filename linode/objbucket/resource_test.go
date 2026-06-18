@@ -43,7 +43,6 @@ const (
 )
 
 var (
-	testCluster      string
 	testRegion       string
 	testEndpointType string
 	testEndpointURL  string
@@ -51,11 +50,6 @@ var (
 
 func init() {
 	endpoint, err := acceptance.GetRandomObjectStorageEndpoint()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	testCluster, err = acceptance.GetEndpointCluster(*endpoint)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -193,36 +187,6 @@ func TestSmokeTests_objbucket(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, tt.test)
 	}
-}
-
-func TestAccResourceBucket_basic_legacy_smoke(t *testing.T) {
-	t.Parallel()
-
-	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
-		resName := "linode_object_storage_bucket.foobar"
-		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
-
-		resource.Test(t, resource.TestCase{
-			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-			CheckDestroy:             checkBucketDestroy,
-			Steps: []resource.TestStep{
-				{
-					Config: tmpl.BasicLegacy(t, objectStorageBucketName, testCluster),
-					Check: resource.ComposeTestCheckFunc(
-						checkBucketExists,
-						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-						resource.TestCheckResourceAttrSet(resName, "hostname"),
-					),
-				},
-				{
-					ResourceName:      resName,
-					ImportState:       true,
-					ImportStateVerify: true,
-				},
-			},
-		})
-	})
 }
 
 func TestAccResourceBucket_endpoint_type(t *testing.T) {
@@ -411,7 +375,6 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 					Config: tmpl.LifeCycle(t, objectStorageBucketName, testRegion, objectStorageKeyName),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
 						resource.TestCheckResourceAttr(resName, "region", testRegion),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.id", "test-rule"),
@@ -426,7 +389,6 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 					Config: tmpl.LifeCycleUpdates(t, objectStorageBucketName, testRegion, objectStorageKeyName),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
 						resource.TestCheckResourceAttr(resName, "region", testRegion),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.id", "test-rule-update"),
@@ -441,7 +403,6 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 					Config: tmpl.LifeCycleRemoved(t, objectStorageBucketName, testRegion, objectStorageKeyName),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
 						resource.TestCheckResourceAttr(resName, "region", testRegion),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "0"),
 					),
@@ -468,7 +429,6 @@ func TestAccResourceBucket_lifecycleNoID(t *testing.T) {
 					Config: tmpl.LifeCycleNoID(t, objectStorageBucketName, testRegion, objectStorageKeyName),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
 						resource.TestCheckResourceAttr(resName, "region", testRegion),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
 						resource.TestCheckResourceAttrSet(resName, "lifecycle_rule.0.id"),
@@ -553,7 +513,7 @@ func TestAccResourceBucket_dataSource(t *testing.T) {
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.ClusterDataBasic(t, objectStorageBucketName, testCluster),
+					Config: tmpl.DataBasic(t, objectStorageBucketName, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -617,7 +577,6 @@ func TestAccResourceBucket_credsConfiged(t *testing.T) {
 					Config: tmpl.CredsConfiged(t, objectStorageBucketName, testRegion, objectStorageKeyName),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
 						resource.TestCheckResourceAttr(resName, "region", testRegion),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
 					),
@@ -644,7 +603,6 @@ func TestAccResourceBucket_tempKeys(t *testing.T) {
 					Config: tmpl.TempKeys(t, objectStorageBucketName, testRegion, objectStorageKeyName),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
 						resource.TestCheckResourceAttr(resName, "region", testRegion),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
 					),
@@ -671,7 +629,6 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 					Config: tmpl.ForceDelete(t, objectStorageBucketName, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
 						resource.TestCheckResourceAttr(resName, "region", testRegion),
 					),
 				},
@@ -749,12 +706,12 @@ func checkBucketExists(s *terraform.State) error {
 			continue
 		}
 
-		cluster, label, err := objbucket.DecodeBucketID(context.Background(), rs.Primary.ID, &schema.ResourceData{})
+		region, label, err := objbucket.DecodeBucketID(context.Background(), rs.Primary.ID, &schema.ResourceData{})
 		if err != nil {
 			return fmt.Errorf("Error parsing %s, %s", rs.Primary.ID, err)
 		}
 
-		_, err = client.GetObjectStorageBucket(context.Background(), cluster, label)
+		_, err = client.GetObjectStorageBucket(context.Background(), region, label)
 		if err != nil {
 			return fmt.Errorf("Error retrieving state of ObjectStorageBucket %s: %s", rs.Primary.Attributes["label"], err)
 		}
@@ -771,7 +728,7 @@ func checkBucketDestroy(s *terraform.State) error {
 		}
 
 		id := rs.Primary.ID
-		cluster, label, err := objbucket.DecodeBucketID(context.Background(), id, &schema.ResourceData{})
+		region, label, err := objbucket.DecodeBucketID(context.Background(), id, &schema.ResourceData{})
 		if err != nil {
 			return fmt.Errorf("Error parsing %s", id)
 		}
@@ -779,7 +736,7 @@ func checkBucketDestroy(s *terraform.State) error {
 			return fmt.Errorf("Would have considered %s as %s", id, label)
 		}
 
-		_, err = client.GetObjectStorageBucket(context.Background(), cluster, label)
+		_, err = client.GetObjectStorageBucket(context.Background(), region, label)
 
 		if err == nil {
 			return fmt.Errorf("Linode ObjectStorageBucket with id %s still exists", id)

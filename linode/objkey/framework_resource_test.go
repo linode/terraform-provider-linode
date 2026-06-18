@@ -25,7 +25,6 @@ import (
 )
 
 var (
-	testCluster string
 	testRegion  string
 )
 
@@ -36,11 +35,6 @@ func init() {
 	})
 
 	endpoint, err := acceptance.GetRandomObjectStorageEndpoint()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	testCluster, err = acceptance.GetEndpointCluster(*endpoint)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -146,43 +140,6 @@ func TestAccResourceObjectKey_all_regions(t *testing.T) {
 	})
 }
 
-func TestAccResourceObjectKey_limited_cluster(t *testing.T) {
-	t.Parallel()
-
-	resName := "linode_object_storage_key.foobar"
-	objectStorageKeyLabel := acctest.RandomWithPrefix("tf-test")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkObjectKeyDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.ClusterLimited(t, objectStorageKeyLabel, testCluster),
-				Check: resource.ComposeTestCheckFunc(
-					checkObjectKeyExists,
-					checkObjectKeySecretAccessible,
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_key", objectStorageKeyLabel)),
-					resource.TestCheckResourceAttrSet(resName, "access_key"),
-					resource.TestCheckResourceAttrSet(resName, "secret_key"),
-					resource.TestCheckResourceAttr(resName, "limited", "true"),
-					resource.TestCheckResourceAttr(resName, "bucket_access.#", "2"),
-					resource.TestCheckResourceAttrSet(resName, "bucket_access.0.bucket_name"),
-					resource.TestCheckResourceAttrSet(resName, "bucket_access.1.bucket_name"),
-					resource.TestCheckResourceAttr(resName, "bucket_access.0.cluster", testCluster),
-					resource.TestCheckResourceAttr(resName, "bucket_access.1.cluster", testCluster),
-					resource.TestCheckResourceAttr(resName, "bucket_access.0.region", testRegion),
-					resource.TestCheckResourceAttr(resName, "bucket_access.1.region", testRegion),
-					resource.TestCheckResourceAttr(resName, "bucket_access.0.permissions", "read_only"),
-					resource.TestCheckResourceAttr(resName, "bucket_access.1.permissions", "read_write"),
-					resource.TestCheckResourceAttr(resName, "regions.#", "1"),
-					resource.TestCheckResourceAttr(resName, "regions.0", testRegion),
-				),
-			},
-		},
-	})
-}
-
 func TestAccResourceObjectKey_limited(t *testing.T) {
 	t.Parallel()
 
@@ -206,8 +163,6 @@ func TestAccResourceObjectKey_limited(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "bucket_access.#", "2"),
 					resource.TestCheckResourceAttrSet(resName, "bucket_access.0.bucket_name"),
 					resource.TestCheckResourceAttrSet(resName, "bucket_access.1.bucket_name"),
-					resource.TestCheckResourceAttr(resName, "bucket_access.0.cluster", testCluster),
-					resource.TestCheckResourceAttr(resName, "bucket_access.1.cluster", testCluster),
 					resource.TestCheckResourceAttr(resName, "bucket_access.0.region", testRegion),
 					resource.TestCheckResourceAttr(resName, "bucket_access.1.region", testRegion),
 					resource.TestCheckResourceAttr(resName, "bucket_access.0.permissions", "read_only"),

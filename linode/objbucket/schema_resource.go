@@ -18,23 +18,12 @@ var resourceSchema = map[string]*schema.Schema{
 			"or, generated implicitly at apply-time if obj_use_temp_keys in provider configuration is set.",
 		Optional: true,
 	},
-	"cluster": {
-		Type:        schema.TypeString,
-		Description: "The cluster of the Linode Object Storage Bucket.",
-		Deprecated: "The cluster attribute has been deprecated, please consider switching to the region attribute. " +
-			"For example, a cluster value of `us-mia-1` can be translated to a region value of `us-mia`.",
-		Optional:     true,
-		Computed:     true,
-		ForceNew:     true,
-		ExactlyOneOf: []string{"region", "cluster"},
-	},
 	"region": {
 		Type:         schema.TypeString,
 		Description:  "The region of the Linode Object Storage Bucket.",
 		Optional:     true,
 		Computed:     true,
 		ForceNew:     true,
-		ExactlyOneOf: []string{"region", "cluster"},
 	},
 	"endpoint": {
 		Type:        schema.TypeString,

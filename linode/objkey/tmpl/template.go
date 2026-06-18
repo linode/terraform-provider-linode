@@ -8,7 +8,6 @@ import (
 
 type TemplateData struct {
 	Label   string
-	Cluster string
 	Region  string
 	Regions []string
 }
@@ -21,11 +20,6 @@ func Basic(t testing.TB, label string) string {
 func Updates(t testing.TB, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_key_updates", TemplateData{Label: label})
-}
-
-func ClusterLimited(t testing.TB, label, cluster string) string {
-	return acceptance.ExecuteTemplate(t,
-		"object_key_limited", TemplateData{Label: label, Cluster: cluster})
 }
 
 func Limited(t testing.TB, label, region string) string {
