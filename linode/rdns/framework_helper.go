@@ -19,7 +19,7 @@ func updateIPAddress(
 	waitForAvailable bool,
 ) (*linodego.InstanceIP, error) {
 	updateOpts := linodego.IPAddressUpdateOptions{
-		RDNS: desiredRDNS,
+		RDNS: linodego.Pointer(desiredRDNS),
 	}
 
 	if waitForAvailable {
