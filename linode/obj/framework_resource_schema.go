@@ -32,7 +32,7 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"region": schema.StringAttribute{
 			Description: "The target region that the bucket is in.",
-			Optional:    true,
+			Required:    true,
 		},
 		"key": schema.StringAttribute{
 			Description: "The name of the uploaded object.",
