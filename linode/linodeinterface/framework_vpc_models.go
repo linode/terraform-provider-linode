@@ -155,7 +155,7 @@ func (plan *VPCIPv4AttrModel) GetCreateOrUpdateOptions(
 		for i, address := range addresses {
 			addressOpts[i] = address.GetCreateOptions(ctx)
 		}
-		opts.Addresses = &addressOpts
+		opts.Addresses = addressOpts
 		shouldUpdate = true
 	}
 
@@ -171,7 +171,7 @@ func (plan *VPCIPv4AttrModel) GetCreateOrUpdateOptions(
 		for i, r := range ranges {
 			rangeOpts[i] = r.GetCreateOptions(ctx)
 		}
-		opts.Ranges = &rangeOpts
+		opts.Ranges = rangeOpts
 		shouldUpdate = true
 	}
 
@@ -314,7 +314,7 @@ func (plan *VPCIPv6AttrModel) GetCreateOrUpdateOptions(
 				return entry.GetCreateOptions()
 			},
 		)
-		opts.SLAAC = &slaacOpts
+		opts.SLAAC = slaacOpts
 		shouldUpdate = true
 	}
 
@@ -330,7 +330,7 @@ func (plan *VPCIPv6AttrModel) GetCreateOrUpdateOptions(
 		for i, r := range ranges {
 			rangeOpts[i] = r.GetCreateOptions()
 		}
-		opts.Ranges = &rangeOpts
+		opts.Ranges = rangeOpts
 		shouldUpdate = true
 	}
 
