@@ -558,7 +558,7 @@ func makeVolumeDetacher(client linodego.Client, d *schema.ResourceData) volumeDe
 		tflog.Debug(ctx, "client.WaitForVolumeLinodeID(...)", map[string]any{
 			"linode_id": nil,
 		})
-		if _, err := client.WaitForVolumeLinodeID(ctx, volumeID, nil, getDeadlineSeconds(ctx, d)); err != nil {
+		if _, err := client.WaitForVolumeLinodeID(ctx, volumeID, nil); err != nil {
 			return err
 		}
 
@@ -679,7 +679,7 @@ func createInstanceDisk(
 	ctx = tflog.SetField(ctx, "disk_id", instanceDisk.ID)
 
 	tflog.Debug(ctx, "Waiting for disk creation to complete")
-	_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
+	_, err = p.WaitForFinished(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("Error waiting for Linode instance %d disk: %s", instanceDisk.ID, err)
 	}
@@ -827,7 +827,7 @@ func updateInstanceDisks(
 
 		tflog.Debug(ctx, "Waiting for unused disk to be deleted")
 
-		_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
+		_, err = p.WaitForFinished(ctx)
 		if err != nil {
 			return hasChanges, fmt.Errorf(
 				"error waiting for Instance %d Disk %d to finish deleting: %s", instance.ID, disk.ID, err)
@@ -891,7 +891,7 @@ func hashString(key string) string {
 
 // ensureInstanceOffline ensures that a given instance is offline.
 func ensureInstanceOffline(
-	ctx context.Context, client *linodego.Client, instanceID, timeout int,
+	ctx context.Context, client *linodego.Client, instanceID int,
 ) (instance *linodego.Instance, err error) {
 	if instance, err = client.GetInstance(ctx, instanceID); err != nil {
 		return instance, err
@@ -909,7 +909,7 @@ func ensureInstanceOffline(
 		return instance, err
 	}
 
-	inst, err := client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceOffline, timeout)
+	inst, err := client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceOffline)
 	if err != nil {
 		return nil, err
 	}
@@ -934,7 +934,7 @@ func changeInstanceType(
 
 	if migrationType == linodego.ColdMigration {
 		// Cold migration: Ensure instance is offline
-		instance, err = ensureInstanceOffline(ctx, client, instanceID, getDeadlineSeconds(ctx, d))
+		instance, err = ensureInstanceOffline(ctx, client, instanceID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to shut down instance for cold migration: %w", err)
 		}
@@ -977,7 +977,7 @@ func changeInstanceType(
 		return nil, fmt.Errorf("Error resizing Instance %d: %s", instance.ID, err)
 	}
 
-	_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
+	_, err = p.WaitForFinished(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("Error waiting for instance %d to finish resizing: %s", instance.ID, err)
 	}
@@ -986,7 +986,7 @@ func changeInstanceType(
 
 	// Wait for instance status to go back to idle, offline state
 	if instance, err = client.WaitForInstanceStatus(
-		ctx, instance.ID, linodego.InstanceOffline, getDeadlineSeconds(ctx, d),
+		ctx, instance.ID, linodego.InstanceOffline,
 	); err != nil {
 		return nil, fmt.Errorf("Error waiting for Instance %d to enter offline state: %s", instance.ID, err)
 	}
@@ -1039,7 +1039,7 @@ func changeInstanceDiskSize(
 		tflog.Debug(ctx, "Waiting for instance to reach offline status for disk resize")
 
 		if _, err := client.WaitForInstanceStatus(
-			ctx, instance.ID, linodego.InstanceOffline, getDeadlineSeconds(ctx, d),
+			ctx, instance.ID, linodego.InstanceOffline,
 		); err != nil {
 			return fmt.Errorf("Error waiting for Instance %d to go offline: %s", instance.ID, err)
 		}
@@ -1054,7 +1054,7 @@ func changeInstanceDiskSize(
 
 	// Wait for instance to go offline. Resize the disk once Linode is shut down.
 	if _, err := client.WaitForInstanceStatus(
-		ctx, instance.ID, linodego.InstanceOffline, getDeadlineSeconds(ctx, d),
+		ctx, instance.ID, linodego.InstanceOffline,
 	); err != nil {
 		return fmt.Errorf("Error waiting for Instance %d to go offline: %s", instance.ID, err)
 	}
@@ -1070,21 +1070,24 @@ func changeInstanceDiskSize(
 		"size": targetSize,
 	})
 
-	if err := client.ResizeInstanceDisk(ctx, instance.ID, disk.ID, targetSize); err != nil {
+	instanceDiskResizeOptions := linodego.InstanceDiskResizeOptions{
+		Size: targetSize,
+	}
+
+	if err := client.ResizeInstanceDisk(ctx, instance.ID, disk.ID, instanceDiskResizeOptions); err != nil {
 		return fmt.Errorf("Error resizing disk %d for Instance %d: %s", disk.ID, instance.ID, err)
 	}
 
 	tflog.Debug(ctx, "Waiting for disk resize operation to complete")
 
 	// Wait for the disk resize operation to complete.
-	_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
+	_, err = p.WaitForFinished(ctx)
 	if err != nil {
 		return fmt.Errorf("Error waiting for resize of Instance %d Disk %d: %s", instance.ID, disk.ID, err)
 	}
 
 	// Check to see if the resize operation worked
-	if updatedDisk, err := client.WaitForInstanceDiskStatus(ctx, instance.ID, disk.ID, linodego.DiskReady,
-		getDeadlineSeconds(ctx, d)); err != nil {
+	if updatedDisk, err := client.WaitForInstanceDiskStatus(ctx, instance.ID, disk.ID, linodego.DiskReady); err != nil {
 		return fmt.Errorf("Error waiting disk %d on instance %d to be ready: %s", disk.ID, instance.ID, err)
 	} else if updatedDisk.Size != targetSize {
 		return fmt.Errorf(
@@ -1270,7 +1273,7 @@ func applyInstanceMigration(
 
 	tflog.Debug(ctx, "Waiting for migration to finish")
 
-	_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
+	_, err = p.WaitForFinished(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to wait for instance %d to finish migration: %w", instance.ID, err)
 	}
@@ -1363,8 +1366,6 @@ func handleBootedUpdate(
 ) error {
 	client := meta.(*helper.ProviderMeta).Client
 
-	deadlineSeconds := getDeadlineSeconds(ctx, d)
-
 	booted := d.Get("booted")
 	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
 
@@ -1372,20 +1373,20 @@ func handleBootedUpdate(
 		return nil
 	}
 
-	instStatus, err := helper.WaitForInstanceNonTransientStatus(ctx, &client, instanceID, 120)
+	instStatus, err := helper.WaitForInstanceNonTransientStatus(ctx, &client, instanceID)
 	if err != nil {
 		return err
 	}
 
 	// Boot or shutdown the instance if necessary
 	if instStatus != linodego.InstanceRunning && booted.(bool) {
-		if err := helper.BootInstanceSync(ctx, &client, instanceID, configID, deadlineSeconds); err != nil {
+		if err := helper.BootInstanceSync(ctx, &client, instanceID, configID); err != nil {
 			return err
 		}
 	}
 
 	if instStatus != linodego.InstanceOffline && !booted.(bool) {
-		if err := helper.ShutDownInstanceSync(ctx, &client, instanceID, deadlineSeconds); err != nil {
+		if err := helper.ShutDownInstanceSync(ctx, &client, instanceID); err != nil {
 			return err
 		}
 	}
@@ -1489,7 +1490,7 @@ func waitForInstanceDiskSizeChange(ctx context.Context, client *linodego.Client,
 	}
 }
 
-func instanceIPSliceToString(ips []*linodego.InstanceIP) []string {
+func instanceIPSliceToString(ips []linodego.InstanceIP) []string {
 	result := make([]string, len(ips))
 
 	for i, ip := range ips {
@@ -1522,12 +1523,12 @@ func VPCInterfaceIncluded(
 func BootInstanceAfterOfflineOperation(
 	ctx context.Context,
 	meta *helper.ProviderMeta,
-	instanceID, targetConfigID, deadlineSeconds int,
+	instanceID, targetConfigID int,
 	reason string,
 ) diag.Diagnostics {
 	tflog.Debug(ctx, fmt.Sprintf("Booting instance after %s", reason))
 	if err := helper.BootInstanceSync(
-		ctx, &meta.Client, instanceID, targetConfigID, deadlineSeconds,
+		ctx, &meta.Client, instanceID, targetConfigID,
 	); err != nil {
 		return diag.Errorf("failed to boot instance after %s: %s", reason, err)
 	}
@@ -1538,7 +1539,7 @@ func ShutdownInstanceForOfflineOperation(
 	ctx context.Context,
 	client *linodego.Client,
 	skipImplicitReboots bool,
-	instanceID, deadlineSeconds int,
+	instanceID int,
 	reason string,
 ) error {
 	if skipImplicitReboots {
@@ -1550,14 +1551,14 @@ func ShutdownInstanceForOfflineOperation(
 		)
 	}
 
-	return SafeShutdownInstance(ctx, client, instanceID, deadlineSeconds)
+	return SafeShutdownInstance(ctx, client, instanceID)
 }
 
-func SafeShutdownInstance(ctx context.Context, client *linodego.Client, instanceID, deadlineSeconds int) error {
+func SafeShutdownInstance(ctx context.Context, client *linodego.Client, instanceID int) error {
 	tflog.Debug(ctx, "Shutting down Linode instance")
 
 	instanceStatus, err := helper.WaitForInstanceNonTransientStatus(
-		ctx, client, instanceID, 120,
+		ctx, client, instanceID,
 	)
 	if err != nil {
 		return fmt.Errorf(
@@ -1566,7 +1567,7 @@ func SafeShutdownInstance(ctx context.Context, client *linodego.Client, instance
 	}
 	if instanceStatus != linodego.InstanceOffline {
 		if err := helper.ShutDownInstanceSync(
-			ctx, client, instanceID, deadlineSeconds,
+			ctx, client, instanceID,
 		); err != nil {
 			return fmt.Errorf("failed to shutdown instance: %s", err)
 		}

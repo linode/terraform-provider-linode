@@ -71,7 +71,6 @@ func (r *Resource) Create(
 
 	client := r.Meta.Client
 
-	timeoutSeconds := helper.FrameworkSafeFloat64ToInt(createTimeout.Seconds(), &resp.Diagnostics)
 	linodeID := helper.FrameworkSafeInt64ToInt(plan.LinodeID.ValueInt64(), &resp.Diagnostics)
 	diskSize := helper.FrameworkSafeInt64ToInt(plan.Size.ValueInt64(), &resp.Diagnostics)
 	stackScriptID := helper.FrameworkSafeInt64ToInt(
@@ -136,7 +135,7 @@ func (r *Resource) Create(
 
 	ctx = tflog.SetField(ctx, "disk_id", diskID)
 
-	_, err = p.WaitForFinished(ctx, timeoutSeconds)
+	_, err = p.WaitForFinished(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to Wait for the Disk Creation Event on Linode Disk (%d)", diskID),
@@ -146,7 +145,7 @@ func (r *Resource) Create(
 	}
 
 	if _, err := client.WaitForInstanceDiskStatus(
-		ctx, linodeID, diskID, linodego.DiskReady, timeoutSeconds,
+		ctx, linodeID, diskID, linodego.DiskReady,
 	); err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to Wait for Disk (%d) to be Ready", diskID), err.Error(),
@@ -259,7 +258,6 @@ func (r *Resource) Update(
 	defer cancel()
 
 	client := r.Meta.Client
-	timeoutSeconds := helper.FrameworkSafeFloat64ToInt(updateTimeout.Seconds(), &resp.Diagnostics)
 	size := helper.FrameworkSafeInt64ToInt(plan.Size.ValueInt64(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
@@ -268,7 +266,7 @@ func (r *Resource) Update(
 	if !state.Size.Equal(plan.Size) {
 		resp.Diagnostics.Append(
 			resizeDiskSync(
-				ctx, client, r.Meta, linodeID, id, size, timeoutSeconds,
+				ctx, client, r.Meta, linodeID, id, size,
 			)...,
 		)
 		if resp.Diagnostics.HasError() {
@@ -363,18 +361,11 @@ func (r *Resource) Delete(
 		return
 	}
 
-	timeoutSeconds := helper.FrameworkSafeFloat64ToInt(
-		deleteTimeout.Seconds(), &resp.Diagnostics,
-	)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
 	d := runDiskOperation(
-		ctx, client, r.Meta, linodeID, timeoutSeconds, true, func() (resultDiag diag.Diagnostics) {
+		ctx, client, r.Meta, linodeID, true, func() (resultDiag diag.Diagnostics) {
 			tflog.Info(ctx, "Deleting instance disk")
 			p, err := client.NewEventPollerWithSecondary(
 				ctx,
@@ -396,7 +387,7 @@ func (r *Resource) Delete(
 				return resultDiag
 			}
 
-			if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
+			if _, err := p.WaitForFinished(ctx); err != nil {
 				resp.Diagnostics.AddError(
 					"Failed to wait for Linode instance disk deletion to finish", err.Error(),
 				)

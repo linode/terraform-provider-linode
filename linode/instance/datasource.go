@@ -11,7 +11,6 @@ import (
 )
 
 var filterConfig = helper.FilterConfig{
-	"group":          {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"id":             {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
 	"image":          {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"label":          {APIFilterable: true, TypeFunc: helper.FilterTypeString},

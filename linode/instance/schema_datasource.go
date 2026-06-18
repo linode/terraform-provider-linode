@@ -23,11 +23,6 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 			"a default will be assigned",
 		Computed: true,
 	},
-	"group": {
-		Type:        schema.TypeString,
-		Description: "The display group of the Linode instance.",
-		Computed:    true,
-	},
 	"tags": {
 		Type:        schema.TypeSet,
 		Description: "The tags assigned to this Instance.",

@@ -80,7 +80,7 @@ func (r *Resource) Create(
 		rdns := plan.RDNS.ValueString()
 
 		options := linodego.IPAddressUpdateOptions{
-			RDNS: &rdns,
+			RDNS: linodego.DoublePointer(rdns),
 		}
 
 		tflog.Debug(ctx, "client.UpdateIPAddress(...)", map[string]any{
@@ -202,7 +202,7 @@ func (r *Resource) Update(
 	if !plan.RDNS.Equal(state.RDNS) {
 		rdns := plan.RDNS.ValueStringPointer()
 		updateOptions := linodego.IPAddressUpdateOptions{
-			RDNS: rdns,
+			RDNS: linodego.Pointer(rdns),
 		}
 
 		client := r.Meta.Client
