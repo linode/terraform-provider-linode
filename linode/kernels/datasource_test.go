@@ -31,7 +31,6 @@ func TestAccDataSourceKernels_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.label"),
 					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.pvops"),
 					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.version"),
-					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.xen"),
 				),
 			},
 			{

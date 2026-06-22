@@ -158,7 +158,7 @@ func ReconcileLKENodePoolSpecs(
 
 		updateOpts := linodego.LKENodePoolUpdateOptions{
 			Count: newSpec.Count,
-			Tags:  &newSpecs[i].Tags,
+			Tags:  newSpecs[i].Tags,
 		}
 
 		if (newSpec.Label != nil && oldSpec.Label != nil && *newSpec.Label != *oldSpec.Label) ||
@@ -192,7 +192,7 @@ func ReconcileLKENodePoolSpecs(
 
 		if !helper.CompareSets(helper.TypedSliceToAny(newSpec.Taints), helper.TypedSliceToAny(oldSpec.Taints)) {
 			taints := expandNodePoolTaints(newSpec.Taints)
-			updateOpts.Taints = &taints
+			updateOpts.Taints = taints
 		}
 
 		if !reflect.DeepEqual(newSpec.Labels, oldSpec.Labels) && (len(newSpec.Labels) != 0 || len(oldSpec.Labels) != 0) {
@@ -695,10 +695,11 @@ func expandACLOptions(aclOptions map[string]any) (*linodego.LKEClusterControlPla
 		}
 	}
 
-	if (result.Enabled != nil && !*result.Enabled) &&
-		(result.Addresses != nil &&
-			((result.Addresses.IPv4 != nil && len(*result.Addresses.IPv4) > 0) ||
-				(result.Addresses.IPv6 != nil && len(*result.Addresses.IPv6) > 0))) {
+	if result.Enabled != nil &&
+		!*result.Enabled &&
+		result.Addresses != nil &&
+		(len(result.Addresses.IPv4) > 0 ||
+			len(result.Addresses.IPv6) > 0) {
 		return nil, diag.Errorf("addresses are not acceptable when ACL is disabled")
 	}
 
@@ -710,12 +711,12 @@ func expandACLAddressOptions(addressOptions map[string]any) *linodego.LKECluster
 
 	if value, ok := addressOptions["ipv4"]; ok {
 		ipv4 := helper.ExpandStringSet(value.(*schema.Set))
-		result.IPv4 = &ipv4
+		result.IPv4 = ipv4
 	}
 
 	if value, ok := addressOptions["ipv6"]; ok {
 		ipv6 := helper.ExpandStringSet(value.(*schema.Set))
-		result.IPv6 = &ipv6
+		result.IPv6 = ipv6
 	}
 
 	return &result

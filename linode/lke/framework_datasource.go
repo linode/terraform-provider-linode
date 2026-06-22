@@ -69,20 +69,6 @@ func (r *DataSource) Read(
 		return
 	}
 
-	var dashboard *linodego.LKEClusterDashboard
-
-	// Only standard LKE has a dashboard URL
-	if cluster.Tier == TierStandard {
-		dashboard, err = client.GetLKEClusterDashboard(ctx, clusterId)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to get dashboard URL for LKE cluster %d", clusterId),
-				err.Error(),
-			)
-			return
-		}
-	}
-
 	kubeconfig, err := client.GetLKEClusterKubeconfig(ctx, clusterId)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -118,7 +104,7 @@ func (r *DataSource) Read(
 		}
 	}
 
-	resp.Diagnostics.Append(data.parseLKEAttributes(ctx, cluster, pools, kubeconfig, endpoints, dashboard, acl)...)
+	resp.Diagnostics.Append(data.parseLKEAttributes(ctx, cluster, pools, kubeconfig, endpoints, acl)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
