@@ -975,7 +975,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 		tflog.Debug(ctx, "client.RebootInstance(...)")
 
-		instanceRebootOptions:= linodego.InstanceRebootOptions{
+		instanceRebootOptions := linodego.InstanceRebootOptions{
 			ConfigID: &bootConfig,
 		}
 

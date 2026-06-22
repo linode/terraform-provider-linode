@@ -187,17 +187,6 @@ func (b *BucketAccessModelEntry) FlattenBucketAccess(access *linodego.ObjectStor
 	b.Permissions = helper.KeepOrUpdateString(b.Permissions, access.Permissions, preserveKnown)
 }
 
-func (b *BucketAccessModelEntry) toLinodeObject() linodego.ObjectStorageKeyBucketAccess {
-	var result linodego.ObjectStorageKeyBucketAccess
-
-	result.BucketName = b.BucketName.ValueString()
-	result.Region = b.Region.ValueString()
-
-	result.Permissions = b.Permissions.ValueString()
-
-	return result
-}
-
 func (v BucketAccessModelEntry) toCreateOptions() linodego.ObjectStorageKeyBucketAccessCreateOptions {
 	return linodego.ObjectStorageKeyBucketAccessCreateOptions{
 		BucketName:  v.BucketName.ValueString(),

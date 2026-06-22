@@ -9,9 +9,9 @@ import (
 )
 
 type TemplateData struct {
-	Bucket  objectbucket.TemplateData
-	Key     objectkey.TemplateData
-	Region  string
+	Bucket objectbucket.TemplateData
+	Key    objectkey.TemplateData
+	Region string
 
 	Content string
 	Source  string

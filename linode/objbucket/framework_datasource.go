@@ -44,7 +44,7 @@ func (d *DataSource) Read(
 
 	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
 		"region": region,
-		"bucket":            bucketLabel,
+		"bucket": bucketLabel,
 	})
 
 	bucket, err := client.GetObjectStorageBucket(ctx, region, bucketLabel)

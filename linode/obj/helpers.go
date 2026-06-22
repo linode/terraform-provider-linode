@@ -83,7 +83,7 @@ func fwCreateTempKeys(
 	tflog.Debug(ctx, "Create temporary object storage access keys implicitly.")
 
 	bucketAccessCreateOptions := linodego.ObjectStorageKeyBucketAccessCreateOptions{
-		BucketName: bucketLabel,
+		BucketName:  bucketLabel,
 		Permissions: permissions,
 		Region:      region,
 	}
@@ -147,7 +147,7 @@ func createTempKeys(
 	tflog.Debug(ctx, "Create temporary object storage access keys implicitly.")
 
 	bucketAccessCreateOptions := linodego.ObjectStorageKeyBucketAccessCreateOptions{
-		BucketName: bucketLabel,
+		BucketName:  bucketLabel,
 		Permissions: permissions,
 		Region:      region,
 	}

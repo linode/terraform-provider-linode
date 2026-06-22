@@ -24,9 +24,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/objkey/tmpl"
 )
 
-var (
-	testRegion  string
-)
+var testRegion string
 
 func init() {
 	resource.AddTestSweepers("linode_object_storage_key", &resource.Sweeper{

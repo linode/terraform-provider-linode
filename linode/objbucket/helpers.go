@@ -13,7 +13,7 @@ import (
 
 func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"bucket":  d.Get("label"),
+		"bucket": d.Get("label"),
 	})
 }
 
