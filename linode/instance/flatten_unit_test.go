@@ -96,8 +96,8 @@ func TestFlattenInstanceBackups(t *testing.T) {
 			Available: true,
 			Enabled:   true,
 			Schedule: struct {
-				Day    string `json:"day,omitempty"`
-				Window string `json:"window,omitempty"`
+				Day    string `json:"day,omitzero"`
+				Window string `json:"window,omitzero"`
 			}{
 				Day:    "Saturday",
 				Window: "W22",
