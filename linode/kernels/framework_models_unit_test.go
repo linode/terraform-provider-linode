@@ -21,7 +21,6 @@ func TestParseKernels(t *testing.T) {
 			Architecture: "x86_64",
 			Deprecated:   false,
 			KVM:          true,
-			XEN:          false,
 			PVOPS:        false,
 			Built:        &time.Time{},
 		},

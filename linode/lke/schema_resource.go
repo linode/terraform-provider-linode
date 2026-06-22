@@ -61,11 +61,6 @@ var resourceSchema = map[string]*schema.Schema{
 		Sensitive:   true,
 		Description: "The Base64-encoded Kubeconfig for the cluster.",
 	},
-	"dashboard_url": {
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "The dashboard URL of the cluster.",
-	},
 	"status": {
 		Type:        schema.TypeString,
 		Computed:    true,

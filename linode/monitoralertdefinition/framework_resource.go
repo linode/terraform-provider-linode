@@ -125,7 +125,6 @@ func (r *Resource) Create(
 			linodego.AlertDefinitionStatusEnabled,
 			serviceType,
 			alertdefinition.ID,
-			int(DefaultAlertDefinitionTimeout.Seconds()),
 		)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -284,7 +283,6 @@ func (r *Resource) Update(
 				linodego.AlertDefinitionStatusEnabled,
 				alertDefinition.ServiceType,
 				alertDefinition.ID,
-				int(DefaultAlertDefinitionTimeout.Seconds()),
 			)
 			if err != nil {
 				resp.Diagnostics.AddError(

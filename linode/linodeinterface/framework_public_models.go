@@ -96,7 +96,8 @@ func (plan *PublicIPv4AttrModel) GetCreateOptions(ctx context.Context) (opts lin
 		for _, v := range addresses {
 			addressesOpts = append(addressesOpts, v.GetCreateOptions(ctx))
 		}
-		opts.Addresses = linodego.Pointer(addressesOpts)
+
+		opts.Addresses = addressesOpts
 	}
 
 	return opts
@@ -227,7 +228,7 @@ func (plan *PublicIPv6AttrModel) GetCreateOptions(ctx context.Context) (opts lin
 		for _, v := range ranges {
 			rangesOpts = append(rangesOpts, v.GetCreateOptions(ctx))
 		}
-		opts.Ranges = linodego.Pointer(rangesOpts)
+		opts.Ranges = rangesOpts
 	}
 
 	return opts
