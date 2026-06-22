@@ -47,7 +47,13 @@ func (plan *LinodeInterfaceModel) GetCreateOptions(ctx context.Context, diags *d
 	if !plan.DefaultRoute.IsUnknown() && !plan.DefaultRoute.IsNull() {
 		var planDefaultRoute DefaultRouteAttrModel
 		plan.DefaultRoute.As(ctx, &planDefaultRoute, basetypes.ObjectAsOptions{})
-		defaultRouteOpts, _ := planDefaultRoute.GetCreateOrUpdateOptions(ctx, nil)
+		defaultRoute, _ := planDefaultRoute.GetCreateOrUpdateOptions(ctx, nil)
+
+		defaultRouteOpts := linodego.InterfaceDefaultRouteCreateOptions{
+			IPv4: defaultRoute.IPv4,
+			IPv6: defaultRoute.IPv6,
+		}
+
 		opts.DefaultRoute = linodego.Pointer(defaultRouteOpts)
 	}
 
@@ -66,7 +72,14 @@ func (plan *LinodeInterfaceModel) GetCreateOptions(ctx context.Context, diags *d
 	} else if !plan.VLAN.IsUnknown() && !plan.VLAN.IsNull() {
 		var planVLANInterface VLANAttrModel
 		plan.VLAN.As(ctx, &planVLANInterface, basetypes.ObjectAsOptions{})
-		opts.VLAN = linodego.Pointer(planVLANInterface.GetCreateOptions(ctx))
+
+		VLANInterface := planVLANInterface.GetCreateOptions(ctx)
+		VLANInterfaceCreateOpts := linodego.VLANInterfaceCreateOptions{
+			VLANLabel:   VLANInterface.VLANLabel,
+			IPAMAddress: VLANInterface.IPAMAddress,
+		}
+
+		opts.VLAN = linodego.Pointer(VLANInterfaceCreateOpts)
 	} else if !plan.VPC.IsUnknown() && !plan.VPC.IsNull() {
 		var planVPCInterface VPCAttrModel
 		plan.VPC.As(ctx, &planVPCInterface, basetypes.ObjectAsOptions{})
@@ -96,7 +109,13 @@ func (plan *LinodeInterfaceModel) GetUpdateOptions(
 		}
 
 		if updatedDefaultRoute, ok := planDefaultRoute.GetCreateOrUpdateOptions(ctx, stateDefaultRoute); ok {
-			opts.DefaultRoute = linodego.Pointer(updatedDefaultRoute)
+
+			updatedDefaultRouteOpts := linodego.InterfaceDefaultRouteUpdateOptions{
+				IPv4: updatedDefaultRoute.IPv4,
+				IPv6: updatedDefaultRoute.IPv6,
+			}
+
+			opts.DefaultRoute = linodego.Pointer(updatedDefaultRouteOpts)
 		}
 	}
 

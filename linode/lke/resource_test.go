@@ -232,7 +232,6 @@ func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resourceClusterName, "id"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.id"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
-						resource.TestCheckResourceAttrSet(resourceClusterName, "dashboard_url"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.label", "test"),
 
 						// Ensure the lke_cluster_id field is populated on a sample

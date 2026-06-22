@@ -19,7 +19,6 @@ func TestParseKernel(t *testing.T) {
 		Architecture: "x86_64",
 		Deprecated:   false,
 		KVM:          true,
-		XEN:          false,
 		PVOPS:        false,
 		Built:        &time.Time{},
 	}
@@ -34,5 +33,4 @@ func TestParseKernel(t *testing.T) {
 	assert.Equal(t, types.StringValue("Latest 64 bit (4.15.7-x86_64-linode102)"), data.Label)
 	assert.Equal(t, types.BoolValue(false), data.PVOPS)
 	assert.Equal(t, types.StringValue("4.15.7"), data.Version)
-	assert.Equal(t, types.BoolValue(false), data.XEN)
 }
