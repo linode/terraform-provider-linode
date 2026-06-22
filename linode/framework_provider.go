@@ -80,7 +80,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/networktransferprices"
 	"github.com/linode/terraform-provider-linode/v3/linode/obj"
 	"github.com/linode/terraform-provider-linode/v3/linode/objbucket"
-	"github.com/linode/terraform-provider-linode/v3/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/v3/linode/objendpoints"
 	"github.com/linode/terraform-provider-linode/v3/linode/objkey"
 	"github.com/linode/terraform-provider-linode/v3/linode/objquota"
@@ -311,7 +310,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		sshkey.NewDataSource,
 		sshkeys.NewDataSource,
 		instancenetworking.NewDataSource,
-		objcluster.NewDataSource,
 		domainrecord.NewDataSource,
 		volume.NewDataSource,
 		domainzonefile.NewDataSource,

@@ -104,8 +104,8 @@ func TestSetNodePoolUpdateOptions(t *testing.T) {
 	assert.Equal(t, 3, updateOpts.Count)
 	assert.Equal(t, "test-pool", *updateOpts.Label)
 	assert.Equal(t, 12345, *updateOpts.FirewallID)
-	assert.Contains(t, *updateOpts.Tags, "production")
-	assert.Contains(t, *updateOpts.Tags, "web-server")
+	assert.Contains(t, updateOpts.Tags, "production")
+	assert.Contains(t, updateOpts.Tags, "web-server")
 
 	assert.True(t, updateOpts.Autoscaler.Enabled)
 	assert.Equal(t, 1, updateOpts.Autoscaler.Min)

@@ -20,78 +20,13 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/obj/tmpl"
 )
 
-var (
-	testCluster string
-	testRegion  string
-)
-
 func init() {
 	endpoint, err := acceptance.GetRandomObjectStorageEndpoint()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	testCluster, err = acceptance.GetEndpointCluster(*endpoint)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	testRegion = acceptance.GetEndpointRegion(*endpoint)
-}
-
-func TestAccResourceObject_basic_cluster(t *testing.T) {
-	t.Parallel()
-
-	validateObjectUpdates := func(resourceName, key, content string) resource.TestCheckFunc {
-		return resource.ComposeTestCheckFunc(
-			validateObject(resourceName, key, content),
-			resource.TestCheckResourceAttr(resourceName, "acl", "public-read"),
-			resource.TestCheckResourceAttr(resourceName, "content_type", "text/plain"),
-			resource.TestCheckResourceAttr(resourceName, "content_encoding", "utf8"),
-			resource.TestCheckResourceAttr(resourceName, "content_language", "en"),
-			resource.TestCheckResourceAttr(resourceName, "website_redirect", "test.com"),
-			resource.TestCheckResourceAttr(resourceName, "force_destroy", "true"),
-			resource.TestCheckResourceAttr(resourceName, "content_disposition", "attachment"),
-			resource.TestCheckResourceAttr(resourceName, "cache_control", "max-age=2592000"),
-			resource.TestCheckResourceAttr(resourceName, "metadata.foo", "bar"),
-			resource.TestCheckResourceAttr(resourceName, "metadata.bar", "foo"),
-		)
-	}
-
-	content := "testing123"
-	contentUpdated := "testing456"
-
-	contentSource := acceptance.CreateTempFile(t, "tf-test-obj-source", content)
-	contentSourceUpdated := acceptance.CreateTempFile(t, "tf-test-obj-source-updated", contentUpdated)
-
-	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
-		bucketName := acctest.RandomWithPrefix("tf-test")
-		keyName := acctest.RandomWithPrefix("tf_test")
-
-		resource.Test(t, resource.TestCase{
-			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-			CheckDestroy:             checkObjectDestroy,
-			Steps: []resource.TestStep{
-				{
-					Config: tmpl.BasicWithCluster(t, bucketName, testCluster, keyName, content, contentSource.Name()),
-					Check: resource.ComposeTestCheckFunc(
-						validateObject(getObjectResourceName("basic"), "test_basic", content),
-						validateObject(getObjectResourceName("base64"), "test_base64", content),
-						validateObject(getObjectResourceName("source"), "test_source", content),
-					),
-				},
-				{
-					Config: tmpl.Updates(t, bucketName, testRegion, keyName, contentUpdated, contentSourceUpdated.Name()),
-					Check: resource.ComposeTestCheckFunc(
-						validateObjectUpdates(getObjectResourceName("basic"), "test_basic", contentUpdated),
-						validateObjectUpdates(getObjectResourceName("base64"), "test_base64", contentUpdated),
-						validateObjectUpdates(getObjectResourceName("source"), "test_source", contentUpdated),
-					),
-				},
-			},
-		})
-	})
 }
 
 func TestAccResourceObject_basic(t *testing.T) {

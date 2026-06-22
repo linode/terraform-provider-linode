@@ -57,12 +57,12 @@ func readResource(
 	client := meta.(*helper.ProviderMeta).Client
 	config := meta.(*helper.ProviderMeta).Config
 
-	regionOrCluster, label, err := DecodeBucketID(ctx, d.Id(), d)
+	region, label, err := DecodeBucketID(ctx, d.Id(), d)
 	if err != nil {
 		return diag.Errorf("failed to parse Linode ObjectStorageBucket id %s: %s", d.Id(), err.Error())
 	}
 
-	bucket, err := client.GetObjectStorageBucket(ctx, regionOrCluster, label)
+	bucket, err := client.GetObjectStorageBucket(ctx, region, label)
 	if err != nil {
 		if linodego.IsNotFound(err) {
 			tflog.Warn(
@@ -79,7 +79,7 @@ func readResource(
 	}
 
 	tflog.Debug(ctx, "getting bucket access info")
-	access, err := client.GetObjectStorageBucketAccessV2(ctx, regionOrCluster, label)
+	access, err := client.GetObjectStorageBucketAccess(ctx, region, label)
 	if err != nil {
 		return diag.Errorf("failed to find the access config for the specified Linode ObjectStorageBucket: %s", err)
 	}
@@ -93,7 +93,7 @@ func readResource(
 			"lifecyclePresent":  lifecyclePresent,
 		})
 
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket.Label, regionOrCluster, "read_only", &bucket.EndpointType)
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket.Label, region, "read_only", &bucket.EndpointType)
 		if diags != nil {
 			return diags
 		}
@@ -118,15 +118,10 @@ func readResource(
 			return diag.Errorf("failed to find get object storage bucket versioning: %s", err)
 		}
 	}
-	if bucket.Region != "" {
-		d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
-	} else {
-		d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
-	}
+	d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
 
 	endpoint := getS3Endpoint(ctx, *bucket)
 
-	d.Set("cluster", bucket.Cluster)
 	d.Set("region", bucket.Region)
 	d.Set("label", bucket.Label)
 	d.Set("hostname", bucket.Hostname)
@@ -175,10 +170,6 @@ func createResource(
 		createOpts.Region = region.(string)
 	}
 
-	if cluster, ok := d.GetOk("cluster"); ok {
-		createOpts.Cluster = cluster.(string)
-	}
-
 	tflog.Debug(ctx, "client.CreateObjectStorageBucket(...)", map[string]any{"options": createOpts})
 	bucket, err := client.CreateObjectStorageBucket(ctx, createOpts)
 	if err != nil {
@@ -190,11 +181,7 @@ func createResource(
 	d.Set("endpoint", endpoint)
 	d.Set("s3_endpoint", endpoint)
 
-	if bucket.Region != "" {
-		d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
-	} else {
-		d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
-	}
+	d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
 
 	return updateResource(ctx, d, meta)
 }
@@ -236,7 +223,7 @@ func updateResource(
 		})
 
 		config := meta.(*helper.ProviderMeta).Config
-		regionOrCluster := helper.GetRegionOrCluster(ctx, d)
+		region := d.Get("region").(string)
 
 		bucketLabel := d.Get("label").(string)
 
@@ -246,7 +233,7 @@ func updateResource(
 			endpointType = linodego.Pointer(linodego.ObjectStorageEndpointType(et.(string)))
 		}
 
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucketLabel, regionOrCluster, "read_write", endpointType)
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucketLabel, region, "read_write", endpointType)
 		if diags != nil {
 			return diags
 		}
@@ -287,7 +274,7 @@ func deleteResource(
 
 	config := meta.(*helper.ProviderMeta).Config
 	client := meta.(*helper.ProviderMeta).Client
-	regionOrCluster, label, err := DecodeBucketID(ctx, d.Id(), d)
+	region, label, err := DecodeBucketID(ctx, d.Id(), d)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
 	}
@@ -299,7 +286,7 @@ func deleteResource(
 			endpointType = linodego.Pointer(linodego.ObjectStorageEndpointType(et.(string)))
 		}
 
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, label, regionOrCluster, "read_write", endpointType)
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, label, region, "read_write", endpointType)
 		if diags != nil {
 			return diags
 		}
@@ -321,7 +308,7 @@ func deleteResource(
 	}
 
 	tflog.Debug(ctx, "client.DeleteObjectStorageBucket(...)")
-	err = client.DeleteObjectStorageBucket(ctx, regionOrCluster, label)
+	err = client.DeleteObjectStorageBucket(ctx, region, label)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode ObjectStorageBucket %s: %s", d.Id(), err)
 	}
@@ -452,7 +439,7 @@ func updateBucketAccess(
 	ctx context.Context, d *schema.ResourceData, client linodego.Client,
 ) error {
 	tflog.Debug(ctx, "entering updateBucketAccess")
-	regionOrCluster := helper.GetRegionOrCluster(ctx, d)
+	region := d.Get("region").(string)
 	label := d.Get("label").(string)
 
 	updateOpts := linodego.ObjectStorageBucketUpdateAccessOptions{}
@@ -465,7 +452,7 @@ func updateBucketAccess(
 		updateOpts.CorsEnabled = &newCorsBool
 	}
 	tflog.Debug(ctx, "client.UpdateObjectStorageBucketAccess(...)", map[string]any{"options": updateOpts})
-	if err := client.UpdateObjectStorageBucketAccess(ctx, regionOrCluster, label, updateOpts); err != nil {
+	if err := client.UpdateObjectStorageBucketAccess(ctx, region, label, updateOpts); err != nil {
 		return fmt.Errorf("failed to update bucket access: %s", err)
 	}
 
@@ -476,7 +463,7 @@ func updateBucketCert(
 	ctx context.Context, d *schema.ResourceData, client linodego.Client,
 ) error {
 	tflog.Debug(ctx, "entering updateBucketCert")
-	regionOrCluster := helper.GetRegionOrCluster(ctx, d)
+	region := d.Get("region").(string)
 	label := d.Get("label").(string)
 	oldCert, newCert := d.GetChange("cert")
 	hasOldCert := len(oldCert.([]any)) != 0
@@ -484,7 +471,7 @@ func updateBucketCert(
 	if hasOldCert {
 		tflog.Debug(ctx, "client.DeleteObjectStorageBucketCert(...)")
 
-		if err := client.DeleteObjectStorageBucketCert(ctx, regionOrCluster, label); err != nil {
+		if err := client.DeleteObjectStorageBucketCert(ctx, region, label); err != nil {
 			return fmt.Errorf("failed to delete old bucket cert: %s", err)
 		}
 	}
@@ -495,7 +482,7 @@ func updateBucketCert(
 	}
 
 	uploadOptions := expandBucketCert(certSpec[0])
-	if _, err := client.UploadObjectStorageBucketCertV2(ctx, regionOrCluster, label, uploadOptions); err != nil {
+	if _, err := client.UploadObjectStorageBucketCert(ctx, region, label, uploadOptions); err != nil {
 		return fmt.Errorf("failed to upload new bucket cert: %s", err)
 	}
 	return nil
@@ -509,37 +496,37 @@ func expandBucketCert(v any) linodego.ObjectStorageBucketCertUploadOptions {
 	}
 }
 
-func DecodeBucketID(ctx context.Context, id string, d *schema.ResourceData) (regionOrCluster, label string, err error) {
+func DecodeBucketID(ctx context.Context, id string, d *schema.ResourceData) (region, label string, err error) {
 	tflog.Debug(ctx, "decoding bucket ID")
 	parts := strings.Split(id, ":")
 	if len(parts) == 2 && parts[0] != "" && parts[1] != "" {
-		regionOrCluster = parts[0]
+		region = parts[0]
 		label = parts[1]
-		return regionOrCluster, label, err
+		return region, label, err
 	}
-	tflog.Warn(ctx, "Corrupted bucket ID detected, trying to recover it from cluster and label attributes.")
+	tflog.Warn(ctx, "Corrupted bucket ID detected, trying to recover it from region and label attributes.")
 
-	recoveredCluster, clusterOk := d.GetOk("cluster")
+	recoveredRegion, regionOk := d.GetOk("region")
 	recoveredLabel, labelOk := d.GetOk("label")
 
-	if clusterOk {
-		regionOrCluster = recoveredCluster.(string)
+	if regionOk {
+		region = recoveredRegion.(string)
 	}
 	if labelOk {
 		label = recoveredLabel.(string)
 	}
 
-	if clusterOk && labelOk {
-		d.SetId(fmt.Sprintf("%s:%s", regionOrCluster, label))
+	if regionOk && labelOk {
+		d.SetId(fmt.Sprintf("%s:%s", region, label))
 	} else {
 		err = fmt.Errorf(
-			"Linode Object Storage Bucket ID must be of the form <ClusterOrRegion>:<Label>, "+
-				"but a corrupted ID %q, is in the state. Attempt to recover them from `cluster` "+
+			"Linode Object Storage Bucket ID must be of the form <Region>:<Label>, "+
+				"but a corrupted ID %q, is in the state. Attempt to recover them from `region` "+
 				"and `label` attributes was also failed.", id,
 		)
 	}
 
-	return regionOrCluster, label, err
+	return region, label, err
 }
 
 func flattenLifecycleRules(ctx context.Context, rules []s3types.LifecycleRule) []map[string]any {

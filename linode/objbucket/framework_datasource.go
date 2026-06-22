@@ -38,23 +38,16 @@ func (d *DataSource) Read(
 		return
 	}
 
-	cluster := data.Cluster.ValueString()
 	region := data.Region.ValueString()
 
-	var regionOrCluster string
-	if region != "" {
-		regionOrCluster = region
-	} else {
-		regionOrCluster = cluster
-	}
 	bucketLabel := data.Label.ValueString()
 
 	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
-		"region_or_cluster": regionOrCluster,
-		"bucket":            bucketLabel,
+		"region": region,
+		"bucket": bucketLabel,
 	})
 
-	bucket, err := client.GetObjectStorageBucket(ctx, regionOrCluster, bucketLabel)
+	bucket, err := client.GetObjectStorageBucket(ctx, region, bucketLabel)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to find the specified Linode ObjectStorageBucket: %s", err.Error(),

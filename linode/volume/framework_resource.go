@@ -383,7 +383,7 @@ func HandleResize(
 	tflog.Trace(ctx, "client.ResizeVolume(...)")
 
 	volumeResizeOptions := linodego.VolumeResizeOptions{
-		Size:    newSize,
+		Size: newSize,
 	}
 
 	if err := client.ResizeVolume(ctx, volumeID, volumeResizeOptions); err != nil {

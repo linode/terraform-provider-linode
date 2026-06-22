@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego/v2"
 	firewallresource "github.com/linode/terraform-provider-linode/v3/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -59,7 +60,10 @@ func (data *FirewallRuleModel) ParseRule(rule any) {
 		}
 
 	default:
-		panic(fmt.Sprintf("unsupported firewall rule type %T", rule))
+		tflog.Error(context.Background(),
+			fmt.Sprintf("unsupported firewall rule type %T", rule),
+		)
+		return
 	}
 }
 
