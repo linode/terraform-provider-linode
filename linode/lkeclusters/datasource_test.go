@@ -45,7 +45,7 @@ func init() {
 
 	k8sVersionLatest = k8sVersions[len(k8sVersions)-1]
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLKE}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLKE}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -22,7 +22,7 @@ func TestAccDataSourceVPCs_basic_smoke(t *testing.T) {
 
 	resourceName := "data.linode_vpcs.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityVPCs}, "core")
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		t.Error(fmt.Errorf("failed to get region with VPC capability: %w", err))
 	}
@@ -51,7 +51,7 @@ func TestAccDataSourceVPCs_dualStack(t *testing.T) {
 	resourceName := "data.linode_vpcs.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityVPCs,
 		linodego.CapabilityVPCDualStack,
 	}, "core")
@@ -112,7 +112,7 @@ func TestAccDataSourceVPCs_filterByLabel(t *testing.T) {
 
 	resourceName := "data.linode_vpcs.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityVPCs}, "core")
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}

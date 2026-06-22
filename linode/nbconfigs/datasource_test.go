@@ -20,7 +20,7 @@ func TestAccDataSourceNodeBalancerConfigs_basic(t *testing.T) {
 	resourceName := "data.linode_nodebalancer_configs.foo"
 
 	nbLabel := acctest.RandomWithPrefix("tf_test")
-	nbRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityNodeBalancers}, "core")
+	nbRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityNodeBalancers}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

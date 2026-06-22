@@ -22,7 +22,7 @@ func TestAccDataSourcePlacementGroups_basic(t *testing.T) {
 
 	baseLabel := acctest.RandomWithPrefix("tf-test")
 
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityPlacementGroup}, "core")
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityPlacementGroup}, "core")
 	if err != nil {
 		t.Error(fmt.Errorf("failed to get region with PG capability: %w", err))
 	}

@@ -161,7 +161,7 @@ func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 	t.Parallel()
 
-	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
+	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{"Kubernetes Enterprise", "VPCs"}, "core")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -186,7 +186,7 @@ func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 
 	firewall, err := client.CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
 		Label: "tftest-enterprise-upgrade-" + acctest.RandString(5),
-		Rules: linodego.FirewallRuleSet{
+		Rules: linodego.FirewallRulesCreateOptions{
 			InboundPolicy:  "ACCEPT",
 			OutboundPolicy: "ACCEPT",
 		},

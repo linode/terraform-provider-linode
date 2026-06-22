@@ -35,7 +35,7 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityDiskEncryption,
 	}, "core")
 	if err != nil {
@@ -1105,7 +1105,7 @@ func TestAccResourceInstance_updateMaintenancePolicy(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes, linodego.CapabilityMaintenancePolicy}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityMaintenancePolicy}, "core")
 	require.NoError(t, err)
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
@@ -2365,7 +2365,7 @@ func TestAccResourceInstance_userData(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityMetadata}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityMetadata}, "core")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2468,7 +2468,7 @@ func TestAccResourceInstance_firewallOnCreation(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityCloudFirewall}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityCloudFirewall}, "core")
 	rootPass := acctest.RandString(64)
 	if err != nil {
 		t.Fatal(err)
@@ -2646,7 +2646,7 @@ func TestAccResourceInstance_migration(t *testing.T) {
 
 	// Resolve a region to migrate to
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityLinodes}, "core",
+		[]linodego.RegionCapability{linodego.CapabilityLinodes}, "core",
 		func(v linodego.Region) bool {
 			return v.ID != testRegion
 		},
@@ -2703,7 +2703,7 @@ func TestAccResourceInstance_withPG(t *testing.T) {
 
 	// Resolve a region with support for PGs
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup}, "core",
+		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup}, "core",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -2750,7 +2750,7 @@ func TestAccResourceInstance_pgAssignment(t *testing.T) {
 
 	// Resolve a region with support for PGs
 	testRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup}, "core",
+		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup}, "core",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -2840,7 +2840,7 @@ func TestAccResourceInstance_diskEncryption(t *testing.T) {
 
 	// Resolve a region that supports disk encryption
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityLinodes, linodego.CapabilityDiskEncryption}, "core",
+		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityDiskEncryption}, "core",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -3062,7 +3062,7 @@ func TestAccResourceInstance_interfaceVPCIPv6(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityLinodes,
 		linodego.CapabilityVPCs,
 		linodego.CapabilityVPCDualStack,
@@ -3256,7 +3256,7 @@ func TestAccResourceInstance_configInterfaceVPCIPv6(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityLinodes,
 		linodego.CapabilityVPCs,
 	}, "core")

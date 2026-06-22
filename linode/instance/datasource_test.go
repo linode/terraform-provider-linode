@@ -21,7 +21,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 
 	// Resolve a region with support for Maintenance Policy
 	region, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityLinodes, linodego.CapabilityMaintenancePolicy},
+		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityMaintenancePolicy},
 		"core",
 	)
 	if err != nil {
@@ -105,7 +105,7 @@ func TestAccDataSourceInstances_withBlockStorageEncryption(t *testing.T) {
 
 	// Resolve a region with support for Block Storage Encryption
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityLinodes, linodego.CapabilityBlockStorageEncryption},
+		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityBlockStorageEncryption},
 		"core",
 	)
 	if err != nil {
@@ -142,7 +142,7 @@ func TestAccDataSourceInstances_withPG(t *testing.T) {
 
 	// Resolve a region with support for PGs
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup},
+		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup},
 		"core",
 	)
 	if err != nil {
@@ -283,7 +283,7 @@ func TestAccDataSourceInstance_interfaceVPCIPv6(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityLinodes,
 		linodego.CapabilityVPCs,
 		linodego.CapabilityVPCDualStack,

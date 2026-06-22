@@ -41,7 +41,7 @@ func init() {
 
 	testFirewall, err := client.CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
 		Label: acctest.RandomWithPrefix("tf_test"),
-		Rules: linodego.FirewallRuleSet{
+		Rules: linodego.FirewallRulesCreateOptions{
 			InboundPolicy:  "DROP",
 			OutboundPolicy: "ACCEPT",
 		},

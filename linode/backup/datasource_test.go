@@ -18,7 +18,7 @@ import (
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,6 +31,9 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	snapshotName := acctest.RandomWithPrefix("tf_test_cool")
+	snapshotCreateOptions := linodego.InstanceSnapshotCreateOptions{
+		Label: snapshotName,
+	}
 
 	resourceName := "data.linode_instance_backups.foobar"
 
@@ -52,7 +55,7 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 			{
 				PreConfig: func() {
 					client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
-					newSnapshot, err := client.CreateInstanceSnapshot(context.Background(), instance.ID, snapshotName)
+					newSnapshot, err := client.CreateInstanceSnapshot(context.Background(), instance.ID, snapshotCreateOptions)
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -72,7 +75,7 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 			{
 				PreConfig: func() {
 					client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
-					if _, err := client.WaitForSnapshotStatus(context.Background(), instance.ID, snapshot.ID, linodego.SnapshotSuccessful, 1800); err != nil {
+					if _, err := client.WaitForSnapshotStatus(context.Background(), instance.ID, snapshot.ID, linodego.SnapshotSuccessful); err != nil {
 						t.Fatal(err)
 					}
 				},

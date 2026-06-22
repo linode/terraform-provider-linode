@@ -32,7 +32,7 @@ func init() {
 
 	var err error
 
-	testRegion, err = acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityVPCs}, "core")
+	testRegion, err = acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
@@ -139,7 +139,7 @@ func TestAccResourceVPC_dualStack(t *testing.T) {
 	resName := "linode_vpc.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityVPCs,
 		linodego.CapabilityVPCDualStack,
 	}, "core")
