@@ -36,7 +36,7 @@ func init() {
 	})
 
 	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
-		linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityDiskEncryption,
+		linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityDiskEncryption, linodego.CapabilityBlockStorage,
 	}, "core")
 	if err != nil {
 		log.Fatal(err)
@@ -238,13 +238,13 @@ func TestAccResourceInstance_vpu(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.VPU(t, instanceName, acceptance.PublicKeyMaterial, "us-lax", rootPass),
+				Config: tmpl.VPU(t, instanceName, acceptance.PublicKeyMaterial, "in-maa", rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g1-accelerated-netint-vpu-t1u1-s"),
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
-					resource.TestCheckResourceAttr(resName, "region", "us-lax"),
+					resource.TestCheckResourceAttr(resName, "region", "in-maa"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
 					resource.TestCheckResourceAttrSet(resName, "host_uuid"),
 					resource.TestCheckResourceAttrSet(resName, "specs.0.accelerated_devices"),

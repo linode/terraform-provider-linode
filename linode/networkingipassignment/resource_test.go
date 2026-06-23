@@ -34,6 +34,7 @@ func TestAccResourceNetworkingIPsAssign(t *testing.T) {
 
 	resourceName := "linode_networking_ip_assignment.test"
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -41,7 +42,7 @@ func TestAccResourceNetworkingIPsAssign(t *testing.T) {
 		CheckDestroy:             checkNetworkingIPsAssignDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.NetworkingIPsAssign(t, instanceName, testRegion),
+				Config: tmpl.NetworkingIPsAssign(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "region"),
 					resource.TestCheckResourceAttrSet(resourceName, "assignments.#"),

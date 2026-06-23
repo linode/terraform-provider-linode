@@ -20,7 +20,6 @@ type RegionDetail struct {
 
 type BucketAccessModelEntry struct {
 	BucketName  types.String `tfsdk:"bucket_name"`
-	Cluster     types.String `tfsdk:"cluster"`
 	Permissions types.String `tfsdk:"permissions"`
 	Region      types.String `tfsdk:"region"`
 }

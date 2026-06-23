@@ -271,7 +271,7 @@ func TestAccResourceDatabaseMysqlV2_resize(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "allow_list"},
 			},
 		},
 	})
@@ -405,7 +405,7 @@ func TestAccResourceDatabaseMysqlV2_complex(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "allow_list"},
 			},
 		},
 	})
