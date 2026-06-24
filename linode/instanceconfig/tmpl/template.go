@@ -199,3 +199,14 @@ func DeviceNamedBlockExt(t testing.TB, label, instanceType, region string, rootP
 		},
 	)
 }
+
+func BootedDefault(t testing.TB, label, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"instance_config_booted_default", TemplateData{
+			Label:    label,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+}
