@@ -33,7 +33,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityDBAAS, linodego.CapabilityVPCs}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityDBAAS, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -664,7 +664,7 @@ func TestAccResourceDatabasePostgresqlV2_engineConfig(t *testing.T) {
 					tmpl.TemplateDataEngineConfig{
 						Label:    label,
 						Region:   testRegion,
-						EngineID: "postgresql/14",
+						EngineID: "postgresql/18",
 						Type:     "g6-nanode-1",
 
 						EngineConfigPGAutovacuumAnalyzeScaleFactor:         0.1,
@@ -776,7 +776,7 @@ func TestAccResourceDatabasePostgresqlV2_engineConfig(t *testing.T) {
 					tmpl.TemplateDataEngineConfig{
 						Label:    label,
 						Region:   testRegion,
-						EngineID: "postgresql/14",
+						EngineID: "postgresql/18",
 						Type:     "g6-nanode-1",
 
 						EngineConfigPGAutovacuumAnalyzeScaleFactor:         0.5,
@@ -889,7 +889,7 @@ func TestAccResourceDatabasePostgresqlV2_engineConfig(t *testing.T) {
 					tmpl.TemplateDataEngineConfig{
 						Label:    label,
 						Region:   testRegion,
-						EngineID: "postgresql/14",
+						EngineID: "postgresql/18",
 						Type:     "g6-nanode-1",
 
 						EngineConfigPGAutovacuumAnalyzeScaleFactor: 0.7,

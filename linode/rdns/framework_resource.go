@@ -228,7 +228,7 @@ func (r *Resource) Delete(
 	client := r.Meta.Client
 
 	updateOpts := linodego.IPAddressUpdateOptions{
-		RDNS: nil,
+		RDNS: linodego.Pointer((*string)(nil)),
 	}
 
 	tflog.Debug(ctx, "client.UpdateIPAddress(...)", map[string]any{

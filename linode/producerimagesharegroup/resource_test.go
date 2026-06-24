@@ -47,7 +47,7 @@ func TestAccResourceImageShareGroup_updates(t *testing.T) {
 
 	resourceName := "linode_producer_image_share_group.foobar"
 	label := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		t.Fatalf("failed to get test region: %s", err)
 	}

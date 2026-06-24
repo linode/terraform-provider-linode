@@ -180,7 +180,6 @@ func TestSmokeTests_objbucket(t *testing.T) {
 		name string
 		test func(*testing.T)
 	}{
-		{"TestAccResourceBucket_basic_legacy_smoke", TestAccResourceBucket_basic_legacy_smoke},
 		{"TestAccResourceBucket_basic_smoke", TestAccResourceBucket_basic_smoke},
 	}
 
@@ -637,7 +636,7 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 						client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 						createOpts := linodego.ObjectStorageKeyCreateOptions{
 							Label: fmt.Sprintf("temp_%s_%v", objectStorageBucketName, time.Now().Unix()),
-							BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{{
+							BucketAccess: []linodego.ObjectStorageKeyBucketAccessCreateOptions{{
 								BucketName:  objectStorageBucketName,
 								Region:      testRegion,
 								Permissions: "read_write",

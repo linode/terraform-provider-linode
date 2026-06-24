@@ -27,7 +27,7 @@ func init() {
 	})
 
 	var err error
-	testRegion, err = acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityPlacementGroup}, "core")
+	testRegion, err = acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityPlacementGroup}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}

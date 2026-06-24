@@ -19,7 +19,7 @@ const (
 func TestAccDataSourceLock_basic(t *testing.T) {
 	t.Parallel()
 
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		t.Fatal(err)
 	}

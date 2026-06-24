@@ -20,6 +20,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v3/linode/obj/tmpl"
 )
 
+var testRegion string
+
 func init() {
 	endpoint, err := acceptance.GetRandomObjectStorageEndpoint()
 	if err != nil {
@@ -150,7 +152,7 @@ func getObject(ctx context.Context, rs *terraform.ResourceState) (*s3.GetObjectO
 
 		createOpts := linodego.ObjectStorageKeyCreateOptions{
 			Label: fmt.Sprintf("temp_%s_%v", bucket, time.Now().Unix()),
-			BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{{
+			BucketAccess: []linodego.ObjectStorageKeyBucketAccessCreateOptions{{
 				BucketName:  bucket,
 				Region:      rs.Primary.Attributes["region"],
 				Permissions: "read_write",

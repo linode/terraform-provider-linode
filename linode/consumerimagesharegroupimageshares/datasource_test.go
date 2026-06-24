@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/consumerimagesharegroupimageshares/tmpl"
 )
@@ -50,7 +51,7 @@ func TestAccDataSourceImageShareGroupImageShares_basic(t *testing.T) {
 	fwLabel := acctest.RandomWithPrefix("tf_test")
 	instanceLabel := acctest.RandomWithPrefix("tf_test")
 
-	instanceRegion, err := acceptance.GetRandomRegionWithCaps([]string{}, "core")
+	instanceRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

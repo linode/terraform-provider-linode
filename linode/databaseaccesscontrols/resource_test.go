@@ -45,7 +45,7 @@ func init() {
 
 	postgresEngineVersion = v.ID
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityDBAAS}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityDBAAS}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

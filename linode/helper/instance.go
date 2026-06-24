@@ -423,8 +423,9 @@ func BootInstanceSync(
 
 	tflog.Debug(ctx, "client.BootInstance(...)")
 
-	bootInstanceOption := linodego.InstanceBootOptions{
-		ConfigID: &configID,
+	bootInstanceOption := linodego.InstanceBootOptions{}
+	if configID != 0 {
+		bootInstanceOption.ConfigID = &configID
 	}
 
 	if err := client.BootInstance(ctx, instanceID, bootInstanceOption); err != nil {

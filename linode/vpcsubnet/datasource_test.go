@@ -54,7 +54,7 @@ func TestAccDataSourceVPCSubnet_dualStack(t *testing.T) {
 	resourceName := "data.linode_vpc_subnet.foo"
 	subnetLabel := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityVPCs,
 		linodego.CapabilityVPCDualStack,
 	}, "core")

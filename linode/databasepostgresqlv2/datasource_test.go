@@ -94,7 +94,7 @@ func TestAccDataSource_engineConfig(t *testing.T) {
 				Config: tmpl.DataEngineConfig(t, tmpl.TemplateDataEngineConfig{
 					Label:    label,
 					Region:   testRegion,
-					EngineID: "postgresql/14",
+					EngineID: "postgresql/18",
 					Type:     "g6-nanode-1",
 
 					EngineConfigPGAutovacuumAnalyzeScaleFactor:         0.1,
