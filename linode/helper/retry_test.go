@@ -24,7 +24,7 @@ func TestInstanceDiskCreateBusyRetry(t *testing.T) {
 		{
 			name:          "Should retry on Linode busy error during disk creation",
 			statusCode:    400,
-			url:           "https://api.linode.com/v4/linode/instances/12345/disks",
+			url:           "/v4/linode/instances/12345/disks",
 			body:          `{"errors": [{"reason": "Linode busy."}]}`,
 			expectedRetry: true,
 			description:   "400 with 'Linode busy.' message on disk creation endpoint",
@@ -32,7 +32,7 @@ func TestInstanceDiskCreateBusyRetry(t *testing.T) {
 		{
 			name:          "Should not retry on different 400 error",
 			statusCode:    400,
-			url:           "https://api.linode.com/v4/linode/instances/12345/disks",
+			url:           "/v4/linode/instances/12345/disks",
 			body:          `{"errors": [{"reason": "Invalid disk size"}]}`,
 			expectedRetry: false,
 			description:   "400 with different error message",
@@ -40,7 +40,7 @@ func TestInstanceDiskCreateBusyRetry(t *testing.T) {
 		{
 			name:          "Should not retry on 500 error",
 			statusCode:    500,
-			url:           "https://api.linode.com/v4/linode/instances/12345/disks",
+			url:           "/v4/linode/instances/12345/disks",
 			body:          `{"errors": [{"reason": "Linode busy."}]}`,
 			expectedRetry: false,
 			description:   "Different status code, even with correct message",
@@ -48,7 +48,7 @@ func TestInstanceDiskCreateBusyRetry(t *testing.T) {
 		{
 			name:          "Should not retry on different endpoint",
 			statusCode:    400,
-			url:           "https://api.linode.com/v4/linode/instances/12345",
+			url:           "/v4/linode/instances/12345",
 			body:          `{"errors": [{"reason": "Linode busy."}]}`,
 			expectedRetry: false,
 			description:   "Correct status and message but wrong endpoint",
@@ -56,7 +56,7 @@ func TestInstanceDiskCreateBusyRetry(t *testing.T) {
 		{
 			name:          "Should not retry on disk get endpoint",
 			statusCode:    400,
-			url:           "https://api.linode.com/v4/linode/instances/12345/disks/67890",
+			url:           "/v4/linode/instances/12345/disks/67890",
 			body:          `{"errors": [{"reason": "Linode busy."}]}`,
 			expectedRetry: false,
 			description:   "Disk GET endpoint should not match",
@@ -64,7 +64,7 @@ func TestInstanceDiskCreateBusyRetry(t *testing.T) {
 		{
 			name:          "Should handle URL with query parameters",
 			statusCode:    400,
-			url:           "https://api.linode.com/v4/linode/instances/12345/disks?page=1",
+			url:           "/v4/linode/instances/12345/disks?page=1",
 			body:          `{"errors": [{"reason": "Linode busy."}]}`,
 			expectedRetry: true,
 			description:   "URL with query parameters should still match",
@@ -121,35 +121,35 @@ func TestInstanceDiskCreateBusyRetry_EOFErrors(t *testing.T) {
 	}{
 		{
 			name:          "Should retry on EOF error for disk creation",
-			url:           "https://api.linode.com/v4/linode/instances/12345/disks",
+			url:           "/v4/linode/instances/12345/disks",
 			err:           errors.New("unexpected EOF"),
 			expectedRetry: true,
 			description:   "EOF error on disk creation endpoint",
 		},
 		{
 			name:          "Should retry on EOF with error code",
-			url:           "https://api.linode.com/v4/linode/instances/12345/disks",
+			url:           "/v4/linode/instances/12345/disks",
 			err:           errors.New("[002] unexpected EOF"),
 			expectedRetry: true,
 			description:   "EOF error with [002] code on disk creation endpoint",
 		},
 		{
 			name:          "Should not retry EOF on different endpoint",
-			url:           "https://api.linode.com/v4/linode/instances/12345",
+			url:           "/v4/linode/instances/12345",
 			err:           errors.New("unexpected EOF"),
 			expectedRetry: false,
 			description:   "EOF error on wrong endpoint",
 		},
 		{
 			name:          "Should not retry EOF on disk get endpoint",
-			url:           "https://api.linode.com/v4/linode/instances/12345/disks/67890",
+			url:           "/v4/linode/instances/12345/disks/67890",
 			err:           errors.New("unexpected EOF"),
 			expectedRetry: false,
 			description:   "EOF error on disk GET endpoint",
 		},
 		{
 			name:          "Should not retry non-EOF errors",
-			url:           "https://api.linode.com/v4/linode/instances/12345/disks",
+			url:           "/v4/linode/instances/12345/disks",
 			err:           errors.New("connection refused"),
 			expectedRetry: false,
 			description:   "Different error type should not retry",
