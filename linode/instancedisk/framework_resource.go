@@ -90,7 +90,18 @@ func (r *Resource) Create(
 
 	resp.Diagnostics.Append(plan.AuthorizedKeys.ElementsAs(ctx, &createOpts.AuthorizedKeys, false)...)
 	resp.Diagnostics.Append(plan.AuthorizedUsers.ElementsAs(ctx, &createOpts.AuthorizedUsers, false)...)
-	resp.Diagnostics.Append(plan.StackScriptData.ElementsAs(ctx, &createOpts.StackscriptData, false)...)
+
+	var m map[string]string
+
+	resp.Diagnostics.Append(
+		plan.StackScriptData.ElementsAs(ctx, &m, false)...,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	createOpts.StackscriptData = mapOrNil(m)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -426,4 +437,11 @@ func populateLogAttributes(ctx context.Context, model ResourceModel) context.Con
 		"linode_id": model.LinodeID.ValueInt64(),
 		"disk_id":   model.ID.ValueString(),
 	})
+}
+
+func mapOrNil(m map[string]string) map[string]string {
+	if len(m) == 0 {
+		return nil
+	}
+	return m
 }

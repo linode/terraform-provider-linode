@@ -316,9 +316,16 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			if !ok {
 				return diag.Errorf("Error parsing stackscript_data: expected map[string]interface{}")
 			}
-			createOpts.StackScriptData = make(map[string]string, len(stackscriptData))
-			for name, value := range stackscriptData {
-				createOpts.StackScriptData[name] = value.(string)
+
+			if len(stackscriptData) == 0 {
+				// Prevent "{}" from being sent
+				createOpts.StackScriptData = nil
+			} else {
+				m := make(map[string]string, len(stackscriptData))
+				for name, value := range stackscriptData {
+					m[name] = value.(string)
+				}
+				createOpts.StackScriptData = m
 			}
 		}
 	} else {
