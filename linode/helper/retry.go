@@ -93,7 +93,9 @@ func InstanceDiskCreateBusyRetry() func(response *resty.Response, err error) boo
 			if response != nil && response.Request != nil {
 				requestURL, urlErr := url.ParseRequestURI(response.Request.URL)
 				if urlErr == nil && diskCreatePath.MatchString(requestURL.Path) {
-					log.Printf("[DEBUG] Retrying disk creation due to EOF error: %s", err.Error())
+					tflog.Debug(response.Request.Context(), "Retrying disk creation due to EOF error", map[string]any{
+						"error": err.Error(),
+					})
 					return true
 				}
 			}
@@ -111,7 +113,9 @@ func InstanceDiskCreateBusyRetry() func(response *resty.Response, err error) boo
 
 		requestURL, urlErr := url.ParseRequestURI(response.Request.URL)
 		if urlErr != nil {
-			log.Printf("[WARN] failed to parse request URL: %s", urlErr)
+			tflog.Warn(response.Request.Context(), "Failed to parse request URL", map[string]any{
+				"error": urlErr.Error(),
+			})
 			return false
 		}
 
