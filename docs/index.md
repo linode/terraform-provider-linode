@@ -159,7 +159,7 @@ If this affects you, run Terraform with [--parallelism=1](https://www.terraform.
 
 ## Debugging
 
-The [Linode APIv4 wrapper](https://github.com/linode/linodego/v2) used by this provider accepts a `LINODE_DEBUG` environment variable.
+The [Linode APIv4 wrapper](https://github.com/linode/linodego) used by this provider accepts a `LINODE_DEBUG` environment variable.
 If this variable is assigned to `1`, the request and response of all Linode API traffic will be reported through [Terraform debugging and logging facilities](https://www.terraform.io/docs/internals/debugging.html).
 
 Use of the `LINODE_DEBUG` variable in production settings is **strongly discouraged** with the `linode_account` datasource.  While Terraform does not directly store sensitive data from this datasource, the Linode Account API endpoint returns **sensitive data** such as the account `tax_id` (VAT) and the credit card `last_four` and `expiry`.  Be very cautious about storing this debug output.
