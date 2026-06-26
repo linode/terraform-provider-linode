@@ -645,9 +645,13 @@ func createInstanceDisk(
 			if !ok {
 				return nil, fmt.Errorf("Error parsing stackscript_data: expected map[string]interface{}")
 			}
-			diskOpts.StackscriptData = make(map[string]string, len(stackscriptData))
-			for name, value := range stackscriptData {
-				diskOpts.StackscriptData[name] = value.(string)
+
+			if len(stackscriptData) > 0 {
+				m := make(map[string]string, len(stackscriptData))
+				for name, value := range stackscriptData {
+					m[name] = value.(string)
+				}
+				diskOpts.StackscriptData = m
 			}
 		}
 	}
