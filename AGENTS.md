@@ -175,7 +175,7 @@ Use `helper.StringSet` and `helper.ExistsInSet` for set operations, then extract
 import (
     "maps"
     "slices"
-    "github.com/linode/terraform-provider-linode/v3/linode/helper"
+    "github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 // Create a set

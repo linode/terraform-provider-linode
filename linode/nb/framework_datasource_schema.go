@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v3/linode/firewalls"
+	"github.com/linode/terraform-provider-linode/v4/linode/firewalls"
 )
 
 var TransferObjectType = types.ObjectType{
