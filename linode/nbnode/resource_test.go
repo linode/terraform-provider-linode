@@ -17,8 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego/v2"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/nbnode/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/nbnode/tmpl"
 )
 
 var testRegion string

@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego/v2"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/sshkey/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/sshkey/tmpl"
 )
 
 func init() {

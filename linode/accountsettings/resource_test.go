@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego/v2"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/accountsettings/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/accountsettings/tmpl"
 )
 
 func TestAccResourceAccountSettings_basic(t *testing.T) {

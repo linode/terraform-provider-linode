@@ -13,8 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego/v2"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/vpcips/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/vpcips/tmpl"
 )
 
 func TestAccDataSourceVPCIPs_basic(t *testing.T) {

@@ -2,7 +2,7 @@ package instance
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 var instanceDataSourceSchema = map[string]*schema.Schema{

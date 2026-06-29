@@ -3,9 +3,9 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	objectbucket "github.com/linode/terraform-provider-linode/v3/linode/objbucket/tmpl"
-	objectkey "github.com/linode/terraform-provider-linode/v3/linode/objkey/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	objectbucket "github.com/linode/terraform-provider-linode/v4/linode/objbucket/tmpl"
+	objectkey "github.com/linode/terraform-provider-linode/v4/linode/objkey/tmpl"
 )
 
 type TemplateData struct {

@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlv2"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/unit"
+	"github.com/linode/terraform-provider-linode/v4/linode/databasemysqlv2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/databaseshared"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/unit"
 	"github.com/stretchr/testify/require"
 )
 

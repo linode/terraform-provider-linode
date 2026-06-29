@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/linode/linodego/v2"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/stretchr/testify/assert"
 )
 
