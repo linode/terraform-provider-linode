@@ -4,17 +4,16 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/url"
+	"net/http"
 	"regexp"
 	"time"
 
-	"github.com/go-resty/resty/v2"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 // Workaround for intermittent 5xx errors when retrieving a database from the API
-func Database502Retry() func(response *resty.Response, err error) bool {
+func Database502Retry() func(response *http.Response, err error) bool {
 	databaseGetRegex, err := regexp.Compile("[A-Za-z0-9]+/databases/[a-z]+/instances/[0-9]+")
 	if err != nil {
 		log.Fatal(err)
@@ -22,7 +21,7 @@ func Database502Retry() func(response *resty.Response, err error) bool {
 	return GenericRetryCondition(500, databaseGetRegex)
 }
 
-func LinodeInstance500Retry() func(response *resty.Response, err error) bool {
+func LinodeInstance500Retry() func(response *http.Response, err error) bool {
 	linodeGetRegex, err := regexp.Compile("linode/instances/[0-9]+/ips+")
 	if err != nil {
 		log.Fatal(err)
@@ -31,7 +30,7 @@ func LinodeInstance500Retry() func(response *resty.Response, err error) bool {
 }
 
 // ImageUpload500Retry for [500] error when uploading an image
-func ImageUpload500Retry() func(response *resty.Response, err error) bool {
+func ImageUpload500Retry() func(response *http.Response, err error) bool {
 	ImageUpload, err := regexp.Compile("images/upload")
 	if err != nil {
 		log.Fatal(err)
@@ -40,7 +39,7 @@ func ImageUpload500Retry() func(response *resty.Response, err error) bool {
 }
 
 // OBJKeyCreate500Retry for [500] error when creating an Object Storage Key
-func OBJKeyCreate500Retry() func(response *resty.Response, err error) bool {
+func OBJKeyCreate500Retry() func(response *http.Response, err error) bool {
 	OBJKeyCreate, err := regexp.Compile("object-storage/keys")
 	if err != nil {
 		log.Fatal(err)
@@ -49,7 +48,7 @@ func OBJKeyCreate500Retry() func(response *resty.Response, err error) bool {
 }
 
 // OBJKeyDelete500Retry for [500] error when deleting an Object Storage Key
-func OBJKeyDelete500Retry() func(response *resty.Response, err error) bool {
+func OBJKeyDelete500Retry() func(response *http.Response, err error) bool {
 	OBJKeyDelete, err := regexp.Compile("object-storage/keys/[0-9]+")
 	if err != nil {
 		log.Fatal(err)
@@ -58,7 +57,7 @@ func OBJKeyDelete500Retry() func(response *resty.Response, err error) bool {
 }
 
 // OBJBucketCreate500Retry for [500] error when creating an Object Storage Bucket
-func OBJBucketCreate500Retry() func(response *resty.Response, err error) bool {
+func OBJBucketCreate500Retry() func(response *http.Response, err error) bool {
 	OBJBucketCreate, err := regexp.Compile("object-storage/buckets")
 	if err != nil {
 		log.Fatal(err)
@@ -67,7 +66,7 @@ func OBJBucketCreate500Retry() func(response *resty.Response, err error) bool {
 }
 
 // OBJBucketDelete500Retry for [500] error when deleting an Object Storage Bucket
-func OBJBucketDelete500Retry() func(response *resty.Response, err error) bool {
+func OBJBucketDelete500Retry() func(response *http.Response, err error) bool {
 	OBJBucketDelete, err := regexp.Compile("object-storage/buckets/[0-9]+")
 	if err != nil {
 		log.Fatal(err)
@@ -75,20 +74,16 @@ func OBJBucketDelete500Retry() func(response *resty.Response, err error) bool {
 	return GenericRetryCondition(500, OBJBucketDelete)
 }
 
-func GenericRetryCondition(statusCode int, pathPattern *regexp.Regexp) func(response *resty.Response, err error) bool {
-	return func(response *resty.Response, _ error) bool {
-		if response.StatusCode() != statusCode || response.Request == nil {
+func GenericRetryCondition(statusCode int, pathPattern *regexp.Regexp) func(response *http.Response, err error) bool {
+	return func(response *http.Response, _ error) bool {
+		if response == nil ||
+			response.Request == nil ||
+			response.Request.URL == nil ||
+			response.StatusCode != statusCode {
 			return false
 		}
 
-		requestURL, err := url.ParseRequestURI(response.Request.URL)
-		if err != nil {
-			log.Printf("[WARN] failed to parse request URL: %s", err)
-			return false
-		}
-
-		// Check whether the string matches
-		return pathPattern.MatchString(requestURL.Path)
+		return pathPattern.MatchString(response.Request.URL.Path)
 	}
 }
 

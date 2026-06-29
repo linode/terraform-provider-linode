@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
@@ -20,7 +20,6 @@ type RegionDetail struct {
 
 type BucketAccessModelEntry struct {
 	BucketName  types.String `tfsdk:"bucket_name"`
-	Cluster     types.String `tfsdk:"cluster"`
 	Permissions types.String `tfsdk:"permissions"`
 	Region      types.String `tfsdk:"region"`
 }
@@ -60,15 +59,15 @@ func (plan ResourceModel) GetCreateOptions(ctx context.Context) (opts linodego.O
 
 	if plan.BucketAccess != nil {
 		accessSlice := make(
-			[]linodego.ObjectStorageKeyBucketAccess,
+			[]linodego.ObjectStorageKeyBucketAccessCreateOptions,
 			len(plan.BucketAccess),
 		)
 
 		for i, v := range plan.BucketAccess {
-			accessSlice[i] = v.toLinodeObject()
+			accessSlice[i] = v.toCreateOptions()
 		}
 
-		opts.BucketAccess = &accessSlice
+		opts.BucketAccess = accessSlice
 	}
 
 	plan.Regions.ElementsAs(ctx, &opts.Regions, false)
@@ -183,19 +182,14 @@ func (rm *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 
 func (b *BucketAccessModelEntry) FlattenBucketAccess(access *linodego.ObjectStorageKeyBucketAccess, preserveKnown bool) {
 	b.BucketName = helper.KeepOrUpdateString(b.BucketName, access.BucketName, preserveKnown)
-	b.Cluster = helper.KeepOrUpdateString(b.Cluster, access.Cluster, preserveKnown)
 	b.Region = helper.KeepOrUpdateString(b.Region, access.Region, preserveKnown)
 	b.Permissions = helper.KeepOrUpdateString(b.Permissions, access.Permissions, preserveKnown)
 }
 
-func (b *BucketAccessModelEntry) toLinodeObject() linodego.ObjectStorageKeyBucketAccess {
-	var result linodego.ObjectStorageKeyBucketAccess
-
-	result.BucketName = b.BucketName.ValueString()
-	result.Cluster = b.Cluster.ValueString()
-	result.Region = b.Region.ValueString()
-
-	result.Permissions = b.Permissions.ValueString()
-
-	return result
+func (v BucketAccessModelEntry) toCreateOptions() linodego.ObjectStorageKeyBucketAccessCreateOptions {
+	return linodego.ObjectStorageKeyBucketAccessCreateOptions{
+		BucketName:  v.BucketName.ValueString(),
+		Permissions: v.Permissions.ValueString(),
+		Region:      v.Region.ValueString(),
+	}
 }

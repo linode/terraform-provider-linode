@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
@@ -297,7 +297,12 @@ func (fp *FrameworkProvider) InitLinodeClient(
 		}
 	}
 
-	client := linodego.NewClient(oauth2Client)
+	client, err := linodego.NewClient(oauth2Client)
+	if err != nil {
+		diags.AddError("Failed to create Client", err.Error())
+		return nil
+	}
+
 	// Load the config file if it exists
 	if _, err := os.Stat(configPath); err == nil {
 		tflog.Info(ctx, "Using Linode profile", map[string]any{

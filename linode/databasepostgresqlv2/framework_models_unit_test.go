@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlv2"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/unit"

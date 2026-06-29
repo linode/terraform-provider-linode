@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 var (

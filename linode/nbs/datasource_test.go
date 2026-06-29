@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbs/tmpl"
 )
@@ -19,7 +19,7 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 	resourceName := "data.linode_nodebalancers.nbs"
 
 	nbLabel := acctest.RandomWithPrefix("tf_test")
-	nbRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityNodeBalancers}, "core")
+	nbRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityNodeBalancers}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

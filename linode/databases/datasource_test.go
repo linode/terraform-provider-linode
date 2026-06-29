@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/databases/tmpl"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
@@ -33,7 +33,7 @@ func init() {
 
 	engineVersion = v.ID
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityDBAAS}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityDBAAS}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

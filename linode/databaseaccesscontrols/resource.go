@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
@@ -145,14 +145,14 @@ func updateDBAllowListByEngine(
 	switch engine {
 	case "mysql":
 		if _, err := client.UpdateMySQLDatabase(ctx, id, linodego.MySQLUpdateOptions{
-			AllowList: &allowListSlice,
+			AllowList: allowListSlice,
 		}); err != nil {
 			return err
 		}
 
 	case "postgresql":
 		if _, err := client.UpdatePostgresDatabase(ctx, id, linodego.PostgresUpdateOptions{
-			AllowList: &allowListSlice,
+			AllowList: allowListSlice,
 		}); err != nil {
 			return err
 		}
@@ -161,12 +161,7 @@ func updateDBAllowListByEngine(
 		return fmt.Errorf("invalid database engine: %s", engine)
 	}
 
-	timeoutSeconds, err := helper.SafeFloat64ToInt(d.Timeout(schema.TimeoutUpdate).Seconds())
-	if err != nil {
-		return err
-	}
-
-	if _, err := updatePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
+	if _, err := updatePoller.WaitForFinished(ctx); err != nil {
 		return fmt.Errorf("failed to wait for update event completion: %w", err)
 	}
 

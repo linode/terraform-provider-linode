@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewallsettings/tmpl"
 )
@@ -41,7 +41,7 @@ func init() {
 
 	testFirewall, err := client.CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
 		Label: acctest.RandomWithPrefix("tf_test"),
-		Rules: linodego.FirewallRuleSet{
+		Rules: linodego.FirewallRulesCreateOptions{
 			InboundPolicy:  "DROP",
 			OutboundPolicy: "ACCEPT",
 		},

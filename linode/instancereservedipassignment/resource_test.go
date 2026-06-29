@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/instancereservedipassignment/tmpl"
 )
@@ -18,7 +18,7 @@ const testInstanceIPResName = "linode_reserved_ip_assignment.test"
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,13 +30,14 @@ func TestAccInstanceIP_addReservedIP(t *testing.T) {
 
 	var instance linodego.Instance
 	name := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.AddReservedIP(t, name, testRegion),
+				Config: tmpl.AddReservedIP(t, name, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),

@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
@@ -104,7 +104,11 @@ func (r *Resource) CreateVolumeFromSource(
 
 	tflog.Debug(ctx, "client.CloneVolume(...)")
 
-	clonedVolume, err := client.CloneVolume(ctx, sourceVolumeID, data.Label.ValueString())
+	volumeCloneOptions := linodego.VolumeCloneOptions{
+		Label: data.Label.ValueString(),
+	}
+
+	clonedVolume, err := client.CloneVolume(ctx, sourceVolumeID, volumeCloneOptions)
 	if err != nil {
 		diags.AddError(
 			fmt.Sprintf("Failed to Clone Volume %d", sourceVolumeID),
@@ -118,7 +122,7 @@ func (r *Resource) CreateVolumeFromSource(
 	tflog.Trace(ctx, "client.WaitForVolumeStatus(...)")
 
 	_, err = client.WaitForVolumeStatus(
-		ctx, clonedVolume.ID, linodego.VolumeActive, timeoutSeconds,
+		ctx, clonedVolume.ID, linodego.VolumeActive,
 	)
 	if err != nil {
 		diags.AddError(
@@ -256,7 +260,7 @@ func (r *Resource) CreateVolume(
 		tflog.Trace(ctx, "client.WaitForVolumeStatus(...)")
 
 		volume, err = client.WaitForVolumeStatus(
-			ctx, volume.ID, linodego.VolumeActive, timeoutSeconds,
+			ctx, volume.ID, linodego.VolumeActive,
 		)
 		if err != nil {
 			diags.AddError(
@@ -377,7 +381,12 @@ func HandleResize(
 	})
 
 	tflog.Trace(ctx, "client.ResizeVolume(...)")
-	if err := client.ResizeVolume(ctx, volumeID, newSize); err != nil {
+
+	volumeResizeOptions := linodego.VolumeResizeOptions{
+		Size: newSize,
+	}
+
+	if err := client.ResizeVolume(ctx, volumeID, volumeResizeOptions); err != nil {
 		diags.AddError(
 			fmt.Sprintf("Failed to Resize Volume %d", volumeID),
 			err.Error(),
@@ -386,7 +395,7 @@ func HandleResize(
 	}
 
 	tflog.Trace(ctx, "client.WaitForVolumeStatus(...)")
-	volume, err := client.WaitForVolumeStatus(ctx, volumeID, linodego.VolumeActive, timeoutSeconds)
+	volume, err := client.WaitForVolumeStatus(ctx, volumeID, linodego.VolumeActive)
 	if err != nil {
 		diags.AddError(
 			fmt.Sprintf("Failed to Wait for Volume %d Ready from Resizing", volumeID),
@@ -534,7 +543,7 @@ func (r *Resource) Update(
 
 			tflog.Trace(ctx, "client.WaitForVolumeLinodeID(...)")
 
-			volume, err := client.WaitForVolumeLinodeID(ctx, id, &linodeID, timeoutSeconds)
+			volume, err := client.WaitForVolumeLinodeID(ctx, id, &linodeID)
 			if err != nil {
 				resp.Diagnostics.AddError(
 					fmt.Sprintf("Failed to Wait for Volume %d Attached to Linode %d", id, linodeID),
@@ -582,7 +591,7 @@ func DetachVolumeAndWait(
 
 	tflog.Trace(ctx, "client.WaitForVolumeLinodeID(...)")
 
-	volume, err := client.WaitForVolumeLinodeID(ctx, id, nil, timeoutSeconds)
+	volume, err := client.WaitForVolumeLinodeID(ctx, id, nil)
 	if err != nil {
 		diags.AddError(
 			fmt.Sprintf("Failed to Wait for Volume %d Detached", id),

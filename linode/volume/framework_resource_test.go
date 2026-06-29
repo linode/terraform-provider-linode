@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/volume/tmpl"
 )
@@ -25,7 +25,7 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityBlockStorage}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityBlockStorage}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -390,7 +390,7 @@ func TestAccResourceVolume_encryptionExplicitEnabled(t *testing.T) {
 	volumeName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_volume.foobar"
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -419,7 +419,7 @@ func TestAccResourceVolume_encryptionExplicitDisabled(t *testing.T) {
 	volumeName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_volume.foobar"
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -448,7 +448,7 @@ func TestAccResourceVolume_encryptionChangeForcesReplace(t *testing.T) {
 	volumeName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_volume.foobar"
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		t.Fatal(err)
 	}

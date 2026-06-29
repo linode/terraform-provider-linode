@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
@@ -86,13 +86,13 @@ func flattenIPv6(network *linodego.InstanceIPv6Response, diags *diag.Diagnostics
 
 	global := helper.GenericSliceToList(network.Global, globalObjectType, flattenIPV6Range, diags)
 
-	link_local, newDiags := flattenIP(network.LinkLocal)
+	link_local, newDiags := flattenIP(*network.LinkLocal)
 	if newDiags.HasError() {
 		diags.Append(newDiags...)
 		return nil
 	}
 
-	slaac, newDiags := flattenIP(network.SLAAC)
+	slaac, newDiags := flattenIP(*network.SLAAC)
 	if newDiags.HasError() {
 		diags.Append(newDiags...)
 		return nil
@@ -141,7 +141,7 @@ func FlattenIPVPCNAT1To1(data *linodego.InstanceIPNAT1To1) (basetypes.ObjectValu
 	return obj, nil
 }
 
-func flattenVPCIP(vpc *linodego.VPCIP) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenVPCIP(vpc linodego.VPCIP) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := make(map[string]attr.Value)
 	var diags diag.Diagnostics
 
@@ -180,7 +180,7 @@ func flattenVPCIP(vpc *linodego.VPCIP) (*basetypes.ObjectValue, diag.Diagnostics
 	return &obj, nil
 }
 
-func flattenIP(network *linodego.InstanceIP) (
+func flattenIP(network linodego.InstanceIP) (
 	*basetypes.ObjectValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
@@ -219,7 +219,7 @@ func flattenIP(network *linodego.InstanceIP) (
 func flattenVPCIPByValue(vpc linodego.VPCIP) (
 	*basetypes.ObjectValue, diag.Diagnostics,
 ) {
-	return flattenVPCIP(&vpc)
+	return flattenVPCIP(vpc)
 }
 
 func flattenVPCIPIPv6Address(addr linodego.VPCIPIPv6Address) (

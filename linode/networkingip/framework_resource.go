@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
@@ -177,7 +177,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 
 	// Updates to the reserved field need to happen before any reassignments occur
 	if !plan.Reserved.Equal(state.Reserved) {
-		updateOpts := linodego.IPAddressUpdateOptionsV2{
+		updateOpts := linodego.IPAddressUpdateOptions{
 			Reserved: plan.Reserved.ValueBoolPointer(),
 		}
 
@@ -186,7 +186,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			"options": updateOpts,
 		})
 
-		if _, err := client.UpdateIPAddressV2(ctx, state.Address.ValueString(), updateOpts); err != nil {
+		if _, err := client.UpdateIPAddress(ctx, state.Address.ValueString(), updateOpts); err != nil {
 			resp.Diagnostics.AddError(
 				"Failed to Update IP Address",
 				fmt.Sprintf("Could not update reserved status of IP address: %s", err),

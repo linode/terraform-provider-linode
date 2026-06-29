@@ -1,9 +1,6 @@
 package obj
 
 import (
-	"context"
-	"strings"
-
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -16,36 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
-
-const (
-	REGION_CLUSTER_REQUIRE_REPLACEMENT_FUNC_DESCRIPTION = "Require replacement if region or " +
-		"cluster has been changed and the change is not a migration from a cluster to " +
-		"an equivalent region or from a region to an equivalent cluster"
-)
-
-func requireReplacementIfClusterOrRegionSemanticallyChanged(
-	ctx context.Context,
-	sr planmodifier.StringRequest,
-	rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse,
-) {
-	var regionPlan, clusterPlan, regionState, clusterState types.String
-	sr.Plan.GetAttribute(ctx, path.Root("cluster"), &clusterPlan)
-	sr.Plan.GetAttribute(ctx, path.Root("region"), &regionPlan)
-	sr.State.GetAttribute(ctx, path.Root("cluster"), &clusterState)
-	sr.State.GetAttribute(ctx, path.Root("region"), &regionState)
-
-	if !regionState.IsNull() && regionPlan.IsNull() && !clusterPlan.IsNull() && strings.HasPrefix(clusterPlan.ValueString(), regionState.ValueString()) {
-		// the region changed to an equivalent cluster
-		return
-	}
-
-	if !clusterState.IsNull() && clusterPlan.IsNull() && !regionPlan.IsNull() && strings.HasPrefix(clusterState.ValueString(), regionPlan.ValueString()) {
-		// the cluster changed to an equivalent region
-		return
-	}
-
-	rrifr.RequiresReplace = true
-}
 
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
@@ -63,35 +30,9 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.RequiresReplace(),
 			},
 		},
-		"cluster": schema.StringAttribute{
-			Description: "The target cluster that the bucket is in.",
-			DeprecationMessage: "The cluster attribute has been deprecated, please consider switching to the region attribute. " +
-				"For example, a cluster value of `us-mia-1` can be translated to a region value of `us-mia`.",
-			Optional: true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplaceIf(
-					requireReplacementIfClusterOrRegionSemanticallyChanged,
-					REGION_CLUSTER_REQUIRE_REPLACEMENT_FUNC_DESCRIPTION,
-					REGION_CLUSTER_REQUIRE_REPLACEMENT_FUNC_DESCRIPTION,
-				),
-			},
-			Validators: []validator.String{
-				stringvalidator.ExactlyOneOf(path.MatchRoot("region")),
-			},
-		},
 		"region": schema.StringAttribute{
 			Description: "The target region that the bucket is in.",
-			Optional:    true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplaceIf(
-					requireReplacementIfClusterOrRegionSemanticallyChanged,
-					REGION_CLUSTER_REQUIRE_REPLACEMENT_FUNC_DESCRIPTION,
-					REGION_CLUSTER_REQUIRE_REPLACEMENT_FUNC_DESCRIPTION,
-				),
-			},
-			Validators: []validator.String{
-				stringvalidator.ExactlyOneOf(path.MatchRoot("cluster")),
-			},
+			Required:    true,
 		},
 		"key": schema.StringAttribute{
 			Description: "The name of the uploaded object.",

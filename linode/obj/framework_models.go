@@ -12,13 +12,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 type BaseModel struct {
 	Bucket             types.String `tfsdk:"bucket"`
-	Cluster            types.String `tfsdk:"cluster"`
 	Region             types.String `tfsdk:"region"`
 	Key                types.String `tfsdk:"key"`
 	SecretKey          types.String `tfsdk:"secret_key"`
@@ -100,12 +99,13 @@ func (data ResourceModel) GetObjectStorageKeys(
 	}
 
 	if config.ObjUseTempKeys.ValueBool() {
-		clusterOrRegion := data.GetRegionOrCluster(ctx, diags)
 		if diags.HasError() {
 			return nil, nil
 		}
 
-		objKey := fwCreateTempKeys(ctx, client, data.Bucket.ValueString(), clusterOrRegion, permissions, nil, diags)
+		region := data.Region.ValueString()
+
+		objKey := fwCreateTempKeys(ctx, client, data.Bucket.ValueString(), region, permissions, nil, diags)
 		if diags.HasError() {
 			return nil, nil
 		}
@@ -134,12 +134,12 @@ func (plan *ResourceModel) ComputeEndpointIfUnknown(ctx context.Context, client 
 	}
 
 	bucketName := plan.Bucket.ValueString()
-	regionOrCluster := plan.GetRegionOrCluster(ctx, diags)
+	region := plan.Region.ValueString()
 	if diags.HasError() {
 		return
 	}
 
-	bucket, err := client.GetObjectStorageBucket(ctx, regionOrCluster, bucketName)
+	bucket, err := client.GetObjectStorageBucket(ctx, region, bucketName)
 	if err != nil {
 		diags.AddError(
 			"Failed to Find the Specified Linode ObjectStorageBucket",
@@ -159,19 +159,6 @@ func (data *ResourceModel) GenerateObjectStorageObjectID(apply bool, preserveKno
 	}
 
 	return id
-}
-
-func (data ResourceModel) GetRegionOrCluster(ctx context.Context, diags *diag.Diagnostics) string {
-	if !data.Region.IsNull() && !data.Region.IsUnknown() {
-		return data.Region.ValueString()
-	} else {
-		diags.AddWarning(
-			"Cluster is Deprecated",
-			"Cluster is deprecated for Linode Object Storage services, please consider switch to using region.",
-		)
-	}
-
-	return data.Cluster.ValueString()
 }
 
 func (data *ResourceModel) FlattenObject(
@@ -200,7 +187,6 @@ func (data ResourceModel) ETagChanged(
 func (plan *ResourceModel) CopyFrom(state ResourceModel, preserveKnown bool) {
 	plan.ID = helper.KeepOrUpdateValue(plan.ID, state.ID, preserveKnown)
 	plan.Bucket = helper.KeepOrUpdateValue(plan.Bucket, state.Bucket, preserveKnown)
-	plan.Cluster = helper.KeepOrUpdateValue(plan.Cluster, state.Cluster, preserveKnown)
 	plan.Region = helper.KeepOrUpdateValue(plan.Region, state.Region, preserveKnown)
 	plan.Key = helper.KeepOrUpdateValue(plan.Key, state.Key, preserveKnown)
 	plan.SecretKey = helper.KeepOrUpdateValue(plan.SecretKey, state.SecretKey, preserveKnown)

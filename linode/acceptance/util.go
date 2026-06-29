@@ -25,7 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/version"
@@ -666,11 +666,11 @@ func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
 }
 
 // accountAvailabilityCaps are capabilities that must be verified both at the region level and at the account availability level.
-var accountAvailabilityCaps = map[string]bool{
-	"Linodes":       true,
-	"NodeBalancers": true,
-	"Block Storage": true,
-	"Kubernetes":    true,
+var accountAvailabilityCaps = map[linodego.RegionCapability]bool{
+	linodego.CapabilityLinodes:       true,
+	linodego.CapabilityNodeBalancers: true,
+	linodego.CapabilityBlockStorage:  true,
+	linodego.CapabilityLKE:           true,
 }
 
 // GetRegionsWithCaps returns a list of region IDs that support the given capabilities
@@ -678,7 +678,7 @@ var accountAvailabilityCaps = map[string]bool{
 // - capabilities: Required capabilities that the regions must support.
 // - siteType: The site type to filter by ("core" or "distributed" or "any").
 // - filters: Optional custom filters for additional criteria.
-func GetRegionsWithCaps(capabilities []string, regionType string, filters ...RegionFilterFunc) ([]string, error) {
+func GetRegionsWithCaps(capabilities []linodego.RegionCapability, regionType string, filters ...RegionFilterFunc) ([]string, error) {
 	client, err := GetTestClient()
 	if err != nil {
 		return nil, err
@@ -707,7 +707,7 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 	}
 
 	// Determine which of the requested capabilities also require account-level checks.
-	var requiredAccountCaps []string
+	var requiredAccountCaps []linodego.RegionCapability
 	for _, c := range capabilities {
 		if accountAvailabilityCaps[c] {
 			requiredAccountCaps = append(requiredAccountCaps, c)
@@ -722,14 +722,14 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 			return true
 		}
 
-		capsMap := make(map[string]bool)
+		capsMap := make(map[linodego.RegionCapability]bool)
 
 		for _, c := range region.Capabilities {
-			capsMap[strings.ToUpper(c)] = true
+			capsMap[linodego.RegionCapability(strings.ToUpper(c))] = true
 		}
 
 		for _, c := range capabilities {
-			if _, ok := capsMap[strings.ToUpper(c)]; !ok {
+			if !capsMap[linodego.RegionCapability(strings.ToUpper(string(c)))] {
 				return true
 			}
 		}
@@ -743,7 +743,7 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 				return true
 			}
 			for _, c := range requiredAccountCaps {
-				if !regionAvail[c] {
+				if !regionAvail[string(c)] {
 					return true
 				}
 			}
@@ -769,7 +769,7 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 }
 
 // GetRandomRegionWithCaps gets a random region given a list of region capabilities.
-func GetRandomRegionWithCaps(capabilities []string, regionType string, filters ...RegionFilterFunc) (string, error) {
+func GetRandomRegionWithCaps(capabilities []linodego.RegionCapability, regionType string, filters ...RegionFilterFunc) (string, error) {
 	regions, err := GetRegionsWithCaps(capabilities, regionType, filters...)
 	if err != nil {
 		return "", err
@@ -781,27 +781,6 @@ func GetRandomRegionWithCaps(capabilities []string, regionType string, filters .
 
 	// #nosec G404 -- Test data, doesn't need to be cryptography
 	return regions[rand.Intn(len(regions))], nil
-}
-
-// Deprecated: Cluster is now deprecated in favor of Region.
-// GetRandomOBJCluster gets a random Object Storage cluster.
-func GetRandomOBJCluster() (string, error) {
-	client, err := GetTestClient()
-	if err != nil {
-		return "", err
-	}
-
-	clusters, err := client.ListObjectStorageClusters(context.Background(), nil)
-	if err != nil {
-		return "", err
-	}
-
-	if len(clusters) < 1 {
-		return "", fmt.Errorf("no clusters found")
-	}
-
-	// #nosec G404 -- Test data, doesn't need to be cryptography
-	return clusters[rand.Intn(len(clusters))].ID, nil
 }
 
 func GetTestClient() (*linodego.Client, error) {

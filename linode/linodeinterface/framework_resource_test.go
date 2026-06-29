@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	linodeinstancetmpl "github.com/linode/terraform-provider-linode/v3/linode/acceptance/tmpl"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -28,7 +28,7 @@ var testRegion string
 
 func init() {
 	region, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityCloudFirewall},
+		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityCloudFirewall},
 		"core",
 	)
 	if err != nil {
@@ -776,7 +776,7 @@ func TestAccLinodeInterface_vpc_empty_ip_objects(t *testing.T) {
 func TestAccLinodeInterface_vpc_with_ipv6(t *testing.T) {
 	t.Parallel()
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityLinodes,
 		linodego.CapabilityVlans,
 		linodego.CapabilityVPCs,

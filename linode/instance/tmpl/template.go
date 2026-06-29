@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 )
 
@@ -13,7 +13,6 @@ type TemplateData struct {
 	PubKey   string
 	Type     string
 	Image    string
-	Group    string
 	Tag      string
 	Region   string
 	RootPass string

@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 	"github.com/linode/terraform-provider-linode/v3/linode/networkingipassignment/tmpl"
@@ -21,7 +21,7 @@ import (
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,6 +34,7 @@ func TestAccResourceNetworkingIPsAssign(t *testing.T) {
 
 	resourceName := "linode_networking_ip_assignment.test"
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -41,7 +42,7 @@ func TestAccResourceNetworkingIPsAssign(t *testing.T) {
 		CheckDestroy:             checkNetworkingIPsAssignDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.NetworkingIPsAssign(t, instanceName, testRegion),
+				Config: tmpl.NetworkingIPsAssign(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "region"),
 					resource.TestCheckResourceAttrSet(resourceName, "assignments.#"),

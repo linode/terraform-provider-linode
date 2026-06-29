@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/nbnode/tmpl"
 )
@@ -50,7 +50,7 @@ func TestAccDataSourceNodeBalancerNode_vpc(t *testing.T) {
 	label := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs}, "core")
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

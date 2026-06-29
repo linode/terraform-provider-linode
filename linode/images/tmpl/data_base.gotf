@@ -2,7 +2,7 @@
 
 resource "linode_instance" "foobar" {
     label = "{{.Image}}"
-    group = "tf_test"
+
     type = "g6-standard-1"
     region = "{{ .Region }}"
     disk {

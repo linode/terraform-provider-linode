@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/placementgroups/tmpl"
 )
@@ -22,7 +22,7 @@ func TestAccDataSourcePlacementGroups_basic(t *testing.T) {
 
 	baseLabel := acctest.RandomWithPrefix("tf-test")
 
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityPlacementGroup}, "core")
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityPlacementGroup}, "core")
 	if err != nil {
 		t.Error(fmt.Errorf("failed to get region with PG capability: %w", err))
 	}

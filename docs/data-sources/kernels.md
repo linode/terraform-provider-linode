@@ -63,8 +63,6 @@ Each Linode Kernel will be stored in the `kernel` attribute and will export the 
 
 * `version` - Linux Kernel version
 
-* `xen` - (Deprecated) If this Kernel is suitable for Xen Linodes.
-
 ## Filterable Fields
 
 * `id`
@@ -80,5 +78,3 @@ Each Linode Kernel will be stored in the `kernel` attribute and will export the 
 * `pvops`
 
 * `version`
-
-* `xen` (Deprecated)

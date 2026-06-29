@@ -8,7 +8,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -16,12 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-)
-
-const (
-	DefaultImageCreateTimeout = 30 * time.Minute
 )
 
 func NewResource() resource.Resource {
@@ -44,7 +39,7 @@ type Resource struct {
 }
 
 func createResourceFromUpload(
-	ctx context.Context, plan *ResourceModel, client *linodego.Client, resp *resource.CreateResponse, timeoutSeconds int,
+	ctx context.Context, plan *ResourceModel, client *linodego.Client, resp *resource.CreateResponse,
 ) *linodego.Image {
 	tflog.Debug(ctx, "Create linode_image from file uploading")
 
@@ -97,7 +92,7 @@ func createResourceFromUpload(
 		return image
 	}
 
-	image = waitForImageToBeAvailable(ctx, client, image.ID, timeoutSeconds, &resp.Diagnostics)
+	image = waitForImageToBeAvailable(ctx, client, image.ID, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return image
 	}
@@ -106,7 +101,7 @@ func createResourceFromUpload(
 }
 
 func createResourceFromLinode(
-	ctx context.Context, plan *ResourceModel, client *linodego.Client, resp *resource.CreateResponse, timeoutSeconds int,
+	ctx context.Context, plan *ResourceModel, client *linodego.Client, resp *resource.CreateResponse,
 ) *linodego.Image {
 	tflog.Debug(ctx, "Create linode_image from a Linode instance")
 
@@ -117,7 +112,7 @@ func createResourceFromLinode(
 	}
 
 	if _, err := client.WaitForInstanceDiskStatus(
-		ctx, linodeID, diskID, linodego.DiskReady, timeoutSeconds,
+		ctx, linodeID, diskID, linodego.DiskReady,
 	); err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf(
@@ -162,7 +157,7 @@ func createResourceFromLinode(
 	})
 
 	if _, err := client.WaitForInstanceDiskStatus(
-		ctx, linodeID, diskID, linodego.DiskReady, timeoutSeconds,
+		ctx, linodeID, diskID, linodego.DiskReady,
 	); err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf(
@@ -195,22 +190,11 @@ func (r *Resource) Create(
 		return
 	}
 
-	createTimeout, diags := plan.Timeouts.Create(ctx, DefaultImageCreateTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	timeoutSeconds := helper.FrameworkSafeFloat64ToInt(createTimeout.Seconds(), &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	var image *linodego.Image
 	if !plan.LinodeID.IsNull() && plan.FilePath.IsNull() {
-		image = createResourceFromLinode(ctx, &plan, client, resp, timeoutSeconds)
+		image = createResourceFromLinode(ctx, &plan, client, resp)
 	} else {
-		image = createResourceFromUpload(ctx, &plan, client, resp, timeoutSeconds)
+		image = createResourceFromUpload(ctx, &plan, client, resp)
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -221,12 +205,13 @@ func (r *Resource) Create(
 		plan.ID = types.StringValue(image.ID)
 
 		// make sure image is ready for replication
-		waitForImageToBeAvailable(ctx, client, image.ID, timeoutSeconds, &resp.Diagnostics)
+		waitForImageToBeAvailable(ctx, client, image.ID, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 
 		// Refresh image from replication
+		var diags diag.Diagnostics
 		image, diags = replicateImage(ctx, &plan, client)
 		resp.Diagnostics.Append(diags...)
 		if resp.Diagnostics.HasError() {
@@ -365,19 +350,8 @@ func (r *Resource) Update(
 			return
 		}
 
-		createTimeout, diags := plan.Timeouts.Create(ctx, DefaultImageCreateTimeout)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		timeoutSeconds := helper.FrameworkSafeFloat64ToInt(createTimeout.Seconds(), &resp.Diagnostics)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
 		// make sure image is ready for replication
-		waitForImageToBeAvailable(ctx, client, plan.ID.ValueString(), timeoutSeconds, &resp.Diagnostics)
+		waitForImageToBeAvailable(ctx, client, plan.ID.ValueString(), &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -598,7 +572,6 @@ func waitForImageToBeAvailable(
 	ctx context.Context,
 	client *linodego.Client,
 	imageID string,
-	timeoutSeconds int,
 	diags *diag.Diagnostics,
 ) *linodego.Image {
 	tflog.Debug(ctx, "Waiting for a single image to be ready")
@@ -610,7 +583,6 @@ func waitForImageToBeAvailable(
 		ctx,
 		imageID,
 		linodego.ImageStatusAvailable,
-		timeoutSeconds,
 	)
 	if err != nil {
 		diags.AddError("Failed to Wait for Image to be Available", err.Error())
