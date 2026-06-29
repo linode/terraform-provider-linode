@@ -81,8 +81,7 @@ var frameworkResourceSchema = schema.Schema{
 					},
 					"region": schema.StringAttribute{
 						Description: "The region where the bucket resides.",
-						Optional:    true,
-						Computed:    true,
+						Required:    true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},

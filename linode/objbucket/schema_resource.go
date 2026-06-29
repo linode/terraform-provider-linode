@@ -21,8 +21,7 @@ var resourceSchema = map[string]*schema.Schema{
 	"region": {
 		Type:        schema.TypeString,
 		Description: "The region of the Linode Object Storage Bucket.",
-		Optional:    true,
-		Computed:    true,
+		Required:    true,
 		ForceNew:    true,
 	},
 	"endpoint": {
