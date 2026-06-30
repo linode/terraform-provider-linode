@@ -9,9 +9,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/lke/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/lke/tmpl"
 )
 
 const dataSourceClusterName = "data.linode_lke_cluster.test"
@@ -77,7 +77,6 @@ func TestAccDataSourceLKECluster_basic(t *testing.T) {
 						resource.TestCheckResourceAttr(dataSourceClusterName, "control_plane.0.high_availability", "false"),
 						resource.TestCheckResourceAttrSet(dataSourceClusterName, "pools.0.id"),
 						resource.TestCheckResourceAttrSet(dataSourceClusterName, "kubeconfig"),
-						resource.TestCheckResourceAttrSet(dataSourceClusterName, "dashboard_url"),
 					),
 				},
 			},
@@ -162,7 +161,7 @@ func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 	t.Parallel()
 
-	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
+	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{"Kubernetes Enterprise", "VPCs"}, "core")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -187,7 +186,7 @@ func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 
 	firewall, err := client.CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
 		Label: "tftest-enterprise-upgrade-" + acctest.RandString(5),
-		Rules: linodego.FirewallRuleSet{
+		Rules: linodego.FirewallRulesCreateOptions{
 			InboundPolicy:  "ACCEPT",
 			OutboundPolicy: "ACCEPT",
 		},

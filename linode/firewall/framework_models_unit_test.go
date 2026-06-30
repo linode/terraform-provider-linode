@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,19 +28,19 @@ func TestParseComputedAttributes(t *testing.T) {
 	deviceEntity1 := linodego.FirewallDeviceEntity{
 		ID:    1234,
 		Type:  linodego.FirewallDeviceLinode,
-		Label: "device_entity_1",
+		Label: linodego.Pointer("device_entity_1"),
 		URL:   "test-firewall.example.com",
 	}
 	deviceEntity2 := linodego.FirewallDeviceEntity{
 		ID:    4321,
 		Type:  linodego.FirewallDeviceNodeBalancer,
-		Label: "device_entity_2",
+		Label: linodego.Pointer("device_entity_2"),
 		URL:   "test-firewall.example.com",
 	}
 	deviceEntity3 := linodego.FirewallDeviceEntity{
 		ID:    1221,
 		Type:  linodego.FirewallDeviceLinodeInterface,
-		Label: "device_entity_3",
+		Label: linodego.Pointer("device_entity_3"),
 		URL:   "test-firewall.example.com",
 	}
 	devices := []linodego.FirewallDevice{
@@ -58,7 +58,7 @@ func TestParseComputedAttributes(t *testing.T) {
 		},
 	}
 
-	inboundRules := []linodego.FirewallRule{
+	inboundRules := []linodego.FirewallRuleInbound{
 		{
 			Action:      "allow",
 			Label:       "Rule 1",
@@ -66,13 +66,13 @@ func TestParseComputedAttributes(t *testing.T) {
 			Ports:       "22",
 			Protocol:    "SSH",
 			Addresses: linodego.NetworkAddresses{
-				IPv4: &[]string{"192.168.1.1/24"},
-				IPv6: &[]string{},
+				IPv4: []string{"192.168.1.1/24"},
+				IPv6: []string{},
 			},
 		},
 	}
 
-	outboundRules := []linodego.FirewallRule{
+	outboundRules := []linodego.FirewallRuleOutbound{
 		{
 			Action:      "deny",
 			Label:       "Rule 3",
@@ -80,13 +80,13 @@ func TestParseComputedAttributes(t *testing.T) {
 			Ports:       "22",
 			Protocol:    "SSH",
 			Addresses: linodego.NetworkAddresses{
-				IPv4: &[]string{"192.168.1.3/24"},
-				IPv6: &[]string{},
+				IPv4: []string{"192.168.1.3/24"},
+				IPv6: []string{},
 			},
 		},
 	}
 
-	firewallRules := linodego.FirewallRuleSet{
+	firewallRules := linodego.FirewallRules{
 		InboundPolicy:  "ACCEPT",
 		Inbound:        inboundRules,
 		OutboundPolicy: "DROP",
@@ -112,12 +112,12 @@ func TestParseComputedAttributes(t *testing.T) {
 	assert.Equal(t, data.Inbound[0].Action.ValueString(), inboundRules[0].Action)
 	assert.Equal(t, data.Inbound[0].Protocol.ValueString(), string(inboundRules[0].Protocol))
 	assert.Equal(t, data.Inbound[0].Ports.ValueString(), inboundRules[0].Ports)
-	assert.Contains(t, data.Inbound[0].IPv4.String(), (*inboundRules[0].Addresses.IPv4)[0])
+	assert.Contains(t, data.Inbound[0].IPv4.String(), (inboundRules[0].Addresses.IPv4)[0])
 
 	assert.Equal(t, data.Outbound[0].Action.ValueString(), outboundRules[0].Action)
 	assert.Equal(t, data.Outbound[0].Protocol.ValueString(), string(outboundRules[0].Protocol))
 	assert.Equal(t, data.Outbound[0].Ports.ValueString(), outboundRules[0].Ports)
-	assert.Contains(t, data.Outbound[0].IPv4.String(), (*outboundRules[0].Addresses.IPv4)[0])
+	assert.Contains(t, data.Outbound[0].IPv4.String(), (outboundRules[0].Addresses.IPv4)[0])
 
 	assert.Equal(t, data.Devices[0].ID.ValueInt64(), int64(111))
 	assert.Equal(t, data.Devices[1].ID.ValueInt64(), int64(112))
