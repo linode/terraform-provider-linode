@@ -161,7 +161,6 @@ func InstanceDiskCreateBusyRetry() func(response *http.Response, err error) bool
 
 		tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: Checked 400 response body", map[string]any{
 			"path":           response.Request.URL.Path,
-			"body":           bodyStr,
 			"is_linode_busy": isLinodeBusy,
 			"will_retry":     isLinodeBusy,
 		})
