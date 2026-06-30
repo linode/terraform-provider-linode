@@ -752,6 +752,9 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 		t.Fatalf("failed creating firewall: %v", err)
 	}
 
+	// TODO: Remove hard-coded region once capability filtering works properly
+	enterpriseRegionWithACLP := "us-lax"
+
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf-test")
 		resource.Test(t, resource.TestCase{
@@ -760,10 +763,10 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "on_recycle"),
+					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegionWithACLP, "on_recycle"),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegionWithACLP),
 						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
@@ -784,10 +787,10 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 					},
 				},
 				{
-					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "rolling_update"),
+					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegionWithACLP, "rolling_update"),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegionWithACLP),
 						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
@@ -804,10 +807,10 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 					},
 				},
 				{
-					Config: tmpl.EnterpriseFirewall(t, clusterName, k8sVersionEnterprise, enterpriseRegion, firewall.ID),
+					Config: tmpl.EnterpriseFirewall(t, clusterName, k8sVersionEnterprise, enterpriseRegionWithACLP, firewall.ID),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegionWithACLP),
 						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
