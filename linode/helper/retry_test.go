@@ -122,39 +122,46 @@ func TestInstanceDiskCreateBusyRetry_EOFErrors(t *testing.T) {
 		description   string
 	}{
 		{
-			name:          "Should retry on EOF error for disk creation",
-			url:           "/v4/linode/instances/12345/disks",
-			err:           errors.New("unexpected EOF"),
-			expectedRetry: true,
-			description:   "EOF error on disk creation endpoint",
-		},
-		{
-			name:          "Should retry on EOF with error code",
+			name:          "Should retry on [002] EOF error for disk creation",
 			url:           "/v4/linode/instances/12345/disks",
 			err:           errors.New("[002] unexpected EOF"),
 			expectedRetry: true,
-			description:   "EOF error with [002] code on disk creation endpoint",
+			description:   "[002] EOF error on disk creation endpoint",
 		},
 		{
-			name:          "Should not retry EOF on different endpoint",
+			name:          "Should retry on [002] decode error for disk creation",
+			url:           "/v4/linode/instances/12345/disks",
+			err:           errors.New("[002] failed to decode response body"),
+			expectedRetry: true,
+			description:   "[002] decode error on disk creation endpoint",
+		},
+		{
+			name:          "Should not retry [002] on different endpoint",
 			url:           "/v4/linode/instances/12345",
-			err:           errors.New("unexpected EOF"),
+			err:           errors.New("[002] unexpected EOF"),
 			expectedRetry: false,
-			description:   "EOF error on wrong endpoint",
+			description:   "[002] error on wrong endpoint",
 		},
 		{
-			name:          "Should not retry EOF on disk get endpoint",
+			name:          "Should not retry [002] on disk get endpoint",
 			url:           "/v4/linode/instances/12345/disks/67890",
-			err:           errors.New("unexpected EOF"),
+			err:           errors.New("[002] unexpected EOF"),
 			expectedRetry: false,
-			description:   "EOF error on disk GET endpoint",
+			description:   "[002] error on disk GET endpoint",
 		},
 		{
-			name:          "Should not retry non-EOF errors",
+			name:          "Should not retry non-[002] errors",
 			url:           "/v4/linode/instances/12345/disks",
 			err:           errors.New("connection refused"),
 			expectedRetry: false,
 			description:   "Different error type should not retry",
+		},
+		{
+			name:          "Should not retry EOF without [002] code",
+			url:           "/v4/linode/instances/12345/disks",
+			err:           errors.New("unexpected EOF"),
+			expectedRetry: false,
+			description:   "Plain EOF without [002] code should not retry",
 		},
 	}
 
@@ -183,9 +190,9 @@ func TestInstanceDiskCreateBusyRetry_EOFErrors(t *testing.T) {
 func TestInstanceDiskCreateBusyRetry_EOFWithNilResponse(t *testing.T) {
 	retryFunc := InstanceDiskCreateBusyRetry()
 
-	// EOF error with nil response should not retry
-	result := retryFunc(nil, errors.New("unexpected EOF"))
+	// [002] error with nil response should not retry
+	result := retryFunc(nil, errors.New("[002] unexpected EOF"))
 	if result {
-		t.Error("Should not retry EOF when response is nil")
+		t.Error("Should not retry [002] error when response is nil")
 	}
 }

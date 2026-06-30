@@ -80,7 +80,7 @@ func OBJBucketDelete500Retry() func(response *http.Response, err error) bool {
 // InstanceDiskCreateBusyRetry retries disk creation when the Linode instance is busy (still provisioning).
 // This handles transient errors that occur when attempting to create a disk immediately after instance creation:
 // - "Linode busy." error (400 response with specific message)
-// - EOF errors (network/connection issues during provisioning)
+// - Network/transport errors with [002] error code (e.g., "unexpected EOF", "failed to decode response body")
 func InstanceDiskCreateBusyRetry() func(response *http.Response, err error) bool {
 	diskCreatePath, compileErr := regexp.Compile("linode/instances/[0-9]+/disks$")
 	if compileErr != nil {
@@ -88,22 +88,46 @@ func InstanceDiskCreateBusyRetry() func(response *http.Response, err error) bool
 	}
 
 	return func(response *http.Response, err error) bool {
-		// Check if this is an EOF error on disk creation
-		if err != nil && strings.Contains(err.Error(), "EOF") {
+		// Extract context from request if available for better log correlation
+		ctx := context.Background()
+		if response != nil && response.Request != nil {
+			ctx = response.Request.Context()
+		}
+
+		// Check if this is a [002] network/transport error on disk creation
+		// This includes "unexpected EOF" and "failed to decode response body"
+		if err != nil && strings.Contains(err.Error(), "[002]") {
+			tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: Checking [002] network error", map[string]any{
+				"error": err.Error(),
+			})
 			// We need to verify this is a disk creation request
 			if response != nil && response.Request != nil && response.Request.URL != nil {
 				if diskCreatePath.MatchString(response.Request.URL.Path) {
-					tflog.Debug(response.Request.Context(), "Retrying disk creation due to EOF error", map[string]any{
+					tflog.Debug(ctx, "Retrying disk creation due to [002] network error", map[string]any{
 						"error": err.Error(),
+						"path":  response.Request.URL.Path,
 					})
 					return true
 				}
+				tflog.Debug(ctx, "[002] network error on non-disk-creation endpoint, not retrying", map[string]any{
+					"error": err.Error(),
+					"path":  response.Request.URL.Path,
+				})
 			}
+			return false
+		}
+
+		// Check for other errors (non-[002])
+		if err != nil {
+			tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: Non-[002] error, not retrying", map[string]any{
+				"error": err.Error(),
+			})
 			return false
 		}
 
 		// Check for "Linode busy." response
 		if response == nil || response.Request == nil || response.Request.URL == nil {
+			tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: Nil response or request, not retrying", map[string]any{})
 			return false
 		}
 
@@ -113,6 +137,10 @@ func InstanceDiskCreateBusyRetry() func(response *http.Response, err error) bool
 
 		// Only retry if the path matches disk creation
 		if !diskCreatePath.MatchString(response.Request.URL.Path) {
+			tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: 400 error on non-disk-creation endpoint, not retrying", map[string]any{
+				"status_code": response.StatusCode,
+				"path":        response.Request.URL.Path,
+			})
 			return false
 		}
 
@@ -120,7 +148,7 @@ func InstanceDiskCreateBusyRetry() func(response *http.Response, err error) bool
 		// Need to read and restore the body since it can only be read once
 		bodyBytes, err := io.ReadAll(response.Body)
 		if err != nil {
-			tflog.Warn(response.Request.Context(), "Failed to read response body", map[string]any{
+			tflog.Warn(ctx, "Failed to read response body", map[string]any{
 				"error": err.Error(),
 			})
 			return false
@@ -129,7 +157,16 @@ func InstanceDiskCreateBusyRetry() func(response *http.Response, err error) bool
 		response.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 
 		bodyStr := string(bodyBytes)
-		return strings.Contains(bodyStr, "Linode busy.")
+		isLinodeBusy := strings.Contains(bodyStr, "Linode busy.")
+
+		tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: Checked 400 response body", map[string]any{
+			"path":           response.Request.URL.Path,
+			"body":           bodyStr,
+			"is_linode_busy": isLinodeBusy,
+			"will_retry":     isLinodeBusy,
+		})
+
+		return isLinodeBusy
 	}
 }
 
