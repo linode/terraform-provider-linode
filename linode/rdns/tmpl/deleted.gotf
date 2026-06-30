@@ -4,7 +4,7 @@
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
-    group = "tf_test"
+
     image = "linode/arch"
     type = "g6-standard-1"
     region = "{{ .Region }}"

@@ -3,11 +3,12 @@
 package helper
 
 import (
+	"bytes"
 	"errors"
+	"io"
 	"net/http"
+	"net/url"
 	"testing"
-
-	"github.com/go-resty/resty/v2"
 )
 
 func TestInstanceDiskCreateBusyRetry(t *testing.T) {
@@ -74,15 +75,16 @@ func TestInstanceDiskCreateBusyRetry(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create a mock response
-			req := &resty.Request{
-				URL: tt.url,
+			parsedURL, _ := url.Parse(tt.url)
+			req := &http.Request{
+				URL: parsedURL,
 			}
 
-			resp := &resty.Response{
-				Request:     req,
-				RawResponse: &http.Response{StatusCode: tt.statusCode},
+			resp := &http.Response{
+				StatusCode: tt.statusCode,
+				Request:    req,
+				Body:       io.NopCloser(bytes.NewReader([]byte(tt.body))),
 			}
-			resp.SetBody([]byte(tt.body))
 
 			result := retryFunc(resp, nil)
 
@@ -97,11 +99,11 @@ func TestInstanceDiskCreateBusyRetry(t *testing.T) {
 func TestInstanceDiskCreateBusyRetry_NilRequest(t *testing.T) {
 	retryFunc := InstanceDiskCreateBusyRetry()
 
-	resp := &resty.Response{
-		Request:     nil,
-		RawResponse: &http.Response{StatusCode: 400},
+	resp := &http.Response{
+		StatusCode: 400,
+		Request:    nil,
+		Body:       io.NopCloser(bytes.NewReader([]byte(`{"errors": [{"reason": "Linode busy."}]}`))),
 	}
-	resp.SetBody([]byte(`{"errors": [{"reason": "Linode busy."}]}`))
 
 	result := retryFunc(resp, nil)
 	if result {
@@ -158,13 +160,14 @@ func TestInstanceDiskCreateBusyRetry_EOFErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := &resty.Request{
-				URL: tt.url,
+			parsedURL, _ := url.Parse(tt.url)
+			req := &http.Request{
+				URL: parsedURL,
 			}
 
-			resp := &resty.Response{
-				Request:     req,
-				RawResponse: &http.Response{StatusCode: 0},
+			resp := &http.Response{
+				StatusCode: 0,
+				Request:    req,
 			}
 
 			result := retryFunc(resp, tt.err)

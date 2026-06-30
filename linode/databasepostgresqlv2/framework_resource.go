@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/databaseshared"
 )
 
 const (
@@ -124,7 +124,7 @@ func (r *Resource) Create(
 
 	tflog.Debug(ctx, "Waiting for database to finish provisioning")
 
-	if _, err := createPoller.WaitForFinished(ctx, int(createTimeout.Seconds())); err != nil {
+	if _, err := createPoller.WaitForFinished(ctx); err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to wait for PostgreSQL database to finish creating",
 			err.Error(),
@@ -142,7 +142,6 @@ func (r *Resource) Create(
 		db.ID,
 		linodego.DatabaseEngineTypePostgres,
 		linodego.DatabaseStatusActive,
-		int(createTimeout.Seconds()),
 	); err != nil {
 		resp.Diagnostics.AddError("Failed to wait for PostgreSQL database active", err.Error())
 		return
@@ -184,7 +183,6 @@ func (r *Resource) Create(
 			db.ID,
 			linodego.DatabaseEngineTypePostgres,
 			linodego.DatabaseStatusActive,
-			int(createTimeout.Seconds()),
 		); err != nil {
 			resp.Diagnostics.AddError("Failed to wait for PostgreSQL database active", err.Error())
 			return
@@ -345,7 +343,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		updateOpts.AllowList = &allowList
+		updateOpts.AllowList = allowList
 	}
 
 	// `type` field updates
@@ -511,13 +509,8 @@ func (r *Resource) Update(
 			return
 		}
 
-		timeoutSeconds := helper.FrameworkSafeFloat64ToInt(updateTimeout.Seconds(), &resp.Diagnostics)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
 		if updatePoller != nil {
-			if _, err := updatePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
+			if _, err := updatePoller.WaitForFinished(ctx); err != nil {
 				resp.Diagnostics.AddError(
 					"Failed to poll for database update event to finish",
 					err.Error(),
@@ -527,7 +520,7 @@ func (r *Resource) Update(
 		}
 
 		if resizePoller != nil {
-			if _, err := resizePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
+			if _, err := resizePoller.WaitForFinished(ctx); err != nil {
 				resp.Diagnostics.AddError(
 					"Failed to poll for database resize event to finish",
 					err.Error(),

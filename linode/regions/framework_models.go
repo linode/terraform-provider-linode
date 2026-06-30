@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
-	regionResource "github.com/linode/terraform-provider-linode/v3/linode/region"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
+	regionResource "github.com/linode/terraform-provider-linode/v4/linode/region"
 )
 
 // RegionFilterModel describes the Terraform resource data model to match the

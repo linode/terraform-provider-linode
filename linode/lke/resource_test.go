@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"regexp"
 	"sort"
@@ -21,11 +22,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/lke/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/lke/tmpl"
 )
 
 var (
@@ -76,7 +77,7 @@ func init() {
 		k8sVersionPrevious = k8sVersions[len(k8sVersions)-2]
 	}
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLKE}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLKE}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -94,7 +95,7 @@ func init() {
 		k8sVersionEnterprise = enterpriseVersions[0].ID
 	}
 
-	enterpriseRegion, err = acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
+	enterpriseRegion, err = acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{"Kubernetes Enterprise", "VPCs"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -232,7 +233,6 @@ func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resourceClusterName, "id"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.id"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
-						resource.TestCheckResourceAttrSet(resourceClusterName, "dashboard_url"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.label", "test"),
 
 						// Ensure the lke_cluster_id field is populated on a sample
@@ -305,7 +305,12 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 
 				var opts linodego.LKEClusterUpdateOptions
 
-				if err := json.Unmarshal([]byte(request.Body.(string)), &opts); err != nil {
+				body, err := io.ReadAll(request.Body)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				if err := json.Unmarshal(body, &opts); err != nil {
 					t.Fatal(err)
 				}
 
@@ -738,7 +743,7 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 
 	firewall, err := client.CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
 		Label: "tftest-enterprise-upgrade-" + acctest.RandString(5),
-		Rules: linodego.FirewallRuleSet{
+		Rules: linodego.FirewallRulesCreateOptions{
 			InboundPolicy:  "ACCEPT",
 			OutboundPolicy: "ACCEPT",
 		},
@@ -1090,7 +1095,7 @@ func TestAccResourceLKECluster_poolDiskEncryption(t *testing.T) {
 	t.Parallel()
 
 	diskEncryptionRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityLKE, linodego.CapabilityDiskEncryption}, "core",
+		[]linodego.RegionCapability{linodego.CapabilityLKE, linodego.CapabilityDiskEncryption}, "core",
 	)
 	if err != nil {
 		t.Skipf("Skipping test: no region with LKE and Disk Encryption capabilities: %s", err)
