@@ -74,10 +74,10 @@ func TestInstanceDiskCreateBusyRetry(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create a mock response
 			parsedURL, _ := url.Parse(tt.url)
 			req := &http.Request{
-				URL: parsedURL,
+				Method: http.MethodPost,
+				URL:    parsedURL,
 			}
 
 			resp := &http.Response{
@@ -93,6 +93,50 @@ func TestInstanceDiskCreateBusyRetry(t *testing.T) {
 					tt.description, tt.expectedRetry, result)
 			}
 		})
+	}
+}
+
+func TestInstanceDiskCreateBusyRetry_NonPostMethod(t *testing.T) {
+	retryFunc := InstanceDiskCreateBusyRetry()
+
+	// Test 400 "Linode busy." with GET method - should not retry
+	parsedURL, _ := url.Parse("/v4/linode/instances/12345/disks")
+	req := &http.Request{
+		Method: http.MethodGet,
+		URL:    parsedURL,
+	}
+
+	resp := &http.Response{
+		StatusCode: 400,
+		Request:    req,
+		Body:       io.NopCloser(bytes.NewReader([]byte(`{"errors": [{"reason": "Linode busy."}]}`))),
+	}
+
+	result := retryFunc(resp, nil)
+	if result {
+		t.Error("Should not retry 400 'Linode busy.' error when method is not POST")
+	}
+}
+
+func TestInstanceDiskCreateBusyRetry_NilBody(t *testing.T) {
+	retryFunc := InstanceDiskCreateBusyRetry()
+
+	// Test 400 response with nil body - should not retry
+	parsedURL, _ := url.Parse("/v4/linode/instances/12345/disks")
+	req := &http.Request{
+		Method: http.MethodPost,
+		URL:    parsedURL,
+	}
+
+	resp := &http.Response{
+		StatusCode: 400,
+		Request:    req,
+		Body:       nil,
+	}
+
+	result := retryFunc(resp, nil)
+	if result {
+		t.Error("Should not retry when response body is nil")
 	}
 }
 
@@ -118,6 +162,7 @@ func TestInstanceDiskCreateBusyRetry_EOFErrors(t *testing.T) {
 		name          string
 		url           string
 		err           error
+		method        string
 		expectedRetry bool
 		description   string
 	}{
@@ -163,13 +208,33 @@ func TestInstanceDiskCreateBusyRetry_EOFErrors(t *testing.T) {
 			expectedRetry: false,
 			description:   "Plain EOF without [002] code should not retry",
 		},
+		{
+			name:          "Should not retry [002] error without EOF/decode keywords",
+			url:           "/v4/linode/instances/12345/disks",
+			err:           errors.New("[002] connection reset"),
+			expectedRetry: false,
+			description:   "[002] error without EOF or decode keywords should not retry",
+		},
+		{
+			name:          "Should not retry [002] EOF with non-POST method",
+			url:           "/v4/linode/instances/12345/disks",
+			err:           errors.New("[002] unexpected EOF"),
+			method:        http.MethodGet,
+			expectedRetry: false,
+			description:   "[002] EOF with GET method should not retry",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			parsedURL, _ := url.Parse(tt.url)
+			method := tt.method
+			if method == "" {
+				method = http.MethodPost
+			}
 			req := &http.Request{
-				URL: parsedURL,
+				Method: method,
+				URL:    parsedURL,
 			}
 
 			resp := &http.Response{

@@ -96,12 +96,16 @@ func InstanceDiskCreateBusyRetry() func(response *http.Response, err error) bool
 
 		// Check if this is a [002] network/transport error on disk creation
 		// This includes "unexpected EOF" and "failed to decode response body"
-		if err != nil && strings.Contains(err.Error(), "[002]") {
+		if err != nil && strings.Contains(err.Error(), "[002]") &&
+			(strings.Contains(err.Error(), "EOF") || strings.Contains(err.Error(), "failed to decode response body")) {
 			tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: Checking [002] network error", map[string]any{
 				"error": err.Error(),
 			})
 			// We need to verify this is a disk creation request
 			if response != nil && response.Request != nil && response.Request.URL != nil {
+				if response.Request.Method != http.MethodPost {
+					return false
+				}
 				if diskCreatePath.MatchString(response.Request.URL.Path) {
 					tflog.Debug(ctx, "Retrying disk creation due to [002] network error", map[string]any{
 						"error": err.Error(),
@@ -135,6 +139,11 @@ func InstanceDiskCreateBusyRetry() func(response *http.Response, err error) bool
 			return false
 		}
 
+		// Only retry disk creation requests (POST) on the disk collection endpoint
+		if response.Request.Method != http.MethodPost {
+			return false
+		}
+
 		// Only retry if the path matches disk creation
 		if !diskCreatePath.MatchString(response.Request.URL.Path) {
 			tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: 400 error on non-disk-creation endpoint, not retrying", map[string]any{
@@ -146,6 +155,12 @@ func InstanceDiskCreateBusyRetry() func(response *http.Response, err error) bool
 
 		// Check if the error message contains "Linode busy."
 		// Need to read and restore the body since it can only be read once
+		if response.Body == nil {
+			tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: 400 response without body, not retrying", map[string]any{
+				"path": response.Request.URL.Path,
+			})
+			return false
+		}
 		bodyBytes, err := io.ReadAll(response.Body)
 		if err != nil {
 			tflog.Warn(ctx, "Failed to read response body", map[string]any{
