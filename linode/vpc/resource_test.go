@@ -16,10 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/vpc/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/vpc/tmpl"
 )
 
 var testRegion string
@@ -32,7 +32,7 @@ func init() {
 
 	var err error
 
-	testRegion, err = acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityVPCs}, "core")
+	testRegion, err = acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
@@ -139,7 +139,7 @@ func TestAccResourceVPC_dualStack(t *testing.T) {
 	resName := "linode_vpc.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityVPCs,
 		linodego.CapabilityVPCDualStack,
 	}, "core")
@@ -227,7 +227,7 @@ func TestAccResourceVPC_dualStack(t *testing.T) {
 func TestAccResourceLinodeVPC_create_InvalidLabel(t *testing.T) {
 	t.Parallel()
 
-	vpcLabel := "tf-test_123"
+	vpcLabel := "tf-test*123"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -235,7 +235,7 @@ func TestAccResourceLinodeVPC_create_InvalidLabel(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.Basic(t, vpcLabel, testRegion),
-				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and dashes"),
+				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and underscores"),
 			},
 		},
 	})
@@ -246,7 +246,7 @@ func TestAccResourceLinodeVPC_update_InvalidLabel(t *testing.T) {
 	resName := "linode_vpc.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
-	invalidLabel := "tf-test_123"
+	invalidLabel := "tf-test*123"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -264,7 +264,7 @@ func TestAccResourceLinodeVPC_update_InvalidLabel(t *testing.T) {
 			},
 			{
 				Config:      tmpl.Updates(t, invalidLabel, testRegion),
-				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and dashes"),
+				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and underscores"),
 			},
 			{
 				ResourceName:      resName,

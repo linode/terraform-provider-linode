@@ -53,10 +53,6 @@ var frameworkDataSourceSchema = schema.Schema{
 			Sensitive:   true,
 			Description: "The Base64-encoded Kubeconfig for the cluster.",
 		},
-		"dashboard_url": schema.StringAttribute{
-			Computed:    true,
-			Description: "The dashboard URL of the cluster.",
-		},
 		"status": schema.StringAttribute{
 			Computed:    true,
 			Description: "The status of the cluster.",

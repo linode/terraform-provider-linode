@@ -7,14 +7,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"bucket":  d.Get("label"),
-		"cluster": d.Get("cluster"),
+		"bucket": d.Get("label"),
 	})
 }
 
