@@ -66,6 +66,11 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/monitoralertdefinition"
 	"github.com/linode/terraform-provider-linode/v4/linode/monitoralertdefinitionentities"
 	"github.com/linode/terraform-provider-linode/v4/linode/monitoralertdefinitions"
+	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsdestination"
+	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsdestinations"
+	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstream"
+	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstreamhistory"
+	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstreams"
 	"github.com/linode/terraform-provider-linode/v4/linode/nb"
 	"github.com/linode/terraform-provider-linode/v4/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/v4/linode/nbconfigs"
@@ -114,11 +119,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/vpcs"
 	"github.com/linode/terraform-provider-linode/v4/linode/vpcsubnet"
 	"github.com/linode/terraform-provider-linode/v4/linode/vpcsubnets"
-	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsdestination"
-	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsdestinations"
-	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstream"
-	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstreamhistory"
-	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstreams"
 )
 
 type FrameworkProvider struct {
