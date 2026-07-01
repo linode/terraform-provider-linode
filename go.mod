@@ -28,7 +28,7 @@ require (
 	github.com/linode/linodego/v2 v2.3.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.51.0
-	golang.org/x/sync v0.20.0
+	golang.org/x/sync v0.21.0
 )
 
 require (
