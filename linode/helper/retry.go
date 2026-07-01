@@ -79,8 +79,14 @@ func OBJBucketDelete500Retry() func(response *http.Response, err error) bool {
 
 // InstanceDiskCreateBusyRetry retries disk creation when the Linode instance is busy (still provisioning).
 // This handles transient errors that occur when attempting to create a disk immediately after instance creation:
-// - "Linode busy." error (400 response with specific message)
-// - Network/transport errors with [002] error code (e.g., "unexpected EOF", "failed to decode response body")
+//   - "Linode busy." error (400 response with specific message)
+//   - Connection errors with [002] error code that occur when the HTTP connection is reset while reading
+//     the response body (e.g., "[002] unexpected EOF", "[002] failed to decode response body")
+//
+// Note: We check for the [002] error code prefix to match the specific error patterns observed during
+// instance provisioning. The transient errors encountered ("[002] unexpected EOF", "[002] failed to decode
+// response body") share this prefix. Plain EOF errors without [002] are not retried as they may indicate
+// different failure modes unrelated to instance provisioning state.
 func InstanceDiskCreateBusyRetry() func(response *http.Response, err error) bool {
 	diskCreatePath, compileErr := regexp.Compile("linode/instances/[0-9]+/disks$")
 	if compileErr != nil {
@@ -94,8 +100,11 @@ func InstanceDiskCreateBusyRetry() func(response *http.Response, err error) bool
 			ctx = response.Request.Context()
 		}
 
-		// Check if this is a [002] network/transport error on disk creation
-		// This includes "unexpected EOF" and "failed to decode response body"
+		// Check if this is a [002] connection error on disk creation.
+		// We check for the [002] prefix to match the specific error patterns observed in practice.
+		// These errors occur when the connection is reset while reading the response body:
+		// - "[002] unexpected EOF" - connection closed prematurely
+		// - "[002] failed to decode response body" - I/O error reading response (not JSON parsing)
 		if err != nil && strings.Contains(err.Error(), "[002]") &&
 			(strings.Contains(err.Error(), "EOF") || strings.Contains(err.Error(), "failed to decode response body")) {
 			tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: Checking [002] network error", map[string]any{

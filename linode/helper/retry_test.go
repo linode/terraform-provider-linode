@@ -178,7 +178,7 @@ func TestInstanceDiskCreateBusyRetry_EOFErrors(t *testing.T) {
 			url:           "/v4/linode/instances/12345/disks",
 			err:           errors.New("[002] failed to decode response body"),
 			expectedRetry: true,
-			description:   "[002] decode error on disk creation endpoint",
+			description:   "[002] I/O read error on disk creation endpoint (connection reset during body read)",
 		},
 		{
 			name:          "Should not retry [002] on different endpoint",
@@ -206,7 +206,7 @@ func TestInstanceDiskCreateBusyRetry_EOFErrors(t *testing.T) {
 			url:           "/v4/linode/instances/12345/disks",
 			err:           errors.New("unexpected EOF"),
 			expectedRetry: false,
-			description:   "Plain EOF without [002] code should not retry",
+			description:   "Plain EOF without [002] prefix should not retry (only [002]-prefixed errors observed during provisioning)",
 		},
 		{
 			name:          "Should not retry [002] error without EOF/decode keywords",
