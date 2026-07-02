@@ -36,7 +36,7 @@ func (r *DataSource) Read(
 
 	defaultRanges, err := client.GetVPCDefaultRanges(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to get the VPC default range.", err.Error())
+		resp.Diagnostics.AddError("Failed to get VPC default ranges.", err.Error())
 		return
 	}
 

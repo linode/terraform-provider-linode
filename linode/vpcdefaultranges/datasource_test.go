@@ -6,6 +6,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v4/linode/vpcdefaultranges/tmpl"
 )
@@ -21,10 +24,18 @@ func TestAccDataSourceVPCDefaultRanges_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "default_ipv4_ranges.#"),
-					resource.TestCheckResourceAttrSet(resourceName, "forbidden_ipv4_ranges.#"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("default_ipv4_ranges"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("forbidden_ipv4_ranges"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 		},
 	})
