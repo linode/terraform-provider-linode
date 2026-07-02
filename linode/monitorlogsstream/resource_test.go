@@ -121,7 +121,7 @@ func getRegionForStreamTest(t *testing.T) string {
 	t.Helper()
 
 	region, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityObjectStorage}, "core")
+		[]linodego.RegionCapability{linodego.CapabilityObjectStorage}, "core")
 	if err != nil {
 		t.Fatalf("could not get region with Object Storage: %s", err)
 	}
