@@ -88,10 +88,7 @@ func OBJBucketDelete500Retry() func(response *http.Response, err error) bool {
 // response body") share this prefix. Plain EOF errors without [002] are not retried as they may indicate
 // different failure modes unrelated to instance provisioning state.
 func InstanceDiskCreateBusyRetry() func(response *http.Response, err error) bool {
-	diskCreatePath, compileErr := regexp.Compile("linode/instances/[0-9]+/disks$")
-	if compileErr != nil {
-		log.Fatal(compileErr)
-	}
+	diskCreatePath := regexp.MustCompile("linode/instances/[0-9]+/disks$")
 
 	return func(response *http.Response, err error) bool {
 		// Extract context from request if available for better log correlation
@@ -105,35 +102,40 @@ func InstanceDiskCreateBusyRetry() func(response *http.Response, err error) bool
 		// These errors occur when the connection is reset while reading the response body:
 		// - "[002] unexpected EOF" - connection closed prematurely
 		// - "[002] failed to decode response body" - I/O error reading response (not JSON parsing)
-		if err != nil && strings.Contains(err.Error(), "[002]") &&
-			(strings.Contains(err.Error(), "EOF") || strings.Contains(err.Error(), "failed to decode response body")) {
-			tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: Checking [002] network error", map[string]any{
-				"error": err.Error(),
-			})
-			// We need to verify this is a disk creation request
-			if response != nil && response.Request != nil && response.Request.URL != nil {
-				if response.Request.Method != http.MethodPost {
-					return false
-				}
-				if diskCreatePath.MatchString(response.Request.URL.Path) {
-					tflog.Debug(ctx, "Retrying disk creation due to [002] network error", map[string]any{
-						"error": err.Error(),
+		if err != nil {
+			errStr := err.Error()
+			if strings.Contains(errStr, "[002]") &&
+				(strings.Contains(errStr, "EOF") || strings.Contains(errStr, "failed to decode response body")) {
+				tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: Detected [002] network error", map[string]any{
+					"error": errStr,
+				})
+				// We need to verify this is a disk creation request
+				if response != nil && response.Request != nil && response.Request.URL != nil {
+					if response.Request.Method != http.MethodPost {
+						tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: [002] network error on non-POST request, not retrying", map[string]any{
+							"error": errStr,
+							"path":  response.Request.URL.Path,
+						})
+						return false
+					}
+					if diskCreatePath.MatchString(response.Request.URL.Path) {
+						tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: [002] network error on disk creation endpoint, retrying", map[string]any{
+							"error": errStr,
+							"path":  response.Request.URL.Path,
+						})
+						return true
+					}
+					tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: [002] network error on non-disk-creation endpoint, not retrying", map[string]any{
+						"error": errStr,
 						"path":  response.Request.URL.Path,
 					})
-					return true
 				}
-				tflog.Debug(ctx, "[002] network error on non-disk-creation endpoint, not retrying", map[string]any{
-					"error": err.Error(),
-					"path":  response.Request.URL.Path,
-				})
+				return false
 			}
-			return false
-		}
 
-		// Check for other errors (non-[002])
-		if err != nil {
+			// Non-[002] errors
 			tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: Non-[002] error, not retrying", map[string]any{
-				"error": err.Error(),
+				"error": errStr,
 			})
 			return false
 		}
@@ -170,20 +172,21 @@ func InstanceDiskCreateBusyRetry() func(response *http.Response, err error) bool
 			})
 			return false
 		}
-		bodyBytes, err := io.ReadAll(response.Body)
-		if err != nil {
-			tflog.Warn(ctx, "Failed to read response body", map[string]any{
-				"error": err.Error(),
+		origBody := response.Body
+		bodyBytes, readErr := io.ReadAll(origBody)
+		_ = origBody.Close()
+		response.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+		if readErr != nil {
+			tflog.Warn(ctx, "InstanceDiskCreateBusyRetry: Failed to read response body", map[string]any{
+				"error": readErr.Error(),
 			})
 			return false
 		}
-		response.Body.Close()
-		response.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 
 		bodyStr := string(bodyBytes)
 		isLinodeBusy := strings.Contains(bodyStr, "Linode busy.")
 
-		tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: Checked 400 response body", map[string]any{
+		tflog.Debug(ctx, "InstanceDiskCreateBusyRetry: Evaluated 400 response body for 'Linode busy.' message", map[string]any{
 			"path":           response.Request.URL.Path,
 			"is_linode_busy": isLinodeBusy,
 			"will_retry":     isLinodeBusy,
