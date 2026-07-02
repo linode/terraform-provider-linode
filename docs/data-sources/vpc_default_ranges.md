@@ -12,6 +12,7 @@ For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/li
 ## Example Usage
 
 The following example shows how one might use this data source to access information about the default and forbidden IPv4 address ranges for VPCs.
+
 ```hcl
 data "linode_vpc_default_ranges" "foo" {}
 
