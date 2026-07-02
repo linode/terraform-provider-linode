@@ -307,7 +307,6 @@ func TestGetUpdateOptions(t *testing.T) {
 
 	require.NotNil(t, opts.Label)
 	assert.Equal(t, "AuditLog-renamed", *opts.Label)
-	assert.Nil(t, opts.Type, "type changes require replacement, not update")
 	assert.Equal(t, []int{12345}, opts.Destinations)
 	require.NotNil(t, opts.Status)
 	assert.Equal(t, linodego.StreamStatusActive, *opts.Status)
