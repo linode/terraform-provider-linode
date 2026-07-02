@@ -39,6 +39,22 @@ resource "linode_vpc" "test" {
 }
 ```
 
+Create a VPC with a custom IPv4 range:
+
+```terraform
+# NOTE: Custom VPC IPv4 Ranges may not currently be available to all users.
+resource "linode_vpc" "test" {
+    label = "test-vpc"
+    region = "us-iad"
+    
+    ipv4 = [
+      {
+        range = "10.0.0.0/8"
+      }
+    ]
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -51,6 +67,8 @@ The following arguments are supported:
 
 * [`ipv6`](#ipv6) - (Optional) A list of IPv6 allocations under this VPC.
 
+* [`ipv4`](#ipv4) - (Optional) A list of IPv4 ranges under this VPC.
+
 ## IPv6
 
 -> **Limited Availability** IPv6 VPCs may not currently be available to all users.
@@ -62,6 +80,14 @@ Configures a single IPv6 range under this VPC.
 * `allocation_class` - (Optional) Indicates the labeled IPv6 Inventory that the VPC Prefix should be allocated from.
 
 * `allocated_range` - (Read-Only) The value of range computed by the API. This is necessary when needing to access the range for an implicit allocation.
+
+## IPv4
+
+-> **Limited Availability** Custom VPC IPv4 Ranges may not currently be available to all users.
+
+Configures a single IPv4 range under this VPC. Unlike IPv6, IPv4 ranges can be updated in-place without requiring resource replacement.
+
+* `range` - (Optional) The IPv4 range in CIDR format to assign to this VPC (e.g. `10.0.0.0/8`).
 
 ## Attributes Reference
 

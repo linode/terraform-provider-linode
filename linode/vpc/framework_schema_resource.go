@@ -36,6 +36,19 @@ var ResourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
 	},
 }
 
+var ResourceSchemaIPv4NestedObject = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"range": schema.StringAttribute{
+			Description: "The IPv4 range assigned to this VPC.",
+			Optional:    true,
+			CustomType:  customtypes.LinodeAutoAllocRangeType{},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+	},
+}
+
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
@@ -73,7 +86,14 @@ var frameworkResourceSchema = schema.Schema{
 			},
 			NestedObject: ResourceSchemaIPv6NestedObject,
 		},
-
+		"ipv4": schema.ListNestedAttribute{
+			Description: "The IPv4 configuration of this VPC.",
+			Optional:    true,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+			},
+			NestedObject: ResourceSchemaIPv4NestedObject,
+		},
 		"created": schema.StringAttribute{
 			Description: "The date and time when the VPC was created.",
 			Computed:    true,
