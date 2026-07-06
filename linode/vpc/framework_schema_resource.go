@@ -56,6 +56,16 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.RequiresReplace(),
 			},
 		},
+		"vpc_type": schema.StringAttribute{
+			Description: "The type of the VPC. Can be either 'regular' or 'rdma'. " +
+				"Defaults to 'regular'. The 'rdma' type may not be available to all users.",
+			Optional: true,
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifier.RequiresReplace(),
+			},
+		},
 		"description": schema.StringAttribute{
 			Description: "The user-defined description of this VPC.",
 			Optional:    true,

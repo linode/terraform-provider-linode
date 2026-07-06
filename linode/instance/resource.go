@@ -242,6 +242,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 	}
 
+	if linodeInterfaces, ok := d.GetOk("linode_interfaces"); ok {
+		expanded, err := expandLinodeInstanceInterfaces(linodeInterfaces.([]any))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createOpts.LinodeInstanceInterfaces = expanded
+	}
+
 	if interfaceGeneration, interfaceGenerationOk := d.GetOk("interface_generation"); interfaceGenerationOk {
 		createOpts.InterfaceGeneration = linodego.InterfaceGeneration(interfaceGeneration.(string))
 	}

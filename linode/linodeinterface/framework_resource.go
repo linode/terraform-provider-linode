@@ -47,6 +47,16 @@ func (r *Resource) Create(
 		return
 	}
 
+	if !plan.RDMAVPC.IsUnknown() && !plan.RDMAVPC.IsNull() {
+		resp.Diagnostics.AddError(
+			"RDMA VPC interfaces cannot be created via the linode_interface resource.",
+			"RDMA VPC interfaces can only be created as part of a GPUDirect RDMA Linode "+
+				"creation request. They may be managed (updated, imported) by this "+
+				"resource, but not created or deleted here.",
+		)
+		return
+	}
+
 	helper.SetLogFieldBulk(ctx, map[string]any{"linode_id": plan.LinodeID})
 	client := r.Meta.Client
 

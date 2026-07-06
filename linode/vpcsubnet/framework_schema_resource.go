@@ -93,6 +93,14 @@ var frameworkResourceSchema = schema.Schema{
 				int64planmodifier.RequiresReplace(),
 			},
 		},
+		"vpc_type": schema.StringAttribute{
+			Description: "The type of the parent VPC ('regular' or 'rdma'). " +
+				"Omitted if the requesting account does not have access to the GPUDirect RDMA functionality.",
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
 		"label": schema.StringAttribute{
 			Description: "The label of the VPC subnet.",
 			Required:    true,

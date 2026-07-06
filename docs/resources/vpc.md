@@ -49,6 +49,8 @@ The following arguments are supported:
 
 * `description` - (Optional) The user-defined description of this VPC.
 
+* `vpc_type` - (Optional) The type of the VPC. Can be either `regular` or `rdma`. Defaults to `regular`. The `rdma` type creates an RDMA VPC and may not be available to all users.
+
 * [`ipv6`](#ipv6) - (Optional) A list of IPv6 allocations under this VPC.
 
 ## IPv6

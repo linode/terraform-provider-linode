@@ -31,6 +31,11 @@ var VPCAttrs = map[string]schema.Attribute{
 		Description: "The region of the VPC.",
 		Computed:    true,
 	},
+	"vpc_type": schema.StringAttribute{
+		Description: "The type of the VPC ('regular' or 'rdma'). " +
+			"Omitted if the requesting account does not have access to the GPUDirect RDMA functionality.",
+		Computed: true,
+	},
 	"ipv6": schema.ListNestedAttribute{
 		Description:  "The IPv6 configuration of this VPC.",
 		Computed:     true,

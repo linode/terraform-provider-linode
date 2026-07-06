@@ -7,8 +7,9 @@ import (
 )
 
 type TemplateData struct {
-	Label  string
-	Region string
+	Label   string
+	Region  string
+	VPCType string
 }
 
 func Basic(t testing.TB, label, region string) string {
@@ -48,5 +49,14 @@ func DataDualStack(t testing.TB, label, region string) string {
 		"vpc_data_dual_stack", TemplateData{
 			Label:  label,
 			Region: region,
+		})
+}
+
+func VPCType(t testing.TB, label, region, vpcType string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_vpc_type", TemplateData{
+			Label:   label,
+			Region:  region,
+			VPCType: vpcType,
 		})
 }
