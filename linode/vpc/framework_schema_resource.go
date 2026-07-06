@@ -88,6 +88,7 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"ipv4": schema.ListNestedAttribute{
 			Description: "The IPv4 configuration of this VPC.",
+			Computed:    true,
 			Optional:    true,
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.UseStateForUnknown(),
@@ -106,6 +107,9 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The date and time when the VPC was updated.",
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 	},
 }
