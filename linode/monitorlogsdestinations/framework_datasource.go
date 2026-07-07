@@ -63,10 +63,12 @@ func (d *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func listLogsDestinations(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
-	destinations, err := client.ListLogsDestinations(ctx, &linodego.ListOptions{
-		Filter: filter,
-	})
+func listLogsDestinations(ctx context.Context, client *linodego.Client, _ string) ([]any, error) {
+	tflog.Trace(ctx, "client.ListLogsDestinations(...)")
+
+	// TODO: The API does not properly support filtering currently and sending filter will trigger errors.
+	// We retrieve all destinations and filter in Terraform.
+	destinations, err := client.ListLogsDestinations(ctx, nil)
 	if err != nil {
 		return nil, err
 	}

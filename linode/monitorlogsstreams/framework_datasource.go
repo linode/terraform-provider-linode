@@ -63,10 +63,12 @@ func (d *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func listLogStreams(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
-	streams, err := client.ListLogStreams(ctx, &linodego.ListOptions{
-		Filter: filter,
-	})
+func listLogStreams(ctx context.Context, client *linodego.Client, _ string) ([]any, error) {
+	tflog.Trace(ctx, "client.ListLogStreams(...)")
+
+	// TODO: The API does not properly support filtering currently and sending filter will trigger errors.
+	// We retrieve all streams and filter in Terraform.
+	streams, err := client.ListLogStreams(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
