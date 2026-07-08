@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,7 +21,6 @@ func TestParseKernels(t *testing.T) {
 			Architecture: "x86_64",
 			Deprecated:   false,
 			KVM:          true,
-			XEN:          false,
 			PVOPS:        false,
 			Built:        &time.Time{},
 		},

@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 func AddDiskResource(ctx context.Context, disk linodego.InstanceDisk, resp *resource.CreateResponse, plan ResourceModel) {
@@ -33,11 +33,10 @@ func resizeDiskSync(
 	meta *helper.FrameworkProviderMeta,
 	linodeID,
 	diskID,
-	newSize,
-	timeoutSeconds int,
+	newSize int,
 ) diag.Diagnostics {
 	return runDiskOperation(
-		ctx, client, meta, linodeID, timeoutSeconds, false,
+		ctx, client, meta, linodeID, false,
 		func() (resultDiag diag.Diagnostics) {
 			disk, err := client.GetInstanceDisk(ctx, linodeID, diskID)
 			if err != nil {
@@ -64,13 +63,18 @@ func resizeDiskSync(
 			tflog.Debug(ctx, "client.ResizeInstanceDisk(...)", map[string]any{
 				"new_size": newSize,
 			})
-			if err := client.ResizeInstanceDisk(ctx, linodeID, diskID, newSize); err != nil {
+
+			instanceDiskResizeOptions := linodego.InstanceDiskResizeOptions{
+				Size: newSize,
+			}
+
+			if err := client.ResizeInstanceDisk(ctx, linodeID, diskID, instanceDiskResizeOptions); err != nil {
 				resultDiag.AddError("Failed to resize Linode instance disk", err.Error())
 				return resultDiag
 			}
 
 			// Wait for the resize event to complete
-			if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
+			if _, err := p.WaitForFinished(ctx); err != nil {
 				resultDiag.AddError(
 					"Failed to wait for Linode instance disk resize to complete",
 					err.Error(),
@@ -84,7 +88,6 @@ func resizeDiskSync(
 				linodeID,
 				disk.ID,
 				linodego.DiskReady,
-				timeoutSeconds,
 			); err != nil {
 				resultDiag.AddError(
 					"Failed to wait for Linode instance disk to be ready",
@@ -110,13 +113,12 @@ func runDiskOperation(
 	client *linodego.Client,
 	meta *helper.FrameworkProviderMeta,
 	linodeID int,
-	timeoutSeconds int,
 	skipReboot bool,
 	callOperation func() diag.Diagnostics,
 ) (resultDiag diag.Diagnostics) {
 	tflog.Debug(ctx, "Enter runDiskOperation")
 	originalStatus, err := helper.WaitForInstanceNonTransientStatus(
-		ctx, client, linodeID, timeoutSeconds,
+		ctx, client, linodeID,
 	)
 	if err != nil {
 		resultDiag.AddError("Failed to wait for instance to exit transient status", err.Error())
@@ -133,7 +135,7 @@ func runDiskOperation(
 			return resultDiag
 		}
 
-		if err := helper.ShutDownInstanceSync(ctx, client, linodeID, timeoutSeconds); err != nil {
+		if err := helper.ShutDownInstanceSync(ctx, client, linodeID); err != nil {
 			resultDiag.AddError("Failed to shutdown Linode instance", err.Error())
 			return resultDiag
 		}
@@ -173,7 +175,7 @@ func runDiskOperation(
 	// Boot the instance back up if necessary
 	if originalStatus == linodego.InstanceRunning {
 		// NOTE: A config ID of 0 will boot the instance into its previously booted config
-		if err := helper.BootInstanceSync(ctx, client, linodeID, 0, timeoutSeconds); err != nil {
+		if err := helper.BootInstanceSync(ctx, client, linodeID, 0); err != nil {
 			resultDiag.AddError("Failed to boot Linode instance", err.Error())
 			return resultDiag
 		}

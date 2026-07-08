@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 func NewResource() resource.Resource {
@@ -78,7 +78,7 @@ func (r *Resource) Create(
 		rdns := plan.RDNS.ValueString()
 
 		options := linodego.IPAddressUpdateOptions{
-			RDNS: &rdns,
+			RDNS: linodego.DoublePointer(rdns),
 		}
 
 		tflog.Debug(ctx, "client.UpdateIPAddress(...)", map[string]any{
@@ -200,7 +200,7 @@ func (r *Resource) Update(
 	if !plan.RDNS.Equal(state.RDNS) {
 		rdns := plan.RDNS.ValueStringPointer()
 		updateOptions := linodego.IPAddressUpdateOptions{
-			RDNS: rdns,
+			RDNS: linodego.Pointer(rdns),
 		}
 
 		client := r.Meta.Client

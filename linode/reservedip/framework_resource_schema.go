@@ -9,9 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	linodesetplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/setplanmodifiers"
-	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	linodesetplanmodifiers "github.com/linode/terraform-provider-linode/v4/linode/helper/setplanmodifiers"
+	"github.com/linode/terraform-provider-linode/v4/linode/instancenetworking"
 )
 
 var assignedEntityType = types.ObjectType{

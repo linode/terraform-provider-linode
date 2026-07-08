@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -97,8 +97,8 @@ func TestFlattenInstanceBackups(t *testing.T) {
 			Available: true,
 			Enabled:   true,
 			Schedule: struct {
-				Day    string `json:"day,omitempty"`
-				Window string `json:"window,omitempty"`
+				Day    string `json:"day,omitzero"`
+				Window string `json:"window,omitzero"`
 			}{
 				Day:    "Saturday",
 				Window: "W22",
@@ -361,7 +361,7 @@ func TestFlattenInstanceSpecs(t *testing.T) {
 func TestFlattenInstanceIPv4(t *testing.T) {
 	tests := []struct {
 		name     string
-		input    []*net.IP
+		input    []net.IP
 		expected []string
 	}{
 		{
@@ -371,23 +371,23 @@ func TestFlattenInstanceIPv4(t *testing.T) {
 		},
 		{
 			name:     "empty input",
-			input:    []*net.IP{},
+			input:    []net.IP{},
 			expected: []string{},
 		},
 		{
 			name: "single public IPv4",
-			input: func() []*net.IP {
+			input: func() []net.IP {
 				ip := net.ParseIP("192.0.2.1")
-				return []*net.IP{&ip}
+				return []net.IP{ip}
 			}(),
 			expected: []string{"192.0.2.1"},
 		},
 		{
 			name: "multiple IPs including reserved",
-			input: func() []*net.IP {
+			input: func() []net.IP {
 				ip1 := net.ParseIP("203.0.113.5")
 				ip2 := net.ParseIP("192.168.128.10")
-				return []*net.IP{&ip1, &ip2}
+				return []net.IP{ip1, ip2}
 			}(),
 			expected: []string{"203.0.113.5", "192.168.128.10"},
 		},

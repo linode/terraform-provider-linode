@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 func flattenInstance(
@@ -41,7 +41,6 @@ func flattenInstance(
 	result["region"] = instance.Region
 	result["maintenance_policy"] = instance.MaintenancePolicy
 	result["watchdog_enabled"] = instance.WatchdogEnabled
-	result["group"] = instance.Group
 	result["tags"] = instance.Tags
 	result["capabilities"] = instance.Capabilities
 	result["locks"] = instance.Locks
@@ -86,8 +85,8 @@ func flattenInstance(
 	return result, nil
 }
 
-// flattenInstanceIPv4 converts a slice of net.IP pointers to a slice of IP address strings.
-func flattenInstanceIPv4(ips []*net.IP) []string {
+// flattenInstanceIPv4 converts a slice of IPs to a slice of IP address strings.
+func flattenInstanceIPv4(ips []net.IP) []string {
 	result := make([]string, 0, len(ips))
 	for _, ip := range ips {
 		result = append(result, ip.String())
@@ -281,7 +280,6 @@ func flattenInstanceSimple(instance *linodego.Instance) (map[string]any, error) 
 	result["region"] = instance.Region
 	result["maintenance_policy"] = instance.MaintenancePolicy
 	result["watchdog_enabled"] = instance.WatchdogEnabled
-	result["group"] = instance.Group
 	result["tags"] = instance.Tags
 	result["capabilities"] = instance.Capabilities
 	result["image"] = instance.Image

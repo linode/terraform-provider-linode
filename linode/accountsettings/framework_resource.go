@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 func NewResource() resource.Resource {
@@ -156,26 +156,6 @@ func (r *Resource) createOrUpdateAccountSettings(
 		return
 	}
 	email := account.Email
-
-	// Longview Plan update functionality has been moved
-	if !plan.LongviewSubscription.IsNull() {
-		options := linodego.LongviewPlanUpdateOptions{
-			LongviewSubscription: plan.LongviewSubscription.ValueString(),
-		}
-
-		tflog.Debug(ctx, "client.UpdateLongviewPlan(...)", map[string]any{
-			"options": options,
-		})
-
-		_, err := client.UpdateLongviewPlan(ctx, options)
-		if err != nil {
-			diags.AddError(
-				"Failed to update Linode Longview Plan",
-				err.Error(),
-			)
-			return
-		}
-	}
 
 	updateOpts := linodego.AccountSettingsUpdateOptions{}
 

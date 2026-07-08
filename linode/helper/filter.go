@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 // validFilterValueTypes is a list of valid underlying types for filterable fields.
@@ -303,7 +303,7 @@ func (f FilterConfig) GetFilterID(d *schema.ResourceData) (string, error) {
 		return "", err
 	}
 
-	hash := sha3.Sum512(result)
+	hash := sha3.Sum512(result) //nolint:govet
 	return base64.StdEncoding.EncodeToString(hash[:]), nil
 }
 
@@ -592,7 +592,7 @@ func validateItemValueType(value any) error {
 
 	return fmt.Errorf("The underlying type (%v) for this filterable field is not supported. "+
 		"This is always a provider bug. Please create an issue describing this bug on the terraform-provider-linode "+
-		"GitHub repository. (https://github.com/linode/terraform-provider-linode/v3/issues)",
+		"GitHub repository. (https://github.com/linode/terraform-provider-linode/v4/issues)",
 		kind)
 }
 

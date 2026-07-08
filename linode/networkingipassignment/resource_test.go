@@ -15,16 +15,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/networkingipassignment/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/networkingipassignment/tmpl"
 )
 
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,6 +37,7 @@ func TestAccResourceNetworkingIPsAssign(t *testing.T) {
 
 	resourceName := "linode_networking_ip_assignment.test"
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -44,7 +45,7 @@ func TestAccResourceNetworkingIPsAssign(t *testing.T) {
 		CheckDestroy:             checkNetworkingIPsAssignDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.NetworkingIPsAssign(t, instanceName, testRegion),
+				Config: tmpl.NetworkingIPsAssign(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "region"),
 					resource.TestCheckResourceAttrSet(resourceName, "assignments.#"),
@@ -67,7 +68,7 @@ func TestAccResourceNetworkingIPsAssign(t *testing.T) {
 			{
 				// A subsequent plan/apply triggers Read which populates computed fields
 				// via GET /networking/ips/{address}.
-				Config: tmpl.NetworkingIPsAssign(t, instanceName, testRegion),
+				Config: tmpl.NetworkingIPsAssign(t, instanceName, testRegion, rootPass),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assignments").AtSliceIndex(0).AtMapKey("reserved"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assignments").AtSliceIndex(0).AtMapKey("tags"), knownvalue.NotNull()),
