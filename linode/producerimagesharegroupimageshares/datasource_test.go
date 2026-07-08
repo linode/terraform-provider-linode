@@ -8,8 +8,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/producerimagesharegroupimageshares/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/producerimagesharegroupimageshares/tmpl"
 )
 
 func TestAccDataSourceImageShareGroupImageShares_basic(t *testing.T) {
@@ -22,7 +23,7 @@ func TestAccDataSourceImageShareGroupImageShares_basic(t *testing.T) {
 	label := acctest.RandomWithPrefix("tf_test")
 	instanceLabel := acctest.RandomWithPrefix("tf_test")
 
-	instanceRegion, err := acceptance.GetRandomRegionWithCaps([]string{}, "core")
+	instanceRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

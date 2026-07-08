@@ -296,8 +296,6 @@ In addition to all arguments above, the following attributes are exported:
 
 * `kubeconfig` - The base64 encoded kubeconfig for the Kubernetes cluster.
 
-* `dashboard_url` - The Kubernetes Dashboard access URL for this cluster. LKE Enterprise does not have a dashboard URL.
-
 * `apl_enabled` - Enables the App Platform Layer
 
 * `pool` - Additional nested attributes:

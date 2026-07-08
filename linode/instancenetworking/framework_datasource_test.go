@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/instancenetworking/tmpl"
 )
 
 const testInstanceNetworkResName = "data.linode_instance_networking.test"
@@ -21,7 +21,7 @@ const testInstanceNetworkResName = "data.linode_instance_networking.test"
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityVPCs, linodego.CapabilityLinodes}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs, linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -54,8 +54,6 @@ Each Linode Domain will be stored in the `domains` attribute and will export the
 
 * `type` - If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave) (`master`, `slave`)
 
-* `group` - The group this Domain belongs to.
-
 * `status` - Used to control whether this Domain is currently being rendered. (`disabled`, `active`)
 
 * `description` - A description for this Domain.
@@ -77,8 +75,6 @@ Each Linode Domain will be stored in the `domains` attribute and will export the
 * `tags` - An array of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
 ## Filterable Fields
-
-* `group`
 
 * `tags`
 

@@ -8,7 +8,6 @@ provider "linode" {
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
-    group = "tf_test"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
     alerts {
