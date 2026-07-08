@@ -107,9 +107,6 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The date and time when the VPC was updated.",
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
 		},
 	},
 }
