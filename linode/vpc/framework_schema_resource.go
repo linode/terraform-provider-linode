@@ -2,11 +2,13 @@ package vpc
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/customtypes"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/stringplanmodifiers"
 )
 
 var ResourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
@@ -23,6 +25,9 @@ var ResourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
 		"allocated_range": schema.StringAttribute{
 			Description: "The IPv6 range assigned to this VPC.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"allocation_class": schema.StringAttribute{
 			Description: "The labeled IPv6 Inventory that the VPC Prefix should be allocated from.",
@@ -107,6 +112,13 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The date and time when the VPC was updated.",
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifiers.UseStateForUnknownUnlessTheseChanged(
+					path.MatchRoot("label"),
+					path.MatchRoot("description"),
+					path.MatchRoot("ipv4"),
+				),
+			},
 		},
 	},
 }
