@@ -357,6 +357,22 @@ func TestAccResourceVPC_ipv4(t *testing.T) {
 				},
 			},
 			{
+				Config: tmpl.Basic(t, vpcLabel, targetRegion),
+				Check:  checkVPCExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv4"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv4").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.StringExact("10.0.0.0/8"),
+					),
+				},
+			},
+			{
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,

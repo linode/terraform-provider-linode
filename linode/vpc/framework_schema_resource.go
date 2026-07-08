@@ -47,9 +47,6 @@ var ResourceSchemaIPv4NestedObject = schema.NestedAttributeObject{
 			Description: "The IPv4 range assigned to this VPC.",
 			Optional:    true,
 			CustomType:  customtypes.LinodeAutoAllocRangeType{},
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
 		},
 	},
 }
