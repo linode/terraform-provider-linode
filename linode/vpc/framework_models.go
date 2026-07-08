@@ -71,7 +71,7 @@ type ResourceModelIPv6 struct {
 }
 
 type ResourceModelIPv4 struct {
-	Range customtypes.LinodeAutoAllocRangeValue `tfsdk:"range"`
+	Range types.String `tfsdk:"range"`
 }
 
 func (m *ResourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) diag.Diagnostics {
@@ -103,7 +103,7 @@ func (m *ResourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, prese
 	ipv4Models := helper.MapSlice(vpc.IPv4,
 		func(r linodego.VPCIPv4Range) ResourceModelIPv4 {
 			return ResourceModelIPv4{
-				Range: customtypes.LinodeAutoAllocRangeValue{StringValue: types.StringValue(r.Range)},
+				Range: types.StringValue(r.Range),
 			}
 		},
 	)
@@ -142,7 +142,7 @@ type DataSourceModelIPv6 struct {
 }
 
 type DataSourceModelIPv4 struct {
-	Range customtypes.LinodeAutoAllocRangeValue `tfsdk:"range"`
+	Range types.String `tfsdk:"range"`
 }
 
 func (m *DataSourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) diag.Diagnostics {
@@ -174,7 +174,7 @@ func (m *DataSourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, pre
 		vpc.IPv4,
 		func(r linodego.VPCIPv4Range) DataSourceModelIPv4 {
 			return DataSourceModelIPv4{
-				Range: customtypes.LinodeAutoAllocRangeValue{StringValue: types.StringValue(r.Range)},
+				Range: types.StringValue(r.Range),
 			}
 		},
 	)
