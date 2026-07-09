@@ -1,0 +1,10 @@
+{{ define "networking_ip_reserved_unassigned" }}
+
+resource "linode_networking_ip" "reserved_ip" {
+  region   = "{{ .Region }}"
+  public   = true
+  type     = "ipv4"
+  reserved = {{ .Reserved }}
+}
+
+{{ end }}

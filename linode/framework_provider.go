@@ -105,10 +105,13 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/regions"
 	"github.com/linode/terraform-provider-linode/v4/linode/regionsvpcavailability"
 	"github.com/linode/terraform-provider-linode/v4/linode/regionvpcavailability"
+	"github.com/linode/terraform-provider-linode/v4/linode/reservedip"
+	"github.com/linode/terraform-provider-linode/v4/linode/reservediptypes"
 	"github.com/linode/terraform-provider-linode/v4/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/v4/linode/sshkeys"
 	"github.com/linode/terraform-provider-linode/v4/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/v4/linode/stackscripts"
+	"github.com/linode/terraform-provider-linode/v4/linode/tag"
 	"github.com/linode/terraform-provider-linode/v4/linode/token"
 	"github.com/linode/terraform-provider-linode/v4/linode/user"
 	"github.com/linode/terraform-provider-linode/v4/linode/users"
@@ -274,6 +277,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		placementgroup.NewResource,
 		placementgroupassignment.NewResource,
 		instancereservedipassignment.NewResource,
+		reservedip.NewResource,
 		rdns.NewResource,
 		sshkey.NewResource,
 		stackscript.NewResource,
@@ -395,6 +399,8 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		lkenodepool.NewDataSource,
 		regionvpcavailability.NewDataSource,
 		regionsvpcavailability.NewDataSource,
+		reservediptypes.NewDataSource,
+		tag.NewDataSource,
 		monitorlogsdestination.NewDataSource,
 		monitorlogsdestinations.NewDataSource,
 		monitorlogsstream.NewDataSource,
