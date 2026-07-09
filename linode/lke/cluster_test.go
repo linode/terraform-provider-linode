@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/lke"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/lke"
 )
 
 func TestReconcileLKENodePoolSpecs(t *testing.T) {
@@ -42,7 +42,7 @@ func TestReconcileLKENodePoolSpecs(t *testing.T) {
 				{ID: 123, Type: "g6-standard-1", Count: 3, Tags: []string{"example"}},
 			},
 			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{
-				123: {Count: 3, Tags: &[]string{"example"}},
+				123: {Count: 3, Tags: []string{"example"}},
 			},
 			expectedToCreate: []linodego.LKENodePoolCreateOptions{},
 			expectedToDelete: []int{},
@@ -73,7 +73,7 @@ func TestReconcileLKENodePoolSpecs(t *testing.T) {
 			},
 			expectedToDelete: []int{124},
 			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{
-				123: {Count: 9, Tags: &[]string{"example"}},
+				123: {Count: 9, Tags: []string{"example"}},
 			},
 			expectedToCreate: []linodego.LKENodePoolCreateOptions{
 				{Type: "g6-standard-2", Count: 10, Tags: []string{"example"}},
@@ -94,10 +94,10 @@ func TestReconcileLKENodePoolSpecs(t *testing.T) {
 				{ID: 127, Type: "g6-standard-3", Count: 2, Tags: []string{"example"}},
 			},
 			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{
-				123: {Count: 2, Tags: &[]string{"example"}},
-				124: {Count: 9, Tags: &[]string{"example"}},
-				126: {Count: 8, Tags: &[]string{"example"}},
-				127: {Count: 2, Tags: &[]string{"example"}},
+				123: {Count: 2, Tags: []string{"example"}},
+				124: {Count: 9, Tags: []string{"example"}},
+				126: {Count: 8, Tags: []string{"example"}},
+				127: {Count: 2, Tags: []string{"example"}},
 			},
 			expectedToDelete: []int{},
 			expectedToCreate: []linodego.LKENodePoolCreateOptions{},
@@ -111,7 +111,7 @@ func TestReconcileLKENodePoolSpecs(t *testing.T) {
 				{ID: 123, Type: "g6-standard-3", Count: 3, AutoScalerEnabled: true, AutoScalerMin: 3, AutoScalerMax: 7, Tags: []string{"example"}},
 			},
 			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{
-				123: {Count: 3, Autoscaler: &linodego.LKENodePoolAutoscaler{Enabled: true, Min: 3, Max: 7}, Tags: &[]string{"example"}},
+				123: {Count: 3, Autoscaler: &linodego.LKENodePoolAutoscaler{Enabled: true, Min: 3, Max: 7}, Tags: []string{"example"}},
 			},
 			expectedToDelete: []int{},
 			expectedToCreate: []linodego.LKENodePoolCreateOptions{},
@@ -125,7 +125,7 @@ func TestReconcileLKENodePoolSpecs(t *testing.T) {
 				{ID: 123, Type: "g6-standard-3", Count: 3, AutoScalerEnabled: false, Tags: []string{"example"}},
 			},
 			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{
-				123: {Count: 3, Autoscaler: &linodego.LKENodePoolAutoscaler{Enabled: false, Min: 0, Max: 0}, Tags: &[]string{"example"}},
+				123: {Count: 3, Autoscaler: &linodego.LKENodePoolAutoscaler{Enabled: false, Min: 0, Max: 0}, Tags: []string{"example"}},
 			},
 			expectedToDelete: []int{},
 			expectedToCreate: []linodego.LKENodePoolCreateOptions{},
@@ -139,7 +139,7 @@ func TestReconcileLKENodePoolSpecs(t *testing.T) {
 				{ID: 123, Type: "g6-standard-3", Count: 3, AutoScalerEnabled: true, AutoScalerMin: 5, AutoScalerMax: 10, Tags: []string{"example"}},
 			},
 			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{
-				123: {Count: 3, Autoscaler: &linodego.LKENodePoolAutoscaler{Enabled: true, Min: 5, Max: 10}, Tags: &[]string{"example"}},
+				123: {Count: 3, Autoscaler: &linodego.LKENodePoolAutoscaler{Enabled: true, Min: 5, Max: 10}, Tags: []string{"example"}},
 			},
 			expectedToDelete: []int{},
 			expectedToCreate: []linodego.LKENodePoolCreateOptions{},

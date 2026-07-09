@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/setplanmodifiers"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/setplanmodifiers"
 )
 
 func TestCaseInsensitiveSet(t *testing.T) {

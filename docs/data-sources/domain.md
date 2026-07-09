@@ -41,8 +41,6 @@ The Linode Domain resource exports the following attributes:
 
 * `type` - If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave) (`master`, `slave`)
 
-* `group` - The group this Domain belongs to.
-
 * `status` - Used to control whether this Domain is currently being rendered. (`disabled`, `active`)
 
 * `description` - A description for this Domain.

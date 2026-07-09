@@ -3,7 +3,7 @@ package databaseshared
 import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/stringplanmodifiers"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/stringplanmodifiers"
 )
 
 // HostStringPlanModifiers is the single source of truth for DB host plan modifiers.
