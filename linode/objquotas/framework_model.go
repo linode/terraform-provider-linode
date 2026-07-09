@@ -20,6 +20,8 @@ type ObjectStorageQuotaModel struct {
 	Description    types.String `tfsdk:"description"`
 	QuotaLimit     types.Int64  `tfsdk:"quota_limit"`
 	ResourceMetric types.String `tfsdk:"resource_metric"`
+	QuotaType      types.String `tfsdk:"quota_type"`
+	HasUsage       types.Bool   `tfsdk:"has_usage"`
 }
 
 func (model *ObjectStorageQuotaFilterModel) parseQuotas(
@@ -37,6 +39,8 @@ func (model *ObjectStorageQuotaFilterModel) parseQuotas(
 		quotaModel.Description = types.StringValue(quota.Description)
 		quotaModel.QuotaLimit = types.Int64Value(int64(quota.QuotaLimit))
 		quotaModel.ResourceMetric = types.StringValue(quota.ResourceMetric)
+		quotaModel.QuotaType = types.StringValue(quota.QuotaType)
+		quotaModel.HasUsage = types.BoolValue(quota.HasUsage)
 
 		quotaModels[i] = quotaModel
 	}
