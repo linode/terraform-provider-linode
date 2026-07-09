@@ -38,7 +38,7 @@ func TestParseInstanceIPAddressResponse(t *testing.T) {
 					AssignedEntity: nil,
 				},
 			},
-				Reserved: []linodego.InstanceIP{
+			Reserved: []linodego.InstanceIP{
 				{
 					Address:  "5.6.7.8",
 					Type:     "ipv4",
@@ -53,7 +53,7 @@ func TestParseInstanceIPAddressResponse(t *testing.T) {
 					},
 				},
 			},
-				Shared: []linodego.InstanceIP{
+			Shared: []linodego.InstanceIP{
 				{
 					Address:        "9.8.7.6",
 					Type:           "ipv4",
