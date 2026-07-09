@@ -58,7 +58,6 @@ jobs:
         with:
           go-version: 'stable'
       - run: go version
-      - run: make deps
       - name: Unit tests
         run: make test-unit
 
