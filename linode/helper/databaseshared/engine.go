@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 func ResolveValidDBEngine(
@@ -38,7 +38,30 @@ func CreateLegacyDatabaseEngineSlug(engine, version string) string {
 }
 
 func CreateDatabaseEngineSlug(engine, version string) string {
-	return fmt.Sprintf("%s/%s", engine, strings.Split(version, ".")[0])
+	parts := strings.Split(version, ".")
+
+	switch engine {
+	case "mysql":
+		if len(parts) >= 2 {
+			return fmt.Sprintf("%s/%s.%s", engine, parts[0], parts[1])
+		}
+
+		return fmt.Sprintf("%s/%s", engine, version)
+
+	case "postgresql":
+		if len(parts) >= 1 {
+			return fmt.Sprintf("%s/%s", engine, parts[0])
+		}
+
+		return fmt.Sprintf("%s/%s", engine, version)
+
+	default:
+		if len(parts) >= 1 {
+			return fmt.Sprintf("%s/%s", engine, parts[0])
+		}
+
+		return fmt.Sprintf("%s/%s", engine, version)
+	}
 }
 
 func ParseDatabaseEngineSlug(engineID string) (string, string, error) {

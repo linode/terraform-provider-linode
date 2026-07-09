@@ -16,11 +16,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	acceptanceTmpl "github.com/linode/terraform-provider-linode/v3/linode/acceptance/tmpl"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	acceptanceTmpl "github.com/linode/terraform-provider-linode/v4/linode/acceptance/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/lkenodepool/tmpl"
 )
 
 var (
@@ -61,7 +61,7 @@ func init() {
 
 		k8sVersion = k8sVersions[len(k8sVersions)-1]
 
-		region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLKE}, "core")
+		region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLKE}, "core")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -116,7 +116,7 @@ func TestAccResourceNodePool_basic(t *testing.T) {
 
 	// This test validates disk_encryption, so we need a region that supports both LKE and Disk Encryption
 	diskEncRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityLKE, linodego.CapabilityDiskEncryption}, "core",
+		[]linodego.RegionCapability{linodego.CapabilityLKE, linodego.CapabilityDiskEncryption}, "core",
 	)
 	if err != nil {
 		t.Skipf("No region with LKE + Disk Encryption capabilities: %v", err)
@@ -441,7 +441,7 @@ func TestAccResourceNodePoolEnterprise_basic(t *testing.T) {
 
 	enterpriseK8sVersion := versions[0].ID
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityKubernetesEnterprise}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityKubernetesEnterprise}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -513,14 +513,14 @@ func TestAccResourceNodePoolEnterprise_withFirewall(t *testing.T) {
 
 	enterpriseK8sVersion := versions[0].ID
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityKubernetesEnterprise}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityKubernetesEnterprise}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	firewall, err := client.CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
 		Label: "tftest-enterprise-upgrade-" + acctest.RandString(5),
-		Rules: linodego.FirewallRuleSet{
+		Rules: linodego.FirewallRulesCreateOptions{
 			InboundPolicy:  "ACCEPT",
 			OutboundPolicy: "ACCEPT",
 		},

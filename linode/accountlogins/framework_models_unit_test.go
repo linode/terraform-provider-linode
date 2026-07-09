@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 func TestParseLogins(t *testing.T) {

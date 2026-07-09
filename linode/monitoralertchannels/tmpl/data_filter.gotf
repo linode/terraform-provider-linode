@@ -1,0 +1,10 @@
+{{ define "monitor_alert_channels_data_filter" }}
+
+data "linode_monitor_alert_channels" "channels" {
+  filter {
+    name   = "type"
+    values = ["{{ .AlertType }}"]
+  }
+}
+
+{{ end }}

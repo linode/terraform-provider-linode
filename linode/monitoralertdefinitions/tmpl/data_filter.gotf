@@ -1,0 +1,14 @@
+{{ define "alert_definitions_data_filter" }}
+
+{{ template "alert_definitions_data_base" . }}
+
+data "linode_monitor_alert_definitions" "foobar" {
+    depends_on = [linode_monitor_alert_definition.test]
+    service_type = "dbaas"
+    filter {
+        name = "label"
+        values = ["{{ .Label }}"]
+    }
+}
+
+{{ end }}

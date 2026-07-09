@@ -34,7 +34,7 @@ jobs:
           go-version: 'stable'
       - run: go version
 
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         id: disallowed-character-check
         env:
           text: ${{ inputs.test_suite }}
@@ -51,7 +51,7 @@ jobs:
 
       # Check out merge commit
       - name: Checkout PR
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.sha }}
           fetch-depth: 0
@@ -94,7 +94,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         id: update-check-run
         if: ${{ steps.disallowed-character-check.outputs.result == 'pass' && inputs.pull_request_number != '' && fromJson(steps.commit-hash.outputs.data).repository.pullRequest.headRef.target.oid == inputs.sha }}
         env:
@@ -129,7 +129,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: 'recursive'

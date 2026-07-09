@@ -4,14 +4,16 @@ resource "linode_instance" "test1" {
     label  = "{{ .Label }}-1"
     type   = "g6-nanode-1"
     region = "{{ .Region }}"
-    image  = "linode/alpine3.19"
+    image  = "linode/arch"
+    root_pass = "{{ .RootPass }}"
 }
 
 resource "linode_instance" "test2" {
     label  = "{{ .Label }}-2"
     type   = "g6-nanode-1"
     region = "{{ .Region }}"
-    image  = "linode/alpine3.19"
+    image  = "linode/arch"
+    root_pass = "{{ .RootPass }}"
 }
 
 resource "linode_networking_ip" "reserved_ip1" {
@@ -24,7 +26,7 @@ resource "linode_networking_ip" "reserved_ip1" {
 resource "linode_networking_ip" "reserved_ip2" {
   public   = true
   type     = "ipv4"
-  region   = "{{ .Region }}" 
+  region   = "{{ .Region }}"
   reserved = true
 }
 
