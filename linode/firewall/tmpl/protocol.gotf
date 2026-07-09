@@ -1,0 +1,18 @@
+{{ define "firewall_protocol" }}
+
+resource "linode_firewall" "test" {
+    label = "{{.Label}}"
+    tags  = ["test"]
+
+    inbound {
+        label    = "tf-test-in"
+        action   = "ACCEPT"
+        protocol = "{{.Protocol}}"
+        {{ if .Ports }}ports    = "{{.Ports}}"{{ end }}
+        ipv4     = ["0.0.0.0/0"]
+    }
+    inbound_policy = "DROP"
+    outbound_policy = "DROP"
+}
+
+{{ end }}

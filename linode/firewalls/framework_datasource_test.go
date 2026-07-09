@@ -231,3 +231,40 @@ func TestAccDataSourceFirewalls_basic(t *testing.T) {
 		})
 	})
 }
+
+func TestAccDataSourceFirewalls_protocolAllNumeric(t *testing.T) {
+	t.Parallel()
+
+	firewallName := acctest.RandomWithPrefix("tf_test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataProtocolAllNumeric(t, firewallName),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						testFirewallDataName,
+						tfjsonpath.New("firewalls"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallDataName,
+						tfjsonpath.New("firewalls").AtSliceIndex(0).AtMapKey("label"),
+						knownvalue.StringExact(firewallName),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallDataName,
+						tfjsonpath.New("firewalls").AtSliceIndex(0).AtMapKey("inbound").AtSliceIndex(0).AtMapKey("protocol"),
+						knownvalue.StringExact("ALL"),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallDataName,
+						tfjsonpath.New("firewalls").AtSliceIndex(0).AtMapKey("outbound").AtSliceIndex(0).AtMapKey("protocol"),
+						knownvalue.StringExact("50"),
+					),
+				},
+			},
+		},
+	})
+}
