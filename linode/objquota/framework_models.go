@@ -18,6 +18,8 @@ type DataSourceModel struct {
 	Description    types.String `tfsdk:"description"`
 	QuotaLimit     types.Int64  `tfsdk:"quota_limit"`
 	ResourceMetric types.String `tfsdk:"resource_metric"`
+	QuotaType      types.String `tfsdk:"quota_type"`
+	HasUsage       types.Bool   `tfsdk:"has_usage"`
 	QuotaUsage     types.Object `tfsdk:"quota_usage"`
 }
 
@@ -39,6 +41,13 @@ func (data *DataSourceModel) parseObjectStorageQuota(
 	data.Description = types.StringValue(quota.Description)
 	data.QuotaLimit = types.Int64Value(int64(quota.QuotaLimit))
 	data.ResourceMetric = types.StringValue(quota.ResourceMetric)
+	data.QuotaType = types.StringValue(quota.QuotaType)
+	data.HasUsage = types.BoolValue(quota.HasUsage)
+
+	if !quota.HasUsage || usage == nil {
+		data.QuotaUsage = types.ObjectNull(quotaUsageAttributes)
+		return nil
+	}
 
 	quotaUsage, diag := types.ObjectValueFrom(
 		ctx,
