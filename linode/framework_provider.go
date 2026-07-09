@@ -86,6 +86,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/obj"
 	"github.com/linode/terraform-provider-linode/v4/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v4/linode/objendpoints"
+	"github.com/linode/terraform-provider-linode/v4/linode/objglobalquota"
+	"github.com/linode/terraform-provider-linode/v4/linode/objglobalquotas"
 	"github.com/linode/terraform-provider-linode/v4/linode/objkey"
 	"github.com/linode/terraform-provider-linode/v4/linode/objquota"
 	"github.com/linode/terraform-provider-linode/v4/linode/objquotas"
@@ -370,6 +372,8 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		databasemysqlconfig.NewDataSource,
 		databasepostgresqlconfig.NewDataSource,
 		objendpoints.NewDataSource,
+		objglobalquota.NewDataSource,
+		objglobalquotas.NewDataSource,
 		objquota.NewDataSource,
 		objquotas.NewDataSource,
 		firewalltemplate.NewDataSource,
