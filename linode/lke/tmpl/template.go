@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
 )
 
 type TaintData struct {
@@ -192,4 +192,14 @@ func TierConditionalWithUpdateStrategy(t testing.TB, name, version, region, tier
 		"lke_cluster_tier_conditional",
 		TemplateData{Label: name, K8sVersion: version, Region: region, Tier: tier, UpdateStrategy: updateStrategy},
 	)
+}
+
+func DiskEncryptionPools(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_pools_disk_encryption", TemplateData{Label: name, K8sVersion: version, Region: region})
+}
+
+func DiskEncryptionPoolsUpdated(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_pools_disk_encryption_updated", TemplateData{Label: name, K8sVersion: version, Region: region})
 }

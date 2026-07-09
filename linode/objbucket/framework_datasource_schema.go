@@ -2,10 +2,7 @@ package objbucket
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 var frameworkDatasourceSchema = schema.Schema{
@@ -18,28 +15,10 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The name of this bucket.",
 			Required:    true,
 		},
-		"cluster": schema.StringAttribute{
-			Description: "The ID of the Object Storage Cluster this bucket is in.",
-			DeprecationMessage: "The cluster attribute has been deprecated, please consider " +
-				"switching to the region attribute. For example, a cluster value of `us-mia-1` " +
-				"can be translated to a region value of `us-mia`.",
-			Optional: true,
-			Computed: true,
-			Validators: []validator.String{
-				stringvalidator.ExactlyOneOf(
-					path.MatchRelative().AtParent().AtName("region"),
-				),
-			},
-		},
 		"region": schema.StringAttribute{
 			Description: "The ID of the region this bucket is in.",
 			Optional:    true,
 			Computed:    true,
-			Validators: []validator.String{
-				stringvalidator.ExactlyOneOf(
-					path.MatchRelative().AtParent().AtName("cluster"),
-				),
-			},
 		},
 		"endpoint_type": schema.StringAttribute{
 			Description: "The type of the S3 endpoint of the bucket.",

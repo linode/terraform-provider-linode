@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"regexp"
 	"sort"
@@ -21,11 +22,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/lke/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/lke/tmpl"
 )
 
 var (
@@ -76,7 +77,7 @@ func init() {
 		k8sVersionPrevious = k8sVersions[len(k8sVersions)-2]
 	}
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLKE}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLKE}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -94,7 +95,7 @@ func init() {
 		k8sVersionEnterprise = enterpriseVersions[0].ID
 	}
 
-	enterpriseRegion, err = acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise", "VPCs"}, "core")
+	enterpriseRegion, err = acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{"Kubernetes Enterprise", "VPCs"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -232,7 +233,6 @@ func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resourceClusterName, "id"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.id"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
-						resource.TestCheckResourceAttrSet(resourceClusterName, "dashboard_url"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.label", "test"),
 
 						// Ensure the lke_cluster_id field is populated on a sample
@@ -305,7 +305,12 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 
 				var opts linodego.LKEClusterUpdateOptions
 
-				if err := json.Unmarshal([]byte(request.Body.(string)), &opts); err != nil {
+				body, err := io.ReadAll(request.Body)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				if err := json.Unmarshal(body, &opts); err != nil {
 					t.Fatal(err)
 				}
 
@@ -738,7 +743,7 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 
 	firewall, err := client.CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
 		Label: "tftest-enterprise-upgrade-" + acctest.RandString(5),
-		Rules: linodego.FirewallRuleSet{
+		Rules: linodego.FirewallRulesCreateOptions{
 			InboundPolicy:  "ACCEPT",
 			OutboundPolicy: "ACCEPT",
 		},
@@ -746,6 +751,9 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed creating firewall: %v", err)
 	}
+
+	// TODO: Remove hard-coded region once capability filtering works properly
+	enterpriseRegionWithACLP := "us-lax"
 
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf-test")
@@ -755,10 +763,10 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "on_recycle"),
+					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegionWithACLP, "on_recycle"),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegionWithACLP),
 						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
@@ -779,10 +787,10 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 					},
 				},
 				{
-					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "rolling_update"),
+					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegionWithACLP, "rolling_update"),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegionWithACLP),
 						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
@@ -799,10 +807,10 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 					},
 				},
 				{
-					Config: tmpl.EnterpriseFirewall(t, clusterName, k8sVersionEnterprise, enterpriseRegion, firewall.ID),
+					Config: tmpl.EnterpriseFirewall(t, clusterName, k8sVersionEnterprise, enterpriseRegionWithACLP, firewall.ID),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegionWithACLP),
 						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
@@ -1083,5 +1091,87 @@ func TestAccResourceLKECluster_tierNoAccess(t *testing.T) {
 				},
 			},
 		},
+	})
+}
+
+func TestAccResourceLKECluster_poolDiskEncryption(t *testing.T) {
+	t.Parallel()
+
+	diskEncryptionRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]linodego.RegionCapability{linodego.CapabilityLKE, linodego.CapabilityDiskEncryption}, "core",
+	)
+	if err != nil {
+		t.Skipf("Skipping test: no region with LKE and Disk Encryption capabilities: %s", err)
+	}
+
+	var cluster linodego.LKECluster
+	var initialPoolIDs []int
+
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.DiskEncryptionPools(t, clusterName, k8sVersionLatest, diskEncryptionRegion),
+					Check: resource.ComposeTestCheckFunc(
+						checkLKEExists(&cluster),
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.disk_encryption", "enabled"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.count", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.disk_encryption", "disabled"),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						// Capture initial pool IDs for comparison
+						func(s *terraform.State) error {
+							rs := s.RootModule().Resources[resourceClusterName]
+							pool0ID, _ := strconv.Atoi(rs.Primary.Attributes["pool.0.id"])
+							pool1ID, _ := strconv.Atoi(rs.Primary.Attributes["pool.1.id"])
+							initialPoolIDs = []int{pool0ID, pool1ID}
+							return nil
+						},
+					),
+				},
+				{
+					// Change disk_encryption values — pools should be replaced, cluster should not
+					Config: tmpl.DiskEncryptionPoolsUpdated(t, clusterName, k8sVersionLatest, diskEncryptionRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.disk_encryption", "disabled"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.count", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.disk_encryption", "enabled"),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						// Verify cluster ID is unchanged (no cluster recreation)
+						func(s *terraform.State) error {
+							rs := s.RootModule().Resources[resourceClusterName]
+							clusterID, _ := strconv.Atoi(rs.Primary.ID)
+							if clusterID != cluster.ID {
+								return fmt.Errorf(
+									"expected cluster ID to remain %d, but got %d (cluster was recreated)",
+									cluster.ID, clusterID,
+								)
+							}
+							return nil
+						},
+						// Verify pool IDs have changed (pools were replaced)
+						func(s *terraform.State) error {
+							rs := s.RootModule().Resources[resourceClusterName]
+							pool0ID, _ := strconv.Atoi(rs.Primary.Attributes["pool.0.id"])
+							pool1ID, _ := strconv.Atoi(rs.Primary.Attributes["pool.1.id"])
+							if pool0ID == initialPoolIDs[0] {
+								return fmt.Errorf("expected pool.0.id to change after disk_encryption update, but it remained %d", pool0ID)
+							}
+							if pool1ID == initialPoolIDs[1] {
+								return fmt.Errorf("expected pool.1.id to change after disk_encryption update, but it remained %d", pool1ID)
+							}
+							return nil
+						},
+					),
+				},
+			},
+		})
 	})
 }

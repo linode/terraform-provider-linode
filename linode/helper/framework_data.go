@@ -21,6 +21,10 @@ func KeepOrUpdateBool(original types.Bool, updated bool, preserveKnown bool) typ
 	return KeepOrUpdateValue(original, types.BoolValue(updated), preserveKnown)
 }
 
+func KeepOrUpdateFloat64(original types.Float64, updated float64, preserveKnown bool) types.Float64 {
+	return KeepOrUpdateValue(original, types.Float64Value(updated), preserveKnown)
+}
+
 func KeepOrUpdateStringSet(
 	original types.Set, updated []string, preserveKnown bool, diags *diag.Diagnostics,
 ) types.Set {

@@ -34,7 +34,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v6
         with:
           go-version: 'stable'
@@ -53,12 +53,11 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v6
         with:
           go-version: 'stable'
       - run: go version
-      - run: make deps
       - name: Unit tests
         run: make test-unit
 
@@ -68,7 +67,7 @@ jobs:
       GO111MODULE: on
     steps:
       - name: Checkout Source
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Run Gosec Security Scanner
         uses: securego/gosec@master
         with:

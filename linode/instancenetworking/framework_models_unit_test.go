@@ -6,21 +6,21 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestParseInstanceIPAddressResponse(t *testing.T) {
 	instanceIPResponse := &linodego.InstanceIPAddressResponse{
 		IPv4: &linodego.InstanceIPv4Response{
-			Public: []*linodego.InstanceIP{
+			Public: []linodego.InstanceIP{
 				{
 					Address: "1.2.3.4",
 					Type:    "ipv4",
 					Public:  true,
 				},
 			},
-			Private: []*linodego.InstanceIP{
+			Private: []linodego.InstanceIP{
 				{
 					Address: "10.0.0.1",
 					Type:    "ipv4",
@@ -59,14 +59,14 @@ func TestParseInstanceIPAddressResponse_VPCDualStack(t *testing.T) {
 
 	instanceIPResponse := &linodego.InstanceIPAddressResponse{
 		IPv4: &linodego.InstanceIPv4Response{
-			Public: []*linodego.InstanceIP{
+			Public: []linodego.InstanceIP{
 				{
 					Address: "1.2.3.4",
 					Type:    "ipv4",
 					Public:  true,
 				},
 			},
-			VPC: []*linodego.VPCIP{
+			VPC: []linodego.VPCIP{
 				{
 					Address:     &ipv4Addr,
 					Active:      true,

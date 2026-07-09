@@ -10,9 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/lkenodepool"
 )
 
 type NodePoolSpec struct {
@@ -29,6 +29,7 @@ type NodePoolSpec struct {
 	UpdateStrategy    *string
 	Label             *string
 	FirewallID        *int
+	DiskEncryption    *string
 }
 
 type NodePoolUpdates struct {
@@ -68,6 +69,11 @@ func ReconcileLKENodePoolSpecs(
 
 		if spec.FirewallID != nil && *spec.FirewallID != 0 {
 			createOpts.FirewallID = spec.FirewallID
+		}
+
+		if spec.DiskEncryption != nil {
+			de := linodego.InstanceDiskEncryption(*spec.DiskEncryption)
+			createOpts.DiskEncryption = &de
 		}
 
 		if spec.Taints != nil {
@@ -136,9 +142,23 @@ func ReconcileLKENodePoolSpecs(
 			continue
 		}
 
+		// Disk encryption cannot be updated on node pools
+		// so we should delete the old one and create a new one
+		diskEncryptionChanged := (newSpec.DiskEncryption != nil && oldSpec.DiskEncryption != nil && *newSpec.DiskEncryption != *oldSpec.DiskEncryption) ||
+			(newSpec.DiskEncryption != nil && oldSpec.DiskEncryption == nil) ||
+			(newSpec.DiskEncryption == nil && oldSpec.DiskEncryption != nil)
+		if diskEncryptionChanged {
+			if err := createPool(newSpec); err != nil {
+				return result, err
+			}
+
+			deletePool(oldSpec.ID)
+			continue
+		}
+
 		updateOpts := linodego.LKENodePoolUpdateOptions{
 			Count: newSpec.Count,
-			Tags:  &newSpecs[i].Tags,
+			Tags:  newSpecs[i].Tags,
 		}
 
 		if (newSpec.Label != nil && oldSpec.Label != nil && *newSpec.Label != *oldSpec.Label) ||
@@ -172,7 +192,7 @@ func ReconcileLKENodePoolSpecs(
 
 		if !helper.CompareSets(helper.TypedSliceToAny(newSpec.Taints), helper.TypedSliceToAny(oldSpec.Taints)) {
 			taints := expandNodePoolTaints(newSpec.Taints)
-			updateOpts.Taints = &taints
+			updateOpts.Taints = taints
 		}
 
 		if !reflect.DeepEqual(newSpec.Labels, oldSpec.Labels) && (len(newSpec.Labels) != 0 || len(oldSpec.Labels) != 0) {
@@ -447,6 +467,12 @@ func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, dec
 				}
 			}
 
+			if declaredDE, ok := declaredPool["disk_encryption"].(string); ok && declaredDE != "" {
+				if string(apiPool.DiskEncryption) != declaredDE {
+					continue
+				}
+			}
+
 			// Pair the API pool with the declared pool
 			result[i] = apiPool
 			delete(apiPools, apiPool.ID)
@@ -516,10 +542,16 @@ func expandLinodeLKENodePoolSpecs(pool []any, preserveNoTarget bool) (poolSpecs 
 			firewallIdPtr = &v
 		}
 
+		var diskEncryptionPtr *string
+		if v, ok := specMap["disk_encryption"].(string); ok && v != "" {
+			diskEncryptionPtr = &v
+		}
+
 		poolSpecs = append(poolSpecs, NodePoolSpec{
 			ID:                specMap["id"].(int),
 			Label:             labelPtr,
 			FirewallID:        firewallIdPtr,
+			DiskEncryption:    diskEncryptionPtr,
 			Type:              specMap["type"].(string),
 			Tags:              helper.ExpandStringSet(specMap["tags"].(*schema.Set)),
 			Taints:            helper.ExpandObjectSet(specMap["taint"].(*schema.Set)),
@@ -663,10 +695,11 @@ func expandACLOptions(aclOptions map[string]any) (*linodego.LKEClusterControlPla
 		}
 	}
 
-	if (result.Enabled != nil && !*result.Enabled) &&
-		(result.Addresses != nil &&
-			((result.Addresses.IPv4 != nil && len(*result.Addresses.IPv4) > 0) ||
-				(result.Addresses.IPv6 != nil && len(*result.Addresses.IPv6) > 0))) {
+	if result.Enabled != nil &&
+		!*result.Enabled &&
+		result.Addresses != nil &&
+		(len(result.Addresses.IPv4) > 0 ||
+			len(result.Addresses.IPv6) > 0) {
 		return nil, diag.Errorf("addresses are not acceptable when ACL is disabled")
 	}
 
@@ -678,12 +711,12 @@ func expandACLAddressOptions(addressOptions map[string]any) *linodego.LKECluster
 
 	if value, ok := addressOptions["ipv4"]; ok {
 		ipv4 := helper.ExpandStringSet(value.(*schema.Set))
-		result.IPv4 = &ipv4
+		result.IPv4 = ipv4
 	}
 
 	if value, ok := addressOptions["ipv6"]; ok {
 		ipv6 := helper.ExpandStringSet(value.(*schema.Set))
-		result.IPv6 = &ipv6
+		result.IPv6 = ipv6
 	}
 
 	return &result

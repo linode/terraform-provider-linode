@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 const (
@@ -306,8 +306,8 @@ func (r *Resource) Delete(
 
 func populateLogAttributes(ctx context.Context, model ResourceModel, diags *diag.Diagnostics) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"bucket":            model.Bucket.ValueString(),
-		"region_or_cluster": model.RegionOrCluster(ctx, diags),
-		"object_key":        model.Key.ValueString(),
+		"bucket":     model.Bucket.ValueString(),
+		"region":     model.Region.ValueString(),
+		"object_key": model.Key.ValueString(),
 	})
 }
