@@ -45,7 +45,7 @@ var ResourceSchemaIPv4NestedObject = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"range": schema.StringAttribute{
 			Description: "The IPv4 range assigned to this VPC.",
-			Optional:    true,
+			Required:    true,
 		},
 	},
 }

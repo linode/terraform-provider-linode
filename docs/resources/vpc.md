@@ -87,7 +87,7 @@ Configures a single IPv6 range under this VPC.
 
 Configures a single IPv4 range under this VPC. Unlike IPv6, IPv4 ranges can be updated in-place without requiring resource replacement.
 
-* `range` - (Optional) The IPv4 range in CIDR format to assign to this VPC (e.g. `10.0.0.0/8`).
+* `range` - (Required) The IPv4 range in CIDR format to assign to this VPC (e.g. `10.0.0.0/8`).
 
 ## Attributes Reference
 

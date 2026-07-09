@@ -376,7 +376,7 @@ func TestAccResourceVPC_ipv4(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "ipv4.0.range"},
+				ImportStateVerifyIgnore: []string{"updated"},
 			},
 		},
 	})

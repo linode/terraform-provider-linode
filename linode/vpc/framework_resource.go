@@ -70,7 +70,7 @@ func (r *Resource) Create(
 		)
 	}
 
-	if !data.IPv4.IsNull() {
+	if !data.IPv4.IsNull() && !data.IPv4.IsUnknown() {
 		modelIPv4s := make([]ResourceModelIPv4, len(data.IPv4.Elements()))
 
 		resp.Diagnostics.Append(data.IPv4.ElementsAs(ctx, &modelIPv4s, true)...)
@@ -101,7 +101,7 @@ func (r *Resource) Create(
 	}
 
 	ipv6Configured := !data.IPv6.IsNull()
-	ipv4Configured := !data.IPv4.IsNull()
+	ipv4Configured := !data.IPv4.IsNull() && !data.IPv4.IsUnknown()
 
 	resp.Diagnostics.Append(data.FlattenVPC(ctx, vpc, true)...)
 	if resp.Diagnostics.HasError() {
@@ -215,7 +215,7 @@ func (r *Resource) Update(
 		updateOpts.Label = plan.Label.ValueString()
 	}
 
-	if !state.IPv4.Equal(plan.IPv4) {
+	if !plan.IPv4.IsUnknown() && !state.IPv4.Equal(plan.IPv4) {
 		shouldUpdate = true
 
 		if !plan.IPv4.IsNull() {
