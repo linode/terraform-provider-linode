@@ -4,7 +4,7 @@
 
 resource "linode_instance" "primary" {
     label = "{{.Label}}"
-    group = "tf_test"
+
     type = "g6-nanode-1"
     region = "{{ .Region }}"
 
@@ -14,7 +14,7 @@ resource "linode_instance" "primary" {
 
 resource "linode_instance" "failover" {
     label = "{{.Label}}-failover"
-    group = "tf_test"
+
     type = "g6-nanode-1"
     region = "{{ .Region }}"
 

@@ -1,0 +1,19 @@
+package tmpl
+
+import (
+	"testing"
+
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+)
+
+type TemplateData struct {
+	Label  string
+	Region string
+}
+
+func DataBasic(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t, "monitor_logs_streams_data_basic", TemplateData{
+		Label:  label,
+		Region: region,
+	})
+}

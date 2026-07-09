@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 func TestGetLatestCreated(t *testing.T) {
