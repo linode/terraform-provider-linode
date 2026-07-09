@@ -117,6 +117,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/volumes"
 	"github.com/linode/terraform-provider-linode/v4/linode/volumetypes"
 	"github.com/linode/terraform-provider-linode/v4/linode/vpc"
+	"github.com/linode/terraform-provider-linode/v4/linode/vpcdefaultranges"
 	"github.com/linode/terraform-provider-linode/v4/linode/vpcips"
 	"github.com/linode/terraform-provider-linode/v4/linode/vpcs"
 	"github.com/linode/terraform-provider-linode/v4/linode/vpcsubnet"
@@ -400,5 +401,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		monitorlogsstreamhistory.NewDataSource,
 		monitorlogsstreams.NewDataSource,
 		monitoralertchannels.NewDataSource,
+		vpcdefaultranges.NewDataSource,
 	}
 }
