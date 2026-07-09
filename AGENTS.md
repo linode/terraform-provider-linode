@@ -155,7 +155,7 @@ Common `statecheck` / `knownvalue` helpers:
 
 ## Linode API Client
 
-Uses `github.com/linode/linodego` client. Access via:
+Uses `github.com/linode/linodego/v2` client. Access via:
 - SDKv2: `meta.(*helper.ProviderMeta).Client`
 - Framework: `r.Meta.Client`
 
@@ -175,7 +175,7 @@ Use `helper.StringSet` and `helper.ExistsInSet` for set operations, then extract
 import (
     "maps"
     "slices"
-    "github.com/linode/terraform-provider-linode/v3/linode/helper"
+    "github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 // Create a set

@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/diffsuppressfuncs"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/diffsuppressfuncs"
 )
 
 const deviceDescription = "Device can be either a Disk or Volume identified by disk_id or " +
@@ -323,12 +323,6 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:     true,
 		Computed:     true,
 		ValidateFunc: validation.StringLenBetween(3, 50),
-	},
-	"group": {
-		Type:        schema.TypeString,
-		Description: "The display group of the Linode instance.",
-		Deprecated:  "Group label is deprecated. We recommend using tags instead.",
-		Optional:    true,
 	},
 	"tags": {
 		Type:        schema.TypeSet,

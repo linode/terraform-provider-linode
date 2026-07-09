@@ -2,7 +2,7 @@
 
 resource "linode_instance" "{{.ID}}" {
     label = "{{.Prefix}}-{{.ID}}"
-    group = "tf_test"
+
     type = "g6-nanode-1"
     region = "{{ .Region }}"
     disk {

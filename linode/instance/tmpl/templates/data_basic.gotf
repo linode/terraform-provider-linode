@@ -4,7 +4,6 @@
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
-    group = "tf_test"
     tags = ["cool", "cooler"]
     type = "g6-nanode-1"
     image = "{{.Image}}"
@@ -25,11 +24,6 @@ data "linode_instances" "foobar" {
     filter {
         name = "label"
         values = [linode_instance.foobar.label, "other-label"]
-    }
-
-    filter {
-        name = "group"
-        values = [linode_instance.foobar.group]
     }
 
     filter {

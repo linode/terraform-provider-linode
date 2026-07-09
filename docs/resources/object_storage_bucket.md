@@ -88,10 +88,7 @@ resource "linode_object_storage_bucket" "mybucket" {
 
 The following arguments are supported:
 
-* `region` - (Required) The region of the Linode Object Storage Bucket. Exactly one of `region` and `cluster` is required for creating a bucket.
-
-* `cluster` - (Deprecated) The cluster of the Linode Object Storage Bucket. This is deprecated in favor of `region` attribute.
-For example, `us-mia-1` cluster can be translated into `us-mia` region. Exactly one of `region` and `cluster` is required for creating a bucket.
+* `region` - (Required) The region of the Linode Object Storage Bucket.
 
 * `label` - (Required) The label of the Linode Object Storage Bucket.
 
@@ -159,7 +156,7 @@ The following arguments are supported in the noncurrent_version_expiration speci
 
 ## Import
 
-Linodes Object Storage Buckets can be imported using the resource `id` which is made of `cluster:label`, e.g.
+Linodes Object Storage Buckets can be imported using the resource `id` which is made of `region:label`, e.g.
 
 ```sh
 terraform import linode_object_storage_bucket.mybucket us-east-1:foobar
