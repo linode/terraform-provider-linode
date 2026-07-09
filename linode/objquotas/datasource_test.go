@@ -69,6 +69,16 @@ func TestAccDataSourceObjQuotas_basic(t *testing.T) {
 						tfjsonpath.New("quotas").AtSliceIndex(0).AtMapKey("resource_metric"),
 						knownvalue.NotNull(),
 					),
+					statecheck.ExpectKnownValue(
+						dsAll,
+						tfjsonpath.New("quotas").AtSliceIndex(0).AtMapKey("quota_type"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dsAll,
+						tfjsonpath.New("quotas").AtSliceIndex(0).AtMapKey("has_usage"),
+						knownvalue.NotNull(),
+					),
 
 					// Filter and check the object storage quota match the endpoint type: E0
 					statecheck.ExpectKnownValue(
