@@ -33,7 +33,7 @@ type NodeBalancerModel struct {
 	Tags                  types.Set           `tfsdk:"tags"`
 	Firewalls             types.List          `tfsdk:"firewalls"`
 	VPCs                  types.List          `tfsdk:"vpcs"`
-	LKECluster            types.List        `tfsdk:"lke_cluster"`
+	LKECluster            types.List          `tfsdk:"lke_cluster"`
 }
 
 // LKEClusterModel represents the lke_cluster nested object.
