@@ -134,3 +134,65 @@ func TestAccDataSourceVPCs_filterByLabel(t *testing.T) {
 		},
 	})
 }
+
+func TestAccDataSourceVPCs_ipv4(t *testing.T) {
+	t.Parallel()
+
+	resourceName := "data.linode_vpcs.foobar"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
+		linodego.CapabilityVPCs,
+		linodego.CapabilityVPCCustomIPv4Ranges,
+	}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataIPv4(t, vpcLabel, targetRegion, "10.0.0.0/8"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("label"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("description"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("region"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("created"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("updated"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv4"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv4").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.StringExact("10.0.0.0/8"),
+					),
+				},
+			},
+		},
+	})
+}

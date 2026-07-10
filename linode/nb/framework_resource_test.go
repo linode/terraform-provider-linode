@@ -416,3 +416,36 @@ func checkNodeBalancerDestroy(s *terraform.State) error {
 
 	return nil
 }
+
+func TestAccResourceNodeBalancer_reservedIP(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_nodebalancer.test"
+	ipResName := "linode_networking_ip.test"
+	nodebalancerName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkNodeBalancerDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ReservedIP(t, nodebalancerName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkNodeBalancerExists,
+					resource.TestCheckResourceAttrPair(resName, "ipv4", ipResName, "address"),
+					resource.TestCheckResourceAttr(ipResName, "reserved", "true"),
+				),
+			},
+			{
+				// Remove the NodeBalancer; the reserved IP must remain.
+				Config: tmpl.ReservedIPOnly(t, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(ipResName, "address"),
+					resource.TestCheckResourceAttr(ipResName, "reserved", "true"),
+				),
+			},
+		},
+	})
+}

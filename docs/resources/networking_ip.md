@@ -36,7 +36,7 @@ The following arguments are supported:
 
 The following arguments are only available when reserving an IP address:
 
-* `reserved` - (Optional) Whether this IP address should be a reserved IP.
+* `reserved` - (Optional) Whether this IP address should be a reserved IP. Changing this value on an assigned IP triggers an in-place update (not replacement). Setting `reserved = true` converts an ephemeral IP to reserved. Setting `reserved = false` converts a reserved IP to ephemeral when the address is assigned. If the reserved IP is unassigned, the API deletes the IP as a side effect of setting `reserved = false`, and the provider returns an `IP Address Deleted During Update` error; after this occurs, remove the resource from your Terraform configuration so future applies succeed.
 
 * `region` - (Optional) The region where the reserved IP should be allocated.
 
@@ -55,6 +55,18 @@ In addition to all arguments above, the following attributes are exported:
 * `rdns` - The reverse DNS assigned to this address. For public IPv4 addresses, this will be set to a default value provided by Linode if not explicitly set.
 
 * `subnet_mask` - The mask that separates host bits from network bits for this address.
+
+* `tags` - A set of tags associated with this IP address.
+
+* `assigned_entity` - The entity this IP address has been assigned to. This is null if the address is not assigned to an entity.
+
+  * `id` - The ID of the entity.
+
+  * `label` - The label of the entity.
+
+  * `type` - The type of the entity.
+
+  * `url` - The URL of the entity.
 
 * `vpc_nat_1_1` - Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.
 

@@ -161,10 +161,12 @@ func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 	t.Parallel()
 
-	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{"Kubernetes Enterprise", "VPCs"}, "core")
-	if err != nil {
-		t.Fatal(err)
-	}
+	//enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{"Kubernetes Enterprise", "VPCs"}, "core")
+	//if err != nil {
+	//	t.Fatal(err)
+	//}
+	// TODO: Remove hard-coded region and replace with enterpriseRegion once capability filtering works properly
+	enterpriseRegionWithACLP := "us-lax"
 
 	var k8sVersionEnterprise string
 
@@ -203,10 +205,10 @@ func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.DataEnterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "on_recycle", firewall.ID),
+					Config: tmpl.DataEnterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegionWithACLP, "on_recycle", firewall.ID),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(dataSourceClusterName, "label", clusterName),
-						resource.TestCheckResourceAttr(dataSourceClusterName, "region", enterpriseRegion),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "region", enterpriseRegionWithACLP),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "k8s_version", k8sVersionEnterprise),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "status", "ready"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "tier", "enterprise"),

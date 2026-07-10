@@ -66,6 +66,11 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/monitoralertdefinition"
 	"github.com/linode/terraform-provider-linode/v4/linode/monitoralertdefinitionentities"
 	"github.com/linode/terraform-provider-linode/v4/linode/monitoralertdefinitions"
+	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsdestination"
+	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsdestinations"
+	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstream"
+	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstreamhistory"
+	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstreams"
 	"github.com/linode/terraform-provider-linode/v4/linode/nb"
 	"github.com/linode/terraform-provider-linode/v4/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/v4/linode/nbconfigs"
@@ -81,6 +86,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/obj"
 	"github.com/linode/terraform-provider-linode/v4/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v4/linode/objendpoints"
+	"github.com/linode/terraform-provider-linode/v4/linode/objglobalquota"
+	"github.com/linode/terraform-provider-linode/v4/linode/objglobalquotas"
 	"github.com/linode/terraform-provider-linode/v4/linode/objkey"
 	"github.com/linode/terraform-provider-linode/v4/linode/objquota"
 	"github.com/linode/terraform-provider-linode/v4/linode/objquotas"
@@ -98,10 +105,13 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/regions"
 	"github.com/linode/terraform-provider-linode/v4/linode/regionsvpcavailability"
 	"github.com/linode/terraform-provider-linode/v4/linode/regionvpcavailability"
+	"github.com/linode/terraform-provider-linode/v4/linode/reservedip"
+	"github.com/linode/terraform-provider-linode/v4/linode/reservediptypes"
 	"github.com/linode/terraform-provider-linode/v4/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/v4/linode/sshkeys"
 	"github.com/linode/terraform-provider-linode/v4/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/v4/linode/stackscripts"
+	"github.com/linode/terraform-provider-linode/v4/linode/tag"
 	"github.com/linode/terraform-provider-linode/v4/linode/token"
 	"github.com/linode/terraform-provider-linode/v4/linode/user"
 	"github.com/linode/terraform-provider-linode/v4/linode/users"
@@ -110,6 +120,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/volumes"
 	"github.com/linode/terraform-provider-linode/v4/linode/volumetypes"
 	"github.com/linode/terraform-provider-linode/v4/linode/vpc"
+	"github.com/linode/terraform-provider-linode/v4/linode/vpcdefaultranges"
 	"github.com/linode/terraform-provider-linode/v4/linode/vpcips"
 	"github.com/linode/terraform-provider-linode/v4/linode/vpcs"
 	"github.com/linode/terraform-provider-linode/v4/linode/vpcsubnet"
@@ -266,6 +277,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		placementgroup.NewResource,
 		placementgroupassignment.NewResource,
 		instancereservedipassignment.NewResource,
+		reservedip.NewResource,
 		rdns.NewResource,
 		sshkey.NewResource,
 		stackscript.NewResource,
@@ -283,6 +295,8 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		consumerimagesharegrouptoken.NewResource,
 		firewallsettings.NewResource,
 		linodeinterface.NewResource,
+		monitorlogsdestination.NewResource,
+		monitorlogsstream.NewResource,
 		monitoralertdefinition.NewResource,
 	}
 }
@@ -363,6 +377,8 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		databasemysqlconfig.NewDataSource,
 		databasepostgresqlconfig.NewDataSource,
 		objendpoints.NewDataSource,
+		objglobalquota.NewDataSource,
+		objglobalquotas.NewDataSource,
 		objquota.NewDataSource,
 		objquotas.NewDataSource,
 		firewalltemplate.NewDataSource,
@@ -383,6 +399,14 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		lkenodepool.NewDataSource,
 		regionvpcavailability.NewDataSource,
 		regionsvpcavailability.NewDataSource,
+		reservediptypes.NewDataSource,
+		tag.NewDataSource,
+		monitorlogsdestination.NewDataSource,
+		monitorlogsdestinations.NewDataSource,
+		monitorlogsstream.NewDataSource,
+		monitorlogsstreamhistory.NewDataSource,
+		monitorlogsstreams.NewDataSource,
 		monitoralertchannels.NewDataSource,
+		vpcdefaultranges.NewDataSource,
 	}
 }

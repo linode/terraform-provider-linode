@@ -52,12 +52,15 @@ var FirewallRuleObject = schema.NestedBlockObject{
 			Computed:    true,
 		},
 		"protocol": schema.StringAttribute{
-			Description: "The network protocol this rule controls. (TCP, UDP, ICMP)",
-			Computed:    true,
+			Description: "The network protocol this rule controls. " +
+				"Valid values include ALL, TCP, UDP, ICMP, IPENCAP, " +
+				"or a protocol number from 0 to 255.",
+			Computed: true,
 		},
 		"ports": schema.StringAttribute{
-			Description: "A string representation of ports and/or port ranges (i.e. \"443\" or \"80-90, 91\").",
-			Computed:    true,
+			Description: "A string representation of ports and/or port ranges " +
+				"(i.e. \"443\" or \"80-90, 91\").",
+			Computed: true,
 		},
 		"ipv4": schema.SetAttribute{
 			Description: "A list of IPv4 addresses or networks in IP/mask format.",

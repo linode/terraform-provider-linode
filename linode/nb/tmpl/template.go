@@ -74,3 +74,18 @@ func DataVPC(t testing.TB, nodebalancer, region string) string {
 			Region: region,
 		})
 }
+
+func ReservedIP(t testing.TB, nodebalancer, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_reserved_ip", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
+}
+
+func ReservedIPOnly(t testing.TB, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_reserved_ip_only", TemplateData{
+			Region: region,
+		})
+}
