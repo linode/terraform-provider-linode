@@ -26,3 +26,10 @@ func DataFilter(t testing.TB, label, region string) string {
 			Region: region,
 		})
 }
+
+func DataProtocolAllNumeric(t testing.TB, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"data_linode_firewalls_protocol_all_numeric", TemplateData{
+			Label: label,
+		})
+}
