@@ -43,7 +43,7 @@ func init() {
 	}
 	testRegion = region
 
-	lkeReg, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLKE}, "core")
+	lkeReg, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLKE}, "core")
 	if err != nil {
 		log.Printf("WARNING: no LKE region found, lkeCluster datasource test will be skipped: %s", err)
 	} else {
