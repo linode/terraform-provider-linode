@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	linodesetplanmodifiers "github.com/linode/terraform-provider-linode/v4/linode/helper/setplanmodifiers"
 )
@@ -38,15 +37,11 @@ var ruleNestedObject = schema.NestedBlockObject{
 			},
 		},
 		"protocol": schema.StringAttribute{
-			Description: "The network protocol this rule controls.",
-			Required:    true,
+			Description: "The network protocol this rule controls. Accepted values are ALL, TCP, UDP, " +
+				"ICMP, IPENCAP, or a protocol number from 0 to 255.",
+			Required: true,
 			Validators: []validator.String{
-				stringvalidator.OneOf(
-					string(linodego.TCP),
-					string(linodego.UDP),
-					string(linodego.ICMP),
-					string(linodego.IPENCAP),
-				),
+				firewallProtocolValidator{},
 			},
 		},
 		"description": schema.StringAttribute{

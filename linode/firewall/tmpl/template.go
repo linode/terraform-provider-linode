@@ -19,7 +19,9 @@ type TemplateData struct {
 	Instances     []ResourceTemplateData
 	NodeBalancers []ResourceTemplateData
 
-	Label string
+	Label    string
+	Protocol string
+	Ports    string
 }
 
 func Basic(t testing.TB, label, devicePrefix, region string) string {
@@ -108,6 +110,15 @@ func NoRules(t testing.TB, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_no_rules", TemplateData{
 			Label: label,
+		})
+}
+
+func Protocol(t testing.TB, label, protocol, ports string) string {
+	return acceptance.ExecuteTemplate(t,
+		"firewall_protocol", TemplateData{
+			Label:    label,
+			Protocol: protocol,
+			Ports:    ports,
 		})
 }
 
