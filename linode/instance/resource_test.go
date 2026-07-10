@@ -225,6 +225,7 @@ func TestAccResourceInstance_kernelBootSize(t *testing.T) {
 
 func TestAccResourceInstance_vpu(t *testing.T) {
 	t.Parallel()
+	t.Skip("Skipping test: no regions currently available with accelerated instance types.")
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
