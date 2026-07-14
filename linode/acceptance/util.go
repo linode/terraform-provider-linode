@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"cmp"
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"log"
-	"math/rand"
+	"math/big"
 	"os"
 	"path/filepath"
 	"slices"
@@ -644,9 +645,14 @@ func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
 		return nil, err
 	}
 
-	rand.Shuffle(len(endpoints), func(i, j int) {
-		endpoints[i], endpoints[j] = endpoints[j], endpoints[i]
-	})
+	for i := len(endpoints) - 1; i > 0; i-- {
+		j, err := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
+		if err != nil {
+			return nil, fmt.Errorf("failed to shuffle object storage endpoints: %w", err)
+		}
+
+		endpoints[i], endpoints[j.Int64()] = endpoints[j.Int64()], endpoints[i]
+	}
 
 	for i, e := range endpoints {
 		// Linode Object Storage clusters with E2 and E3 (Object Storage gen2) endpoints
@@ -779,8 +785,12 @@ func GetRandomRegionWithCaps(capabilities []linodego.RegionCapability, regionTyp
 		return "", fmt.Errorf("no region found with the provided caps")
 	}
 
-	// #nosec G404 -- Test data, doesn't need to be cryptography
-	return regions[rand.Intn(len(regions))], nil
+	index, err := rand.Int(rand.Reader, big.NewInt(int64(len(regions))))
+	if err != nil {
+		return "", fmt.Errorf("failed to select a random region: %w", err)
+	}
+
+	return regions[index.Int64()], nil
 }
 
 func GetTestClient() (*linodego.Client, error) {
