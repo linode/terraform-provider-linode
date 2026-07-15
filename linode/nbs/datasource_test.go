@@ -49,6 +49,7 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.tags.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.tags.0", "tf_test_1"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.updated"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.lke_cluster.#", "0"),
 				),
 			},
 			{

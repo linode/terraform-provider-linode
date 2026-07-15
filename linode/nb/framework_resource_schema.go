@@ -211,6 +211,33 @@ var frameworkResourceSchema = schema.Schema{
 			},
 			NestedObject: frameworkResourceSchemaVPCs,
 		},
+		"lke_cluster": schema.ListNestedAttribute{
+			Description: "The related LKE cluster for this NodeBalancer, if any.",
+			Computed:    true,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+			},
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.Int64Attribute{
+						Description: "The ID of the related LKE cluster.",
+						Computed:    true,
+					},
+					"label": schema.StringAttribute{
+						Description: "The label of the related LKE cluster.",
+						Computed:    true,
+					},
+					"type": schema.StringAttribute{
+						Description: "The type of the related LKE cluster.",
+						Computed:    true,
+					},
+					"url": schema.StringAttribute{
+						Description: "The URL where you can access the related LKE cluster.",
+						Computed:    true,
+					},
+				},
+			},
+		},
 	},
 }
 

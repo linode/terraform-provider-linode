@@ -98,6 +98,8 @@ This resource exports the following attributes:
 
 * [`vpcs`](#vpcs) - A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
+* [`lke_cluster`](#lke_cluster) - The LKE cluster that manages this NodeBalancer, if any. The list will be empty if this NodeBalancer isn't related to an LKE cluster.
+
 ### transfer
 
 The following attributes are available on transfer:
@@ -161,6 +163,18 @@ The following arguments are supported under each entry of the `vpcs` attribute:
 * `ipv6_range` - (Optional) A CIDR range for the VPC's IPv6 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
 
 * `ipv4_range_auto_assign` - (Optional, Write-Only) Enables the use of a larger ipv4_range subnet for multiple NodeBalancers within the same VPC by allocating smaller /30 subnets for each NodeBalancer's backends.
+
+### lke_cluster
+
+The following attributes are available on `lke_cluster`:
+
+* `id` - The ID of the related LKE cluster.
+
+* `label` - The label of the related LKE cluster.
+
+* `type` - The type of the related LKE cluster.
+
+* `url` - The URL where you can access the related LKE cluster.
 
 ## Import
 
