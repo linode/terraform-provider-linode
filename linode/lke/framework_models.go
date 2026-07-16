@@ -111,7 +111,7 @@ func (data *LKEDataModel) parseLKEAttributes(
 	data.StackType = types.StringValue(string(cluster.StackType))
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, cluster.Tags)
-	if diags != nil {
+	if diags.HasError() {
 		return diags
 	}
 	data.Tags = tags
@@ -150,13 +150,13 @@ func (data *LKEDataModel) parseLKEAttributes(
 			}
 
 			tags, diags := types.ListValueFrom(ctx, types.StringType, p.Tags)
-			if diags != nil {
+			if diags.HasError() {
 				return nil, diags
 			}
 			pool.Tags = tags
 
 			labels, diags := types.MapValueFrom(ctx, types.StringType, p.Labels)
-			if diags != nil {
+			if diags.HasError() {
 				return nil, diags
 			}
 			pool.Labels = labels
@@ -199,7 +199,7 @@ func (data *LKEDataModel) parseLKEAttributes(
 	}
 
 	lkePools, diags := parseLKEPools()
-	if diags != nil {
+	if diags.HasError() {
 		return diags
 	}
 	data.Pools = lkePools
@@ -216,7 +216,7 @@ func (data *LKEDataModel) parseLKEAttributes(
 	}
 
 	apiEndpoints, diags := types.ListValueFrom(ctx, types.StringType, urls)
-	if diags != nil {
+	if diags.HasError() {
 		return diags
 	}
 	data.APIEndpoints = apiEndpoints
