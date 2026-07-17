@@ -55,6 +55,10 @@ In addition to all arguments above, the following attributes are exported:
 
 * [`firewalls`](#firewalls) - A list of Firewalls assigned to this NodeBalancer.
 
+* [`vpcs`](#vpcs) - A list of VPCs assigned to this NodeBalancer.
+
+* [`lke_cluster`](#lke_cluster) - The LKE cluster that manages this NodeBalancer, if any. The list will be empty if this NodeBalancer isn't related to an LKE cluster.
+
 * `type` - The type of this NodeBalancer.
 
 * `frontend_address_type` - Indicates whether incoming requests are routed to NodeBalancers using VPC frontend IPs or public frontend IPs.
@@ -110,3 +114,27 @@ The following arguments are supported in the inbound and outbound rule blocks:
 * `ipv4` - A list of IPv4 addresses or networks. Must be in IP/mask format.
 
 * `ipv6` - A list of IPv6 addresses or networks. Must be in IP/mask format.
+
+### vpcs
+
+-> **Limited Availability** VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+
+The following attributes are available on each entry in `vpcs`:
+
+* `subnet_id` - The ID of this configuration's VPC subnet.
+
+* `ipv4_range` - A CIDR range for the VPC's IPv4 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
+
+* `ipv6_range` - A CIDR range for the VPC's IPv6 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
+
+### lke_cluster
+
+The following attributes are available on `lke_cluster`:
+
+* `id` - The ID of the related LKE cluster.
+
+* `label` - The label of the related LKE cluster.
+
+* `type` - The type of the related LKE cluster.
+
+* `url` - The URL where you can access the related LKE cluster.

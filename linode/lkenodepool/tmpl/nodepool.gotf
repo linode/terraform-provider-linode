@@ -54,6 +54,10 @@ resource "linode_lke_node_pool" "foobar" {
     {{ end }}
 
     tags  = ["external", "{{.PoolTag}}"]
+
+{{ if .DiskEncryption }}
+    disk_encryption = "{{ .DiskEncryption }}"
+{{ end }}
 }
 
 {{ end }}

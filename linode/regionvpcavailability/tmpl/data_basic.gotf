@@ -1,0 +1,7 @@
+{{ define "region_vpc_availability_data_basic" }}
+
+data "linode_region_vpc_availability" "test" {
+    id = "{{.RegionID}}"
+}
+
+{{ end }}

@@ -14,10 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlv2/tmpl"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/databasepostgresqlv2/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/databaseshared"
 )
 
 var testRegion, testEngine string
@@ -33,7 +33,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases", "VPCs"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityDBAAS, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -126,7 +126,7 @@ func TestAccResourceDatabasePostgresqlV2_basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resName, "pending_updates.#", "0"),
 
-					resource.TestCheckResourceAttr(resName, "engine_config_pg_password_encryption", "md5"),
+					resource.TestCheckResourceAttr(resName, "engine_config_pg_password_encryption", "scram-sha-256"),
 					resource.TestCheckResourceAttr(resName, "engine_config_pg_stat_monitor_enable", "false"),
 					resource.TestCheckResourceAttr(resName, "engine_config_pglookout_max_failover_replication_time_lag", "60"),
 				),
@@ -135,7 +135,7 @@ func TestAccResourceDatabasePostgresqlV2_basic(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 		},
 	})
@@ -268,7 +268,7 @@ func TestAccResourceDatabasePostgresqlV2_resize(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 		},
 	})
@@ -402,7 +402,7 @@ func TestAccResourceDatabasePostgresqlV2_complex(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 		},
 	})
@@ -466,7 +466,7 @@ func TestAccResourceDatabasePostgresqlV2_fork(t *testing.T) {
 				ResourceName:            resNameSource,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 			{
 				PreConfig: func() {
@@ -543,7 +543,7 @@ func TestAccResourceDatabasePostgresqlV2_fork(t *testing.T) {
 				ResourceName:            resNameFork,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 		},
 	})
@@ -637,6 +637,7 @@ func TestAccResourceDatabasePostgresqlV2_suspension(t *testing.T) {
 					"updated",
 					"oldest_restore_time",
 					"members",
+					"version",
 
 					// These fields will be populated with null when importing a suspended database
 					"ca_cert", "root_password", "root_username",
@@ -663,7 +664,7 @@ func TestAccResourceDatabasePostgresqlV2_engineConfig(t *testing.T) {
 					tmpl.TemplateDataEngineConfig{
 						Label:    label,
 						Region:   testRegion,
-						EngineID: "postgresql/14",
+						EngineID: "postgresql/18",
 						Type:     "g6-nanode-1",
 
 						EngineConfigPGAutovacuumAnalyzeScaleFactor:         0.1,
@@ -775,7 +776,7 @@ func TestAccResourceDatabasePostgresqlV2_engineConfig(t *testing.T) {
 					tmpl.TemplateDataEngineConfig{
 						Label:    label,
 						Region:   testRegion,
-						EngineID: "postgresql/14",
+						EngineID: "postgresql/18",
 						Type:     "g6-nanode-1",
 
 						EngineConfigPGAutovacuumAnalyzeScaleFactor:         0.5,
@@ -888,7 +889,7 @@ func TestAccResourceDatabasePostgresqlV2_engineConfig(t *testing.T) {
 					tmpl.TemplateDataEngineConfig{
 						Label:    label,
 						Region:   testRegion,
-						EngineID: "postgresql/14",
+						EngineID: "postgresql/18",
 						Type:     "g6-nanode-1",
 
 						EngineConfigPGAutovacuumAnalyzeScaleFactor: 0.7,
@@ -953,7 +954,7 @@ func TestAccResourceDatabasePostgresqlV2_engineConfig(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 		},
 	})
@@ -1010,7 +1011,7 @@ func TestAccResourceDatabasePostgresqlV2_vpc(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 		},
 	})
@@ -1060,7 +1061,7 @@ func TestAccResourceDatabasePostgresqlV2_noPendingUpdatesRegression(t *testing.T
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
 			},
 		},
 	})

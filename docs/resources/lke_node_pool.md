@@ -127,6 +127,8 @@ The following arguments are supported:
 
 * [`taint`](#taint) - (Optional) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. To learn more, review [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools).
 
+* `disk_encryption` - (Optional) The disk encryption policy for nodes in this pool.
+
 ### autoscaler
 
 The following arguments are supported in the `autoscaler` specification block:

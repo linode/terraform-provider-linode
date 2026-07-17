@@ -3,7 +3,7 @@ package databaseaccesscontrols
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/databaseshared"
 )
 
 var resourceSchema = map[string]*schema.Schema{

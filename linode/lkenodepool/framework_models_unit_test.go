@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -87,6 +87,7 @@ func TestSetNodePoolCreateOptions(t *testing.T) {
 
 	assert.Equal(t, "k8s_version", *createOpts.K8sVersion)
 	assert.Equal(t, "on_recycle", string(*createOpts.UpdateStrategy))
+	assert.Equal(t, "disabled", string(*createOpts.DiskEncryption))
 }
 
 func TestSetNodePoolUpdateOptions(t *testing.T) {
@@ -103,8 +104,8 @@ func TestSetNodePoolUpdateOptions(t *testing.T) {
 	assert.Equal(t, 3, updateOpts.Count)
 	assert.Equal(t, "test-pool", *updateOpts.Label)
 	assert.Equal(t, 12345, *updateOpts.FirewallID)
-	assert.Contains(t, *updateOpts.Tags, "production")
-	assert.Contains(t, *updateOpts.Tags, "web-server")
+	assert.Contains(t, updateOpts.Tags, "production")
+	assert.Contains(t, updateOpts.Tags, "web-server")
 
 	assert.True(t, updateOpts.Autoscaler.Enabled)
 	assert.Equal(t, 1, updateOpts.Autoscaler.Min)
@@ -112,6 +113,19 @@ func TestSetNodePoolUpdateOptions(t *testing.T) {
 
 	assert.Equal(t, "k8s_version", *updateOpts.K8sVersion)
 	assert.Equal(t, "on_recycle", string(*updateOpts.UpdateStrategy))
+}
+
+func TestSetNodePoolCreateOptions_DiskEncryptionUnset(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	nodePoolModel.DiskEncryption = types.StringNull()
+
+	var createOpts linodego.LKENodePoolCreateOptions
+	var diags diag.Diagnostics
+
+	nodePoolModel.SetNodePoolCreateOptions(context.Background(), &createOpts, &diags, "enterprise")
+
+	assert.False(t, diags.HasError())
+	assert.Nil(t, createOpts.DiskEncryption)
 }
 
 func createNodePoolModel() *NodePoolModel {
@@ -138,6 +152,7 @@ func createNodePoolModel() *NodePoolModel {
 		},
 		K8sVersion:     types.StringValue("k8s_version"),
 		UpdateStrategy: types.StringValue("on_recycle"),
+		DiskEncryption: types.StringValue(string(linodego.InstanceDiskEncryptionDisabled)),
 	}
 
 	nodePoolModel.Labels = types.MapValueMust(types.StringType, map[string]attr.Value{})

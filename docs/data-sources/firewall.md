@@ -63,7 +63,7 @@ The following arguments are supported in the inbound and outbound rule blocks:
 
 * `action` - Controls whether traffic is accepted or dropped by this rule. Overrides the Firewall’s inbound_policy if this is an inbound rule, or the outbound_policy if this is an outbound rule.
 
-* `protocol` - The network protocol this rule controls. (`TCP`, `UDP`, `ICMP`)
+* `protocol` - The network protocol this rule controls. Possible values include `ALL`, `TCP`, `UDP`, `ICMP`, `IPENCAP`, or a protocol number from `0` to `255`.
 
 * `ports` - A string representation of ports and/or port ranges (i.e. "443" or "80-90, 91").
 

@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/customtypes"
 )
 
 var LinodeInterfaceObjectType = types.ObjectType{
@@ -36,6 +36,16 @@ var IPV6RangeObjectType = types.ObjectType{
 }
 
 var DatabaseObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"id":         types.Int64Type,
+		"ipv4_range": types.StringType,
+		"ipv6_ranges": types.ListType{
+			ElemType: IPV6RangeObjectType,
+		},
+	},
+}
+
+var NodebalancerObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"id":         types.Int64Type,
 		"ipv4_range": types.StringType,
@@ -127,6 +137,13 @@ var frameworkResourceSchema = schema.Schema{
 		"databases": schema.ListAttribute{
 			Computed:    true,
 			ElementType: DatabaseObjectType,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"nodebalancers": schema.ListAttribute{
+			Computed:    true,
+			ElementType: NodebalancerObjectType,
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.UseStateForUnknown(),
 			},

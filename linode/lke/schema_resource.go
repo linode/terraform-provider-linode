@@ -6,8 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 var resourceSchema = map[string]*schema.Schema{
@@ -60,11 +60,6 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Sensitive:   true,
 		Description: "The Base64-encoded Kubeconfig for the cluster.",
-	},
-	"dashboard_url": {
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "The dashboard URL of the cluster.",
 	},
 	"status": {
 		Type:        schema.TypeString,
@@ -210,9 +205,11 @@ var resourceSchema = map[string]*schema.Schema{
 					},
 				},
 				"disk_encryption": {
-					Type:        schema.TypeString,
-					Description: "The disk encryption policy for the nodes in this pool.",
-					Computed:    true,
+					Type:         schema.TypeString,
+					Description:  "The disk encryption policy for the nodes in this pool.",
+					Optional:     true,
+					Computed:     true,
+					ValidateFunc: validation.StringInSlice([]string{"enabled", "disabled"}, false),
 				},
 				"nodes": {
 					Type: schema.TypeList,

@@ -6,10 +6,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
-	"github.com/linode/terraform-provider-linode/v3/linode/nb"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v4/linode/nb"
 )
 
 // NodeBalancerFilterModel describes the Terraform resource data model to match the
@@ -38,6 +38,7 @@ type NodeBalancerModel struct {
 	Type                  types.String      `tfsdk:"type"`
 	FrontendAddressType   types.String      `tfsdk:"frontend_address_type"`
 	FrontendVPCSubnetID   types.Int64       `tfsdk:"frontend_vpc_subnet_id"`
+	LKECluster            types.List        `tfsdk:"lke_cluster"`
 }
 
 func (data *NodeBalancerFilterModel) parseNodeBalancers(
@@ -87,6 +88,12 @@ func (data *NodeBalancerModel) flattenNodeBalancer(
 		return diags
 	}
 	data.Tags = tags
+
+	lkeCluster, diags := nb.FlattenLKECluster(ctx, nodebalancer.LKECluster)
+	if diags.HasError() {
+		return diags
+	}
+	data.LKECluster = *lkeCluster
 
 	return nil
 }

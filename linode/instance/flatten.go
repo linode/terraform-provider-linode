@@ -3,9 +3,10 @@ package instance
 import (
 	"context"
 	"fmt"
+	"net"
 
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 func flattenInstance(
@@ -20,12 +21,7 @@ func flattenInstance(
 		return nil, fmt.Errorf("failed to get ips for linode instance %d: %s", id, err)
 	}
 
-	var ips []string
-	for _, ip := range instance.IPv4 {
-		ips = append(ips, ip.String())
-	}
-
-	result["ipv4"] = ips
+	result["ipv4"] = flattenInstanceIPv4(instance.IPv4)
 	result["ipv6"] = instance.IPv6
 
 	public, private := instanceNetwork.IPv4.Public, instanceNetwork.IPv4.Private
@@ -45,7 +41,6 @@ func flattenInstance(
 	result["region"] = instance.Region
 	result["maintenance_policy"] = instance.MaintenancePolicy
 	result["watchdog_enabled"] = instance.WatchdogEnabled
-	result["group"] = instance.Group
 	result["tags"] = instance.Tags
 	result["capabilities"] = instance.Capabilities
 	result["locks"] = instance.Locks
@@ -88,6 +83,15 @@ func flattenInstance(
 	}
 
 	return result, nil
+}
+
+// flattenInstanceIPv4 converts a slice of IPs to a slice of IP address strings.
+func flattenInstanceIPv4(ips []net.IP) []string {
+	result := make([]string, 0, len(ips))
+	for _, ip := range ips {
+		result = append(result, ip.String())
+	}
+	return result
 }
 
 func flattenInstanceAlerts(instance linodego.Instance) []map[string]int {
@@ -276,7 +280,6 @@ func flattenInstanceSimple(instance *linodego.Instance) (map[string]any, error) 
 	result["region"] = instance.Region
 	result["maintenance_policy"] = instance.MaintenancePolicy
 	result["watchdog_enabled"] = instance.WatchdogEnabled
-	result["group"] = instance.Group
 	result["tags"] = instance.Tags
 	result["capabilities"] = instance.Capabilities
 	result["image"] = instance.Image

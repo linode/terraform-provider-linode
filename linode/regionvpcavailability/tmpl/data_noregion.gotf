@@ -1,0 +1,7 @@
+{{ define "region_vpc_availability_data_noregion" }}
+
+data "linode_region_vpc_availability" "test" {
+    id = "region-does-not-exist"
+}
+
+{{ end }}

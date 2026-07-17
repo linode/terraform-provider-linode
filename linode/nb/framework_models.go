@@ -4,14 +4,15 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
-	"github.com/linode/terraform-provider-linode/v3/linode/firewalls"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/firewall"
+	"github.com/linode/terraform-provider-linode/v4/linode/firewalls"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 // NodeBalancerModel describes the Terraform resource data model to match the
@@ -36,6 +37,25 @@ type NodeBalancerModel struct {
 	Type                  types.String      `tfsdk:"type"`
 	FrontendAddressType   types.String      `tfsdk:"frontend_address_type"`
 	FrontendVPCSubnetID   types.Int64       `tfsdk:"frontend_vpc_subnet_id"`
+	LKECluster            types.List        `tfsdk:"lke_cluster"`
+}
+
+// LKEClusterModel represents the lke_cluster nested object.
+type LKEClusterModel struct {
+	ID    types.Int64  `tfsdk:"id"`
+	Label types.String `tfsdk:"label"`
+	Type  types.String `tfsdk:"type"`
+	URL   types.String `tfsdk:"url"`
+}
+
+// LKEClusterObjectType is the attr.Type for LKEClusterModel.
+var LKEClusterObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"id":    types.Int64Type,
+		"label": types.StringType,
+		"type":  types.StringType,
+		"url":   types.StringType,
+	},
 }
 
 type FirewallModel struct {
@@ -90,7 +110,7 @@ func (data *NodeBalancerModel) Flatten(
 		data.ClientUDPSessThrottle, int64(nodebalancer.ClientUDPSessThrottle), preserveKnown,
 	)
 	data.Hostname = helper.KeepOrUpdateStringPointer(data.Hostname, nodebalancer.Hostname, preserveKnown)
-	data.IPv4 = helper.KeepOrUpdateStringPointer(data.IPv4, nodebalancer.IPv4, preserveKnown)
+	data.IPv4 = helper.KeepOrUpdateValue(data.IPv4, iptypes.NewIPv4AddressPointerValue(nodebalancer.IPv4), preserveKnown)
 	data.IPv6 = helper.KeepOrUpdateStringPointer(data.IPv6, nodebalancer.IPv6, preserveKnown)
 	data.Created = helper.KeepOrUpdateValue(
 		data.Created, timetypes.NewRFC3339TimePointerValue(nodebalancer.Created), preserveKnown,
@@ -167,6 +187,12 @@ func (data *NodeBalancerModel) Flatten(
 	// In the meantime, enabling preserveKnown will break the diff logic for computed fields.
 	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, backendVPCs, false)
 
+	lkeCluster, diags := FlattenLKECluster(ctx, nodebalancer.LKECluster)
+	if diags.HasError() {
+		return diags
+	}
+	data.LKECluster = helper.KeepOrUpdateValue(data.LKECluster, *lkeCluster, preserveKnown)
+
 	return nil
 }
 
@@ -207,6 +233,7 @@ func (data *NodeBalancerModel) CopyFrom(other NodeBalancerModel, preserveKnown b
 	data.FrontendVPCs = helper.KeepOrUpdateValue(data.FrontendVPCs, other.FrontendVPCs, preserveKnown)
 	data.FrontendAddressType = helper.KeepOrUpdateValue(data.FrontendAddressType, other.FrontendAddressType, preserveKnown)
 	data.FrontendVPCSubnetID = helper.KeepOrUpdateValue(data.FrontendVPCSubnetID, other.FrontendVPCSubnetID, preserveKnown)
+	data.LKECluster = helper.KeepOrUpdateValue(data.LKECluster, other.LKECluster, preserveKnown)
 }
 
 func parseNBFirewalls(
@@ -314,6 +341,7 @@ type NodeBalancerDataSourceModel struct {
 	Type                  types.String      `tfsdk:"type"`
 	FrontendAddressType   types.String      `tfsdk:"frontend_address_type"`
 	FrontendVPCSubnetID   types.Int64       `tfsdk:"frontend_vpc_subnet_id"`
+	LKECluster            types.List        `tfsdk:"lke_cluster"`
 }
 
 type NBFirewallModel struct {
@@ -390,6 +418,12 @@ func (data *NodeBalancerDataSourceModel) Flatten(
 
 	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, vpcs, false)
 
+	lkeCluster, diags := FlattenLKECluster(ctx, nodebalancer.LKECluster)
+	if diags.HasError() {
+		return diags
+	}
+	data.LKECluster = *lkeCluster
+
 	return nil
 }
 
@@ -421,11 +455,13 @@ func (d *NBFirewallModel) FlattenFirewall(firewall *linodego.Firewall, preserveK
 type BaseVPCModel struct {
 	SubnetID  types.Int64  `tfsdk:"subnet_id"`
 	IPv4Range types.String `tfsdk:"ipv4_range"`
+	IPv6Range types.String `tfsdk:"ipv6_range"`
 }
 
 func (m *BaseVPCModel) FlattenVPCConfig(vpcConfig *linodego.NodeBalancerVPCConfig) {
 	m.SubnetID = types.Int64Value(int64(vpcConfig.SubnetID))
 	m.IPv4Range = types.StringValue(vpcConfig.IPv4Range)
+	m.IPv6Range = types.StringValue(vpcConfig.IPv6Range)
 }
 
 type ResourceVPCModel struct {
@@ -454,6 +490,7 @@ func (m *ResourceVPCModel) ToLinodego() (*linodego.NodeBalancerVPCOptions, diag.
 	return &linodego.NodeBalancerVPCOptions{
 		SubnetID:            subnetID,
 		IPv4Range:           m.IPv4Range.ValueString(),
+		IPv6Range:           m.IPv6Range.ValueString(),
 		IPv4RangeAutoAssign: m.IPv4RangeAutoAssign.ValueBool(),
 	}, d
 }
@@ -524,4 +561,26 @@ func frontendVPCModelsToLinodego(
 
 type DataSourceVPCModel struct {
 	BaseVPCModel
+}
+
+// FlattenLKECluster converts a linodego.NodeBalancerLKECluster pointer to a types.List.
+// Returns an empty list when lkeCluster is nil.
+func FlattenLKECluster(
+	ctx context.Context,
+	lkeCluster *linodego.NodeBalancerLKECluster,
+) (*types.List, diag.Diagnostics) {
+	if lkeCluster == nil {
+		result, diags := types.ListValueFrom(ctx, LKEClusterObjectType, []LKEClusterModel{})
+		return &result, diags
+	}
+
+	model := LKEClusterModel{
+		ID:    types.Int64Value(int64(lkeCluster.ID)),
+		Label: types.StringValue(lkeCluster.Label),
+		Type:  types.StringValue(lkeCluster.Type),
+		URL:   types.StringValue(lkeCluster.URL),
+	}
+
+	result, diags := types.ListValueFrom(ctx, LKEClusterObjectType, []LKEClusterModel{model})
+	return &result, diags
 }

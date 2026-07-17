@@ -10,11 +10,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	acceptanceTmpl "github.com/linode/terraform-provider-linode/v3/linode/acceptance/tmpl"
-	"github.com/linode/terraform-provider-linode/v3/linode/firewall/tmpl"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	acceptanceTmpl "github.com/linode/terraform-provider-linode/v4/linode/acceptance/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/firewall/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 const testFirewallResName = "linode_firewall.test"
@@ -27,7 +30,7 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall", "NodeBalancers"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityCloudFirewall, linodego.CapabilityNodeBalancers}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -121,6 +124,67 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"created", "updated"},
+			},
+		},
+	})
+}
+
+func TestAccLinodeFirewall_protocolAllNumeric(t *testing.T) {
+	t.Parallel()
+
+	name := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Protocol(t, name, "ALL", ""),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("label"), knownvalue.StringExact(name)),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("protocol"),
+						knownvalue.StringExact("ALL"),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("ports"),
+						knownvalue.Null(),
+					),
+				},
+			},
+			{
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Protocol(t, name, "50", ""),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("label"), knownvalue.StringExact(name)),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("protocol"),
+						knownvalue.StringExact("50"),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("ports"),
+						knownvalue.Null(),
+					),
+				},
+			},
+			{
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Protocol(t, name, "6", "443"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("label"), knownvalue.StringExact(name)),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("protocol"),
+						knownvalue.StringExact("6"),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("ports"),
+						knownvalue.StringExact("443"),
+					),
+				},
 			},
 		},
 	})

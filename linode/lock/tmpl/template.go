@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
 )
 
 type TemplateData struct {
@@ -27,6 +27,15 @@ func WithSubresources(t testing.TB, label, region string) string {
 			Label:    label,
 			Region:   region,
 			LockType: "cannot_delete_with_subresources",
+		})
+}
+
+func NodeBalancerBasic(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lock_nodebalancer_basic", TemplateData{
+			Label:    label,
+			Region:   region,
+			LockType: "cannot_delete",
 		})
 }
 

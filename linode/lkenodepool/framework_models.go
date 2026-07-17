@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 type NodePoolModel struct {
@@ -263,6 +263,10 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 			p.UpdateStrategy = linodego.Pointer(linodego.LKENodePoolUpdateStrategy(pool.UpdateStrategy.ValueString()))
 		}
 	}
+
+	if !pool.DiskEncryption.IsNull() && !pool.DiskEncryption.IsUnknown() {
+		p.DiskEncryption = linodego.Pointer(linodego.InstanceDiskEncryption(pool.DiskEncryption.ValueString()))
+	}
 }
 
 func (pool *NodePoolModel) SetNodePoolUpdateOptions(
@@ -333,7 +337,7 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 
 	if len(state.Taints) != 0 || len(pool.Taints) != 0 {
 		taints := pool.getLKENodePoolTaints()
-		p.Taints = &taints
+		p.Taints = taints
 		shouldUpdate = true
 	}
 

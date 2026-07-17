@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
 )
 
 type TemplateData struct {
@@ -21,9 +21,27 @@ func Basic(t testing.TB, label, ipv4, region string) string {
 		})
 }
 
+func BasicWithNodebalancer(t testing.TB, label, ipv4, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_subnet_basic_with_nb", TemplateData{
+			Label:  label,
+			IPv4:   ipv4,
+			Region: region,
+		})
+}
+
 func Updates(t testing.TB, label, ipv4, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_subnet_updates", TemplateData{
+			Label:  label,
+			IPv4:   ipv4,
+			Region: region,
+		})
+}
+
+func UpdatesWithNodebalancer(t testing.TB, label, ipv4, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_subnet_updates_with_nb", TemplateData{
 			Label:  label,
 			IPv4:   ipv4,
 			Region: region,
@@ -60,6 +78,15 @@ func DataDualStack(t testing.TB, label, ipv4, region string) string {
 func Attached(t testing.TB, label, ipv4, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_subnet_attached", TemplateData{
+			Label:  label,
+			IPv4:   ipv4,
+			Region: region,
+		})
+}
+
+func DataNodeBalancer(t testing.TB, label, ipv4, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_subnet_data_nb", TemplateData{
 			Label:  label,
 			IPv4:   ipv4,
 			Region: region,

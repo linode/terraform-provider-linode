@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 type LinodeInterfaceModel struct {
@@ -47,12 +47,15 @@ func (plan *LinodeInterfaceModel) GetCreateOptions(ctx context.Context, diags *d
 	if !plan.DefaultRoute.IsUnknown() && !plan.DefaultRoute.IsNull() {
 		var planDefaultRoute DefaultRouteAttrModel
 		plan.DefaultRoute.As(ctx, &planDefaultRoute, basetypes.ObjectAsOptions{})
-		defaultRouteOpts, _ := planDefaultRoute.GetCreateOrUpdateOptions(ctx, nil)
+		defaultRoute, _ := planDefaultRoute.GetCreateOrUpdateOptions(ctx, nil)
+
+		defaultRouteOpts := linodego.InterfaceDefaultRouteCreateOptions(defaultRoute)
+
 		opts.DefaultRoute = linodego.Pointer(defaultRouteOpts)
 	}
 
 	if !plan.FirewallID.IsUnknown() {
-		opts.FirewallID = helper.FrameworkSafeInt64ValueToIntDoublePointerWithUnknownToNil(plan.FirewallID, diags)
+		opts.FirewallID = helper.FrameworkSafeInt64PointerToIntPointer(plan.FirewallID.ValueInt64Pointer(), diags)
 		if diags.HasError() {
 			return opts, linodeID
 		}
@@ -66,7 +69,11 @@ func (plan *LinodeInterfaceModel) GetCreateOptions(ctx context.Context, diags *d
 	} else if !plan.VLAN.IsUnknown() && !plan.VLAN.IsNull() {
 		var planVLANInterface VLANAttrModel
 		plan.VLAN.As(ctx, &planVLANInterface, basetypes.ObjectAsOptions{})
-		opts.VLAN = linodego.Pointer(planVLANInterface.GetCreateOptions(ctx))
+
+		VLANInterface := planVLANInterface.GetCreateOptions(ctx)
+		VLANInterfaceCreateOpts := linodego.VLANInterfaceCreateOptions(VLANInterface)
+
+		opts.VLAN = linodego.Pointer(VLANInterfaceCreateOpts)
 	} else if !plan.VPC.IsUnknown() && !plan.VPC.IsNull() {
 		var planVPCInterface VPCAttrModel
 		plan.VPC.As(ctx, &planVPCInterface, basetypes.ObjectAsOptions{})
@@ -96,7 +103,10 @@ func (plan *LinodeInterfaceModel) GetUpdateOptions(
 		}
 
 		if updatedDefaultRoute, ok := planDefaultRoute.GetCreateOrUpdateOptions(ctx, stateDefaultRoute); ok {
-			opts.DefaultRoute = linodego.Pointer(updatedDefaultRoute)
+
+			updatedDefaultRouteOpts := linodego.InterfaceDefaultRouteUpdateOptions(updatedDefaultRoute)
+
+			opts.DefaultRoute = linodego.Pointer(updatedDefaultRouteOpts)
 		}
 	}
 

@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 const (
@@ -71,7 +71,6 @@ func (r *Resource) Create(
 
 	client := r.Meta.Client
 
-	timeoutSeconds := helper.FrameworkSafeFloat64ToInt(createTimeout.Seconds(), &resp.Diagnostics)
 	linodeID := helper.FrameworkSafeInt64ToInt(plan.LinodeID.ValueInt64(), &resp.Diagnostics)
 	diskSize := helper.FrameworkSafeInt64ToInt(plan.Size.ValueInt64(), &resp.Diagnostics)
 	stackScriptID := helper.FrameworkSafeInt64ToInt(
@@ -91,18 +90,37 @@ func (r *Resource) Create(
 
 	resp.Diagnostics.Append(plan.AuthorizedKeys.ElementsAs(ctx, &createOpts.AuthorizedKeys, false)...)
 	resp.Diagnostics.Append(plan.AuthorizedUsers.ElementsAs(ctx, &createOpts.AuthorizedUsers, false)...)
-	resp.Diagnostics.Append(plan.StackScriptData.ElementsAs(ctx, &createOpts.StackscriptData, false)...)
+
+	var m map[string]string
+
+	resp.Diagnostics.Append(
+		plan.StackScriptData.ElementsAs(ctx, &m, false)...,
+	)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if plan.RootPass.IsNull() {
-		createOpts.RootPass = helper.FrameworkCreateRandomRootPassword(&resp.Diagnostics)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	} else {
+	createOpts.StackscriptData = mapOrNil(m)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !plan.RootPass.IsNull() {
 		createOpts.RootPass = plan.RootPass.ValueString()
+	}
+
+	// When an image is provided, at least one authentication method must be specified
+	if createOpts.Image != "" &&
+		createOpts.RootPass == "" &&
+		len(createOpts.AuthorizedKeys) == 0 &&
+		len(createOpts.AuthorizedUsers) == 0 {
+		resp.Diagnostics.AddError(
+			"Insufficient Authentication",
+			"When `image` is provided, at least one of `root_pass`, `authorized_keys`, "+
+				"or `authorized_users` must be specified.",
+		)
+		return
 	}
 
 	p, err := client.NewEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionDiskCreate)
@@ -128,7 +146,7 @@ func (r *Resource) Create(
 
 	ctx = tflog.SetField(ctx, "disk_id", diskID)
 
-	_, err = p.WaitForFinished(ctx, timeoutSeconds)
+	_, err = p.WaitForFinished(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to Wait for the Disk Creation Event on Linode Disk (%d)", diskID),
@@ -138,7 +156,7 @@ func (r *Resource) Create(
 	}
 
 	if _, err := client.WaitForInstanceDiskStatus(
-		ctx, linodeID, diskID, linodego.DiskReady, timeoutSeconds,
+		ctx, linodeID, diskID, linodego.DiskReady,
 	); err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to Wait for Disk (%d) to be Ready", diskID), err.Error(),
@@ -251,7 +269,6 @@ func (r *Resource) Update(
 	defer cancel()
 
 	client := r.Meta.Client
-	timeoutSeconds := helper.FrameworkSafeFloat64ToInt(updateTimeout.Seconds(), &resp.Diagnostics)
 	size := helper.FrameworkSafeInt64ToInt(plan.Size.ValueInt64(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
@@ -260,7 +277,7 @@ func (r *Resource) Update(
 	if !state.Size.Equal(plan.Size) {
 		resp.Diagnostics.Append(
 			resizeDiskSync(
-				ctx, client, r.Meta, linodeID, id, size, timeoutSeconds,
+				ctx, client, r.Meta, linodeID, id, size,
 			)...,
 		)
 		if resp.Diagnostics.HasError() {
@@ -355,18 +372,11 @@ func (r *Resource) Delete(
 		return
 	}
 
-	timeoutSeconds := helper.FrameworkSafeFloat64ToInt(
-		deleteTimeout.Seconds(), &resp.Diagnostics,
-	)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
 	d := runDiskOperation(
-		ctx, client, r.Meta, linodeID, timeoutSeconds, func() (resultDiag diag.Diagnostics) {
+		ctx, client, r.Meta, linodeID, true, func() (resultDiag diag.Diagnostics) {
 			tflog.Info(ctx, "Deleting instance disk")
 			p, err := client.NewEventPollerWithSecondary(
 				ctx,
@@ -388,7 +398,7 @@ func (r *Resource) Delete(
 				return resultDiag
 			}
 
-			if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
+			if _, err := p.WaitForFinished(ctx); err != nil {
 				resp.Diagnostics.AddError(
 					"Failed to wait for Linode instance disk deletion to finish", err.Error(),
 				)
@@ -427,4 +437,11 @@ func populateLogAttributes(ctx context.Context, model ResourceModel) context.Con
 		"linode_id": model.LinodeID.ValueInt64(),
 		"disk_id":   model.ID.ValueString(),
 	})
+}
+
+func mapOrNil(m map[string]string) map[string]string {
+	if len(m) == 0 {
+		return nil
+	}
+	return m
 }

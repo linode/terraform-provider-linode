@@ -1,0 +1,12 @@
+{{ define "object_storage_global_quotas_basic" }}
+
+data "linode_object_storage_global_quotas" "all" {}
+
+data "linode_object_storage_global_quotas" "by-quota-id" {
+  filter {
+    name   = "quota_id"
+    values = ["{{ .QuotaID }}"]
+  }
+}
+
+{{ end }}

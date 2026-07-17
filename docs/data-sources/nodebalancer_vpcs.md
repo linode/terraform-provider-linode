@@ -35,6 +35,19 @@ data "linode_nodebalancer_vpcs" "vpc-configs" {
 }
 ```
 
+Retrieve all VPC configurations under a NodeBalancer with a specific IPv6 range:
+
+```hcl
+data "linode_nodebalancer_vpcs" "vpc-configs" {
+  nodebalancer_id = 12345
+
+  filter {
+    name   = "ipv6_range"
+    values = ["2a01:7e04:e403:3::/64"]
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:

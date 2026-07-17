@@ -85,6 +85,8 @@ Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and wil
 
 * `frontend_vpc_subnet_id` - The VPC subnet assigned to this NodeBalancer.
 
+* [`lke_cluster`](#lke_cluster) - The LKE cluster that manages this NodeBalancer, if any. The list will be empty if this NodeBalancer isn't related to an LKE cluster.
+
 ### transfer
 
 The following attributes are available on transfer:
@@ -94,6 +96,18 @@ The following attributes are available on transfer:
 * `out` - The total inbound transfer, in MB, used for this NodeBalancer for the current month.
 
 * `total` - The total outbound transfer, in MB, used for this NodeBalancer for the current month.
+
+### lke_cluster
+
+The following attributes are available on `lke_cluster`:
+
+* `id` - The ID of the related LKE cluster.
+
+* `label` - The label of the related LKE cluster.
+
+* `type` - The type of the related LKE cluster.
+
+* `url` - The URL where you can access the related LKE cluster.
 
 ## Filterable Fields
 

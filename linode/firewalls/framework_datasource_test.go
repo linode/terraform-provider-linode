@@ -11,8 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/firewalls/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/firewalls/tmpl"
 )
 
 const testFirewallDataName = "data.linode_firewalls.test"
@@ -20,7 +21,7 @@ const testFirewallDataName = "data.linode_firewalls.test"
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Linodes"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityCloudFirewall}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -228,5 +229,42 @@ func TestAccDataSourceFirewalls_basic(t *testing.T) {
 				},
 			},
 		})
+	})
+}
+
+func TestAccDataSourceFirewalls_protocolAllNumeric(t *testing.T) {
+	t.Parallel()
+
+	firewallName := acctest.RandomWithPrefix("tf_test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataProtocolAllNumeric(t, firewallName),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						testFirewallDataName,
+						tfjsonpath.New("firewalls"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallDataName,
+						tfjsonpath.New("firewalls").AtSliceIndex(0).AtMapKey("label"),
+						knownvalue.StringExact(firewallName),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallDataName,
+						tfjsonpath.New("firewalls").AtSliceIndex(0).AtMapKey("inbound").AtSliceIndex(0).AtMapKey("protocol"),
+						knownvalue.StringExact("ALL"),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallDataName,
+						tfjsonpath.New("firewalls").AtSliceIndex(0).AtMapKey("outbound").AtSliceIndex(0).AtMapKey("protocol"),
+						knownvalue.StringExact("50"),
+					),
+				},
+			},
+		},
 	})
 }

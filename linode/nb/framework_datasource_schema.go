@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v3/linode/firewalls"
+	"github.com/linode/terraform-provider-linode/v4/linode/firewalls"
 )
 
 var TransferObjectType = types.ObjectType{
@@ -22,6 +22,7 @@ var dataSourceVPCObjType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"subnet_id":  types.Int64Type,
 		"ipv4_range": types.StringType,
+		"ipv6_range": types.StringType,
 	},
 }
 
@@ -78,6 +79,30 @@ var DataSourceAttributes = map[string]schema.Attribute{
 		Computed:    true,
 		Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 	},
+	"lke_cluster": schema.ListNestedAttribute{
+		Description: "The related LKE cluster for this NodeBalancer, if any.",
+		Computed:    true,
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"id": schema.Int64Attribute{
+					Description: "The ID of the related LKE cluster.",
+					Computed:    true,
+				},
+				"label": schema.StringAttribute{
+					Description: "The label of the related LKE cluster.",
+					Computed:    true,
+				},
+				"type": schema.StringAttribute{
+					Description: "The type of the related LKE cluster.",
+					Computed:    true,
+				},
+				"url": schema.StringAttribute{
+					Description: "The URL where you can access the related LKE cluster.",
+					Computed:    true,
+				},
+			},
+		},
+	},
 	"type": schema.StringAttribute{
 		Description: "The type of this NodeBalancer.",
 		Computed:    true,
@@ -107,6 +132,12 @@ var dataSourceAttributesVPC = map[string]schema.Attribute{
 				},
 				"ipv4_range": schema.StringAttribute{
 					Description: "A CIDR range for the VPC's IPv4 addresses. " +
+						"The NodeBalancer sources IP addresses from this range " +
+						"when routing traffic to the backend VPC nodes.",
+					Computed: true,
+				},
+				"ipv6_range": schema.StringAttribute{
+					Description: "A CIDR range for the VPC's IPv6 addresses. " +
 						"The NodeBalancer sources IP addresses from this range " +
 						"when routing traffic to the backend VPC nodes.",
 					Computed: true,

@@ -3,8 +3,8 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	objkey "github.com/linode/terraform-provider-linode/v3/linode/objkey/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	objkey "github.com/linode/terraform-provider-linode/v4/linode/objkey/tmpl"
 )
 
 type TemplateData struct {
@@ -17,7 +17,6 @@ type TemplateData struct {
 
 	Cert         string
 	PrivKey      string
-	Cluster      string
 	Region       string
 	EndpointType string
 	EndpointURL  string
@@ -26,11 +25,6 @@ type TemplateData struct {
 func Basic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_basic", TemplateData{Label: label, Region: region})
-}
-
-func BasicLegacy(t testing.TB, label, cluster string) string {
-	return acceptance.ExecuteTemplate(t,
-		"object_bucket_basic", TemplateData{Label: label, Cluster: cluster})
 }
 
 func EndpointURL(t testing.TB, label, region, endpointURL string) string {
@@ -145,28 +139,12 @@ func ForceDelete_Empty(t testing.TB) string {
 	return acceptance.ExecuteTemplate(t, "object_bucket_force_delete_empty", nil)
 }
 
-func ClusterDataBasic(t testing.TB, label, cluster string) string {
-	return acceptance.ExecuteTemplate(t,
-		"object_bucket_cluster_data_basic", TemplateData{
-			Label:   label,
-			Cluster: cluster,
-		})
-}
-
 func CredsConfiged(t testing.TB, label, region, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_creds_configed", TemplateData{
 			Key:    objkey.TemplateData{Label: keyName},
 			Label:  label,
 			Region: region,
-		})
-}
-
-func DataBasicWithCluster(t testing.TB, label, cluster string) string {
-	return acceptance.ExecuteTemplate(t,
-		"object_bucket_data_basic", TemplateData{
-			Label:   label,
-			Cluster: cluster,
 		})
 }
 

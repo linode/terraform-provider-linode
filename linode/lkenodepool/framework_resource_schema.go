@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	linodesetplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/setplanmodifiers"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	linodesetplanmodifiers "github.com/linode/terraform-provider-linode/v4/linode/helper/setplanmodifiers"
 )
 
 var resourceSchema = schema.Schema{
@@ -72,8 +72,16 @@ var resourceSchema = schema.Schema{
 		"disk_encryption": schema.StringAttribute{
 			Description: "The disk encryption policy for nodes in this pool.",
 			Computed:    true,
+			Optional:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifier.RequiresReplaceIfConfigured(),
+			},
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(linodego.InstanceDiskEncryptionEnabled),
+					string(linodego.InstanceDiskEncryptionDisabled),
+				),
 			},
 		},
 		"tags": schema.SetAttribute{

@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/vpcsubnet/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/vpcsubnet/tmpl"
 )
 
 func TestAccDataSourceVPCSubnet_basic(t *testing.T) {
@@ -41,6 +41,7 @@ func TestAccDataSourceVPCSubnet_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "linodes.0.interfaces.0.active", "false"),
 
 					resource.TestCheckResourceAttr(resourceName, "databases.#", "0"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.#", "0"),
 				),
 			},
 		},
@@ -53,7 +54,7 @@ func TestAccDataSourceVPCSubnet_dualStack(t *testing.T) {
 	resourceName := "data.linode_vpc_subnet.foo"
 	subnetLabel := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityVPCs,
 		linodego.CapabilityVPCDualStack,
 	}, "core")
@@ -99,6 +100,40 @@ func TestAccDataSourceVPCSubnet_dualStack(t *testing.T) {
 						knownvalue.NotNull(),
 					),
 				},
+			},
+		},
+	})
+}
+
+func TestAccDataSourceVPCSubnet_nodebalancer(t *testing.T) {
+	t.Parallel()
+
+	resourceName := "data.linode_vpc_subnet.foo"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataNodeBalancer(t, subnetLabel, "10.0.0.0/24", testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "label"),
+					resource.TestCheckResourceAttrSet(resourceName, "ipv4"),
+					resource.TestCheckResourceAttrSet(resourceName, "created"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated"),
+
+					resource.TestCheckResourceAttr(resourceName, "linodes.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "linodes.0.id"),
+					resource.TestCheckResourceAttr(resourceName, "linodes.0.interfaces.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "linodes.0.interfaces.0.id"),
+					resource.TestCheckResourceAttr(resourceName, "linodes.0.interfaces.0.active", "false"),
+
+					resource.TestCheckResourceAttr(resourceName, "databases.#", "0"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.ipv4_range", "10.0.0.4/30"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.id"),
+				),
 			},
 		},
 	})

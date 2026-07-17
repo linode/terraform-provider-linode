@@ -11,16 +11,16 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/vlan/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/vlan/tmpl"
 )
 
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"vlans"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityVlans}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,6 +44,7 @@ func TestAccDataSourceVLANs_basic(t *testing.T) {
 	vlanName := "tf-test"
 	resourceName := "data.linode_vlans.foolan"
 	label := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -51,11 +52,11 @@ func TestAccDataSourceVLANs_basic(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, instanceName, testRegion, vlanName, label),
+				Config: tmpl.DataBasic(t, instanceName, testRegion, vlanName, label, rootPass),
 			},
 			{
 				PreConfig: preConfigVLANPoll(t, vlanName),
-				Config:    tmpl.DataBasic(t, instanceName, testRegion, vlanName, label),
+				Config:    tmpl.DataBasic(t, instanceName, testRegion, vlanName, label, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.label", vlanName),
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.region", testRegion),
@@ -74,6 +75,7 @@ func TestAccDataSourceVLANs_regex(t *testing.T) {
 	vlanName := "tf-test"
 	resourceName := "data.linode_vlans.foolan"
 	label := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -81,11 +83,11 @@ func TestAccDataSourceVLANs_regex(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataRegex(t, instanceName, testRegion, vlanName, label),
+				Config: tmpl.DataRegex(t, instanceName, testRegion, vlanName, label, rootPass),
 			},
 			{
 				PreConfig: preConfigVLANPoll(t, vlanName),
-				Config:    tmpl.DataRegex(t, instanceName, testRegion, vlanName, label),
+				Config:    tmpl.DataRegex(t, instanceName, testRegion, vlanName, label, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "vlans.#", 0),
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.label", vlanName),

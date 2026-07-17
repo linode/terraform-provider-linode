@@ -13,11 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
 	k8scondition "github.com/linode/linodego/k8s/pkg/condition"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	linodediffs "github.com/linode/terraform-provider-linode/v3/linode/helper/customdiffs"
-	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	linodediffs "github.com/linode/terraform-provider-linode/v4/linode/helper/customdiffs"
+	"github.com/linode/terraform-provider-linode/v4/linode/lkenodepool"
 )
 
 const (
@@ -41,6 +41,7 @@ func Resource() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			customDiffValidateOptionalCount,
 			customDiffValidatePoolForStandardTier,
+			customDiffValidateUpdateStrategyWithTier,
 			linodediffs.ComputedWithDefault("tags", []string{}),
 			linodediffs.CaseInsensitiveSet("tags"),
 			helper.SDKv2ValidateFieldRequiresAPIVersion(
@@ -115,16 +116,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	}
 
 	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane, acl)
-
-	// Only standard LKE has a dashboard URL
-	if cluster.Tier == TierStandard {
-		dashboard, err := client.GetLKEClusterDashboard(ctx, id)
-		if err != nil {
-			return diag.Errorf("failed to get dashboard URL for LKE cluster %d: %s", id, err)
-		}
-
-		d.Set("dashboard_url", dashboard.URL)
-	}
 
 	d.Set("label", cluster.Label)
 	d.Set("k8s_version", cluster.K8sVersion)
@@ -225,15 +216,22 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			firewallId = linodego.Pointer(poolSpec["firewall_id"].(int))
 		}
 
+		var diskEncryption *linodego.InstanceDiskEncryption
+		if v, ok := poolSpec["disk_encryption"].(string); ok && v != "" {
+			de := linodego.InstanceDiskEncryption(v)
+			diskEncryption = &de
+		}
+
 		createOpts.NodePools = append(createOpts.NodePools, linodego.LKENodePoolCreateOptions{
-			Label:      label,
-			FirewallID: firewallId,
-			Type:       poolSpec["type"].(string),
-			Tags:       helper.ExpandStringSet(poolSpec["tags"].(*schema.Set)),
-			Taints:     expandNodePoolTaints(helper.ExpandObjectSet(poolSpec["taint"].(*schema.Set))),
-			Labels:     helper.StringAnyMapToTyped[string](poolSpec["labels"].(map[string]any)),
-			Count:      count,
-			Autoscaler: autoscaler,
+			Label:          label,
+			FirewallID:     firewallId,
+			DiskEncryption: diskEncryption,
+			Type:           poolSpec["type"].(string),
+			Tags:           helper.ExpandStringSet(poolSpec["tags"].(*schema.Set)),
+			Taints:         expandNodePoolTaints(helper.ExpandObjectSet(poolSpec["taint"].(*schema.Set))),
+			Labels:         helper.StringAnyMapToTyped[string](poolSpec["labels"].(map[string]any)),
+			Count:          count,
+			Autoscaler:     autoscaler,
 		})
 	}
 
@@ -277,9 +275,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			"condition": "ClusterHasReadyNode",
 		})
 
-		err := client.WaitForLKEClusterConditions(ctx, cluster.ID, linodego.LKEClusterPollOptions{
-			TimeoutSeconds: 15 * 60,
-		}, k8scondition.ClusterHasReadyNode)
+		err := client.WaitForLKEClusterConditions(ctx, cluster.ID, linodego.LKEClusterPollOptions{},
+			k8scondition.ClusterHasReadyNode)
 		if err != nil {
 			tflog.Debug(ctx, err.Error())
 			return retry.RetryableError(err)
@@ -324,7 +321,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if d.HasChange("tags") {
 		tags := helper.ExpandStringSet(d.Get("tags").(*schema.Set))
-		updateOpts.Tags = &tags
+		updateOpts.Tags = tags
 	}
 	if d.HasChanges("label", "tags", "k8s_version", "control_plane") {
 		tflog.Debug(ctx, "client.UpdateLKECluster(...)", map[string]any{
@@ -495,7 +492,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		"timeout": timeoutSeconds,
 	})
 
-	_, err = client.WaitForLKEClusterStatus(ctx, id, "not_ready", timeoutSeconds)
+	_, err = client.WaitForLKEClusterStatus(ctx, id, "not_ready")
 	if err != nil {
 		// If we're getting a 404, it's safe to say the cluster has been
 		// deleted.
@@ -597,6 +594,48 @@ func customDiffValidatePoolForStandardTier(ctx context.Context, diff *schema.Res
 		if pool.IsNull() || pool.LengthInt() == 0 {
 			return fmt.Errorf("at least one pool is required for standard tier clusters")
 		}
+	}
+
+	return nil
+}
+
+// customDiffValidateUpdateStrategyWithTier ensures that update_strategy
+// can only be configured when tier is explicitly set to "enterprise".
+//
+// This validation is implemented as a custom diff using cty to validate
+// across pool attributes and the cluster tier, preventing false positives
+// during updates by validating only the user's config.
+func customDiffValidateUpdateStrategyWithTier(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	tier := diff.GetRawConfig().GetAttr("tier")
+	tierIsEnterprise := tier.IsKnown() && !tier.IsNull() && tier.AsString() == TierEnterprise
+	if tierIsEnterprise {
+		return nil
+	}
+
+	pools, ok := diff.Get("pool").([]any)
+	if !ok {
+		return fmt.Errorf("failed to parse pool config")
+	}
+
+	invalidPools := make([]string, 0)
+
+	for index, pool := range pools {
+		poolMap, ok := pool.(map[string]any)
+		if !ok {
+			continue
+		}
+
+		updateStrategy, ok := poolMap["update_strategy"].(string)
+		if ok && updateStrategy != "" {
+			invalidPools = append(invalidPools, fmt.Sprintf("pool.%d", index))
+		}
+	}
+
+	if len(invalidPools) > 0 {
+		return fmt.Errorf(
+			"%s: `update_strategy` can only be configured when tier is set to \"enterprise\"",
+			strings.Join(invalidPools, ", "),
+		)
 	}
 
 	return nil
