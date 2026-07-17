@@ -130,7 +130,7 @@ func (data *NodeBalancerModel) Flatten(
 		},
 	)
 
-	backendVPCs, diags := types.ListValueFrom(ctx, frameworkResourceSchemaVPCs.Type(), backendVPCConfigsModels)
+	backendVPCs, diags := types.ListValueFrom(ctx, frameworkResourceSchemaBackendVPCs.Type(), backendVPCConfigsModels)
 	if diags.HasError() {
 		return diags
 	}

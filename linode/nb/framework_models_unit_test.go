@@ -77,8 +77,8 @@ func TestFlattenNodeBalancer(t *testing.T) {
 		// VPCs is deprecated, but in this unit test we can
 		// check that the flatten function correctly handles both
 		// VPCs and BackendVPCs when preserveKnown is false.
-		VPCs:        types.ListValueMust(frameworkResourceSchemaVPCs.Type(), []attr.Value{}),
-		BackendVPCs: types.ListValueMust(frameworkResourceSchemaVPCs.Type(), []attr.Value{}),
+		VPCs:        types.ListValueMust(frameworkResourceSchemaBackendVPCs.Type(), []attr.Value{}),
+		BackendVPCs: types.ListValueMust(frameworkResourceSchemaBackendVPCs.Type(), []attr.Value{}),
 	}
 
 	vpcConfigs := []linodego.NodeBalancerVPCConfig{

@@ -57,7 +57,7 @@ var frontendVPCObjType = types.ObjectType{
 	},
 }
 
-var frameworkResourceSchemaVPCs = schema.NestedAttributeObject{
+var frameworkResourceSchemaBackendVPCs = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"subnet_id": schema.Int64Attribute{
 			Description: "The ID of a subnet to assign to this NodeBalancer.",
@@ -231,7 +231,7 @@ var frameworkResourceSchema = schema.Schema{
 				listplanmodifier.RequiresReplace(),
 				listplanmodifier.UseStateForUnknown(),
 			},
-			NestedObject: frameworkResourceSchemaVPCs,
+			NestedObject: frameworkResourceSchemaBackendVPCs,
 			Validators: []validator.List{
 				listvalidator.ConflictsWith(path.Expressions{
 					path.MatchRoot("backend_vpcs"),
@@ -246,7 +246,7 @@ var frameworkResourceSchema = schema.Schema{
 				listplanmodifier.RequiresReplace(),
 				listplanmodifier.UseStateForUnknown(),
 			},
-			NestedObject: frameworkResourceSchemaVPCs,
+			NestedObject: frameworkResourceSchemaBackendVPCs,
 			Validators: []validator.List{
 				listvalidator.ConflictsWith(path.Expressions{
 					path.MatchRoot("vpcs"),

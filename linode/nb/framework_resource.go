@@ -421,6 +421,8 @@ func upgradeNodebalancerResourceStateV0toV1(
 		Updated:             timetypes.RFC3339{StringValue: nbDataV0.Updated},
 		Tags:                nbDataV0.Tags,
 		Firewalls:           types.ListNull(firewallObjType),
+		VPCs:                types.ListNull(frameworkResourceSchemaBackendVPCs.Type()),
+		BackendVPCs:         types.ListNull(frameworkResourceSchemaBackendVPCs.Type()),
 		Type:                types.StringValue("common"),
 		FrontendVPCs:        types.ListNull(frontendVPCObjType),
 		FrontendAddressType: types.StringNull(),
