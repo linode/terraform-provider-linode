@@ -18,26 +18,26 @@ import (
 // NodeBalancerModel describes the Terraform resource data model to match the
 // resource schema.
 type NodeBalancerModel struct {
-	ID                    types.String      `tfsdk:"id"`
-	Label                 types.String      `tfsdk:"label"`
-	Region                types.String      `tfsdk:"region"`
-	ClientConnThrottle    types.Int64       `tfsdk:"client_conn_throttle"`
-	ClientUDPSessThrottle types.Int64       `tfsdk:"client_udp_sess_throttle"`
-	FirewallID            types.Int64       `tfsdk:"firewall_id"`
-	Hostname              types.String      `tfsdk:"hostname"`
-	IPv4                  types.String      `tfsdk:"ipv4"`
-	IPv6                  types.String      `tfsdk:"ipv6"`
-	Created               timetypes.RFC3339 `tfsdk:"created"`
-	Updated               timetypes.RFC3339 `tfsdk:"updated"`
-	Transfer              types.List        `tfsdk:"transfer"`
-	Tags                  types.Set         `tfsdk:"tags"`
-	Firewalls             types.List        `tfsdk:"firewalls"`
-	VPCs                  types.List        `tfsdk:"vpcs"`
-	FrontendVPCs          types.List        `tfsdk:"frontend_vpcs"`
-	Type                  types.String      `tfsdk:"type"`
-	FrontendAddressType   types.String      `tfsdk:"frontend_address_type"`
-	FrontendVPCSubnetID   types.Int64       `tfsdk:"frontend_vpc_subnet_id"`
-	LKECluster            types.List        `tfsdk:"lke_cluster"`
+	ID                    types.String        `tfsdk:"id"`
+	Label                 types.String        `tfsdk:"label"`
+	Region                types.String        `tfsdk:"region"`
+	ClientConnThrottle    types.Int64         `tfsdk:"client_conn_throttle"`
+	ClientUDPSessThrottle types.Int64         `tfsdk:"client_udp_sess_throttle"`
+	FirewallID            types.Int64         `tfsdk:"firewall_id"`
+	Hostname              types.String        `tfsdk:"hostname"`
+	IPv4                  iptypes.IPv4Address `tfsdk:"ipv4"`
+	IPv6                  types.String        `tfsdk:"ipv6"`
+	Created               timetypes.RFC3339   `tfsdk:"created"`
+	Updated               timetypes.RFC3339   `tfsdk:"updated"`
+	Transfer              types.List          `tfsdk:"transfer"`
+	Tags                  types.Set           `tfsdk:"tags"`
+	Firewalls             types.List          `tfsdk:"firewalls"`
+	VPCs                  types.List          `tfsdk:"vpcs"`
+	FrontendVPCs          types.List          `tfsdk:"frontend_vpcs"`
+	Type                  types.String        `tfsdk:"type"`
+	FrontendAddressType   types.String        `tfsdk:"frontend_address_type"`
+	FrontendVPCSubnetID   types.Int64         `tfsdk:"frontend_vpc_subnet_id"`
+	LKECluster            types.List          `tfsdk:"lke_cluster"`
 }
 
 // LKEClusterModel represents the lke_cluster nested object.
