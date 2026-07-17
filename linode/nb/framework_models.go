@@ -31,14 +31,15 @@ type NodeBalancerModel struct {
 	Transfer              types.List        `tfsdk:"transfer"`
 	Tags                  types.Set         `tfsdk:"tags"`
 	Firewalls             types.List        `tfsdk:"firewalls"`
+	BackendVPCs           types.List        `tfsdk:"backend_vpcs"`
+	FrontendVPCs          types.List        `tfsdk:"frontend_vpcs"`
+	Type                  types.String      `tfsdk:"type"`
+	FrontendAddressType   types.String      `tfsdk:"frontend_address_type"`
+	FrontendVPCSubnetID   types.Int64       `tfsdk:"frontend_vpc_subnet_id"`
+
 	// Deprecated: VPCs is deprecated in favor of BackendVPCs.
 	// This attribute may be removed in future major release.
-	VPCs                types.List   `tfsdk:"vpcs"`
-	BackendVPCs         types.List   `tfsdk:"backend_vpcs"`
-	FrontendVPCs        types.List   `tfsdk:"frontend_vpcs"`
-	Type                types.String `tfsdk:"type"`
-	FrontendAddressType types.String `tfsdk:"frontend_address_type"`
-	FrontendVPCSubnetID types.Int64  `tfsdk:"frontend_vpc_subnet_id"`
+	VPCs types.List `tfsdk:"vpcs"`
 }
 
 type FirewallModel struct {
