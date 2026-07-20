@@ -41,7 +41,6 @@ resource "linode_nodebalancer_node" "test" {
 
 resource "linode_instance" "test" {
     label = "{{ .Label }}"
-    group = "tf_test"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
     firewall_id = linode_firewall.e2e_test_firewall.id

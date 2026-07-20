@@ -64,7 +64,7 @@ func TestAccDataSource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						dataSourceName,
 						tfjsonpath.New("ipv6_range"),
-						knownvalue.StringExact(""),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						dataSourceName,

@@ -472,8 +472,6 @@ type ResourceVPCModel struct {
 
 type ResourceFrontendVPCModel struct {
 	BaseVPCModel
-
-	IPv6Range types.String `tfsdk:"ipv6_range"`
 }
 
 func (m *ResourceVPCModel) ToLinodego() (*linodego.NodeBalancerVPCOptions, diag.Diagnostics) {

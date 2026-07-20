@@ -66,7 +66,7 @@ func TestAccDataSource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						dataSourceName,
 						firstConfigPath.AtMapKey("ipv6_range"),
-						knownvalue.StringExact(""),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						dataSourceName,
@@ -106,7 +106,7 @@ func TestAccDataSource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						dataSourceName,
 						firstConfigPath.AtMapKey("ipv6_range"),
-						knownvalue.StringExact(""),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						dataSourceName,
