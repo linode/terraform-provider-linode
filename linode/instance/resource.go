@@ -916,7 +916,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 			if diags := BootInstanceAfterOfflineOperation(
 				ctx, meta.(*helper.ProviderMeta), id, bootConfig, bootReason,
-			); diags != nil {
+			); diags.HasError() {
 				return diags
 			}
 		}

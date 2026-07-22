@@ -94,7 +94,7 @@ func readResource(
 		})
 
 		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket.Label, region, "read_only", &bucket.EndpointType)
-		if diags != nil {
+		if diags.HasError() {
 			return diags
 		}
 
@@ -141,7 +141,7 @@ func createResource(
 	tflog.Debug(ctx, "Create linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
-	if diags := validateRegionIfPresent(ctx, d, &client); diags != nil {
+	if diags := validateRegionIfPresent(ctx, d, &client); diags.HasError() {
 		return diags
 	}
 
@@ -194,7 +194,7 @@ func updateResource(
 	client := meta.(*helper.ProviderMeta).Client
 
 	if d.HasChange("region") {
-		if diags := validateRegionIfPresent(ctx, d, &client); diags != nil {
+		if diags := validateRegionIfPresent(ctx, d, &client); diags.HasError() {
 			return diags
 		}
 	}
@@ -234,7 +234,7 @@ func updateResource(
 		}
 
 		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucketLabel, region, "read_write", endpointType)
-		if diags != nil {
+		if diags.HasError() {
 			return diags
 		}
 
@@ -287,7 +287,7 @@ func deleteResource(
 		}
 
 		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, label, region, "read_write", endpointType)
-		if diags != nil {
+		if diags.HasError() {
 			return diags
 		}
 
