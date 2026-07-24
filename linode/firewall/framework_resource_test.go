@@ -30,7 +30,20 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityCloudFirewall, linodego.CapabilityNodeBalancers}, "core")
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(
+			linodego.CapabilityCloudFirewall,
+			linodego.CapabilityNodeBalancers,
+		).
+		AvailableForAccount(ctx, linodego.CapabilityNodeBalancers).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
