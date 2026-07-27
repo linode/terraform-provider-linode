@@ -39,7 +39,7 @@ resource "linode_vpc_subnet" "test" {
     ipv4 = "10.0.0.0/24"
     ipv6 = [
         {
-            range = "auto"
+            range = cidrsubnet(linode_vpc.test.ipv6[0].allocated_range, 8, 1)
         }
     ]
 }
@@ -60,7 +60,7 @@ resource "linode_vpc_subnet" "frontend_subnet_test" {
     ipv4 = "10.0.0.0/24"
     ipv6 = [
         {
-            range = "auto"
+            range = cidrsubnet(linode_vpc.frontend_vpc_test.ipv6[0].allocated_range, 8, 1)
         }
     ]
 }

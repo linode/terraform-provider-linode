@@ -285,6 +285,16 @@ func TestAccResourceNodeBalancer_backendVPC(t *testing.T) {
 						tfjsonpath.New("backend_vpcs").AtSliceIndex(0).AtMapKey("ipv4_range"),
 						knownvalue.NotNull(),
 					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("backend_vpcs").AtSliceIndex(0).AtMapKey("allocated_ipv4_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("backend_vpcs").AtSliceIndex(0).AtMapKey("ipv4_range_auto_assign"),
+						knownvalue.Bool(true),
+					),
 				},
 			},
 		},
@@ -292,8 +302,6 @@ func TestAccResourceNodeBalancer_backendVPC(t *testing.T) {
 }
 
 func TestAccResourceNodeBalancer_VPCDeprecated(t *testing.T) {
-	// This test verifies that the deprecated VPCs attribute can still be used
-	// to create a NodeBalancer with VPC backends, and that the state is properly populated.
 	t.Parallel()
 
 	resName := "linode_nodebalancer.test"
@@ -329,6 +337,16 @@ func TestAccResourceNodeBalancer_VPCDeprecated(t *testing.T) {
 						resName,
 						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv4_range"),
 						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("allocated_ipv4_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv4_range_auto_assign"),
+						knownvalue.Bool(true),
 					),
 				},
 			},
@@ -375,8 +393,18 @@ func TestAccResourceNodeBalancer_frontendVPC(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("frontend_vpcs").AtSliceIndex(0).AtMapKey("subnet_id"),
+						tfjsonpath.New("backend_vpcs").AtSliceIndex(0).AtMapKey("allocated_ipv4_range"),
 						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("backend_vpcs").AtSliceIndex(0).AtMapKey("ipv4_range_auto_assign"),
+						knownvalue.Bool(true),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("frontend_vpcs"),
+						knownvalue.ListSizeExact(1),
 					),
 					statecheck.ExpectKnownValue(
 						resName,
@@ -385,8 +413,18 @@ func TestAccResourceNodeBalancer_frontendVPC(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resName,
+						tfjsonpath.New("frontend_vpcs").AtSliceIndex(0).AtMapKey("allocated_ipv4_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
 						tfjsonpath.New("frontend_vpcs").AtSliceIndex(0).AtMapKey("ipv6_range"),
 						knownvalue.Null(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("frontend_vpcs").AtSliceIndex(0).AtMapKey("allocated_ipv6_range"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resName,
@@ -406,10 +444,17 @@ func TestAccResourceNodeBalancer_frontendVPC(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:            resName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id", "backend_vpcs"}, // Ignore strict comparison for these attributes
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"created",
+					"updated",
+					"firewall_id",
+					"backend_vpcs.0.ipv4_range_auto_assign",
+					"frontend_vpcs.0.ipv4_range",
+					"frontend_vpcs.0.ipv6_range",
+				},
 			},
 		},
 	})

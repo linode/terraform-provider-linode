@@ -6,6 +6,7 @@ resource "linode_nodebalancer" "test" {
     label = "{{ .Label }}"
     region = "{{ .Region }}"
     firewall_id = linode_firewall.e2e_test_firewall.id
+    type = "premium"
 
     vpcs = [
         {

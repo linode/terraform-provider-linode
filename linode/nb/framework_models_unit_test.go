@@ -74,11 +74,15 @@ func TestFlattenNodeBalancer(t *testing.T) {
 	}
 
 	nodeBalancerModel := &NodeBalancerModel{
-		// VPCs is deprecated, but in this unit test we can
-		// check that the flatten function correctly handles both
-		// VPCs and BackendVPCs when preserveKnown is false.
-		VPCs:        types.ListValueMust(frameworkResourceSchemaBackendVPCs.Type(), []attr.Value{}),
-		BackendVPCs: types.ListValueMust(frameworkResourceSchemaBackendVPCs.Type(), []attr.Value{}),
+		VPCs: types.ListValueMust(backendVPCObjType, []attr.Value{
+			types.ObjectValueMust(backendVPCObjType.AttrTypes, map[string]attr.Value{
+				"subnet_id":              types.Int64Value(789),
+				"ipv4_range":             types.StringValue("10.0.0.0/24"),
+				"allocated_ipv4_range":   types.StringUnknown(),
+				"ipv4_range_auto_assign": types.BoolNull(),
+			}),
+		}),
+		BackendVPCs: types.ListValueMust(backendVPCObjType, []attr.Value{}),
 	}
 
 	vpcConfigs := []linodego.NodeBalancerVPCConfig{
@@ -125,9 +129,246 @@ func TestFlattenNodeBalancer(t *testing.T) {
 	}
 
 	assert.Equal(t, types.Int64Value(789), vpcConfigModel[0].SubnetID)
-	assert.Equal(t, types.StringValue("10.0.0.4/30"), vpcConfigModel[0].IPv4Range)
+	assert.Equal(t, types.StringValue("10.0.0.0/24"), vpcConfigModel[0].IPv4Range)
+	assert.Equal(t, types.StringValue("10.0.0.4/30"), vpcConfigModel[0].AllocatedIPv4Range)
 
 	assert.True(t, types.StringValue(label).Equal(nodeBalancerModel.Label))
+}
+
+func TestFlattenNodeBalancerBackendVPCsPreserveConfiguredRanges(t *testing.T) {
+	nodeBalancer := &linodego.NodeBalancer{ID: 123}
+
+	nodeBalancerModel := &NodeBalancerModel{
+		BackendVPCs: types.ListValueMust(backendVPCObjType, []attr.Value{
+			types.ObjectValueMust(backendVPCObjType.AttrTypes, map[string]attr.Value{
+				"subnet_id":              types.Int64Value(789),
+				"ipv4_range":             types.StringValue("10.0.0.0/24"),
+				"allocated_ipv4_range":   types.StringUnknown(),
+				"ipv4_range_auto_assign": types.BoolValue(true),
+			}),
+		}),
+	}
+
+	vpcConfigs := []linodego.NodeBalancerVPCConfig{
+		{
+			ID:             123,
+			NodeBalancerID: 456,
+			SubnetID:       789,
+			IPv4Range:      "10.0.0.4/30",
+			Purpose:        linodego.NodeBalancerVPCConfigPurposeBackend,
+		},
+		{
+			ID:             124,
+			NodeBalancerID: 456,
+			SubnetID:       790,
+			IPv4Range:      "10.0.0.8/30",
+			Purpose:        linodego.NodeBalancerVPCConfigPurposeBackend,
+		},
+	}
+
+	diags := nodeBalancerModel.Flatten(
+		context.Background(),
+		nodeBalancer,
+		nil,
+		vpcConfigs,
+		true,
+	)
+
+	assert.False(t, diags.HasError())
+
+	var backendVPCModels []ResourceBackendVPCModel
+	d := nodeBalancerModel.BackendVPCs.ElementsAs(context.Background(), &backendVPCModels, false)
+	if d.HasError() {
+		t.Fatal(d.Errors())
+	}
+
+	assert.Len(t, backendVPCModels, 1)
+	assert.Equal(t, types.Int64Value(789), backendVPCModels[0].SubnetID)
+	assert.Equal(t, types.StringValue("10.0.0.0/24"), backendVPCModels[0].IPv4Range)
+	assert.Equal(t, types.StringValue("10.0.0.4/30"), backendVPCModels[0].AllocatedIPv4Range)
+	assert.Equal(t, types.BoolValue(true), backendVPCModels[0].IPv4RangeAutoAssign)
+}
+
+func TestFlattenNodeBalancerBackendVPCsReconcileAPIEntries(t *testing.T) {
+	nodeBalancer := &linodego.NodeBalancer{ID: 123}
+
+	nodeBalancerModel := &NodeBalancerModel{
+		BackendVPCs: types.ListValueMust(backendVPCObjType, []attr.Value{
+			types.ObjectValueMust(backendVPCObjType.AttrTypes, map[string]attr.Value{
+				"subnet_id":              types.Int64Value(788),
+				"ipv4_range":             types.StringValue("10.0.0.0/24"),
+				"allocated_ipv4_range":   types.StringUnknown(),
+				"ipv4_range_auto_assign": types.BoolValue(true),
+			}),
+			types.ObjectValueMust(backendVPCObjType.AttrTypes, map[string]attr.Value{
+				"subnet_id":              types.Int64Value(789),
+				"ipv4_range":             types.StringValue("10.0.0.0/24"),
+				"allocated_ipv4_range":   types.StringUnknown(),
+				"ipv4_range_auto_assign": types.BoolValue(true),
+			}),
+		}),
+	}
+
+	vpcConfigs := []linodego.NodeBalancerVPCConfig{
+		{
+			SubnetID:  790,
+			IPv4Range: "10.0.0.8/30",
+			Purpose:   linodego.NodeBalancerVPCConfigPurposeBackend,
+		},
+		{
+			SubnetID:  789,
+			IPv4Range: "10.0.0.4/30",
+			Purpose:   linodego.NodeBalancerVPCConfigPurposeBackend,
+		},
+	}
+
+	diags := nodeBalancerModel.Flatten(
+		context.Background(),
+		nodeBalancer,
+		nil,
+		vpcConfigs,
+		false,
+	)
+
+	assert.False(t, diags.HasError())
+
+	var backendVPCModels []ResourceBackendVPCModel
+	d := nodeBalancerModel.BackendVPCs.ElementsAs(context.Background(), &backendVPCModels, false)
+	if d.HasError() {
+		t.Fatal(d.Errors())
+	}
+
+	assert.Len(t, backendVPCModels, 2)
+	assert.Equal(t, types.Int64Value(789), backendVPCModels[0].SubnetID)
+	assert.Equal(t, types.StringValue("10.0.0.0/24"), backendVPCModels[0].IPv4Range)
+	assert.Equal(t, types.StringValue("10.0.0.4/30"), backendVPCModels[0].AllocatedIPv4Range)
+	assert.Equal(t, types.BoolValue(true), backendVPCModels[0].IPv4RangeAutoAssign)
+	assert.Equal(t, types.Int64Value(790), backendVPCModels[1].SubnetID)
+	assert.Equal(t, types.StringValue("10.0.0.8/30"), backendVPCModels[1].IPv4Range)
+	assert.Equal(t, types.StringValue("10.0.0.8/30"), backendVPCModels[1].AllocatedIPv4Range)
+	assert.True(t, backendVPCModels[1].IPv4RangeAutoAssign.IsNull())
+}
+
+func TestFlattenNodeBalancerFrontendVPCsPreserveConfiguredRanges(t *testing.T) {
+	nodeBalancer := &linodego.NodeBalancer{
+		ID: 123,
+	}
+
+	nodeBalancerModel := &NodeBalancerModel{
+		FrontendVPCs: types.ListValueMust(frontendVPCObjType, []attr.Value{
+			types.ObjectValueMust(frontendVPCObjType.AttrTypes, map[string]attr.Value{
+				"subnet_id":            types.Int64Value(789),
+				"ipv4_range":           types.StringValue("auto"),
+				"allocated_ipv4_range": types.StringUnknown(),
+				"ipv6_range":           types.StringValue("auto"),
+				"allocated_ipv6_range": types.StringUnknown(),
+			}),
+		}),
+	}
+
+	vpcConfigs := []linodego.NodeBalancerVPCConfig{
+		{
+			ID:             123,
+			NodeBalancerID: 456,
+			SubnetID:       789,
+			IPv4Range:      "10.0.0.4/30",
+			IPv6Range:      "fd00::4/126",
+			Purpose:        linodego.NodeBalancerVPCConfigPurposeFrontend,
+		},
+	}
+
+	diags := nodeBalancerModel.Flatten(
+		context.Background(),
+		nodeBalancer,
+		nil,
+		vpcConfigs,
+		true,
+	)
+
+	assert.False(t, diags.HasError())
+
+	var frontendVPCModels []ResourceFrontendVPCModel
+	d := nodeBalancerModel.FrontendVPCs.ElementsAs(context.Background(), &frontendVPCModels, false)
+	if d.HasError() {
+		t.Fatal(d.Errors())
+	}
+
+	assert.Len(t, frontendVPCModels, 1)
+	assert.Equal(t, types.Int64Value(789), frontendVPCModels[0].SubnetID)
+	assert.Equal(t, types.StringValue("auto"), frontendVPCModels[0].IPv4Range)
+	assert.Equal(t, types.StringValue("10.0.0.4/30"), frontendVPCModels[0].AllocatedIPv4Range)
+	assert.Equal(t, types.StringValue("auto"), frontendVPCModels[0].IPv6Range)
+	assert.Equal(t, types.StringValue("fd00::4/126"), frontendVPCModels[0].AllocatedIPv6Range)
+}
+
+func TestFlattenNodeBalancerFrontendVPCsReconcileAPIEntries(t *testing.T) {
+	nodeBalancer := &linodego.NodeBalancer{ID: 123}
+
+	nodeBalancerModel := &NodeBalancerModel{
+		FrontendVPCs: types.ListValueMust(frontendVPCObjType, []attr.Value{
+			types.ObjectValueMust(frontendVPCObjType.AttrTypes, map[string]attr.Value{
+				"subnet_id":            types.Int64Value(788),
+				"ipv4_range":           types.StringValue("auto"),
+				"allocated_ipv4_range": types.StringUnknown(),
+				"ipv6_range":           types.StringValue("auto"),
+				"allocated_ipv6_range": types.StringUnknown(),
+			}),
+			types.ObjectValueMust(frontendVPCObjType.AttrTypes, map[string]attr.Value{
+				"subnet_id":            types.Int64Value(789),
+				"ipv4_range":           types.StringValue("auto"),
+				"allocated_ipv4_range": types.StringUnknown(),
+				"ipv6_range":           types.StringValue("auto"),
+				"allocated_ipv6_range": types.StringUnknown(),
+			}),
+		}),
+	}
+
+	vpcConfigs := []linodego.NodeBalancerVPCConfig{
+		{
+			ID:             123,
+			NodeBalancerID: 456,
+			SubnetID:       790,
+			IPv4Range:      "10.0.0.8/30",
+			IPv6Range:      "fd00::8/126",
+			Purpose:        linodego.NodeBalancerVPCConfigPurposeFrontend,
+		},
+		{
+			ID:             124,
+			NodeBalancerID: 456,
+			SubnetID:       789,
+			IPv4Range:      "10.0.0.4/30",
+			IPv6Range:      "fd00::4/126",
+			Purpose:        linodego.NodeBalancerVPCConfigPurposeFrontend,
+		},
+	}
+
+	diags := nodeBalancerModel.Flatten(
+		context.Background(),
+		nodeBalancer,
+		nil,
+		vpcConfigs,
+		false,
+	)
+
+	assert.False(t, diags.HasError())
+
+	var frontendVPCModels []ResourceFrontendVPCModel
+	d := nodeBalancerModel.FrontendVPCs.ElementsAs(context.Background(), &frontendVPCModels, false)
+	if d.HasError() {
+		t.Fatal(d.Errors())
+	}
+
+	assert.Len(t, frontendVPCModels, 2)
+	assert.Equal(t, types.Int64Value(789), frontendVPCModels[0].SubnetID)
+	assert.Equal(t, types.StringValue("auto"), frontendVPCModels[0].IPv4Range)
+	assert.Equal(t, types.StringValue("10.0.0.4/30"), frontendVPCModels[0].AllocatedIPv4Range)
+	assert.Equal(t, types.StringValue("auto"), frontendVPCModels[0].IPv6Range)
+	assert.Equal(t, types.StringValue("fd00::4/126"), frontendVPCModels[0].AllocatedIPv6Range)
+	assert.Equal(t, types.Int64Value(790), frontendVPCModels[1].SubnetID)
+	assert.True(t, frontendVPCModels[1].IPv4Range.IsNull())
+	assert.Equal(t, types.StringValue("10.0.0.8/30"), frontendVPCModels[1].AllocatedIPv4Range)
+	assert.True(t, frontendVPCModels[1].IPv6Range.IsNull())
+	assert.Equal(t, types.StringValue("fd00::8/126"), frontendVPCModels[1].AllocatedIPv6Range)
 }
 
 func TestUpgradeResourceStateValue(t *testing.T) {

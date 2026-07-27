@@ -49,14 +49,6 @@ var firewallObjType = types.ObjectType{
 	},
 }
 
-var frontendVPCObjType = types.ObjectType{
-	AttrTypes: map[string]attr.Type{
-		"subnet_id":  types.Int64Type,
-		"ipv4_range": types.StringType,
-		"ipv6_range": types.StringType,
-	},
-}
-
 var frameworkResourceSchemaBackendVPCs = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"subnet_id": schema.Int64Attribute{
@@ -72,21 +64,21 @@ var frameworkResourceSchemaBackendVPCs = schema.NestedAttributeObject{
 				"The NodeBalancer sources IP addresses from this range " +
 				"when routing traffic to the backend VPC nodes.",
 			Optional: true,
-			Computed: true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
-				stringplanmodifier.UseStateForUnknown(),
 			},
+		},
+		"allocated_ipv4_range": schema.StringAttribute{
+			Description: "The IPv4 CIDR range allocated by the API for the NodeBalancer's backend VPC nodes.",
+			Computed:    true,
 		},
 		"ipv4_range_auto_assign": schema.BoolAttribute{
 			Description: "Enables the use of a larger ipv4_range subnet for multiple NodeBalancers " +
 				"within the same VPC by allocating smaller /30 subnets for " +
 				"each NodeBalancer's backends.",
-			Optional:  true,
-			WriteOnly: true,
+			Optional: true,
 			PlanModifiers: []planmodifier.Bool{
 				boolplanmodifier.RequiresReplace(),
-				boolplanmodifier.UseStateForUnknown(),
 			},
 		},
 	},
@@ -103,23 +95,34 @@ var frameworkResourceSchemaFrontendVPCs = schema.NestedAttributeObject{
 			},
 		},
 		"ipv4_range": schema.StringAttribute{
-			Description: "A CIDR range for the VPC's IPv4 addresses allocated as the NodeBalancer's frontend IPs.",
+			Description: "A CIDR range for the VPC's IPv4 addresses allocated as the NodeBalancer's frontend IPs. Use \"auto\" to let the API choose the range.",
 			Optional:    true,
-			WriteOnly:   true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
 			},
 		},
+		"allocated_ipv4_range": schema.StringAttribute{
+			Description: "The IPv4 CIDR range allocated by the API for the NodeBalancer's frontend IPs.",
+			Computed:    true,
+		},
 		"ipv6_range": schema.StringAttribute{
-			Description: "A CIDR range for the VPC's IPv6 addresses allocated as the NodeBalancer's frontend IPs.",
+			Description: "A CIDR range for the VPC's IPv6 addresses allocated as the NodeBalancer's frontend IPs. Use \"auto\" to let the API choose the range.",
 			Optional:    true,
-			WriteOnly:   true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
 			},
+		},
+		"allocated_ipv6_range": schema.StringAttribute{
+			Description: "The IPv6 CIDR range allocated by the API for the NodeBalancer's frontend IPs.",
+			Computed:    true,
 		},
 	},
 }
+
+var (
+	frontendVPCObjType = frameworkResourceSchemaFrontendVPCs.Type().(types.ObjectType)
+	backendVPCObjType  = frameworkResourceSchemaBackendVPCs.Type().(types.ObjectType)
+)
 
 var frameworkResourceSchema = schema.Schema{
 	Version: 1,
@@ -227,9 +230,10 @@ var frameworkResourceSchema = schema.Schema{
 		"vpcs": schema.ListNestedAttribute{
 			Description: "A VPC configuration for backend nodes.",
 			Optional:    true,
+			Computed:    true,
+			Default:     helper.EmptyListDefault(backendVPCObjType),
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.RequiresReplace(),
-				listplanmodifier.UseStateForUnknown(),
 			},
 			NestedObject: frameworkResourceSchemaBackendVPCs,
 			Validators: []validator.List{
@@ -242,9 +246,10 @@ var frameworkResourceSchema = schema.Schema{
 		"backend_vpcs": schema.ListNestedAttribute{
 			Description: "A VPC configuration for backend nodes.",
 			Optional:    true,
+			Computed:    true,
+			Default:     helper.EmptyListDefault(backendVPCObjType),
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.RequiresReplace(),
-				listplanmodifier.UseStateForUnknown(),
 			},
 			NestedObject: frameworkResourceSchemaBackendVPCs,
 			Validators: []validator.List{
@@ -257,10 +262,11 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "For internal load balancing, where the NodeBalancer is within a VPC, " +
 				"indicate a VPC subnet_id. For greater flexibility, you can specify the IP range within the subnet used for allocation.",
 			Optional: true,
+			Computed: true,
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.RequiresReplace(),
-				listplanmodifier.UseStateForUnknown(),
 			},
+			Default:      helper.EmptyListDefault(frontendVPCObjType),
 			NestedObject: frameworkResourceSchemaFrontendVPCs,
 		},
 		"type": schema.StringAttribute{
