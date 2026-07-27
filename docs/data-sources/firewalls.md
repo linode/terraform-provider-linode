@@ -81,6 +81,10 @@ Each Linode firewall will be stored in the `firewalls` attribute and will export
 
 * `outbound_policy` - The default behavior for outbound traffic.
 
+* `version` - The current version of the Firewall rules.
+
+* `fingerprint` - The fingerprint of the current Firewall rules.
+
 * `linodes` - The IDs of Linodes this firewall is applied to.
 
 * `nodebalancers` - The IDs of NodeBalancers this firewall is applied to.

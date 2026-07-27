@@ -120,6 +120,10 @@ In addition to all arguments above, the following attributes are exported:
 
 * `status` - The status of the Firewall.
 
+* `version` - The current version of the Firewall rules.
+
+* `fingerprint` - The fingerprint of the current Firewall rules.
+
 * [`devices`](#devices) - The devices governed by the Firewall.
 
 ### devices
