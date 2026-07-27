@@ -47,6 +47,22 @@ The following attributes can be defined under each entry in the `assignments` fi
 
 * `id` - The unique ID of this resource.
 
+* `assignments` - The list of IP/Linode assignments. In addition to the configurable arguments above, each entry exposes the following computed attributes after assignment:
+
+  * `reserved` - Whether this IP address is a reserved IP.
+
+  * `tags` - A set of tags associated with this IP address.
+
+  * `assigned_entity` - The entity this IP address has been assigned to.
+
+    * `id` - The ID of the entity.
+
+    * `label` - The label of the entity.
+
+    * `type` - The type of the entity.
+
+    * `url` - The URL of the entity.
+
 ## Import
 
 Network IP assignments cannot be imported.

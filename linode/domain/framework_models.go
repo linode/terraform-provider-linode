@@ -2,8 +2,8 @@ package domain
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 // DomainModel maps a Linode Domain object to a Terraform config.
@@ -11,7 +11,6 @@ type DomainModel struct {
 	ID          types.Int64    `tfsdk:"id"`
 	Domain      types.String   `tfsdk:"domain"`
 	Type        types.String   `tfsdk:"type"`
-	Group       types.String   `tfsdk:"group"`
 	Status      types.String   `tfsdk:"status"`
 	Description types.String   `tfsdk:"description"`
 	MasterIPs   []types.String `tfsdk:"master_ips"`
@@ -28,7 +27,6 @@ func (m *DomainModel) ParseDomain(domain *linodego.Domain) {
 	m.ID = types.Int64Value(int64(domain.ID))
 	m.Domain = types.StringValue(domain.Domain)
 	m.Type = types.StringValue(string(domain.Type))
-	m.Group = types.StringValue(domain.Group)
 	m.Status = types.StringValue(string(domain.Status))
 	m.Description = types.StringValue(domain.Description)
 	m.MasterIPs = helper.StringSliceToFramework(domain.MasterIPs)

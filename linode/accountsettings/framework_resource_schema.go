@@ -37,7 +37,6 @@ var frameworkResourceSchema = schema.Schema{
 		"longview_subscription": schema.StringAttribute{
 			Description: "The Longview Pro tier you are currently subscribed to.",
 			Computed:    true,
-			Optional:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},

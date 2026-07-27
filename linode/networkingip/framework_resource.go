@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 func NewResource() resource.Resource {
@@ -177,7 +177,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 
 	// Updates to the reserved field need to happen before any reassignments occur
 	if !plan.Reserved.Equal(state.Reserved) {
-		updateOpts := linodego.IPAddressUpdateOptionsV2{
+		updateOpts := linodego.IPAddressUpdateOptions{
 			Reserved: plan.Reserved.ValueBoolPointer(),
 		}
 
@@ -186,7 +186,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			"options": updateOpts,
 		})
 
-		if _, err := client.UpdateIPAddressV2(ctx, state.Address.ValueString(), updateOpts); err != nil {
+		if _, err := client.UpdateIPAddress(ctx, state.Address.ValueString(), updateOpts); err != nil {
 			resp.Diagnostics.AddError(
 				"Failed to Update IP Address",
 				fmt.Sprintf("Could not update reserved status of IP address: %s", err),
@@ -201,7 +201,64 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		return
 	}
 
-	plan.CopyFrom(state, true)
+	// Re-read the IP to refresh all computed fields after updates.
+	// Prefer a direct lookup; fall back to listing when the address is not
+	// served by GetIPAddress (e.g. private IPs — see Read for the same workaround).
+	address := state.Address.ValueString()
+	foundIP, err := client.GetIPAddress(ctx, address)
+	if err != nil {
+		if !linodego.IsNotFound(err) {
+			resp.Diagnostics.AddError(
+				"Error reading IP Address after update",
+				fmt.Sprintf("Could not read IP address %s: %s", address, err),
+			)
+			return
+		}
+
+		// Not found via direct lookup — fall back to listing (needed for private IPs).
+		ips, listErr := client.ListIPAddresses(ctx, nil)
+		if listErr != nil {
+			resp.Diagnostics.AddError(
+				"Error reading IP Address after update",
+				fmt.Sprintf(
+					"Could not re-read IP address %q after update. GetIPAddress error: %s. ListIPAddresses error: %s",
+					address, err, listErr,
+				),
+			)
+			return
+		}
+		for _, ip := range ips {
+			if ip.Address == address {
+				foundIP = &ip
+				break
+			}
+		}
+		if foundIP == nil {
+			// The IP no longer exists — converting an unassigned reserved IP to
+			// ephemeral causes the API to delete it. Surface this as an error so
+			// the user knows to remove the resource from their configuration.
+			// On the next plan/refresh, Read will find the IP gone and clean up state.
+			resp.Diagnostics.AddError(
+				"IP Address Deleted During Update",
+				fmt.Sprintf(
+					"IP address %q no longer exists after the update. This can happen when "+
+						"converting an unassigned reserved IP to ephemeral, as the API deletes it. "+
+						"Remove this resource from your Terraform configuration.",
+					address,
+				),
+			)
+			return
+		}
+	}
+
+	// Do not preserve known plan values here: computed attributes may already
+	// be known in plan (for example via UseStateForUnknown plan modifiers), and
+	// preserving them would prevent this post-update refresh from applying the
+	// latest API values.
+	resp.Diagnostics.Append(plan.FlattenIPAddress(foundIP, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// Workaround for Crossplane issue where ID is not
 	// properly populated in plan
@@ -254,11 +311,13 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		})
 		err := client.DeleteReservedIPAddress(ctx, state.Address.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Failed to delete Reserved IP",
-				err.Error(),
-			)
-			return
+			if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
+				resp.Diagnostics.AddError(
+					"Failed to delete Reserved IP",
+					err.Error(),
+				)
+				return
+			}
 		}
 	}
 }

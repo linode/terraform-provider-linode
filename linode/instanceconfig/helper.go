@@ -9,8 +9,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 func getDeviceMapFields(deviceMap linodego.InstanceConfigDeviceMap) [][2]any {
@@ -96,13 +96,33 @@ func createDevice(deviceMap map[string]any) linodego.InstanceConfigDevice {
 	return device
 }
 
-func expandDevicesBlock(devicesBlock any) *linodego.InstanceConfigDeviceMap {
+func setDeviceMapField(target *linodego.InstanceConfigDeviceMap, deviceKey string, device linodego.InstanceConfigDevice) error {
+	if target == nil {
+		return nil
+	}
+
+	structVal := reflect.ValueOf(target).Elem()
+	lookupKey := strings.ToUpper(strings.TrimSpace(deviceKey))
+	field := structVal.FieldByName(lookupKey)
+
+	if !field.IsValid() {
+		return fmt.Errorf("unknown device %q (no matching field on InstanceConfigDeviceMap)", deviceKey)
+	}
+	if !field.CanSet() {
+		return fmt.Errorf("cannot set device %q (field exists but is unsettable)", deviceKey)
+	}
+
+	field.Set(reflect.ValueOf(&device))
+	return nil
+}
+
+func expandDevicesBlock(devicesBlock any) (*linodego.InstanceConfigDeviceMap, error) {
 	var result linodego.InstanceConfigDeviceMap
 
 	devices := devicesBlock.(*schema.Set).List()
 
 	if len(devices) <= 0 {
-		return nil
+		return nil, nil
 	}
 
 	seenDevices := make(map[string]bool)
@@ -118,26 +138,23 @@ func expandDevicesBlock(devicesBlock any) *linodego.InstanceConfigDeviceMap {
 				seenDevices[deviceName.(string)] = true
 			}
 
-			field := reflect.Indirect(
-				reflect.ValueOf(&result),
-			).FieldByName(
-				strings.ToUpper(deviceName.(string)),
-			)
-
-			field.Set(reflect.ValueOf(&linodeGoDevice))
+			err := setDeviceMapField(&result, deviceName.(string), linodeGoDevice)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	return &result
+	return &result, nil
 }
 
-func expandDevicesNamedBlock(devicesNamedBlock any) *linodego.InstanceConfigDeviceMap {
+func expandDevicesNamedBlock(devicesNamedBlock any) (*linodego.InstanceConfigDeviceMap, error) {
 	var result linodego.InstanceConfigDeviceMap
 
 	deviceMapSlice := devicesNamedBlock.([]any)
 
 	if len(deviceMapSlice) < 1 {
-		return nil
+		return nil, nil
 	}
 
 	devices := deviceMapSlice[0].(map[string]any)
@@ -151,12 +168,13 @@ func expandDevicesNamedBlock(devicesNamedBlock any) *linodego.InstanceConfigDevi
 		currentDevice := currentDeviceSlice[0].(map[string]any)
 		linodeGoDevice := createDevice(currentDevice)
 
-		// Get the corresponding struct field and set it to the correct device
-		field := reflect.Indirect(reflect.ValueOf(&result)).FieldByName(strings.ToUpper(k))
-		field.Set(reflect.ValueOf(&linodeGoDevice))
+		err := setDeviceMapField(&result, k, linodeGoDevice)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return &result
+	return &result, nil
 }
 
 func expandHelpers(helpersRaw any) *linodego.InstanceConfigHelpers {
@@ -178,7 +196,7 @@ func expandHelpers(helpersRaw any) *linodego.InstanceConfigHelpers {
 }
 
 func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int, configID int,
-	timeoutSeconds int, booted bool, reboot bool,
+	booted bool, reboot bool,
 ) error {
 	instance, err := client.GetInstance(ctx, linodeID)
 	if err != nil {
@@ -200,7 +218,7 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int,
 		// Instance is booted into the wrong config or the booted config requires reboot
 		if isBooted && (currentConfig != configID || reboot) {
 			tflog.Debug(ctx, "Waiting for instance to enter running status")
-			if _, err := client.WaitForInstanceStatus(ctx, instance.ID, linodego.InstanceRunning, timeoutSeconds); err != nil {
+			if _, err := client.WaitForInstanceStatus(ctx, instance.ID, linodego.InstanceRunning); err != nil {
 				return fmt.Errorf("failed to wait for instance running: %s", err)
 			}
 
@@ -220,13 +238,23 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int,
 				})
 			}
 
-			if err := client.RebootInstance(ctx, instance.ID, configID); err != nil {
+			var rebootConfig *int
+
+			if configID != 0 {
+				rebootConfig = &configID
+			}
+
+			instanceRebootOptions := linodego.InstanceRebootOptions{
+				ConfigID: rebootConfig,
+			}
+
+			if err := client.RebootInstance(ctx, instance.ID, instanceRebootOptions); err != nil {
 				return fmt.Errorf("failed to reboot instance %d: %s", instance.ID, err)
 			}
 
 			tflog.Debug(ctx, "Instance reboot triggered, waiting for event finished")
 
-			event, err := p.WaitForFinished(ctx, timeoutSeconds)
+			event, err := p.WaitForFinished(ctx)
 			if err != nil {
 				return fmt.Errorf("failed to wait for instance reboot: %s", err)
 			}
@@ -247,13 +275,23 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int,
 				return fmt.Errorf("failed to poll for events: %s", err)
 			}
 
-			if err := client.BootInstance(ctx, instance.ID, configID); err != nil {
+			var bootConfig *int
+
+			if configID != 0 {
+				bootConfig = &configID
+			}
+
+			instanceBootOptions := linodego.InstanceBootOptions{
+				ConfigID: bootConfig,
+			}
+
+			if err := client.BootInstance(ctx, instance.ID, instanceBootOptions); err != nil {
 				return fmt.Errorf("failed to boot instance %d %d: %s", instance.ID, configID, err)
 			}
 
 			tflog.Debug(ctx, "Instance boot triggered, waiting for event finished")
 
-			event, err := p.WaitForFinished(ctx, timeoutSeconds)
+			event, err := p.WaitForFinished(ctx)
 			if err != nil {
 				return fmt.Errorf("failed to wait for instance boot: %s", err)
 			}
@@ -274,7 +312,7 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int,
 
 		tflog.Info(ctx, "Handling instance shutdown")
 
-		if _, err := client.WaitForInstanceStatus(ctx, instance.ID, linodego.InstanceRunning, timeoutSeconds); err != nil {
+		if _, err := client.WaitForInstanceStatus(ctx, instance.ID, linodego.InstanceRunning); err != nil {
 			return fmt.Errorf("failed to wait for instance running: %s", err)
 		}
 
@@ -289,7 +327,7 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int,
 			return fmt.Errorf("failed to shutdown instance: %s", err)
 		}
 
-		event, err := p.WaitForFinished(ctx, timeoutSeconds)
+		event, err := p.WaitForFinished(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 		}

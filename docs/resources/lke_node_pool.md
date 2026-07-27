@@ -125,11 +125,11 @@ The following arguments are supported:
 
 * [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
 
-* `disk_encryption` - (Optional) The disk encryption policy for nodes in this pool. Accepted values are `enabled` and `disabled`. Changing this forces recreation of the pool.
-
-* [`isolation`](#isolation) - (Optional) Network isolation settings for the node pool.
-
 * [`taint`](#taint) - (Optional) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. To learn more, review [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools).
+
+* `disk_encryption` - (Optional) The disk encryption policy for nodes in this pool.
+
+* [`isolation`](#isolation) - (Optional) Network isolation settings for the node pool. Changing this value replaces the pool.
 
 ### autoscaler
 
@@ -167,9 +167,9 @@ In addition to all arguments above, the following attributes are exported:
 
 * `isolation` - Network isolation settings for the node pool.
 
-  * `public_ipv4` - Whether nodes have public IPv4 addresses.
+    * `public_ipv4` - Whether nodes have public IPv4 addresses.
 
-  * `public_ipv6` - Whether nodes have public IPv6 addresses.
+    * `public_ipv6` - Whether nodes have public IPv6 addresses.
 
 * [`nodes`](#nodes) - The nodes in the Node Pool.
 

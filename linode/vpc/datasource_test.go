@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/vpc/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/vpc/tmpl"
 )
 
 func TestAccDataSourceVPC_basic(t *testing.T) {
@@ -46,7 +46,7 @@ func TestAccDataSourceVPC_dualStack(t *testing.T) {
 	resourceName := "data.linode_vpc.foo"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityVPCs,
 		linodego.CapabilityVPCDualStack,
 	}, "core")
@@ -96,6 +96,53 @@ func TestAccDataSourceVPC_dualStack(t *testing.T) {
 						resourceName,
 						tfjsonpath.New("ipv6").AtSliceIndex(0).AtMapKey("range"),
 						knownvalue.NotNull(),
+					),
+				},
+			},
+		},
+	})
+}
+
+func TestAccDataSourceVPC_ipv4(t *testing.T) {
+	t.Parallel()
+
+	resourceName := "data.linode_vpc.foo"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
+		linodego.CapabilityVPCs,
+		linodego.CapabilityVPCCustomIPv4Ranges,
+	}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataIPv4(t, vpcLabel, targetRegion, "10.0.0.0/8"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(vpcLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("region"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("ipv4"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("ipv4").AtSliceIndex(0).AtMapKey("range"),
+						knownvalue.StringExact("10.0.0.0/8"),
 					),
 				},
 			},

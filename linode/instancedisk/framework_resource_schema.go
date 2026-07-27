@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -91,7 +91,9 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"root_pass": schema.StringAttribute{
 			Description: "This sets the root user's password on a " +
-				"newly-created Linode Disk when deploying from an Image.",
+				"newly-created Linode Disk when deploying from an Image. " +
+				"When `image` is provided, at least one of `root_pass`, `authorized_keys`, " +
+				"or `authorized_users` must be specified.",
 			Optional:  true,
 			Sensitive: true,
 			PlanModifiers: []planmodifier.String{

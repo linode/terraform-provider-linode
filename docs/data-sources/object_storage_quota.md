@@ -41,10 +41,14 @@ The Linode Object Storage quota data source exports the following attributes:
 
 * `resource_metric` - The specific Object Storage resource for the quota.
 
-* `quota_usage` - The usage data for a specific Object Storage related quota on your account. For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-object-storage-quota-usage).
+* `quota_type` - The type of the Object Storage quota.
+
+* `has_usage` - Whether usage data is available for the Object Storage quota.
+
+* `quota_usage` - The usage data for a specific Object Storage related quota on your account. This value is `null` when `has_usage` is `false`. For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-object-storage-quota-usage).
 
   * `quota_limit` - The maximum quantity allowed by the quota.
-  
+
   * `usage` - The quantity of the Object Storage resource currently in use.
 
 * `id` - The unique ID of the Object Storage quota data source.

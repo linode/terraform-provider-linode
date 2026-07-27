@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 type AccountAvailabilityModel struct {
@@ -21,13 +21,13 @@ func (d *AccountAvailabilityModel) ParseAvailability(
 	d.Region = types.StringValue(availability.Region)
 
 	unavailable, diags := types.SetValueFrom(ctx, types.StringType, availability.Unavailable)
-	if diags != nil {
+	if diags.HasError() {
 		return diags
 	}
 	d.Unavailable = unavailable
 
 	available, diags := types.SetValueFrom(ctx, types.StringType, availability.Available)
-	if diags != nil {
+	if diags.HasError() {
 		return diags
 	}
 	d.Available = available

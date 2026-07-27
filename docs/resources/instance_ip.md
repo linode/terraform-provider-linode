@@ -17,7 +17,7 @@ For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/li
 
 ```terraform
 resource "linode_instance" "foo" {
-    image = "linode/alpine3.19"
+    image = "linode/arch"
     label = "foobar-test"
     type = "g6-nanode-1"
     region = "us-east"

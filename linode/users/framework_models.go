@@ -6,9 +6,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
-	"github.com/linode/terraform-provider-linode/v3/linode/user"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v4/linode/user"
 )
 
 // UserFilterModel describes the Terraform resource data model to match the
@@ -44,7 +44,7 @@ func (data *UserFilterModel) parseUsers(
 				return diags
 			}
 			diags := userModel.ParseUserGrants(ctx, grants)
-			if diags != nil {
+			if diags.HasError() {
 				return diags
 			}
 		} else {

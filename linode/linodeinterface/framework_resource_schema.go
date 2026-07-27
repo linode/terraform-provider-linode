@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	linodesetplanmodifier "github.com/linode/terraform-provider-linode/v3/linode/helper/setplanmodifiers"
+	linodesetplanmodifier "github.com/linode/terraform-provider-linode/v4/linode/helper/setplanmodifiers"
 )
 
 var configuredPublicInterfaceIPv4Address = schema.NestedAttributeObject{

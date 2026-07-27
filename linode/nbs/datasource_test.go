@@ -8,9 +8,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/nbs/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/nbs/tmpl"
 )
 
 func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
@@ -19,7 +19,7 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 	resourceName := "data.linode_nodebalancers.nbs"
 
 	nbLabel := acctest.RandomWithPrefix("tf_test")
-	nbRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityNodeBalancers}, "core")
+	nbRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityNodeBalancers}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,6 +49,7 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.tags.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.tags.0", "tf_test_1"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.updated"),
+					resource.TestCheckResourceAttr(resourceName, "nodebalancers.0.lke_cluster.#", "0"),
 				),
 			},
 			{

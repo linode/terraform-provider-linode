@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	linodesetplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/setplanmodifiers"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	linodesetplanmodifiers "github.com/linode/terraform-provider-linode/v4/linode/helper/setplanmodifiers"
 )
 
 var resourceSchema = schema.Schema{
@@ -52,7 +52,6 @@ var resourceSchema = schema.Schema{
 		},
 		"node_count": schema.Int64Attribute{
 			Validators: []validator.Int64{
-				int64validator.AtLeast(1),
 				int64validator.AtLeastOneOf(path.MatchRoot("autoscaler")),
 			},
 			Description: "The number of nodes in the Node Pool.",
@@ -71,10 +70,11 @@ var resourceSchema = schema.Schema{
 		},
 		"disk_encryption": schema.StringAttribute{
 			Description: "The disk encryption policy for nodes in this pool.",
-			Optional:    true,
 			Computed:    true,
+			Optional:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifier.RequiresReplaceIfConfigured(),
 			},
 			Validators: []validator.String{
 				stringvalidator.OneOf(
@@ -135,6 +135,30 @@ var resourceSchema = schema.Schema{
 		},
 	},
 	Blocks: map[string]schema.Block{
+		"isolation": schema.ListNestedBlock{
+			Description: "Network isolation settings for the node pool. " +
+				"Controls whether nodes have public IPv4 and IPv6 addresses.",
+			Validators: []validator.List{
+				listvalidator.SizeAtMost(1),
+			},
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.RequiresReplace(),
+			},
+			NestedObject: schema.NestedBlockObject{
+				Attributes: map[string]schema.Attribute{
+					"public_ipv4": schema.BoolAttribute{
+						Description: "Whether nodes in this pool have public IPv4 addresses.",
+						Optional:    true,
+						Computed:    true,
+					},
+					"public_ipv6": schema.BoolAttribute{
+						Description: "Whether nodes in this pool have public IPv6 addresses.",
+						Optional:    true,
+						Computed:    true,
+					},
+				},
+			},
+		},
 		"autoscaler": schema.ListNestedBlock{
 			Validators: []validator.List{
 				listvalidator.SizeAtMost(1),
@@ -177,28 +201,6 @@ var resourceSchema = schema.Schema{
 					"value": schema.StringAttribute{
 						Description: "The Kubernetes taint value.",
 						Required:    true,
-					},
-				},
-			},
-		},
-
-		"isolation": schema.ListNestedBlock{
-			Description: "Network isolation settings for the node pool. " +
-				"Controls whether nodes have public IPv4/IPv6 addresses.",
-			Validators: []validator.List{
-				listvalidator.SizeAtMost(1),
-			},
-			NestedObject: schema.NestedBlockObject{
-				Attributes: map[string]schema.Attribute{
-					"public_ipv4": schema.BoolAttribute{
-						Description: "Whether nodes in this pool have public IPv4 addresses.",
-						Optional:    true,
-						Computed:    true,
-					},
-					"public_ipv6": schema.BoolAttribute{
-						Description: "Whether nodes in this pool have public IPv6 addresses.",
-						Optional:    true,
-						Computed:    true,
 					},
 				},
 			},

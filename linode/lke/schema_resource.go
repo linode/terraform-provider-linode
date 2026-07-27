@@ -6,8 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 var resourceSchema = map[string]*schema.Schema{
@@ -61,11 +61,6 @@ var resourceSchema = map[string]*schema.Schema{
 		Sensitive:   true,
 		Description: "The Base64-encoded Kubeconfig for the cluster.",
 	},
-	"dashboard_url": {
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "The dashboard URL of the cluster.",
-	},
 	"status": {
 		Type:        schema.TypeString,
 		Computed:    true,
@@ -102,26 +97,6 @@ var resourceSchema = map[string]*schema.Schema{
 			}, false),
 		),
 	},
-	"ruleset_ids": {
-		Type:     schema.TypeList,
-		Computed: true,
-		Description: "The IDs of the service-managed firewall rulesets automatically " +
-			"created for LKE Enterprise clusters.",
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"inbound": {
-					Type:        schema.TypeInt,
-					Computed:    true,
-					Description: "The ID of the inbound service ruleset.",
-				},
-				"outbound": {
-					Type:        schema.TypeInt,
-					Computed:    true,
-					Description: "The ID of the outbound service ruleset.",
-				},
-			},
-		},
-	},
 	"pool": {
 		Type: schema.TypeList,
 		Elem: &schema.Resource{
@@ -138,11 +113,10 @@ var resourceSchema = map[string]*schema.Schema{
 					Default:     "",
 				},
 				"count": {
-					Type:         schema.TypeInt,
-					ValidateFunc: validation.IntAtLeast(1),
-					Description:  "The number of nodes in the Node Pool.",
-					Optional:     true,
-					Computed:     true,
+					Type:        schema.TypeInt,
+					Description: "The number of nodes in the Node Pool.",
+					Optional:    true,
+					Computed:    true,
 				},
 				"type": {
 					Type:        schema.TypeString,
@@ -230,34 +204,31 @@ var resourceSchema = map[string]*schema.Schema{
 					},
 				},
 				"disk_encryption": {
-					Type:        schema.TypeString,
-					Description: "The disk encryption policy for the nodes in this pool.",
-					Optional:    true,
-					Computed:    true,
-					ForceNew:    true,
-					ValidateFunc: validation.StringInSlice([]string{
-						"enabled", "disabled",
-					}, false),
+					Type:         schema.TypeString,
+					Description:  "The disk encryption policy for the nodes in this pool.",
+					Optional:     true,
+					Computed:     true,
+					ValidateFunc: validation.StringInSlice([]string{"enabled", "disabled"}, false),
 				},
 				"isolation": {
 					Type:        schema.TypeList,
 					MaxItems:    1,
 					Optional:    true,
 					Computed:    true,
-					Description: "Isolation configuration for the node pool.",
+					Description: "Network isolation settings for the node pool.",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"public_ipv4": {
 								Type:        schema.TypeBool,
 								Optional:    true,
 								Computed:    true,
-								Description: "Whether public IPv4 is enabled for nodes in this pool.",
+								Description: "Whether nodes in this pool have public IPv4 addresses.",
 							},
 							"public_ipv6": {
 								Type:        schema.TypeBool,
 								Optional:    true,
 								Computed:    true,
-								Description: "Whether public IPv6 is enabled for nodes in this pool.",
+								Description: "Whether nodes in this pool have public IPv6 addresses.",
 							},
 						},
 					},
@@ -347,12 +318,6 @@ var resourceSchema = map[string]*schema.Schema{
 				"audit_logs_enabled": {
 					Type:        schema.TypeBool,
 					Description: "Enables audit logs on the cluster's control plane.",
-					Optional:    true,
-					Computed:    true,
-				},
-				"metrics_enabled": {
-					Type:        schema.TypeBool,
-					Description: "Enables metrics on the cluster's control plane.",
 					Optional:    true,
 					Computed:    true,
 				},

@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/diffsuppressfuncs"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/diffsuppressfuncs"
 )
 
 const deviceDescription = "Device can be either a Disk or Volume identified by disk_id or " +
@@ -189,7 +189,6 @@ var InterfaceSchema = &schema.Resource{
 						Type: schema.TypeString,
 						Description: "The public IP that will be used for the " +
 							"one-to-one NAT purpose.",
-						Computed: true,
 						Optional: true,
 						DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 							if new == "any" && old != "" {
@@ -325,12 +324,6 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed:     true,
 		ValidateFunc: validation.StringLenBetween(3, 50),
 	},
-	"group": {
-		Type:        schema.TypeString,
-		Description: "The display group of the Linode instance.",
-		Deprecated:  "Group label is deprecated. We recommend using tags instead.",
-		Optional:    true,
-	},
 	"tags": {
 		Type:        schema.TypeSet,
 		Elem:        &schema.Schema{Type: schema.TypeString},
@@ -440,31 +433,30 @@ var resourceSchema = map[string]*schema.Schema{
 		Type: schema.TypeList,
 		Elem: &schema.Schema{Type: schema.TypeString},
 		Description: "A list of SSH public keys to deploy for the root user on the newly created Linode. " +
-			"Only accepted if 'image' is provided.",
+			"When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified.",
 		Optional:      true,
 		ForceNew:      true,
 		StateFunc:     sshKeyState,
-		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"authorized_users": {
 		Type: schema.TypeList,
 		Elem: &schema.Schema{Type: schema.TypeString},
 		Description: "A list of Linode usernames. If the usernames have associated SSH keys, the keys will " +
-			"be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. Only accepted if " +
-			"'image' is provided.",
+			"be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. " +
+			"When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified.",
 		Optional:      true,
 		ForceNew:      true,
 		StateFunc:     sshKeyState,
-		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"root_pass": {
-		Type:        schema.TypeString,
-		Description: "The password that will be initially assigned to the 'root' user account.",
-		Sensitive:   true,
-		Optional:    true,
-		StateFunc:   rootPasswordState,
+		Type: schema.TypeString,
+		Description: "The password that will be initially assigned to the 'root' user account. " +
+			"When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified.",
+		Sensitive: true,
+		Optional:  true,
+		StateFunc: rootPasswordState,
 		ValidateFunc: validation.StringLenBetween(
 			helper.RootPassMinimumCharacters,
 			helper.RootPassMaximumCharacters),
@@ -479,6 +471,24 @@ var resourceSchema = map[string]*schema.Schema{
 		Default:       nil,
 		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
+	},
+	"kernel": {
+		Type: schema.TypeString,
+		Description: "The kernel to deploy with when creating a Linode. " +
+			"Example values are `linode/latest-64bit`, `linode/grub2`,  etc. " +
+			"See all kernels [here](https://api.linode.com/v4/linode/kernels).",
+		Optional:     true,
+		ForceNew:     true,
+		ValidateFunc: validation.StringLenBetween(1, 100),
+	},
+	"boot_size": {
+		Type: schema.TypeInt,
+		Description: "The size of the boot disk in MB for the newly-created Linode. " +
+			"Must be at least 8192 MB. The combined boot_size and swap_size must not " +
+			"exceed the total disk size provided by the instance's plan.",
+		Optional:     true,
+		ForceNew:     true,
+		ValidateFunc: validation.IntAtLeast(8192),
 	},
 	"backups_enabled": {
 		Type: schema.TypeBool,
@@ -575,8 +585,7 @@ var resourceSchema = map[string]*schema.Schema{
 			"The default value is determined by the interfaces_for_new_linodes " +
 			"setting in the account settings. " +
 			"If the interface_generation option is set to linode, " +
-			"legacy configuration interfaces can no longer be used on the Linode. " +
-			"NOTE: Linode Interfaces may not currently be available to all users.",
+			"legacy configuration interfaces can no longer be used on the Linode.",
 		Optional: true,
 		Computed: true,
 		ForceNew: true,

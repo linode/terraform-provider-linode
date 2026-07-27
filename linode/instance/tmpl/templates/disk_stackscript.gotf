@@ -19,7 +19,6 @@ resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
-    group = "tf_test"
 
     disk {
         label = "disk"

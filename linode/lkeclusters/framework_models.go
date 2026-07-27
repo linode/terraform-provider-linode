@@ -5,9 +5,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
 // LKEClusterFilterModel describes the Terraform resource data model to match the
@@ -40,7 +40,6 @@ type LKEClusterModel struct {
 type LKEControlPlaneModel struct {
 	HighAvailability types.Bool `tfsdk:"high_availability"`
 	AuditLogsEnabled types.Bool `tfsdk:"audit_logs_enabled"`
-	MetricsEnabled   types.Bool `tfsdk:"metrics_enabled"`
 }
 
 func (data *LKEClusterFilterModel) parseLKEClusters(
@@ -51,7 +50,7 @@ func (data *LKEClusterFilterModel) parseLKEClusters(
 	for i := range clusters {
 		var lkeCluster LKEClusterModel
 		diags := lkeCluster.parseLKECluster(ctx, &clusters[i])
-		if diags != nil {
+		if diags.HasError() {
 			return diags
 		}
 		result[i] = lkeCluster
@@ -78,7 +77,7 @@ func (data *LKEClusterModel) parseLKECluster(
 	data.StackType = types.StringValue(string(cluster.StackType))
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, cluster.Tags)
-	if diags != nil {
+	if diags.HasError() {
 		return diags
 	}
 	data.Tags = tags
@@ -87,7 +86,6 @@ func (data *LKEClusterModel) parseLKECluster(
 		var cp LKEControlPlaneModel
 		cp.HighAvailability = types.BoolValue(cluster.ControlPlane.HighAvailability)
 		cp.AuditLogsEnabled = types.BoolValue(cluster.ControlPlane.AuditLogsEnabled)
-		cp.MetricsEnabled = types.BoolValue(cluster.ControlPlane.MetricsEnabled)
 
 		return cp
 	}

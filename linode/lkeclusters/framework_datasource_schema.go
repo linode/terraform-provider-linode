@@ -3,8 +3,8 @@ package lkeclusters
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
 var filterConfig = frameworkfilter.Config{
@@ -97,10 +97,6 @@ var frameworkDatasourceSchema = schema.Schema{
 							},
 							"audit_logs_enabled": schema.BoolAttribute{
 								Description: "Enables audit logs on the cluster's control plane.",
-								Computed:    true,
-							},
-							"metrics_enabled": schema.BoolAttribute{
-								Description: "Enables metrics on the cluster's control plane.",
 								Computed:    true,
 							},
 						},

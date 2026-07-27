@@ -1,6 +1,7 @@
 package firewall
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/cidrtypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -13,9 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	linodesetplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/setplanmodifiers"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	linodesetplanmodifiers "github.com/linode/terraform-provider-linode/v4/linode/helper/setplanmodifiers"
 )
 
 var ruleNestedObject = schema.NestedBlockObject{
@@ -37,15 +37,11 @@ var ruleNestedObject = schema.NestedBlockObject{
 			},
 		},
 		"protocol": schema.StringAttribute{
-			Description: "The network protocol this rule controls.",
-			Required:    true,
+			Description: "The network protocol this rule controls. Accepted values are ALL, TCP, UDP, " +
+				"ICMP, IPENCAP, or a protocol number from 0 to 255.",
+			Required: true,
 			Validators: []validator.String{
-				stringvalidator.OneOf(
-					string(linodego.TCP),
-					string(linodego.UDP),
-					string(linodego.ICMP),
-					string(linodego.IPENCAP),
-				),
+				firewallProtocolValidator{},
 			},
 		},
 		"description": schema.StringAttribute{
@@ -63,17 +59,17 @@ var ruleNestedObject = schema.NestedBlockObject{
 			},
 		},
 		"ipv4": schema.ListAttribute{
-			Description: "A list of IPv4 addresses or CIDRs, or prefix list tokens (e.g. pl::subnets:123) this rule applies to.",
+			Description: "A list of CIDR blocks or 0.0.0.0/0 (to allow all) this rule applies to.",
 			Optional:    true,
-			ElementType: types.StringType,
+			ElementType: cidrtypes.IPv4PrefixType{},
 			Validators: []validator.List{
 				listvalidator.SizeAtLeast(1),
 			},
 		},
 		"ipv6": schema.ListAttribute{
-			Description: "A list of IPv6 addresses or networks, or prefix list tokens (e.g. pl::subnets:123) this rule applies to.",
+			Description: "A list of IPv6 addresses or networks this rule applies to.",
 			Optional:    true,
-			ElementType: types.StringType,
+			ElementType: cidrtypes.IPv6PrefixType{},
 			Validators: []validator.List{
 				listvalidator.SizeAtLeast(1),
 			},
@@ -93,18 +89,6 @@ var frameworkResourceSchema = schema.Schema{
 		},
 	},
 	Attributes: map[string]schema.Attribute{
-		"inbound_ruleset": schema.ListAttribute{
-			Description: "A list of Firewall Rule Set IDs to reference as inbound rules. " +
-				"Ruleset references are prepended before any inline inbound rules.",
-			Optional:    true,
-			ElementType: types.Int64Type,
-		},
-		"outbound_ruleset": schema.ListAttribute{
-			Description: "A list of Firewall Rule Set IDs to reference as outbound rules. " +
-				"Ruleset references are prepended before any inline outbound rules.",
-			Optional:    true,
-			ElementType: types.Int64Type,
-		},
 		"id": schema.StringAttribute{
 			Description: "The unique ID of this Object Storage key.",
 			Computed:    true,
@@ -151,6 +135,14 @@ var frameworkResourceSchema = schema.Schema{
 			Validators: []validator.String{
 				stringvalidator.OneOf("ACCEPT", "DROP"),
 			},
+		},
+		"version": schema.Int64Attribute{
+			Description: "The current version of the Firewall rules.",
+			Computed:    true,
+		},
+		"fingerprint": schema.StringAttribute{
+			Description: "The fingerprint of the current Firewall rules.",
+			Computed:    true,
 		},
 		"linodes": schema.SetAttribute{
 			Description: "The IDs of Linodes to apply this firewall to.",

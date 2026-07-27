@@ -7,10 +7,11 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/cidrtypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -51,7 +52,7 @@ func TestExpandFirewallRules(t *testing.T) {
 	testCases := []struct {
 		name      string
 		ruleSpecs []RuleModel
-		expected  []linodego.FirewallRule
+		expected  []linodego.FirewallRuleInbound
 	}{
 		{
 			"Expand Firewall Rule Test 1",
@@ -62,18 +63,18 @@ func TestExpandFirewallRules(t *testing.T) {
 					Protocol: types.StringValue("SSH"),
 					Ports:    types.StringValue("22"),
 					IPv4: types.ListValueMust(
-						types.StringType,
+						cidrtypes.IPv4PrefixType{},
 						[]attr.Value{
-							types.StringValue("192.168.1.1/24"),
+							cidrtypes.NewIPv4PrefixValue("192.168.1.1/24"),
 						},
 					),
 					IPv6: types.ListValueMust(
-						types.StringType,
+						cidrtypes.IPv6PrefixType{},
 						[]attr.Value{},
 					),
 				},
 			},
-			[]linodego.FirewallRule{
+			[]linodego.FirewallRuleInbound{
 				{
 					Action:      "allow",
 					Label:       "Rule 1",
@@ -81,8 +82,8 @@ func TestExpandFirewallRules(t *testing.T) {
 					Ports:       "22",
 					Protocol:    "SSH",
 					Addresses: linodego.NetworkAddresses{
-						IPv4: &[]string{"192.168.1.1/24"},
-						IPv6: &[]string{},
+						IPv4: []string{"192.168.1.1/24"},
+						IPv6: []string{},
 					},
 				},
 			},
@@ -92,7 +93,7 @@ func TestExpandFirewallRules(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var diags diag.Diagnostics
-			result := ExpandFirewallRules(context.Background(), tc.ruleSpecs, &diags)
+			result := ExpandFirewallRules[linodego.FirewallRuleInbound](context.Background(), tc.ruleSpecs, &diags)
 			assert.False(t, diags.HasError())
 
 			if len(result) != len(tc.expected) {
@@ -109,36 +110,36 @@ func TestExpandFirewallRules(t *testing.T) {
 }
 
 func TestFlattenFirewallRules(t *testing.T) {
-	rule1 := linodego.FirewallRule{
+	rule1 := linodego.FirewallRuleInbound{
 		Action:      "allow",
 		Label:       "SSH",
 		Description: "Allow SSH connections",
 		Ports:       "22",
 		Protocol:    "TCP",
 		Addresses: linodego.NetworkAddresses{
-			IPv4: &[]string{"192.168.0.2"},
-			IPv6: &[]string{},
+			IPv4: []string{"192.168.0.2"},
+			IPv6: []string{},
 		},
 	}
 
-	rule2 := linodego.FirewallRule{
+	rule2 := linodego.FirewallRuleInbound{
 		Action:      "deny",
 		Label:       "Block ICMP",
 		Description: "Block ICMP traffic",
 		Ports:       "",
 		Protocol:    "ICMP",
 		Addresses: linodego.NetworkAddresses{
-			IPv4: &[]string{"192.168.0.0/24"},
-			IPv6: &[]string{"2001:db8::/64"},
+			IPv4: []string{"192.168.0.0/24"},
+			IPv6: []string{"2001:db8::/64"},
 		},
 	}
 
 	cases := []struct {
-		rules    []linodego.FirewallRule
+		rules    []linodego.FirewallRuleInbound
 		expected []RuleModel
 	}{
 		{
-			rules: []linodego.FirewallRule{
+			rules: []linodego.FirewallRuleInbound{
 				rule1, rule2,
 			},
 
@@ -204,21 +205,21 @@ func TestFlattenFirewallDevices(t *testing.T) {
 	deviceEntity1 := linodego.FirewallDeviceEntity{
 		ID:    1111,
 		Type:  linodego.FirewallDeviceLinode,
-		Label: "device_entity_1",
+		Label: linodego.Pointer("device_entity_1"),
 		URL:   "test-firewall.example.com",
 	}
 
 	deviceEntity2 := linodego.FirewallDeviceEntity{
 		ID:    2222,
 		Type:  linodego.FirewallDeviceLinode,
-		Label: "device_entity_2",
+		Label: linodego.Pointer("device_entity_2"),
 		URL:   "test-firewall.example-2.com",
 	}
 
 	deviceEntity3 := linodego.FirewallDeviceEntity{
 		ID:    3333,
 		Type:  linodego.FirewallDeviceNodeBalancer,
-		Label: "device_entity_3",
+		Label: linodego.Pointer("device_entity_3"),
 		URL:   "test-firewall.example-3.com",
 	}
 
@@ -272,216 +273,4 @@ func TestFlattenFirewallDevices(t *testing.T) {
 			t.Errorf("flatten result mismatches expected values, expected: %v, result: %v", expected, result)
 		}
 	}
-}
-
-func TestSeparateRulesetRefs_MixedRules(t *testing.T) {
-	rules := []linodego.FirewallRule{
-		{RuleSet: 4010},
-		{
-			Action:   "ACCEPT",
-			Label:    "allow-ssh",
-			Ports:    "22",
-			Protocol: "TCP",
-			Addresses: linodego.NetworkAddresses{
-				IPv4: &[]string{"0.0.0.0/0"},
-				IPv6: &[]string{"::/0"},
-			},
-		},
-		{RuleSet: 4011},
-		{
-			Action:   "ACCEPT",
-			Label:    "allow-http",
-			Ports:    "80",
-			Protocol: "TCP",
-			Addresses: linodego.NetworkAddresses{
-				IPv4: &[]string{"10.0.0.0/8"},
-				IPv6: &[]string{},
-			},
-		},
-	}
-
-	rulesetIDs, inlineRules := separateRulesetRefs(rules)
-
-	assert.Equal(t, []int64{4010, 4011}, rulesetIDs)
-	assert.Len(t, inlineRules, 2)
-	assert.Equal(t, "allow-ssh", inlineRules[0].Label)
-	assert.Equal(t, "allow-http", inlineRules[1].Label)
-}
-
-func TestSeparateRulesetRefs_NoRulesets(t *testing.T) {
-	rules := []linodego.FirewallRule{
-		{
-			Action:   "ACCEPT",
-			Label:    "allow-all",
-			Protocol: "TCP",
-			Addresses: linodego.NetworkAddresses{
-				IPv4: &[]string{"0.0.0.0/0"},
-				IPv6: &[]string{"::/0"},
-			},
-		},
-	}
-
-	rulesetIDs, inlineRules := separateRulesetRefs(rules)
-
-	assert.Nil(t, rulesetIDs)
-	assert.Len(t, inlineRules, 1)
-	assert.Equal(t, "allow-all", inlineRules[0].Label)
-}
-
-func TestSeparateRulesetRefs_OnlyRulesets(t *testing.T) {
-	rules := []linodego.FirewallRule{
-		{RuleSet: 100},
-		{RuleSet: 200},
-	}
-
-	rulesetIDs, inlineRules := separateRulesetRefs(rules)
-
-	assert.Equal(t, []int64{100, 200}, rulesetIDs)
-	assert.Nil(t, inlineRules)
-}
-
-func TestSeparateRulesetRefs_Empty(t *testing.T) {
-	rulesetIDs, inlineRules := separateRulesetRefs(nil)
-
-	assert.Nil(t, rulesetIDs)
-	assert.Nil(t, inlineRules)
-}
-
-func TestExpandFirewallRuleSet_WithRulesets(t *testing.T) {
-	ctx := context.Background()
-	var diags diag.Diagnostics
-
-	data := &FirewallResourceModel{
-		InboundRuleSet: types.ListValueMust(types.Int64Type, []attr.Value{
-			types.Int64Value(4010),
-		}),
-		OutboundRuleSet: types.ListValueMust(types.Int64Type, []attr.Value{
-			types.Int64Value(4011),
-		}),
-		Inbound: []RuleModel{
-			{
-				Label:    types.StringValue("allow-ssh"),
-				Action:   types.StringValue("ACCEPT"),
-				Protocol: types.StringValue("TCP"),
-				Ports:    types.StringValue("22"),
-				IPv4: types.ListValueMust(types.StringType, []attr.Value{
-					types.StringValue("0.0.0.0/0"),
-				}),
-				IPv6: types.ListValueMust(types.StringType, []attr.Value{}),
-			},
-		},
-		Outbound: []RuleModel{
-			{
-				Label:    types.StringValue("outbound-tcp"),
-				Action:   types.StringValue("ACCEPT"),
-				Protocol: types.StringValue("TCP"),
-				Ports:    types.StringValue("1-65535"),
-				IPv4: types.ListValueMust(types.StringType, []attr.Value{
-					types.StringValue("pl::subnets:2010"),
-				}),
-				IPv6: types.ListValueMust(types.StringType, []attr.Value{
-					types.StringValue("pl::subnets:2010"),
-				}),
-			},
-		},
-		InboundPolicy:  types.StringValue("DROP"),
-		OutboundPolicy: types.StringValue("DROP"),
-	}
-
-	result := data.ExpandFirewallRuleSet(ctx, &diags)
-	assert.False(t, diags.HasError())
-
-	// Inbound: 1 ruleset ref + 1 inline rule
-	assert.Len(t, result.Inbound, 2)
-	assert.Equal(t, 4010, result.Inbound[0].RuleSet)
-	assert.Equal(t, "", result.Inbound[0].Label)
-	assert.Equal(t, "allow-ssh", result.Inbound[1].Label)
-	assert.Equal(t, 0, result.Inbound[1].RuleSet)
-
-	// Outbound: 1 ruleset ref + 1 inline rule
-	assert.Len(t, result.Outbound, 2)
-	assert.Equal(t, 4011, result.Outbound[0].RuleSet)
-	assert.Equal(t, "outbound-tcp", result.Outbound[1].Label)
-
-	assert.Equal(t, "DROP", result.InboundPolicy)
-	assert.Equal(t, "DROP", result.OutboundPolicy)
-}
-
-func TestExpandFirewallRuleSet_NoRulesets(t *testing.T) {
-	ctx := context.Background()
-	var diags diag.Diagnostics
-
-	data := &FirewallResourceModel{
-		InboundRuleSet:  types.ListNull(types.Int64Type),
-		OutboundRuleSet: types.ListNull(types.Int64Type),
-		Inbound: []RuleModel{
-			{
-				Label:    types.StringValue("allow-ssh"),
-				Action:   types.StringValue("ACCEPT"),
-				Protocol: types.StringValue("TCP"),
-				Ports:    types.StringValue("22"),
-				IPv4: types.ListValueMust(types.StringType, []attr.Value{
-					types.StringValue("0.0.0.0/0"),
-				}),
-				IPv6: types.ListValueMust(types.StringType, []attr.Value{}),
-			},
-		},
-		Outbound:       nil,
-		InboundPolicy:  types.StringValue("ACCEPT"),
-		OutboundPolicy: types.StringValue("DROP"),
-	}
-
-	result := data.ExpandFirewallRuleSet(ctx, &diags)
-	assert.False(t, diags.HasError())
-
-	// Only the inline rule, no ruleset refs
-	assert.Len(t, result.Inbound, 1)
-	assert.Equal(t, 0, result.Inbound[0].RuleSet)
-	assert.Equal(t, "allow-ssh", result.Inbound[0].Label)
-	assert.Nil(t, result.Outbound)
-}
-
-func TestFlattenFirewallRules_PrefixListStrings(t *testing.T) {
-	// Validate that prefix list tokens survive flatten (not rejected by CIDR validation)
-	rules := []linodego.FirewallRule{
-		{
-			Action:   "ACCEPT",
-			Label:    "outbound-subnet-tcp",
-			Ports:    "1-65535",
-			Protocol: "TCP",
-			Addresses: linodego.NetworkAddresses{
-				IPv4: &[]string{"pl::subnets:2010"},
-				IPv6: &[]string{"pl::subnets:2010"},
-			},
-		},
-		{
-			Action:   "ACCEPT",
-			Label:    "outbound-registry",
-			Ports:    "443",
-			Protocol: "TCP",
-			Addresses: linodego.NetworkAddresses{
-				IPv4: &[]string{"pl:system:ps:managed:container:registry"},
-				IPv6: &[]string{"pl:system:ps:managed:container:registry"},
-			},
-		},
-	}
-
-	var diags diag.Diagnostics
-	result := FlattenFirewallRules(context.Background(), rules, nil, false, &diags)
-	assert.False(t, diags.HasError())
-	assert.Len(t, result, 2)
-
-	// First rule: subnet prefix list
-	assert.Equal(t, "outbound-subnet-tcp", result[0].Label.ValueString())
-	var ipv4Vals []string
-	diags.Append(result[0].IPv4.ElementsAs(context.Background(), &ipv4Vals, false)...)
-	assert.False(t, diags.HasError())
-	assert.Equal(t, []string{"pl::subnets:2010"}, ipv4Vals)
-
-	// Second rule: registry prefix list
-	assert.Equal(t, "outbound-registry", result[1].Label.ValueString())
-	var registryVals []string
-	diags.Append(result[1].IPv4.ElementsAs(context.Background(), &registryVals, false)...)
-	assert.False(t, diags.HasError())
-	assert.Equal(t, []string{"pl:system:ps:managed:container:registry"}, registryVals)
 }

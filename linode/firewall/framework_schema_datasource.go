@@ -1,6 +1,7 @@
 package firewall
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/cidrtypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -23,8 +24,8 @@ var RuleObjectType = types.ObjectType{
 		"ports":       types.StringType,
 		"protocol":    types.StringType,
 		"description": types.StringType,
-		"ipv4":        types.ListType{ElemType: types.StringType},
-		"ipv6":        types.ListType{ElemType: types.StringType},
+		"ipv4":        types.ListType{ElemType: cidrtypes.IPv4PrefixType{}},
+		"ipv6":        types.ListType{ElemType: cidrtypes.IPv6PrefixType{}},
 	},
 }
 
@@ -67,6 +68,14 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The default behavior for outbound traffic. This setting can be overridden by updating " +
 				"the outbound.action property for an individual Firewall Rule.",
 			Computed: true,
+		},
+		"version": schema.Int64Attribute{
+			Description: "The current version of the Firewall rules.",
+			Computed:    true,
+		},
+		"fingerprint": schema.StringAttribute{
+			Description: "The fingerprint of the current Firewall rules.",
+			Computed:    true,
 		},
 		"linodes": schema.SetAttribute{
 			ElementType: types.Int64Type,

@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 type NodePoolModel struct {
@@ -45,6 +45,7 @@ type NodePoolIsolationModel struct {
 	PublicIPv4 types.Bool `tfsdk:"public_ipv4"`
 	PublicIPv6 types.Bool `tfsdk:"public_ipv6"`
 }
+
 type nodePoolDataSourceModel struct {
 	ID             types.Int64                        `tfsdk:"id"`
 	ClusterID      types.Int64                        `tfsdk:"cluster_id"`
@@ -61,6 +62,7 @@ type nodePoolDataSourceModel struct {
 	UpdateStrategy types.String                       `tfsdk:"update_strategy"`
 	Label          types.String                       `tfsdk:"label"`
 	FirewallID     types.Int64                        `tfsdk:"firewall_id"`
+	Isolation      []NodePoolIsolationModel           `tfsdk:"isolation"`
 }
 type nodePoolDiskModel struct {
 	Size types.Int64  `tfsdk:"size"`
@@ -71,6 +73,19 @@ type dataSourceNodePoolAutoScalerModel struct {
 	Enabled types.Bool  `tfsdk:"enabled"`
 	Min     types.Int64 `tfsdk:"min"`
 	Max     types.Int64 `tfsdk:"max"`
+}
+
+func flattenLKENodePoolIsolation(isolation *linodego.LKENodePoolIsolation) []NodePoolIsolationModel {
+	if isolation == nil {
+		return nil
+	}
+
+	return []NodePoolIsolationModel{
+		{
+			PublicIPv4: types.BoolValue(isolation.PublicIPv4),
+			PublicIPv6: types.BoolValue(isolation.PublicIPv6),
+		},
+	}
 }
 
 func (data *nodePoolDataSourceModel) parseLKENodePool(
@@ -86,6 +101,7 @@ func (data *nodePoolDataSourceModel) parseLKENodePool(
 	data.Label = types.StringPointerValue(nodePool.Label)
 	data.K8sVersion = types.StringPointerValue(nodePool.K8sVersion)
 	data.UpdateStrategy = types.StringPointerValue((*string)(nodePool.UpdateStrategy))
+	data.Isolation = flattenLKENodePoolIsolation(nodePool.Isolation)
 
 	if nodePool.FirewallID != nil {
 		data.FirewallID = types.Int64Value(int64(*nodePool.FirewallID))
@@ -228,13 +244,8 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 		pool.UpdateStrategy = helper.KeepOrUpdateString(pool.UpdateStrategy, "", preserveKnown)
 	}
 
-	if !preserveKnown && p.Isolation != nil {
-		pool.Isolation = []NodePoolIsolationModel{
-			{
-				PublicIPv4: types.BoolValue(p.Isolation.PublicIPv4),
-				PublicIPv6: types.BoolValue(p.Isolation.PublicIPv6),
-			},
-		}
+	if !preserveKnown {
+		pool.Isolation = flattenLKENodePoolIsolation(p.Isolation)
 	}
 }
 
@@ -280,13 +291,18 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 	}
 
 	if !pool.DiskEncryption.IsNull() && !pool.DiskEncryption.IsUnknown() {
-		p.DiskEncryption = linodego.InstanceDiskEncryption(pool.DiskEncryption.ValueString())
+		p.DiskEncryption = linodego.Pointer(linodego.InstanceDiskEncryption(pool.DiskEncryption.ValueString()))
 	}
 
 	if len(pool.Isolation) > 0 {
-		p.Isolation = &linodego.LKENodePoolIsolation{
-			PublicIPv4: pool.Isolation[0].PublicIPv4.ValueBool(),
-			PublicIPv6: pool.Isolation[0].PublicIPv6.ValueBool(),
+		isolation := pool.Isolation[0]
+		p.Isolation = &linodego.LKENodePoolIsolationCreateOptions{}
+
+		if !isolation.PublicIPv4.IsNull() && !isolation.PublicIPv4.IsUnknown() {
+			p.Isolation.PublicIPv4 = linodego.Pointer(isolation.PublicIPv4.ValueBool())
+		}
+		if !isolation.PublicIPv6.IsNull() && !isolation.PublicIPv6.IsUnknown() {
+			p.Isolation.PublicIPv6 = linodego.Pointer(isolation.PublicIPv6.ValueBool())
 		}
 	}
 }
@@ -359,7 +375,7 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 
 	if len(state.Taints) != 0 || len(pool.Taints) != 0 {
 		taints := pool.getLKENodePoolTaints()
-		p.Taints = &taints
+		p.Taints = taints
 		shouldUpdate = true
 	}
 
@@ -376,20 +392,6 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 
 		if !state.UpdateStrategy.Equal(pool.UpdateStrategy) {
 			p.UpdateStrategy = linodego.Pointer(linodego.LKENodePoolUpdateStrategy(pool.UpdateStrategy.ValueString()))
-			shouldUpdate = true
-		}
-	}
-
-	// Isolation updates
-	if len(pool.Isolation) > 0 {
-		newIso := &linodego.LKENodePoolIsolation{
-			PublicIPv4: pool.Isolation[0].PublicIPv4.ValueBool(),
-			PublicIPv6: pool.Isolation[0].PublicIPv6.ValueBool(),
-		}
-		if len(state.Isolation) == 0 ||
-			!state.Isolation[0].PublicIPv4.Equal(pool.Isolation[0].PublicIPv4) ||
-			!state.Isolation[0].PublicIPv6.Equal(pool.Isolation[0].PublicIPv6) {
-			p.Isolation = newIso
 			shouldUpdate = true
 		}
 	}

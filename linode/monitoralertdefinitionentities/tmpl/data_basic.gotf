@@ -1,0 +1,10 @@
+{{ define "alert_definition_entities_data_basic" }}
+
+data "linode_monitor_alert_definitions" "foobar" {}
+
+data "linode_monitor_alert_definition_entities" "foobar" {
+    service_type = data.linode_monitor_alert_definitions.foobar.alert_definitions.0.service_type
+    alert_id     = data.linode_monitor_alert_definitions.foobar.alert_definitions.0.id
+}
+
+{{ end }}
