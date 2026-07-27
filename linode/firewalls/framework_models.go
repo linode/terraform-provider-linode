@@ -92,6 +92,8 @@ type FirewallModel struct {
 	Disabled       types.Bool        `tfsdk:"disabled"`
 	InboundPolicy  types.String      `tfsdk:"inbound_policy"`
 	OutboundPolicy types.String      `tfsdk:"outbound_policy"`
+	Version        types.Int64       `tfsdk:"version"`
+	Fingerprint    types.String      `tfsdk:"fingerprint"`
 	Linodes        []types.Int64     `tfsdk:"linodes"`
 	NodeBalancers  []types.Int64     `tfsdk:"nodebalancers"`
 	Interfaces     []types.Int64     `tfsdk:"interfaces"`
@@ -115,6 +117,8 @@ func (data *FirewallModel) parseFirewall(
 	data.Disabled = types.BoolValue(firewall.Status == linodego.FirewallDisabled)
 	data.InboundPolicy = types.StringValue(rules.InboundPolicy)
 	data.OutboundPolicy = types.StringValue(rules.OutboundPolicy)
+	data.Version = types.Int64Value(int64(rules.Version))
+	data.Fingerprint = types.StringValue(rules.Fingerprint)
 	data.Linodes = helper.IntSliceToFramework(
 		firewallresource.AggregateEntityIDs(devices, linodego.FirewallDeviceLinode),
 	)
