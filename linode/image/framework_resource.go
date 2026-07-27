@@ -337,7 +337,7 @@ func (r *Resource) Update(
 
 	if !state.ReplicaRegions.Equal(plan.ReplicaRegions) {
 		isAvailableRegionLeft, diags := atLeastOneAvailableRegion(ctx, &plan, &state)
-		if diags != nil {
+		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
 		}
