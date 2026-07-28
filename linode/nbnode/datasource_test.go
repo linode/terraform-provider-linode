@@ -49,7 +49,6 @@ func TestAccDataSourceNodeBalancerNode_vpc(t *testing.T) {
 
 	dsName := "data.linode_nodebalancer_node.test"
 	label := acctest.RandomWithPrefix("tf-test")
-	rootPass := acctest.RandString(64)
 	nbType := "common"
 
 	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs}, "core")
@@ -64,7 +63,7 @@ func TestAccDataSourceNodeBalancerNode_vpc(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataVPC(t, label, targetRegion, rootPass, nbType),
+				Config: tmpl.DataVPC(t, label, targetRegion, nbType),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						dsName,
