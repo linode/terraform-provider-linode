@@ -63,7 +63,7 @@ func Updates(t testing.TB, nodebalancer, region, rootPass, nbType string) string
 		})
 }
 
-func VPC(t testing.TB, nodebalancer, region, nbType string, _ string) string {
+func VPC(t testing.TB, nodebalancer, region, nbType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_vpc",
 		TemplateData{
