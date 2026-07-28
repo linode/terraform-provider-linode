@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -83,6 +84,22 @@ var resourceSchema = schema.Schema{
 				),
 			},
 		},
+		"isolation_public_ipv4": schema.BoolAttribute{
+			Description: "Whether nodes in this pool have public IPv4 addresses.",
+			Optional:    true,
+			Computed:    true,
+			PlanModifiers: []planmodifier.Bool{
+				boolplanmodifier.RequiresReplaceIfConfigured(),
+			},
+		},
+		"isolation_public_ipv6": schema.BoolAttribute{
+			Description: "Whether nodes in this pool have public IPv6 addresses.",
+			Optional:    true,
+			Computed:    true,
+			PlanModifiers: []planmodifier.Bool{
+				boolplanmodifier.RequiresReplaceIfConfigured(),
+			},
+		},
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
@@ -135,30 +152,6 @@ var resourceSchema = schema.Schema{
 		},
 	},
 	Blocks: map[string]schema.Block{
-		"isolation": schema.ListNestedBlock{
-			Description: "Network isolation settings for the node pool. " +
-				"Controls whether nodes have public IPv4 and IPv6 addresses.",
-			Validators: []validator.List{
-				listvalidator.SizeAtMost(1),
-			},
-			PlanModifiers: []planmodifier.List{
-				listplanmodifier.RequiresReplace(),
-			},
-			NestedObject: schema.NestedBlockObject{
-				Attributes: map[string]schema.Attribute{
-					"public_ipv4": schema.BoolAttribute{
-						Description: "Whether nodes in this pool have public IPv4 addresses.",
-						Optional:    true,
-						Computed:    true,
-					},
-					"public_ipv6": schema.BoolAttribute{
-						Description: "Whether nodes in this pool have public IPv6 addresses.",
-						Optional:    true,
-						Computed:    true,
-					},
-				},
-			},
-		},
 		"autoscaler": schema.ListNestedBlock{
 			Validators: []validator.List{
 				listvalidator.SizeAtMost(1),

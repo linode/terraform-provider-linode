@@ -62,43 +62,6 @@ func TestReconcileLKENodePoolSpecs(t *testing.T) {
 			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{},
 		},
 		{
-			name: "change single pool isolation",
-			oldSpecs: []lke.NodePoolSpec{
-				{
-					ID:    123,
-					Type:  "g6-standard-1",
-					Count: 2,
-					Isolation: &linodego.LKENodePoolIsolationCreateOptions{
-						PublicIPv4: linodego.Pointer(true),
-						PublicIPv6: linodego.Pointer(true),
-					},
-				},
-			},
-			newSpecs: []lke.NodePoolSpec{
-				{
-					ID:    123,
-					Type:  "g6-standard-1",
-					Count: 2,
-					Isolation: &linodego.LKENodePoolIsolationCreateOptions{
-						PublicIPv4: linodego.Pointer(false),
-						PublicIPv6: linodego.Pointer(true),
-					},
-				},
-			},
-			expectedToCreate: []linodego.LKENodePoolCreateOptions{
-				{
-					Type:  "g6-standard-1",
-					Count: 2,
-					Isolation: &linodego.LKENodePoolIsolationCreateOptions{
-						PublicIPv4: linodego.Pointer(false),
-						PublicIPv6: linodego.Pointer(true),
-					},
-				},
-			},
-			expectedToDelete: []int{123},
-			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{},
-		},
-		{
 			name: "reuse cluster for resize",
 			oldSpecs: []lke.NodePoolSpec{
 				{ID: 123, Type: "g6-standard-1", Count: 1},

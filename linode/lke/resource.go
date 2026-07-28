@@ -226,7 +226,6 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			Label:          label,
 			FirewallID:     firewallId,
 			DiskEncryption: diskEncryption,
-			Isolation:      expandLinodeLKENodePoolIsolation(poolSpec),
 			Type:           poolSpec["type"].(string),
 			Tags:           helper.ExpandStringSet(poolSpec["tags"].(*schema.Set)),
 			Taints:         expandNodePoolTaints(helper.ExpandObjectSet(poolSpec["taint"].(*schema.Set))),

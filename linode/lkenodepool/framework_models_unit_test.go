@@ -56,8 +56,8 @@ func TestParseNodePool(t *testing.T) {
 	assert.Equal(t, "enabled", nodePoolModel.DiskEncryption.ValueString())
 	assert.Equal(t, int64(12345), nodePoolModel.FirewallID.ValueInt64())
 	assert.Len(t, nodePoolModel.Nodes.Elements(), 3)
-	assert.False(t, nodePoolModel.Isolation[0].PublicIPv4.ValueBool())
-	assert.True(t, nodePoolModel.Isolation[0].PublicIPv6.ValueBool())
+	assert.False(t, nodePoolModel.IsolationIPv4.ValueBool())
+	assert.True(t, nodePoolModel.IsolationIPv6.ValueBool())
 
 	tags := make([]string, len(nodePoolModel.Tags.Elements()))
 	for i, v := range nodePoolModel.Tags.Elements() {
@@ -82,8 +82,8 @@ func TestParseNodePoolDataSourceIsolation(t *testing.T) {
 	})
 
 	assert.False(t, diags.HasError())
-	assert.False(t, nodePoolModel.Isolation[0].PublicIPv4.ValueBool())
-	assert.True(t, nodePoolModel.Isolation[0].PublicIPv6.ValueBool())
+	assert.False(t, nodePoolModel.IsolationIPv4.ValueBool())
+	assert.True(t, nodePoolModel.IsolationIPv6.ValueBool())
 }
 
 func TestSetNodePoolCreateOptions(t *testing.T) {
@@ -110,6 +110,20 @@ func TestSetNodePoolCreateOptions(t *testing.T) {
 	assert.Equal(t, "disabled", string(*createOpts.DiskEncryption))
 	assert.False(t, *createOpts.Isolation.PublicIPv4)
 	assert.True(t, *createOpts.Isolation.PublicIPv6)
+}
+
+func TestSetNodePoolCreateOptions_IsolationUnset(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	nodePoolModel.IsolationIPv4 = types.BoolNull()
+	nodePoolModel.IsolationIPv6 = types.BoolNull()
+
+	var createOpts linodego.LKENodePoolCreateOptions
+	var diags diag.Diagnostics
+
+	nodePoolModel.SetNodePoolCreateOptions(context.Background(), &createOpts, &diags, "enterprise")
+
+	assert.False(t, diags.HasError())
+	assert.Nil(t, createOpts.Isolation)
 }
 
 func TestSetNodePoolUpdateOptions(t *testing.T) {
@@ -175,12 +189,8 @@ func createNodePoolModel() *NodePoolModel {
 		K8sVersion:     types.StringValue("k8s_version"),
 		UpdateStrategy: types.StringValue("on_recycle"),
 		DiskEncryption: types.StringValue(string(linodego.InstanceDiskEncryptionDisabled)),
-		Isolation: []NodePoolIsolationModel{
-			{
-				PublicIPv4: types.BoolValue(false),
-				PublicIPv6: types.BoolValue(true),
-			},
-		},
+		IsolationIPv4:  types.BoolValue(false),
+		IsolationIPv6:  types.BoolValue(true),
 	}
 
 	nodePoolModel.Labels = types.MapValueMust(types.StringType, map[string]attr.Value{})

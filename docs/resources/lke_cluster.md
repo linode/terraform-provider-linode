@@ -246,8 +246,6 @@ The following arguments are supported in the `pool` specification block:
 
 * `disk_encryption` - (Optional) The disk encryption policy for nodes in this pool. Must be `enabled` or `disabled`. If omitted, the account default encryption policy is applied. Changing this value will cause the pool to be replaced (deleted and recreated).
 
-* [`isolation`](#isolation) - (Optional) Network isolation settings for the node pool. Changing this value replaces the pool.
-
 * `k8s_version` - (Optional) The k8s version of the nodes in this Node Pool. For LKE enterprise only and may not currently available to all users even under v4beta.
 
 * `update_strategy` - (Optional) The strategy for updating the Node Pool k8s version. For LKE enterprise only and may not currently available to all users even under v4beta.
@@ -259,14 +257,6 @@ The following arguments are supported in the `autoscaler` specification block:
 * `min` - (Required) The minimum number of nodes to autoscale to.
 
 * `max` - (Required) The maximum number of nodes to autoscale to.
-
-### isolation
-
-The following arguments are supported in the `isolation` specification block:
-
-* `public_ipv4` - (Optional) Whether nodes in this pool should have public IPv4 addresses. Defaults to `true`.
-
-* `public_ipv6` - (Optional) Whether nodes in this pool should have public IPv6 addresses. Defaults to `true`.
 
 ### control_plane
 
@@ -311,12 +301,6 @@ In addition to all arguments above, the following attributes are exported:
 * `pool` - Additional nested attributes:
 
   * `id` - The ID of the Node Pool.
-
-  * `isolation` - Network isolation settings for the node pool.
-
-    * `public_ipv4` - Whether nodes have public IPv4 addresses.
-
-    * `public_ipv6` - Whether nodes have public IPv6 addresses.
 
   * [`nodes`](#nodes) - The nodes in the Node Pool.
 

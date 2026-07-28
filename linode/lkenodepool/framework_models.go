@@ -27,7 +27,8 @@ type NodePoolModel struct {
 	UpdateStrategy types.String              `tfsdk:"update_strategy"`
 	Label          types.String              `tfsdk:"label"`
 	FirewallID     types.Int64               `tfsdk:"firewall_id"`
-	Isolation      []NodePoolIsolationModel  `tfsdk:"isolation"`
+	IsolationIPv4  types.Bool                `tfsdk:"isolation_public_ipv4"`
+	IsolationIPv6  types.Bool                `tfsdk:"isolation_public_ipv6"`
 }
 
 type NodePoolAutoscalerModel struct {
@@ -39,11 +40,6 @@ type NodePoolTaintModel struct {
 	Effect types.String `tfsdk:"effect"`
 	Key    types.String `tfsdk:"key"`
 	Value  types.String `tfsdk:"value"`
-}
-
-type NodePoolIsolationModel struct {
-	PublicIPv4 types.Bool `tfsdk:"public_ipv4"`
-	PublicIPv6 types.Bool `tfsdk:"public_ipv6"`
 }
 
 type nodePoolDataSourceModel struct {
@@ -62,7 +58,8 @@ type nodePoolDataSourceModel struct {
 	UpdateStrategy types.String                       `tfsdk:"update_strategy"`
 	Label          types.String                       `tfsdk:"label"`
 	FirewallID     types.Int64                        `tfsdk:"firewall_id"`
-	Isolation      []NodePoolIsolationModel           `tfsdk:"isolation"`
+	IsolationIPv4  types.Bool                         `tfsdk:"isolation_public_ipv4"`
+	IsolationIPv6  types.Bool                         `tfsdk:"isolation_public_ipv6"`
 }
 type nodePoolDiskModel struct {
 	Size types.Int64  `tfsdk:"size"`
@@ -75,17 +72,12 @@ type dataSourceNodePoolAutoScalerModel struct {
 	Max     types.Int64 `tfsdk:"max"`
 }
 
-func flattenLKENodePoolIsolation(isolation *linodego.LKENodePoolIsolation) []NodePoolIsolationModel {
+func flattenLKENodePoolIsolation(isolation *linodego.LKENodePoolIsolation) (types.Bool, types.Bool) {
 	if isolation == nil {
-		return nil
+		return types.BoolNull(), types.BoolNull()
 	}
 
-	return []NodePoolIsolationModel{
-		{
-			PublicIPv4: types.BoolValue(isolation.PublicIPv4),
-			PublicIPv6: types.BoolValue(isolation.PublicIPv6),
-		},
-	}
+	return types.BoolValue(isolation.PublicIPv4), types.BoolValue(isolation.PublicIPv6)
 }
 
 func (data *nodePoolDataSourceModel) parseLKENodePool(
@@ -101,7 +93,7 @@ func (data *nodePoolDataSourceModel) parseLKENodePool(
 	data.Label = types.StringPointerValue(nodePool.Label)
 	data.K8sVersion = types.StringPointerValue(nodePool.K8sVersion)
 	data.UpdateStrategy = types.StringPointerValue((*string)(nodePool.UpdateStrategy))
-	data.Isolation = flattenLKENodePoolIsolation(nodePool.Isolation)
+	data.IsolationIPv4, data.IsolationIPv6 = flattenLKENodePoolIsolation(nodePool.Isolation)
 
 	if nodePool.FirewallID != nil {
 		data.FirewallID = types.Int64Value(int64(*nodePool.FirewallID))
@@ -245,7 +237,9 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 	}
 
 	if !preserveKnown {
-		pool.Isolation = flattenLKENodePoolIsolation(p.Isolation)
+		isolationIPv4, isolationIPv6 := flattenLKENodePoolIsolation(p.Isolation)
+		pool.IsolationIPv4 = isolationIPv4
+		pool.IsolationIPv6 = isolationIPv6
 	}
 }
 
@@ -294,15 +288,14 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 		p.DiskEncryption = linodego.Pointer(linodego.InstanceDiskEncryption(pool.DiskEncryption.ValueString()))
 	}
 
-	if len(pool.Isolation) > 0 {
-		isolation := pool.Isolation[0]
+	if !pool.IsolationIPv4.IsNull() || !pool.IsolationIPv6.IsNull() {
 		p.Isolation = &linodego.LKENodePoolIsolationCreateOptions{}
 
-		if !isolation.PublicIPv4.IsNull() && !isolation.PublicIPv4.IsUnknown() {
-			p.Isolation.PublicIPv4 = linodego.Pointer(isolation.PublicIPv4.ValueBool())
+		if !pool.IsolationIPv4.IsNull() && !pool.IsolationIPv4.IsUnknown() {
+			p.Isolation.PublicIPv4 = linodego.Pointer(pool.IsolationIPv4.ValueBool())
 		}
-		if !isolation.PublicIPv6.IsNull() && !isolation.PublicIPv6.IsUnknown() {
-			p.Isolation.PublicIPv6 = linodego.Pointer(isolation.PublicIPv6.ValueBool())
+		if !pool.IsolationIPv6.IsNull() && !pool.IsolationIPv6.IsUnknown() {
+			p.Isolation.PublicIPv6 = linodego.Pointer(pool.IsolationIPv6.ValueBool())
 		}
 	}
 }
@@ -489,10 +482,11 @@ func (data *NodePoolModel) CopyFrom(other NodePoolModel, preserveKnown bool) {
 	data.UpdateStrategy = helper.KeepOrUpdateValue(data.UpdateStrategy, other.UpdateStrategy, preserveKnown)
 	data.Label = helper.KeepOrUpdateValue(data.Label, other.Label, preserveKnown)
 	data.FirewallID = helper.KeepOrUpdateValue(data.FirewallID, other.FirewallID, preserveKnown)
+	data.IsolationIPv4 = helper.KeepOrUpdateValue(data.IsolationIPv4, other.IsolationIPv4, preserveKnown)
+	data.IsolationIPv6 = helper.KeepOrUpdateValue(data.IsolationIPv6, other.IsolationIPv6, preserveKnown)
 
 	if !preserveKnown {
 		data.Autoscaler = other.Autoscaler
 		data.Taints = other.Taints
-		data.Isolation = other.Isolation
 	}
 }

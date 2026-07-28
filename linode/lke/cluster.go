@@ -30,7 +30,6 @@ type NodePoolSpec struct {
 	Label             *string
 	FirewallID        *int
 	DiskEncryption    *string
-	Isolation         *linodego.LKENodePoolIsolationCreateOptions
 }
 
 type NodePoolUpdates struct {
@@ -62,7 +61,6 @@ func ReconcileLKENodePoolSpecs(
 			Labels:         linodego.LKENodePoolLabels(spec.Labels),
 			K8sVersion:     spec.K8sVersion,
 			UpdateStrategy: updateStrategy,
-			Isolation:      spec.Isolation,
 		}
 
 		if spec.Label != nil && *spec.Label != "" {
@@ -150,15 +148,6 @@ func ReconcileLKENodePoolSpecs(
 			(newSpec.DiskEncryption != nil && oldSpec.DiskEncryption == nil) ||
 			(newSpec.DiskEncryption == nil && oldSpec.DiskEncryption != nil)
 		if diskEncryptionChanged {
-			if err := createPool(newSpec); err != nil {
-				return result, err
-			}
-
-			deletePool(oldSpec.ID)
-			continue
-		}
-
-		if !reflect.DeepEqual(newSpec.Isolation, oldSpec.Isolation) {
 			if err := createPool(newSpec); err != nil {
 				return result, err
 			}
@@ -484,14 +473,6 @@ func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, dec
 				}
 			}
 
-			declaredIsolation := expandLinodeLKENodePoolIsolation(declaredPool)
-			if declaredIsolation != nil &&
-				(apiPool.Isolation == nil ||
-					(declaredIsolation.PublicIPv4 != nil && *declaredIsolation.PublicIPv4 != apiPool.Isolation.PublicIPv4) ||
-					(declaredIsolation.PublicIPv6 != nil && *declaredIsolation.PublicIPv6 != apiPool.Isolation.PublicIPv6)) {
-				continue
-			}
-
 			// Pair the API pool with the declared pool
 			result[i] = apiPool
 			delete(apiPools, apiPool.ID)
@@ -523,28 +504,6 @@ func expandLinodeLKEClusterAutoscalerFromPool(pool map[string]any) *linodego.LKE
 		Min:     scalerSpec["min"].(int),
 		Max:     scalerSpec["max"].(int),
 	}
-}
-
-func expandLinodeLKENodePoolIsolation(pool map[string]any) *linodego.LKENodePoolIsolationCreateOptions {
-	isolationSpec, ok := pool["isolation"].([]any)
-	if !ok || len(isolationSpec) < 1 || isolationSpec[0] == nil {
-		return nil
-	}
-
-	isolationMap, ok := isolationSpec[0].(map[string]any)
-	if !ok {
-		return nil
-	}
-
-	isolation := &linodego.LKENodePoolIsolationCreateOptions{}
-	if publicIPv4, ok := isolationMap["public_ipv4"].(bool); ok {
-		isolation.PublicIPv4 = linodego.Pointer(publicIPv4)
-	}
-	if publicIPv6, ok := isolationMap["public_ipv6"].(bool); ok {
-		isolation.PublicIPv6 = linodego.Pointer(publicIPv6)
-	}
-
-	return isolation
 }
 
 func expandLinodeLKENodePoolSpecs(pool []any, preserveNoTarget bool) (poolSpecs []NodePoolSpec) {
@@ -588,8 +547,6 @@ func expandLinodeLKENodePoolSpecs(pool []any, preserveNoTarget bool) (poolSpecs 
 			diskEncryptionPtr = &v
 		}
 
-		isolation := expandLinodeLKENodePoolIsolation(specMap)
-
 		poolSpecs = append(poolSpecs, NodePoolSpec{
 			ID:                specMap["id"].(int),
 			Label:             labelPtr,
@@ -605,7 +562,6 @@ func expandLinodeLKENodePoolSpecs(pool []any, preserveNoTarget bool) (poolSpecs 
 			AutoScalerMax:     autoscaler.Max,
 			K8sVersion:        k8sVersionPtr,
 			UpdateStrategy:    updateStrategyPtr,
-			Isolation:         isolation,
 		})
 	}
 	return poolSpecs
@@ -649,15 +605,6 @@ func flattenLKENodePools(pools []linodego.LKENodePool) []map[string]any {
 			"k8s_version":     pool.K8sVersion,
 			"update_strategy": pool.UpdateStrategy,
 			"firewall_id":     pool.FirewallID,
-		}
-
-		if pool.Isolation != nil {
-			flattened[i]["isolation"] = []map[string]any{
-				{
-					"public_ipv4": pool.Isolation.PublicIPv4,
-					"public_ipv6": pool.Isolation.PublicIPv6,
-				},
-			}
 		}
 	}
 	return flattened

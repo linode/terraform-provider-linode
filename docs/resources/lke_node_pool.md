@@ -129,7 +129,9 @@ The following arguments are supported:
 
 * `disk_encryption` - (Optional) The disk encryption policy for nodes in this pool.
 
-* [`isolation`](#isolation) - (Optional) Network isolation settings for the node pool. Changing this value replaces the pool.
+* `isolation_public_ipv4` - (Optional) Whether nodes in this pool should have public IPv4 addresses. Defaults to `true`. Changing this value replaces the pool.
+
+* `isolation_public_ipv6` - (Optional) Whether nodes in this pool should have public IPv6 addresses. Defaults to `true`. Changing this value replaces the pool.
 
 ### autoscaler
 
@@ -149,14 +151,6 @@ The following arguments are supported in the `taint` specification block:
 
 * `value` - (Required) The Kubernetes taint value.
 
-### isolation
-
-The following arguments are supported in the `isolation` specification block:
-
-* `public_ipv4` - (Optional) Whether nodes in this pool should have public IPv4 addresses. Defaults to `true`.
-
-* `public_ipv6` - (Optional) Whether nodes in this pool should have public IPv6 addresses. Defaults to `true`.
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
@@ -165,11 +159,9 @@ In addition to all arguments above, the following attributes are exported:
 
 * `disk_encryption` - The disk encryption policy for nodes in this pool.
 
-* `isolation` - Network isolation settings for the node pool.
+* `isolation_public_ipv4` - Whether nodes in this pool have public IPv4 addresses.
 
-    * `public_ipv4` - Whether nodes have public IPv4 addresses.
-
-    * `public_ipv6` - Whether nodes have public IPv6 addresses.
+* `isolation_public_ipv6` - Whether nodes in this pool have public IPv6 addresses.
 
 * [`nodes`](#nodes) - The nodes in the Node Pool.
 

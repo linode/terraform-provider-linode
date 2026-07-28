@@ -210,29 +210,6 @@ var resourceSchema = map[string]*schema.Schema{
 					Computed:     true,
 					ValidateFunc: validation.StringInSlice([]string{"enabled", "disabled"}, false),
 				},
-				"isolation": {
-					Type:        schema.TypeList,
-					MaxItems:    1,
-					Optional:    true,
-					Computed:    true,
-					Description: "Network isolation settings for the node pool.",
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"public_ipv4": {
-								Type:        schema.TypeBool,
-								Optional:    true,
-								Computed:    true,
-								Description: "Whether nodes in this pool have public IPv4 addresses.",
-							},
-							"public_ipv6": {
-								Type:        schema.TypeBool,
-								Optional:    true,
-								Computed:    true,
-								Description: "Whether nodes in this pool have public IPv6 addresses.",
-							},
-						},
-					},
-				},
 				"nodes": {
 					Type: schema.TypeList,
 					Elem: &schema.Resource{

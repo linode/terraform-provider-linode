@@ -40,11 +40,9 @@ In addition to all arguments above, the following attributes are exported:
 
 * `disk_encryption` - Indicates the local disk encryption setting for this LKE node pool.
 
-* `isolation` - Network isolation settings for this node pool.
+* `isolation_public_ipv4` - Whether nodes in this pool have public IPv4 addresses.
 
-  * `public_ipv4` - Whether nodes have public IPv4 addresses.
-
-  * `public_ipv6` - Whether nodes have public IPv6 addresses.
+* `isolation_public_ipv6` - Whether nodes in this pool have public IPv6 addresses.
 
 * `disks` - This node pool's custom disk layout.
 
