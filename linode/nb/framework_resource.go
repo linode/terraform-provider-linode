@@ -40,9 +40,11 @@ func (r *Resource) Create(
 ) {
 	tflog.Debug(ctx, "Create "+r.Config.Name)
 	var data NodeBalancerModel
+	var dataConfig NodeBalancerModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &dataConfig)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -81,8 +83,8 @@ func (r *Resource) Create(
 		}
 	}
 
-	if !data.VPCs.IsNull() {
-		vpcs, d := vpcModelsToLinodego(ctx, data.VPCs)
+	if !dataConfig.VPCs.IsNull() {
+		vpcs, d := vpcModelsToLinodego(ctx, dataConfig.VPCs)
 		resp.Diagnostics.Append(d...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -91,8 +93,8 @@ func (r *Resource) Create(
 		createOpts.VPCs = vpcs
 	}
 
-	if !data.FrontendVPCs.IsNull() {
-		frontendVPCs, d := frontendVPCModelsToLinodego(ctx, data.FrontendVPCs)
+	if !dataConfig.FrontendVPCs.IsNull() {
+		frontendVPCs, d := frontendVPCModelsToLinodego(ctx, dataConfig.FrontendVPCs)
 		resp.Diagnostics.Append(d...)
 		if resp.Diagnostics.HasError() {
 			return
