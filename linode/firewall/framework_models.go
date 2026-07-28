@@ -22,6 +22,8 @@ type FirewallDataSourceModel struct {
 	InboundPolicy  types.String  `tfsdk:"inbound_policy"`
 	Outbound       []RuleModel   `tfsdk:"outbound"`
 	OutboundPolicy types.String  `tfsdk:"outbound_policy"`
+	Version        types.Int64   `tfsdk:"version"`
+	Fingerprint    types.String  `tfsdk:"fingerprint"`
 	Linodes        types.Set     `tfsdk:"linodes"`
 	NodeBalancers  types.Set     `tfsdk:"nodebalancers"`
 	Interfaces     types.Set     `tfsdk:"interfaces"`
@@ -42,6 +44,8 @@ type FirewallResourceModel struct {
 	InboundPolicy  types.String      `tfsdk:"inbound_policy"`
 	Outbound       []RuleModel       `tfsdk:"outbound"`
 	OutboundPolicy types.String      `tfsdk:"outbound_policy"`
+	Version        types.Int64       `tfsdk:"version"`
+	Fingerprint    types.String      `tfsdk:"fingerprint"`
 	Linodes        types.Set         `tfsdk:"linodes"`
 	NodeBalancers  types.Set         `tfsdk:"nodebalancers"`
 	Interfaces     types.Set         `tfsdk:"interfaces"`
@@ -266,6 +270,8 @@ func (data *FirewallResourceModel) flattenRules(
 	}
 
 	data.Outbound = outboundRules
+	data.Version = helper.KeepOrUpdateInt64(data.Version, int64(rules.Version), preserveKnown)
+	data.Fingerprint = helper.KeepOrUpdateString(data.Fingerprint, rules.Fingerprint, preserveKnown)
 }
 
 func (data *FirewallResourceModel) flattenFirewallForResource(
@@ -341,6 +347,8 @@ func (data *FirewallDataSourceModel) flattenFirewallForDataSource(
 	data.Disabled = types.BoolValue(firewall.Status == linodego.FirewallDisabled)
 	data.InboundPolicy = types.StringValue(ruleSet.InboundPolicy)
 	data.OutboundPolicy = types.StringValue(ruleSet.OutboundPolicy)
+	data.Version = types.Int64Value(int64(ruleSet.Version))
+	data.Fingerprint = types.StringValue(ruleSet.Fingerprint)
 	data.Label = types.StringValue(firewall.Label)
 
 	if ruleSet.Inbound != nil {
@@ -372,6 +380,8 @@ func (data *FirewallResourceModel) CopyFrom(
 	data.Disabled = helper.KeepOrUpdateValue(data.Disabled, other.Disabled, preserveKnown)
 	data.InboundPolicy = helper.KeepOrUpdateValue(data.InboundPolicy, other.InboundPolicy, preserveKnown)
 	data.OutboundPolicy = helper.KeepOrUpdateValue(data.OutboundPolicy, other.OutboundPolicy, preserveKnown)
+	data.Version = helper.KeepOrUpdateValue(data.Version, other.Version, preserveKnown)
+	data.Fingerprint = helper.KeepOrUpdateValue(data.Fingerprint, other.Fingerprint, preserveKnown)
 	data.Linodes = helper.KeepOrUpdateValue(data.Linodes, other.Linodes, preserveKnown)
 	data.NodeBalancers = helper.KeepOrUpdateValue(data.NodeBalancers, other.NodeBalancers, preserveKnown)
 	data.Interfaces = helper.KeepOrUpdateValue(data.Interfaces, other.Interfaces, preserveKnown)

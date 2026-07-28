@@ -7,8 +7,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Unit tests for private functions in framework_models
@@ -91,6 +94,8 @@ func TestParseComputedAttributes(t *testing.T) {
 		Inbound:        inboundRules,
 		OutboundPolicy: "DROP",
 		Outbound:       outboundRules,
+		Version:        1,
+		Fingerprint:    "test-fingerprint",
 	}
 
 	data := &FirewallDataSourceModel{}
@@ -108,6 +113,8 @@ func TestParseComputedAttributes(t *testing.T) {
 
 	assert.Contains(t, data.OutboundPolicy.String(), firewallRules.OutboundPolicy)
 	assert.Contains(t, data.InboundPolicy.String(), firewallRules.InboundPolicy)
+	assert.Equal(t, types.Int64Value(1), data.Version)
+	assert.Equal(t, types.StringValue("test-fingerprint"), data.Fingerprint)
 
 	assert.Equal(t, data.Inbound[0].Action.ValueString(), inboundRules[0].Action)
 	assert.Equal(t, data.Inbound[0].Protocol.ValueString(), string(inboundRules[0].Protocol))
@@ -121,4 +128,19 @@ func TestParseComputedAttributes(t *testing.T) {
 
 	assert.Equal(t, data.Devices[0].ID.ValueInt64(), int64(111))
 	assert.Equal(t, data.Devices[1].ID.ValueInt64(), int64(112))
+}
+
+func TestFirewallResourceModelFlattenRules(t *testing.T) {
+	rules := &linodego.FirewallRules{
+		Version:     3,
+		Fingerprint: "test-fingerprint",
+	}
+	data := FirewallResourceModel{}
+	var diags diag.Diagnostics
+
+	data.flattenRules(context.Background(), rules, false, &diags)
+
+	require.False(t, diags.HasError())
+	assert.Equal(t, types.Int64Value(3), data.Version)
+	assert.Equal(t, types.StringValue("test-fingerprint"), data.Fingerprint)
 }
