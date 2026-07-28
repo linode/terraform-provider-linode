@@ -72,14 +72,6 @@ type dataSourceNodePoolAutoScalerModel struct {
 	Max     types.Int64 `tfsdk:"max"`
 }
 
-func flattenLKENodePoolIsolation(isolation *linodego.LKENodePoolIsolation) (types.Bool, types.Bool) {
-	if isolation == nil {
-		return types.BoolNull(), types.BoolNull()
-	}
-
-	return types.BoolValue(isolation.PublicIPv4), types.BoolValue(isolation.PublicIPv6)
-}
-
 func (data *nodePoolDataSourceModel) parseLKENodePool(
 	ctx context.Context,
 	nodePool *linodego.LKENodePool,
@@ -93,7 +85,13 @@ func (data *nodePoolDataSourceModel) parseLKENodePool(
 	data.Label = types.StringPointerValue(nodePool.Label)
 	data.K8sVersion = types.StringPointerValue(nodePool.K8sVersion)
 	data.UpdateStrategy = types.StringPointerValue((*string)(nodePool.UpdateStrategy))
-	data.IsolationIPv4, data.IsolationIPv6 = flattenLKENodePoolIsolation(nodePool.Isolation)
+
+	data.IsolationIPv4 = types.BoolNull()
+	data.IsolationIPv6 = types.BoolNull()
+	if nodePool.Isolation != nil {
+		data.IsolationIPv4 = types.BoolValue(nodePool.Isolation.PublicIPv4)
+		data.IsolationIPv6 = types.BoolValue(nodePool.Isolation.PublicIPv6)
+	}
 
 	if nodePool.FirewallID != nil {
 		data.FirewallID = types.Int64Value(int64(*nodePool.FirewallID))
@@ -236,10 +234,12 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 		pool.UpdateStrategy = helper.KeepOrUpdateString(pool.UpdateStrategy, "", preserveKnown)
 	}
 
-	if !preserveKnown {
-		isolationIPv4, isolationIPv6 := flattenLKENodePoolIsolation(p.Isolation)
-		pool.IsolationIPv4 = isolationIPv4
-		pool.IsolationIPv6 = isolationIPv6
+	if p.Isolation != nil {
+		pool.IsolationIPv4 = helper.KeepOrUpdateValue(pool.IsolationIPv4, types.BoolValue(p.Isolation.PublicIPv4), preserveKnown)
+		pool.IsolationIPv6 = helper.KeepOrUpdateValue(pool.IsolationIPv6, types.BoolValue(p.Isolation.PublicIPv6), preserveKnown)
+	} else {
+		pool.IsolationIPv4 = helper.KeepOrUpdateValue(pool.IsolationIPv4, types.BoolNull(), preserveKnown)
+		pool.IsolationIPv6 = helper.KeepOrUpdateValue(pool.IsolationIPv6, types.BoolNull(), preserveKnown)
 	}
 }
 
