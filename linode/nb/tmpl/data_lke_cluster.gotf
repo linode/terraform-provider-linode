@@ -1,0 +1,5 @@
+{{ define "nodebalancer_data_lke_cluster" }}
+data "linode_nodebalancer" "test" {
+    id = {{.NodeBalancerID}}
+}
+{{ end }}

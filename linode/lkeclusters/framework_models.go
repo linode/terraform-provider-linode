@@ -50,7 +50,7 @@ func (data *LKEClusterFilterModel) parseLKEClusters(
 	for i := range clusters {
 		var lkeCluster LKEClusterModel
 		diags := lkeCluster.parseLKECluster(ctx, &clusters[i])
-		if diags != nil {
+		if diags.HasError() {
 			return diags
 		}
 		result[i] = lkeCluster
@@ -77,7 +77,7 @@ func (data *LKEClusterModel) parseLKECluster(
 	data.StackType = types.StringValue(string(cluster.StackType))
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, cluster.Tags)
-	if diags != nil {
+	if diags.HasError() {
 		return diags
 	}
 	data.Tags = tags

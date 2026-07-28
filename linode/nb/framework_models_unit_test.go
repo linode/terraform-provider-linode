@@ -70,6 +70,12 @@ func TestFlattenNodeBalancer(t *testing.T) {
 			Out:   &transferOut,
 			Total: &transferTotal,
 		},
+		LKECluster: &linodego.NodeBalancerLKECluster{
+			ID:    1234,
+			Label: "test-cluster",
+			Type:  "lkecluster",
+			URL:   "/v4/lke/clusters/1234",
+		},
 	}
 
 	nodeBalancerModel := &NodeBalancerModel{}
@@ -119,6 +125,46 @@ func TestFlattenNodeBalancer(t *testing.T) {
 	assert.Equal(t, types.StringValue("10.0.0.4/30"), vpcConfigModel[0].IPv4Range)
 
 	assert.True(t, types.StringValue(label).Equal(nodeBalancerModel.Label))
+
+	var lkeClusters []LKEClusterModel
+	d = nodeBalancerModel.LKECluster.ElementsAs(t.Context(), &lkeClusters, false)
+	if d.HasError() {
+		t.Fatal(d.Errors())
+	}
+	assert.Len(t, lkeClusters, 1)
+	assert.Equal(t, types.Int64Value(1234), lkeClusters[0].ID)
+	assert.Equal(t, types.StringValue("test-cluster"), lkeClusters[0].Label)
+	assert.Equal(t, types.StringValue("lkecluster"), lkeClusters[0].Type)
+	assert.Equal(t, types.StringValue("/v4/lke/clusters/1234"), lkeClusters[0].URL)
+}
+
+func TestFlattenLKECluster(t *testing.T) {
+	t.Run("WithLKECluster", func(t *testing.T) {
+		lkeCluster := &linodego.NodeBalancerLKECluster{
+			ID:    1234,
+			Label: "test-cluster",
+			Type:  "lkecluster",
+			URL:   "/v4/lke/clusters/1234",
+		}
+
+		result, diags := FlattenLKECluster(context.Background(), lkeCluster)
+		assert.False(t, diags.HasError())
+		assert.Len(t, result.Elements(), 1)
+
+		var models []LKEClusterModel
+		d := result.ElementsAs(context.Background(), &models, false)
+		assert.False(t, d.HasError())
+		assert.Equal(t, types.Int64Value(1234), models[0].ID)
+		assert.Equal(t, types.StringValue("test-cluster"), models[0].Label)
+		assert.Equal(t, types.StringValue("lkecluster"), models[0].Type)
+		assert.Equal(t, types.StringValue("/v4/lke/clusters/1234"), models[0].URL)
+	})
+
+	t.Run("NilLKECluster", func(t *testing.T) {
+		result, diags := FlattenLKECluster(context.Background(), nil)
+		assert.False(t, diags.HasError())
+		assert.Len(t, result.Elements(), 0)
+	})
 }
 
 func TestFlattenNodeBalancerIPv4(t *testing.T) {

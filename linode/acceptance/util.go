@@ -644,6 +644,7 @@ func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
 		return nil, err
 	}
 
+	// #nosec G404 -- Test data, doesn't need to be cryptographically secure
 	rand.Shuffle(len(endpoints), func(i, j int) {
 		endpoints[i], endpoints[j] = endpoints[j], endpoints[i]
 	})
@@ -779,7 +780,7 @@ func GetRandomRegionWithCaps(capabilities []linodego.RegionCapability, regionTyp
 		return "", fmt.Errorf("no region found with the provided caps")
 	}
 
-	// #nosec G404 -- Test data, doesn't need to be cryptography
+	// #nosec G404 -- Test data, doesn't need to be cryptographically secure
 	return regions[rand.Intn(len(regions))], nil
 }
 

@@ -7,8 +7,10 @@ import (
 )
 
 type TemplateData struct {
-	Label  string
-	Region string
+	Label          string
+	Region         string
+	K8sVersion     string
+	NodeBalancerID int
 }
 
 func Basic(t testing.TB, nodebalancer, region string) string {
@@ -87,5 +89,12 @@ func ReservedIPOnly(t testing.TB, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_reserved_ip_only", TemplateData{
 			Region: region,
+		})
+}
+
+func LKEClusterData(t testing.TB, nodeBalancerID int) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_data_lke_cluster", TemplateData{
+			NodeBalancerID: nodeBalancerID,
 		})
 }
