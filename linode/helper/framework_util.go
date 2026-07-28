@@ -5,6 +5,7 @@ import (
 	"iter"
 	"log"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -49,12 +50,12 @@ func FrameworkMust[T any](result T, d diag.Diagnostics) T {
 // of the given iter.
 func FrameworkDropDuplicatesIter[T attr.Value](seq iter.Seq[T]) iter.Seq[T] {
 	return func(yield func(T) bool) {
-		existing := make(map[string]bool)
+		existing := set.New[string](0)
 
 		for entry := range seq {
 			entryStr := entry.String()
 
-			if _, ok := existing[entryStr]; ok {
+			if existing.Contains(entryStr) {
 				continue
 			}
 
@@ -62,7 +63,7 @@ func FrameworkDropDuplicatesIter[T attr.Value](seq iter.Seq[T]) iter.Seq[T] {
 				return
 			}
 
-			existing[entryStr] = true
+			existing.Insert(entryStr)
 		}
 	}
 }

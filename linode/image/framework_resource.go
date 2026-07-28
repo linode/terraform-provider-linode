@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -554,13 +555,13 @@ func atLeastOneAvailableRegion(
 		return false, diags
 	}
 
-	set := make(map[string]bool)
+	stateRegionSet := set.New[string](len(stateRegions))
 	for _, v := range stateRegions {
-		set[v] = true
+		stateRegionSet.Insert(v)
 	}
 
 	for _, v := range planRegions {
-		if set[v] {
+		if stateRegionSet.Contains(v) {
 			return true, nil
 		}
 	}
