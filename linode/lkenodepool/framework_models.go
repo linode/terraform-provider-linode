@@ -288,13 +288,15 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 		p.DiskEncryption = linodego.Pointer(linodego.InstanceDiskEncryption(pool.DiskEncryption.ValueString()))
 	}
 
-	if !pool.IsolationIPv4.IsNull() || !pool.IsolationIPv6.IsNull() {
+	isolationIPv4Known := !pool.IsolationIPv4.IsNull() && !pool.IsolationIPv4.IsUnknown()
+	isolationIPv6Known := !pool.IsolationIPv6.IsNull() && !pool.IsolationIPv6.IsUnknown()
+	if isolationIPv4Known || isolationIPv6Known {
 		p.Isolation = &linodego.LKENodePoolIsolationCreateOptions{}
 
-		if !pool.IsolationIPv4.IsNull() && !pool.IsolationIPv4.IsUnknown() {
+		if isolationIPv4Known {
 			p.Isolation.PublicIPv4 = linodego.Pointer(pool.IsolationIPv4.ValueBool())
 		}
-		if !pool.IsolationIPv6.IsNull() && !pool.IsolationIPv6.IsUnknown() {
+		if isolationIPv6Known {
 			p.Isolation.PublicIPv6 = linodego.Pointer(pool.IsolationIPv6.ValueBool())
 		}
 	}

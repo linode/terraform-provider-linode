@@ -126,6 +126,36 @@ func TestSetNodePoolCreateOptions_IsolationUnset(t *testing.T) {
 	assert.Nil(t, createOpts.Isolation)
 }
 
+func TestSetNodePoolCreateOptions_IsolationUnknown(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	nodePoolModel.IsolationIPv4 = types.BoolUnknown()
+	nodePoolModel.IsolationIPv6 = types.BoolUnknown()
+
+	var createOpts linodego.LKENodePoolCreateOptions
+	var diags diag.Diagnostics
+
+	nodePoolModel.SetNodePoolCreateOptions(context.Background(), &createOpts, &diags, "enterprise")
+
+	assert.False(t, diags.HasError())
+	assert.Nil(t, createOpts.Isolation)
+}
+
+func TestSetNodePoolCreateOptions_IsolationPartiallyKnown(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	nodePoolModel.IsolationIPv4 = types.BoolUnknown()
+	nodePoolModel.IsolationIPv6 = types.BoolValue(false)
+
+	var createOpts linodego.LKENodePoolCreateOptions
+	var diags diag.Diagnostics
+
+	nodePoolModel.SetNodePoolCreateOptions(context.Background(), &createOpts, &diags, "enterprise")
+
+	assert.False(t, diags.HasError())
+	assert.NotNil(t, createOpts.Isolation)
+	assert.Nil(t, createOpts.Isolation.PublicIPv4)
+	assert.False(t, *createOpts.Isolation.PublicIPv6)
+}
+
 func TestSetNodePoolUpdateOptions(t *testing.T) {
 	nodePoolModel := createNodePoolModel()
 	state := NodePoolModel{ID: types.StringValue("123")}
