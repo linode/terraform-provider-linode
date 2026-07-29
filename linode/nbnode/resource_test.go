@@ -111,7 +111,6 @@ func TestAccResourceNodeBalancerNode_vpc(t *testing.T) {
 
 	resName := "linode_nodebalancer_node.test"
 	label := acctest.RandomWithPrefix("tf-test")
-	rootPass := acctest.RandString(64)
 	nbType := "common"
 
 	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs}, "core")
@@ -126,7 +125,7 @@ func TestAccResourceNodeBalancerNode_vpc(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.VPC(t, label, targetRegion, rootPass, nbType),
+				Config: tmpl.VPC(t, label, targetRegion, nbType),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resName,
@@ -161,7 +160,7 @@ func TestAccResourceNodeBalancerNode_vpc(t *testing.T) {
 				},
 			},
 			{
-				Config: tmpl.VPC(t, label, targetRegion, rootPass, nbType),
+				Config: tmpl.VPC(t, label, targetRegion, nbType),
 			},
 			{
 				ResourceName:            resName,
