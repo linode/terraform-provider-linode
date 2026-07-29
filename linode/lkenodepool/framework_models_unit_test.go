@@ -114,20 +114,6 @@ func TestSetNodePoolCreateOptions(t *testing.T) {
 
 func TestSetNodePoolCreateOptions_IsolationUnset(t *testing.T) {
 	nodePoolModel := createNodePoolModel()
-	nodePoolModel.IsolationIPv4 = types.BoolNull()
-	nodePoolModel.IsolationIPv6 = types.BoolNull()
-
-	var createOpts linodego.LKENodePoolCreateOptions
-	var diags diag.Diagnostics
-
-	nodePoolModel.SetNodePoolCreateOptions(context.Background(), &createOpts, &diags, "enterprise")
-
-	assert.False(t, diags.HasError())
-	assert.Nil(t, createOpts.Isolation)
-}
-
-func TestSetNodePoolCreateOptions_IsolationUnknown(t *testing.T) {
-	nodePoolModel := createNodePoolModel()
 	nodePoolModel.IsolationIPv4 = types.BoolUnknown()
 	nodePoolModel.IsolationIPv6 = types.BoolUnknown()
 
@@ -154,6 +140,37 @@ func TestSetNodePoolCreateOptions_IsolationPartiallyKnown(t *testing.T) {
 	assert.NotNil(t, createOpts.Isolation)
 	assert.Nil(t, createOpts.Isolation.PublicIPv4)
 	assert.False(t, *createOpts.Isolation.PublicIPv6)
+}
+
+func TestValidateEnterpriseOnlyAttributes_IsolationAllowedForEnterprise(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	var diags diag.Diagnostics
+
+	nodePoolModel.validateEnterpriseOnlyAttributes("enterprise", &diags)
+
+	assert.False(t, diags.HasError())
+}
+
+func TestValidateEnterpriseOnlyAttributes_IsolationRejectedForNonEnterprise(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	var diags diag.Diagnostics
+
+	nodePoolModel.validateEnterpriseOnlyAttributes("standard", &diags)
+
+	assert.True(t, diags.HasError())
+	assert.Len(t, diags.Errors(), 1)
+	assert.Contains(t, diags.Errors()[0].Summary(), "isolation")
+}
+
+func TestValidateEnterpriseOnlyAttributes_IsolationUnsetForNonEnterprise(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	nodePoolModel.IsolationIPv4 = types.BoolUnknown()
+	nodePoolModel.IsolationIPv6 = types.BoolUnknown()
+	var diags diag.Diagnostics
+
+	nodePoolModel.validateEnterpriseOnlyAttributes("standard", &diags)
+
+	assert.False(t, diags.HasError())
 }
 
 func TestSetNodePoolUpdateOptions(t *testing.T) {

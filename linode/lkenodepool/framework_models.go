@@ -243,6 +243,23 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 	}
 }
 
+// validateEnterpriseOnlyAttributes ensures attributes that are only valid for
+// LKE Enterprise clusters are not configured on non-enterprise clusters.
+func (pool *NodePoolModel) validateEnterpriseOnlyAttributes(tier string, diags *diag.Diagnostics) {
+	if tier == string(linodego.LKEVersionEnterprise) {
+		return
+	}
+
+	isolationIPv4Set := !pool.IsolationIPv4.IsNull() && !pool.IsolationIPv4.IsUnknown()
+	isolationIPv6Set := !pool.IsolationIPv6.IsNull() && !pool.IsolationIPv6.IsUnknown()
+	if isolationIPv4Set || isolationIPv6Set {
+		diags.AddError(
+			"Invalid isolation configuration",
+			"isolation is only available for LKE Enterprise clusters.",
+		)
+	}
+}
+
 func (pool *NodePoolModel) SetNodePoolCreateOptions(
 	ctx context.Context,
 	p *linodego.LKENodePoolCreateOptions,
@@ -275,7 +292,7 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 
 	pool.Labels.ElementsAs(ctx, &p.Labels, false)
 
-	if tier == "enterprise" {
+	if tier == string(linodego.LKEVersionEnterprise) {
 		if !pool.K8sVersion.IsNull() && !pool.K8sVersion.IsUnknown() {
 			p.K8sVersion = pool.K8sVersion.ValueStringPointer()
 		}
@@ -379,7 +396,7 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 		shouldUpdate = true
 	}
 
-	if tier == "enterprise" {
+	if tier == string(linodego.LKEVersionEnterprise) {
 		if !state.K8sVersion.Equal(pool.K8sVersion) {
 			p.K8sVersion = pool.K8sVersion.ValueStringPointer()
 			shouldUpdate = true
