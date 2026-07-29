@@ -89,6 +89,7 @@ var resourceSchema = schema.Schema{
 			Optional:    true,
 			Computed:    true,
 			PlanModifiers: []planmodifier.Bool{
+				boolplanmodifier.UseStateForUnknown(),
 				boolplanmodifier.RequiresReplaceIfConfigured(),
 			},
 		},
@@ -97,6 +98,7 @@ var resourceSchema = schema.Schema{
 			Optional:    true,
 			Computed:    true,
 			PlanModifiers: []planmodifier.Bool{
+				boolplanmodifier.UseStateForUnknown(),
 				boolplanmodifier.RequiresReplaceIfConfigured(),
 			},
 		},
