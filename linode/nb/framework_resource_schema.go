@@ -69,6 +69,7 @@ var frameworkResourceSchemaBackendVPCs = schema.NestedAttributeObject{
 			Computed: true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"ipv6_range": schema.StringAttribute{
