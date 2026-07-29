@@ -129,9 +129,9 @@ The following arguments are supported:
 
 * `disk_encryption` - (Optional) The disk encryption policy for nodes in this pool.
 
-* `isolation_public_ipv4` - (Optional) Whether nodes in this pool should have public IPv4 addresses. Changing this value replaces the pool.
+* `isolation_public_ipv4` - (Optional) Whether nodes in this pool should have public IPv4 addresses. This is only available for LKE Enterprise clusters and may not be available to all customers. Changing this value replaces the pool.
 
-* `isolation_public_ipv6` - (Optional) Whether nodes in this pool should have public IPv6 addresses. Changing this value replaces the pool.
+* `isolation_public_ipv6` - (Optional) Whether nodes in this pool should have public IPv6 addresses. This is only available for LKE Enterprise clusters and may not be available to all customers. Changing this value replaces the pool.
 
 ### autoscaler
 
@@ -159,9 +159,9 @@ In addition to all arguments above, the following attributes are exported:
 
 * `disk_encryption` - The disk encryption policy for nodes in this pool.
 
-* `isolation_public_ipv4` - Whether nodes in this pool have public IPv4 addresses.
+* `isolation_public_ipv4` - Whether nodes in this pool have public IPv4 addresses. This is only available for LKE Enterprise clusters and may not be available to all customers.
 
-* `isolation_public_ipv6` - Whether nodes in this pool have public IPv6 addresses.
+* `isolation_public_ipv6` - Whether nodes in this pool have public IPv6 addresses. This is only available for LKE Enterprise clusters and may not be available to all customers.
 
 * [`nodes`](#nodes) - The nodes in the Node Pool.
 
