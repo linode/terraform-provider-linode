@@ -84,10 +84,9 @@ func TestFlattenNodeBalancer(t *testing.T) {
 		VPCs: types.ListValueMust(backendVPCObjType, []attr.Value{
 			types.ObjectValueMust(backendVPCObjType.AttrTypes, map[string]attr.Value{
 				"subnet_id":              types.Int64Value(789),
-				"ipv4_range":             types.StringValue("10.0.0.0/24"),
+				"ipv4_range":             types.StringUnknown(),
 				"ipv6_range":             types.StringNull(),
-				"allocated_ipv4_range":   types.StringUnknown(),
-				"ipv4_range_auto_assign": types.BoolNull(),
+				"ipv4_range_auto_assign": types.BoolValue(true),
 			}),
 		}),
 		BackendVPCs: types.ListValueMust(backendVPCObjType, []attr.Value{}),
@@ -137,8 +136,7 @@ func TestFlattenNodeBalancer(t *testing.T) {
 	}
 
 	assert.Equal(t, types.Int64Value(789), vpcConfigModel[0].SubnetID)
-	assert.Equal(t, types.StringValue("10.0.0.0/24"), vpcConfigModel[0].IPv4Range)
-	assert.Equal(t, types.StringValue("10.0.0.4/30"), vpcConfigModel[0].AllocatedIPv4Range)
+	assert.Equal(t, types.StringValue("10.0.0.4/30"), vpcConfigModel[0].IPv4Range)
 
 	assert.True(t, types.StringValue(label).Equal(nodeBalancerModel.Label))
 
@@ -224,16 +222,15 @@ func TestFlattenNodeBalancerIPv4(t *testing.T) {
 	})
 }
 
-func TestFlattenNodeBalancerBackendVPCsPreserveConfiguredRanges(t *testing.T) {
+func TestFlattenNodeBalancerBackendVPCsPopulateComputedRanges(t *testing.T) {
 	nodeBalancer := &linodego.NodeBalancer{ID: 123}
 
 	nodeBalancerModel := &NodeBalancerModel{
 		BackendVPCs: types.ListValueMust(backendVPCObjType, []attr.Value{
 			types.ObjectValueMust(backendVPCObjType.AttrTypes, map[string]attr.Value{
 				"subnet_id":              types.Int64Value(789),
-				"ipv4_range":             types.StringValue("10.0.0.0/24"),
+				"ipv4_range":             types.StringUnknown(),
 				"ipv6_range":             types.StringValue("fd00::/64"),
-				"allocated_ipv4_range":   types.StringUnknown(),
 				"ipv4_range_auto_assign": types.BoolValue(true),
 			}),
 		}),
@@ -275,9 +272,8 @@ func TestFlattenNodeBalancerBackendVPCsPreserveConfiguredRanges(t *testing.T) {
 
 	assert.Len(t, backendVPCModels, 1)
 	assert.Equal(t, types.Int64Value(789), backendVPCModels[0].SubnetID)
-	assert.Equal(t, types.StringValue("10.0.0.0/24"), backendVPCModels[0].IPv4Range)
+	assert.Equal(t, types.StringValue("10.0.0.4/30"), backendVPCModels[0].IPv4Range)
 	assert.Equal(t, types.StringValue("fd00::4/126"), backendVPCModels[0].IPv6Range)
-	assert.Equal(t, types.StringValue("10.0.0.4/30"), backendVPCModels[0].AllocatedIPv4Range)
 	assert.Equal(t, types.BoolValue(true), backendVPCModels[0].IPv4RangeAutoAssign)
 
 	options, optionDiags := backendVPCModels[0].ToLinodego()
@@ -292,16 +288,14 @@ func TestFlattenNodeBalancerBackendVPCsReconcileAPIEntries(t *testing.T) {
 		BackendVPCs: types.ListValueMust(backendVPCObjType, []attr.Value{
 			types.ObjectValueMust(backendVPCObjType.AttrTypes, map[string]attr.Value{
 				"subnet_id":              types.Int64Value(788),
-				"ipv4_range":             types.StringValue("10.0.0.0/24"),
+				"ipv4_range":             types.StringUnknown(),
 				"ipv6_range":             types.StringNull(),
-				"allocated_ipv4_range":   types.StringUnknown(),
 				"ipv4_range_auto_assign": types.BoolValue(true),
 			}),
 			types.ObjectValueMust(backendVPCObjType.AttrTypes, map[string]attr.Value{
 				"subnet_id":              types.Int64Value(789),
-				"ipv4_range":             types.StringValue("10.0.0.0/24"),
+				"ipv4_range":             types.StringUnknown(),
 				"ipv6_range":             types.StringNull(),
-				"allocated_ipv4_range":   types.StringUnknown(),
 				"ipv4_range_auto_assign": types.BoolValue(true),
 			}),
 		}),
@@ -338,12 +332,10 @@ func TestFlattenNodeBalancerBackendVPCsReconcileAPIEntries(t *testing.T) {
 
 	assert.Len(t, backendVPCModels, 2)
 	assert.Equal(t, types.Int64Value(789), backendVPCModels[0].SubnetID)
-	assert.Equal(t, types.StringValue("10.0.0.0/24"), backendVPCModels[0].IPv4Range)
-	assert.Equal(t, types.StringValue("10.0.0.4/30"), backendVPCModels[0].AllocatedIPv4Range)
+	assert.Equal(t, types.StringValue("10.0.0.4/30"), backendVPCModels[0].IPv4Range)
 	assert.Equal(t, types.BoolValue(true), backendVPCModels[0].IPv4RangeAutoAssign)
 	assert.Equal(t, types.Int64Value(790), backendVPCModels[1].SubnetID)
 	assert.Equal(t, types.StringValue("10.0.0.8/30"), backendVPCModels[1].IPv4Range)
-	assert.Equal(t, types.StringValue("10.0.0.8/30"), backendVPCModels[1].AllocatedIPv4Range)
 	assert.True(t, backendVPCModels[1].IPv4RangeAutoAssign.IsNull())
 }
 

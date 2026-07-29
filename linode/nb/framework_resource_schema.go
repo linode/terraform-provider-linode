@@ -63,8 +63,10 @@ var frameworkResourceSchemaBackendVPCs = schema.NestedAttributeObject{
 		"ipv4_range": schema.StringAttribute{
 			Description: "A CIDR range for the VPC's IPv4 addresses. " +
 				"The NodeBalancer sources IP addresses from this range " +
-				"when routing traffic to the backend VPC nodes.",
+				"when routing traffic to the backend VPC nodes. " +
+				"Cannot be set when `ipv4_range_auto_assign` is true.",
 			Optional: true,
+			Computed: true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
 			},
@@ -79,10 +81,6 @@ var frameworkResourceSchemaBackendVPCs = schema.NestedAttributeObject{
 				stringplanmodifier.RequiresReplace(),
 				stringplanmodifier.UseStateForUnknown(),
 			},
-		},
-		"allocated_ipv4_range": schema.StringAttribute{
-			Description: "The IPv4 CIDR range allocated by the API for the NodeBalancer's backend VPC nodes.",
-			Computed:    true,
 		},
 		"ipv4_range_auto_assign": schema.BoolAttribute{
 			Description: "Enables the use of a larger ipv4_range subnet for multiple NodeBalancers " +

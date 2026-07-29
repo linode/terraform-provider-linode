@@ -249,7 +249,7 @@ func flattenBackendVPCConfigs(
 			continue
 		}
 
-		originalModel.AllocatedIPv4Range = types.StringValue(vpcConfig.IPv4Range)
+		originalModel.IPv4Range = types.StringValue(vpcConfig.IPv4Range)
 		originalModel.IPv6Range = types.StringValue(vpcConfig.IPv6Range)
 		resultModels = append(resultModels, originalModel)
 		delete(vpcConfigBySubnetID, subnetID)
@@ -268,7 +268,6 @@ func flattenBackendVPCConfigs(
 					IPv4Range: types.StringValue(vpcConfig.IPv4Range),
 					IPv6Range: types.StringValue(vpcConfig.IPv6Range),
 				},
-				AllocatedIPv4Range:  types.StringValue(vpcConfig.IPv4Range),
 				IPv4RangeAutoAssign: types.BoolNull(),
 			})
 		}
@@ -621,15 +620,13 @@ func (m *BaseVPCModel) FlattenVPCConfig(vpcConfig *linodego.NodeBalancerVPCConfi
 type ResourceVPCModel struct {
 	BaseVPCModel
 
-	AllocatedIPv4Range  types.String `tfsdk:"allocated_ipv4_range"`
-	IPv4RangeAutoAssign types.Bool   `tfsdk:"ipv4_range_auto_assign"`
+	IPv4RangeAutoAssign types.Bool `tfsdk:"ipv4_range_auto_assign"`
 }
 
 type ResourceBackendVPCModel struct {
 	BaseVPCModel
 
-	AllocatedIPv4Range  types.String `tfsdk:"allocated_ipv4_range"`
-	IPv4RangeAutoAssign types.Bool   `tfsdk:"ipv4_range_auto_assign"`
+	IPv4RangeAutoAssign types.Bool `tfsdk:"ipv4_range_auto_assign"`
 }
 
 type ResourceFrontendVPCModel struct {

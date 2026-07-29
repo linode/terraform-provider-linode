@@ -319,11 +319,6 @@ func TestAccResourceNodeBalancer_backendVPC(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("backend_vpcs").AtSliceIndex(0).AtMapKey("allocated_ipv4_range"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resName,
 						tfjsonpath.New("backend_vpcs").AtSliceIndex(0).AtMapKey("ipv4_range_auto_assign"),
 						knownvalue.Bool(true),
 					),
@@ -377,11 +372,6 @@ func TestAccResourceNodeBalancer_VPCDeprecated(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("allocated_ipv4_range"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resName,
 						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv4_range_auto_assign"),
 						knownvalue.Bool(true),
 					),
@@ -430,11 +420,6 @@ func TestAccResourceNodeBalancer_frontendVPC(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("backend_vpcs").AtSliceIndex(0).AtMapKey("allocated_ipv4_range"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resName,
 						tfjsonpath.New("backend_vpcs").AtSliceIndex(0).AtMapKey("ipv4_range_auto_assign"),
 						knownvalue.Bool(true),
 					),
@@ -446,7 +431,7 @@ func TestAccResourceNodeBalancer_frontendVPC(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resName,
 						tfjsonpath.New("frontend_vpcs").AtSliceIndex(0).AtMapKey("ipv4_range"),
-						knownvalue.Null(),
+						knownvalue.StringExact("10.0.0.8/30"),
 					),
 					statecheck.ExpectKnownValue(
 						resName,

@@ -15,7 +15,10 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
-var _ resource.ResourceWithUpgradeState = &Resource{}
+var (
+	_ resource.ResourceWithUpgradeState   = &Resource{}
+	_ resource.ResourceWithValidateConfig = &Resource{}
+)
 
 func NewResource() resource.Resource {
 	return &Resource{
@@ -31,6 +34,22 @@ func NewResource() resource.Resource {
 
 type Resource struct {
 	helper.BaseResource
+}
+
+func (r *Resource) ValidateConfig(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var config NodeBalancerModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	validateIPv4RangeAutoAssignConflict(ctx, config.VPCs, "vpcs", &resp.Diagnostics)
+	validateIPv4RangeAutoAssignConflict(ctx, config.BackendVPCs, "backend_vpcs", &resp.Diagnostics)
 }
 
 func (r *Resource) Create(
