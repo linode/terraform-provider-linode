@@ -129,9 +129,9 @@ The following arguments are supported:
 
 * `disk_encryption` - (Optional) The disk encryption policy for nodes in this pool.
 
-* `isolation_public_ipv4` - (Optional) Whether nodes in this pool should have public IPv4 addresses. Defaults to `true`. Changing this value replaces the pool.
+* `isolation_public_ipv4` - (Optional) Whether nodes in this pool should have public IPv4 addresses. Changing this value replaces the pool.
 
-* `isolation_public_ipv6` - (Optional) Whether nodes in this pool should have public IPv6 addresses. Defaults to `true`. Changing this value replaces the pool.
+* `isolation_public_ipv6` - (Optional) Whether nodes in this pool should have public IPv6 addresses. Changing this value replaces the pool.
 
 ### autoscaler
 
