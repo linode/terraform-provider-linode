@@ -249,7 +249,11 @@ func flattenBackendVPCConfigs(
 			continue
 		}
 
-		originalModel.IPv4Range = types.StringValue(vpcConfig.IPv4Range)
+		originalModel.IPv4Range = helper.KeepOrUpdateValue(
+			originalModel.IPv4Range,
+			types.StringValue(vpcConfig.IPv4Range),
+			preserveKnown,
+		)
 		originalModel.IPv6Range = types.StringValue(vpcConfig.IPv6Range)
 		resultModels = append(resultModels, originalModel)
 		delete(vpcConfigBySubnetID, subnetID)

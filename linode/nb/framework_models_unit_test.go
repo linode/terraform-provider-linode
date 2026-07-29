@@ -281,6 +281,50 @@ func TestFlattenNodeBalancerBackendVPCsPopulateComputedRanges(t *testing.T) {
 	assert.Equal(t, "fd00::4/126", options.IPv6Range)
 }
 
+func TestFlattenNodeBalancerBackendVPCsPreserveKnownIPv4Range(t *testing.T) {
+	nodeBalancer := &linodego.NodeBalancer{ID: 123}
+
+	nodeBalancerModel := &NodeBalancerModel{
+		BackendVPCs: types.ListValueMust(backendVPCObjType, []attr.Value{
+			types.ObjectValueMust(backendVPCObjType.AttrTypes, map[string]attr.Value{
+				"subnet_id":              types.Int64Value(789),
+				"ipv4_range":             types.StringValue("10.0.0.0/24"),
+				"ipv6_range":             types.StringNull(),
+				"ipv4_range_auto_assign": types.BoolNull(),
+			}),
+		}),
+	}
+
+	vpcConfigs := []linodego.NodeBalancerVPCConfig{
+		{
+			SubnetID:  789,
+			IPv4Range: "10.0.0.4/30",
+			Purpose:   linodego.NodeBalancerVPCConfigPurposeBackend,
+		},
+	}
+
+	diags := nodeBalancerModel.Flatten(
+		context.Background(),
+		nodeBalancer,
+		nil,
+		vpcConfigs,
+		true,
+	)
+	assert.False(t, diags.HasError())
+
+	var backendVPCModels []ResourceBackendVPCModel
+	diags = nodeBalancerModel.BackendVPCs.ElementsAs(
+		context.Background(),
+		&backendVPCModels,
+		false,
+	)
+	if diags.HasError() {
+		t.Fatal(diags.Errors())
+	}
+
+	assert.Equal(t, types.StringValue("10.0.0.0/24"), backendVPCModels[0].IPv4Range)
+}
+
 func TestFlattenNodeBalancerBackendVPCsReconcileAPIEntries(t *testing.T) {
 	nodeBalancer := &linodego.NodeBalancer{ID: 123}
 
@@ -288,13 +332,13 @@ func TestFlattenNodeBalancerBackendVPCsReconcileAPIEntries(t *testing.T) {
 		BackendVPCs: types.ListValueMust(backendVPCObjType, []attr.Value{
 			types.ObjectValueMust(backendVPCObjType.AttrTypes, map[string]attr.Value{
 				"subnet_id":              types.Int64Value(788),
-				"ipv4_range":             types.StringUnknown(),
+				"ipv4_range":             types.StringValue("10.0.0.0/24"),
 				"ipv6_range":             types.StringNull(),
 				"ipv4_range_auto_assign": types.BoolValue(true),
 			}),
 			types.ObjectValueMust(backendVPCObjType.AttrTypes, map[string]attr.Value{
 				"subnet_id":              types.Int64Value(789),
-				"ipv4_range":             types.StringUnknown(),
+				"ipv4_range":             types.StringValue("10.0.0.0/24"),
 				"ipv6_range":             types.StringNull(),
 				"ipv4_range_auto_assign": types.BoolValue(true),
 			}),
