@@ -81,6 +81,7 @@ func (r *Resource) Create(
 		}
 	}
 
+	// VPCs are deprecated but still supported.
 	if !data.VPCs.IsNull() {
 		vpcs, d := vpcModelsToLinodego(ctx, data.VPCs)
 		resp.Diagnostics.Append(d...)
@@ -89,6 +90,18 @@ func (r *Resource) Create(
 		}
 
 		createOpts.VPCs = vpcs
+	}
+
+	// BackendVPCs is the replacement for VPCs.
+	// They cannot be specified together due to the ConflictsWith validator on the schema.
+	if !data.BackendVPCs.IsNull() {
+		vpcs, d := backendVPCModelsToLinodego(ctx, data.BackendVPCs)
+		resp.Diagnostics.Append(d...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		createOpts.BackendVPCs = vpcs
 	}
 
 	if !data.FrontendVPCs.IsNull() {
@@ -413,6 +426,8 @@ func upgradeNodebalancerResourceStateV0toV1(
 		Updated:             timetypes.RFC3339{StringValue: nbDataV0.Updated},
 		Tags:                nbDataV0.Tags,
 		Firewalls:           types.ListNull(firewallObjType),
+		VPCs:                types.ListNull(frameworkResourceSchemaBackendVPCs.Type()),
+		BackendVPCs:         types.ListNull(frameworkResourceSchemaBackendVPCs.Type()),
 		Type:                types.StringValue("common"),
 		FrontendVPCs:        types.ListNull(frontendVPCObjType),
 		FrontendAddressType: types.StringNull(),
