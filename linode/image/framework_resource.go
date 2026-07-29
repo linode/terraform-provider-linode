@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -560,10 +561,8 @@ func atLeastOneAvailableRegion(
 		stateRegionSet.Insert(v)
 	}
 
-	for _, v := range planRegions {
-		if stateRegionSet.Contains(v) {
-			return true, nil
-		}
+	if slices.ContainsFunc(planRegions, stateRegionSet.Contains) {
+		return true, nil
 	}
 
 	return false, nil
