@@ -166,7 +166,7 @@ The following arguments are supported under each entry of the `vpcs` attribute:
 
 * `subnet_id` - (Required) The ID of a subnet to assign to this NodeBalancer.
 
-* `ipv4_range` - (Optional) A CIDR range for the VPC's IPv4 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes. Cannot be set when `ipv4_range_auto_assign` is true.
+* `ipv4_range` - (Optional) A CIDR range for the VPC's IPv4 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
 
 * `ipv6_range` - (Optional) A CIDR range for the VPC's IPv6 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
 

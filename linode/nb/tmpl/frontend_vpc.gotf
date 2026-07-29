@@ -11,6 +11,7 @@ resource "linode_nodebalancer" "test" {
     vpcs = [
         {
             subnet_id = linode_vpc_subnet.test.id
+            ipv4_range = "10.0.0.4/30"
             ipv4_range_auto_assign = true
         }
     ]
@@ -18,7 +19,6 @@ resource "linode_nodebalancer" "test" {
     frontend_vpcs = [
         {
             subnet_id = linode_vpc_subnet.frontend_subnet_test.id
-            ipv4_range = "10.0.0.8/30"
         }
     ]
 }
