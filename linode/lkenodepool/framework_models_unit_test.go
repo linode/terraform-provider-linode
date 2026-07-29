@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseNodePool(t *testing.T) {
@@ -56,7 +57,8 @@ func TestParseNodePool(t *testing.T) {
 	assert.Equal(t, "enabled", nodePoolModel.DiskEncryption.ValueString())
 	assert.Equal(t, int64(12345), nodePoolModel.FirewallID.ValueInt64())
 	assert.Len(t, nodePoolModel.Nodes.Elements(), 3)
-	assert.False(t, nodePoolModel.IsolationIPv4.ValueBool())
+	require.NotNil(t, nodePoolModel.IsolationIPv4.ValueBoolPointer())
+	assert.False(t, *nodePoolModel.IsolationIPv4.ValueBoolPointer())
 	assert.True(t, nodePoolModel.IsolationIPv6.ValueBool())
 
 	tags := make([]string, len(nodePoolModel.Tags.Elements()))
@@ -86,6 +88,42 @@ func TestParseNodePoolDataSourceIsolation(t *testing.T) {
 	assert.True(t, nodePoolModel.IsolationIPv6.ValueBool())
 }
 
+func TestParseNodePoolIsolationNil(t *testing.T) {
+	nodePoolModel := NodePoolModel{
+		IsolationIPv4: types.BoolValue(true),
+		IsolationIPv6: types.BoolValue(true),
+	}
+	var diags diag.Diagnostics
+
+	nodePoolModel.FlattenLKENodePool(context.Background(), &linodego.LKENodePool{
+		ID:    123,
+		Count: 1,
+		Type:  "g6-standard-2",
+	}, false, &diags)
+
+	assert.False(t, diags.HasError())
+	assert.True(t, nodePoolModel.IsolationIPv4.IsNull())
+	assert.True(t, nodePoolModel.IsolationIPv6.IsNull())
+}
+
+func TestParseNodePoolIsolationNilPreserveKnown(t *testing.T) {
+	nodePoolModel := NodePoolModel{
+		IsolationIPv4: types.BoolValue(false),
+		IsolationIPv6: types.BoolValue(true),
+	}
+	var diags diag.Diagnostics
+
+	nodePoolModel.FlattenLKENodePool(context.Background(), &linodego.LKENodePool{
+		ID:    123,
+		Count: 1,
+		Type:  "g6-standard-2",
+	}, true, &diags)
+
+	assert.False(t, diags.HasError())
+	assert.False(t, nodePoolModel.IsolationIPv4.ValueBool())
+	assert.True(t, nodePoolModel.IsolationIPv6.ValueBool())
+}
+
 func TestSetNodePoolCreateOptions(t *testing.T) {
 	nodePoolModel := createNodePoolModel()
 
@@ -108,7 +146,9 @@ func TestSetNodePoolCreateOptions(t *testing.T) {
 	assert.Equal(t, "k8s_version", *createOpts.K8sVersion)
 	assert.Equal(t, "on_recycle", string(*createOpts.UpdateStrategy))
 	assert.Equal(t, "disabled", string(*createOpts.DiskEncryption))
+	require.NotNil(t, createOpts.Isolation.PublicIPv4)
 	assert.False(t, *createOpts.Isolation.PublicIPv4)
+	require.NotNil(t, createOpts.Isolation.PublicIPv6)
 	assert.True(t, *createOpts.Isolation.PublicIPv6)
 }
 
