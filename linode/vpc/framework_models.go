@@ -21,6 +21,7 @@ type BaseModel struct {
 	Label       types.String      `tfsdk:"label"`
 	Description types.String      `tfsdk:"description"`
 	Region      types.String      `tfsdk:"region"`
+	VPCType     types.String      `tfsdk:"vpc_type"`
 	Created     timetypes.RFC3339 `tfsdk:"created"`
 	Updated     timetypes.RFC3339 `tfsdk:"updated"`
 	IPv4        types.List        `tfsdk:"ipv4"`
@@ -42,6 +43,7 @@ func (m *BaseModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveK
 	)
 	m.Label = helper.KeepOrUpdateString(m.Label, vpc.Label, preserveKnown)
 	m.Region = helper.KeepOrUpdateString(m.Region, vpc.Region, preserveKnown)
+	m.VPCType = helper.KeepOrUpdateString(m.VPCType, string(vpc.VPCType), preserveKnown)
 
 	return nil
 }
@@ -53,6 +55,7 @@ func (m *BaseModel) CopyFrom(ctx context.Context, other BaseModel, preserveKnown
 	m.Updated = helper.KeepOrUpdateValue(m.Updated, other.Updated, preserveKnown)
 	m.Label = helper.KeepOrUpdateValue(m.Label, other.Label, preserveKnown)
 	m.Region = helper.KeepOrUpdateValue(m.Region, other.Region, preserveKnown)
+	m.VPCType = helper.KeepOrUpdateValue(m.VPCType, other.VPCType, preserveKnown)
 }
 
 /*
