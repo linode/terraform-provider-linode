@@ -47,7 +47,7 @@ jobs:
 
       - name: Notify Slack
         if: always() && github.repository == 'linode/terraform-provider-linode'
-        uses: slackapi/slack-github-action@v3
+        uses: slackapi/slack-github-action@v4
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
