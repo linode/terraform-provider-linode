@@ -43,6 +43,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `region` - The region where the VPC is deployed.
 
+* `vpc_type` - The type of the VPC (`regular` or `rdma`). Omitted if the requesting account does not have access to the GPUDirect RDMA functionality.
+
 * `created` - The date and time when the VPC was created.
 
 * `updated` - The date and time when the VPC was last updated.
