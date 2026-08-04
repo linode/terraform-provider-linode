@@ -189,8 +189,13 @@ func createResource(
 		// Without this, the planned values are persisted in state
 		// despite never being applied, causing misleading
 		// state and failures on subsequent plans.
-		d.Set("lifecycle_rule", nil)
-		d.Set("versioning", nil)
+		if err := d.Set("lifecycle_rule", nil); err != nil {
+			diags = append(diags, diag.FromErr(err)...)
+		}
+		if err := d.Set("versioning", nil); err != nil {
+			_ = d.Set("versioning", false)
+			diags = append(diags, diag.FromErr(err)...)
+		}
 	}
 	return diags
 }
