@@ -183,7 +183,16 @@ func createResource(
 
 	d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
 
-	return updateResource(ctx, d, meta)
+	diags := updateResource(ctx, d, meta)
+	if diags.HasError() {
+		// Clear lifecycle_rule and versioning from state when updateResource fails.
+		// Without this, the planned values are persisted in state
+		// despite never being applied, causing misleading
+		// state and failures on subsequent plans.
+		d.Set("lifecycle_rule", nil)
+		d.Set("versioning", nil)
+	}
+	return diags
 }
 
 func updateResource(
