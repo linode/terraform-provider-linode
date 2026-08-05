@@ -16,6 +16,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
+var _ BucketAccessor = BaseModel{}
+
 type BaseModel struct {
 	Bucket             types.String `tfsdk:"bucket"`
 	Region             types.String `tfsdk:"region"`
@@ -37,6 +39,21 @@ type BaseModel struct {
 	Metadata           types.Map    `tfsdk:"metadata"`
 	VersionID          types.String `tfsdk:"version_id"`
 	WebsiteRedirect    types.String `tfsdk:"website_redirect"`
+}
+
+func (data BaseModel) BucketRegion() string {
+	return data.Region.ValueString()
+}
+
+func (data BaseModel) ObjectStorageKeys() ObjectKeys {
+	return ObjectKeys{
+		AccessKey: data.AccessKey.ValueString(),
+		SecretKey: data.SecretKey.ValueString(),
+	}
+}
+
+func (data BaseModel) BucketLabel() string {
+	return data.Bucket.ValueString()
 }
 
 // TODO: consider merging two models when resource's ID change to int type
@@ -80,10 +97,7 @@ func (plan *ResourceModel) ComputeEndpointIfUnknown(ctx context.Context, client 
 	}
 
 	bucketName := plan.Bucket.ValueString()
-	region := plan.Region()
-	if diags.HasError() {
-		return
-	}
+	region := plan.BucketRegion()
 
 	bucket, err := client.GetObjectStorageBucket(ctx, region, bucketName)
 	if err != nil {
@@ -105,21 +119,6 @@ func (data *ResourceModel) GenerateObjectStorageObjectID(apply bool, preserveKno
 	}
 
 	return id
-}
-
-func (data ResourceModel) Region() string {
-	return data.Region.ValueString()
-}
-
-func (data ResourceModel) ObjectStorageKeys() ObjectKeys {
-	return ObjectKeys{
-		AccessKey: data.AccessKey.ValueString(),
-		SecretKey: data.SecretKey.ValueString(),
-	}
-}
-
-func (data ResourceModel) BucketLabel() string {
-	return data.Bucket.ValueString()
 }
 
 func (data *ResourceModel) FlattenObject(

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 // BucketAccessor provides the minimal information needed to resolve Object Storage
@@ -14,11 +14,11 @@ import (
 // Implementations typically come from either a resource plan/state model or a
 // data model that can supply:
 //   - explicit access keys on the resource, or
-//   - a bucket label + region/cluster so temporary keys can be created.
+//   - a bucket label + region so temporary keys can be created.
 type BucketAccessor interface {
 	ObjectStorageKeys() ObjectKeys
 	BucketLabel() string
-	RegionOrCluster(context.Context, *diag.Diagnostics) string
+	BucketRegion() string
 }
 
 // GetObjectStorageKeys resolves Object Storage access keys used by OBJ resources.
@@ -51,12 +51,15 @@ func GetObjectStorageKeys(
 	}
 
 	if config.ObjUseTempKeys.ValueBool() {
-		clusterOrRegion := data.RegionOrCluster(ctx, diags)
-		if diags.HasError() {
-			return nil, nil
-		}
-
-		objKey := fwCreateTempKeys(ctx, client, data.BucketLabel(), clusterOrRegion, permissions, endpointType, diags)
+		objKey := fwCreateTempKeys(
+			ctx,
+			client,
+			data.BucketLabel(),
+			data.BucketRegion(),
+			permissions,
+			endpointType,
+			diags,
+		)
 		if diags.HasError() {
 			return nil, nil
 		}

@@ -6,7 +6,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/obj"
 )
+
+var _ obj.BucketAccessor = BaseModel{}
 
 type BaseModel struct {
 	ID           types.String      `tfsdk:"id"`
@@ -20,19 +23,16 @@ type BaseModel struct {
 	Created      timetypes.RFC3339 `tfsdk:"created"`
 }
 
-func (data BaseModel) RegionOrCluster() (regionOrCluster string) {
-	if data.Region.ValueString() != "" {
-		regionOrCluster = data.Region.ValueString()
-	} else {
-		regionOrCluster = data.Cluster.ValueString()
-	}
-	return
+func (data BaseModel) ObjectStorageKeys() obj.ObjectKeys {
+	return obj.ObjectKeys{}
 }
 
-func (data BaseModel) BucketLabel() (label string) {
-	// Label is a required attribute, so there is no need
-	// to check whether it is null or unknown.
+func (data BaseModel) BucketLabel() string {
 	return data.Label.ValueString()
+}
+
+func (data BaseModel) BucketRegion() string {
+	return data.Region.ValueString()
 }
 
 type DataSourceModel struct {
