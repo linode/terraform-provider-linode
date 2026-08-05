@@ -38,6 +38,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `label` - The label of the VPC subnet.
 
+* `vpc_type` - The type of the parent VPC (`regular` or `rdma`). Omitted if the requesting account does not have access to the GPUDirect RDMA functionality.
+
 * `ipv4` - The IPv4 range of this subnet in CIDR format.
 
 * [`ipv6`](#ipv6) - A list of IPv6 ranges under this subnet.
