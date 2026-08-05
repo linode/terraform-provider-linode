@@ -35,6 +35,68 @@ func TestAccDataSourceVPC_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "created"),
 					resource.TestCheckResourceAttrSet(resourceName, "updated"),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("subnets"),
+						knownvalue.ListSizeExact(0),
+					),
+				},
+			},
+		},
+	})
+}
+
+func TestAccDataSourceVPC_withSubnet(t *testing.T) {
+	t.Parallel()
+
+	resourceName := "data.linode_vpc.foo"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+	subnetIPv4 := "10.0.1.0/24"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataWithSubnet(t, vpcLabel, testRegion, subnetIPv4),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(vpcLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("subnets"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("subnets").AtSliceIndex(0).AtMapKey("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("subnets").AtSliceIndex(0).AtMapKey("label"),
+						knownvalue.StringExact(vpcLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("subnets").AtSliceIndex(0).AtMapKey("ipv4"),
+						knownvalue.StringExact(subnetIPv4),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("subnets").AtSliceIndex(0).AtMapKey("created"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("subnets").AtSliceIndex(0).AtMapKey("updated"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 		},
 	})
