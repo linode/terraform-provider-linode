@@ -9,7 +9,6 @@ provider "linode" {
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
-
     image = "linode/arch"
     type = "g6-standard-1"
     region = "{{ .Region }}"

@@ -7,8 +7,11 @@ import (
 )
 
 type TemplateData struct {
-	Label  string
-	Region string
+	Label      string
+	Region     string
+	IPv4Range  string
+	IPv4Range2 string
+	VPCType    string
 }
 
 func Basic(t testing.TB, label, region string) string {
@@ -35,6 +38,25 @@ func DualStack(t testing.TB, label, region string) string {
 		})
 }
 
+func IPv4(t testing.TB, label, region, ipv4Range string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_ipv4", TemplateData{
+			Label:     label,
+			Region:    region,
+			IPv4Range: ipv4Range,
+		})
+}
+
+func IPv4Update(t testing.TB, label, region, ipv4Range, ipv4Range2 string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_ipv4_update", TemplateData{
+			Label:      label,
+			Region:     region,
+			IPv4Range:  ipv4Range,
+			IPv4Range2: ipv4Range2,
+		})
+}
+
 func DataBasic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_data_basic", TemplateData{
@@ -48,5 +70,23 @@ func DataDualStack(t testing.TB, label, region string) string {
 		"vpc_data_dual_stack", TemplateData{
 			Label:  label,
 			Region: region,
+		})
+}
+
+func DataIPv4(t testing.TB, label, region, ipv4Range string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_data_ipv4", TemplateData{
+			Label:     label,
+			Region:    region,
+			IPv4Range: ipv4Range,
+		})
+}
+
+func VPCType(t testing.TB, label, region, vpcType string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_vpc_type", TemplateData{
+			Label:   label,
+			Region:  region,
+			VPCType: vpcType,
 		})
 }

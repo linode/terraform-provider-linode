@@ -6,7 +6,7 @@ description: |-
 
 # linode\_object\_storage\_quotas
 
-Provides details about a list of Object Storage quotas information on your account.
+Provides details about a list of Object Storage quotas on your account.
 For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-object-storage-quotas).
 
 ## Example Usage
@@ -26,7 +26,7 @@ data "linode_object_storage_quotas" "max_buckets_quotas" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode account availabilities that meet certain requirements.
+* [`filter`](#filter) - (Optional) A set of filters used to select Object Storage quotas that meet certain requirements.
 
 ### Filter
 
@@ -54,6 +54,10 @@ Each Linode Object Storage quota will be stored in the `quotas` attribute and wi
 
 * `resource_metric` - The specific Object Storage resource for the quota.
 
+* `quota_type` - The type of the Object Storage quota.
+
+* `has_usage` - Whether usage data is available for the Object Storage quota.
+
 ## Filterable Fields
 
 * `quota_id`
@@ -69,3 +73,7 @@ Each Linode Object Storage quota will be stored in the `quotas` attribute and wi
 * `quota_limit`
 
 * `resource_metric`
+
+* `quota_type`
+
+* `has_usage`

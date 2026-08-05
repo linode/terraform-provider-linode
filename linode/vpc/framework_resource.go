@@ -51,6 +51,10 @@ func (r *Resource) Create(
 		Description: data.Description.ValueString(),
 	}
 
+	if !data.VPCType.IsUnknown() && !data.VPCType.IsNull() {
+		vpcCreateOpts.VPCType = linodego.Pointer(linodego.VPCType(data.VPCType.ValueString()))
+	}
+
 	if !data.IPv6.IsNull() {
 		modelIPv6s := make([]ResourceModelIPv6, len(data.IPv6.Elements()))
 
@@ -70,6 +74,24 @@ func (r *Resource) Create(
 		)
 	}
 
+	if !data.IPv4.IsNull() && !data.IPv4.IsUnknown() {
+		modelIPv4s := make([]ResourceModelIPv4, len(data.IPv4.Elements()))
+
+		resp.Diagnostics.Append(data.IPv4.ElementsAs(ctx, &modelIPv4s, true)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		vpcCreateOpts.IPv4 = helper.MapSlice(
+			modelIPv4s,
+			func(m ResourceModelIPv4) linodego.VPCCreateOptionsIPv4 {
+				return linodego.VPCCreateOptionsIPv4{
+					Range: m.Range.ValueStringPointer(),
+				}
+			},
+		)
+	}
+
 	tflog.Debug(ctx, "client.CreateVPC(...)", map[string]any{
 		"options": vpcCreateOpts,
 	})
@@ -83,6 +105,7 @@ func (r *Resource) Create(
 	}
 
 	ipv6Configured := !data.IPv6.IsNull()
+	ipv4Configured := !data.IPv4.IsNull() && !data.IPv4.IsUnknown()
 
 	resp.Diagnostics.Append(data.FlattenVPC(ctx, vpc, true)...)
 	if resp.Diagnostics.HasError() {
@@ -101,6 +124,15 @@ func (r *Resource) Create(
 			"Value Mismatch",
 			"The `ipv6` field was configured but was not found in the API's response. "+
 				"Please ensure the current user has access to the VPC IPv6 feature.",
+		)
+	}
+
+	if ipv4Configured && vpc.IPv4 == nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("ipv4"),
+			"Value Mismatch",
+			"The `ipv4` field was configured but was not found in the API's response. "+
+				"Please ensure the current user has access to the VPC IPv4 feature.",
 		)
 	}
 }
@@ -185,6 +217,31 @@ func (r *Resource) Update(
 	if !state.Label.Equal(plan.Label) {
 		shouldUpdate = true
 		updateOpts.Label = plan.Label.ValueString()
+	}
+
+	if !plan.IPv4.IsUnknown() && !state.IPv4.Equal(plan.IPv4) {
+		shouldUpdate = true
+
+		if !plan.IPv4.IsNull() {
+			modelIPv4s := make([]ResourceModelIPv4, len(plan.IPv4.Elements()))
+
+			resp.Diagnostics.Append(plan.IPv4.ElementsAs(ctx, &modelIPv4s, true)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+
+			updateOpts.IPv4 = helper.MapSlice(
+				modelIPv4s,
+				func(m ResourceModelIPv4) linodego.VPCUpdateOptionsIPv4 {
+					return linodego.VPCUpdateOptionsIPv4{
+						Range: m.Range.ValueStringPointer(),
+					}
+				},
+			)
+		} else {
+			// Explicitly set to empty slice to clear all IPv4 ranges
+			updateOpts.IPv4 = []linodego.VPCUpdateOptionsIPv4{}
+		}
 	}
 
 	if shouldUpdate {

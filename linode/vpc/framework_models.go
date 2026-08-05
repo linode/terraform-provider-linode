@@ -21,8 +21,10 @@ type BaseModel struct {
 	Label       types.String      `tfsdk:"label"`
 	Description types.String      `tfsdk:"description"`
 	Region      types.String      `tfsdk:"region"`
+	VPCType     types.String      `tfsdk:"vpc_type"`
 	Created     timetypes.RFC3339 `tfsdk:"created"`
 	Updated     timetypes.RFC3339 `tfsdk:"updated"`
+	IPv4        types.List        `tfsdk:"ipv4"`
 }
 
 func (m *BaseModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) diag.Diagnostics {
@@ -41,18 +43,19 @@ func (m *BaseModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveK
 	)
 	m.Label = helper.KeepOrUpdateString(m.Label, vpc.Label, preserveKnown)
 	m.Region = helper.KeepOrUpdateString(m.Region, vpc.Region, preserveKnown)
+	m.VPCType = helper.KeepOrUpdateString(m.VPCType, string(vpc.VPCType), preserveKnown)
 
 	return nil
 }
 
 func (m *BaseModel) CopyFrom(ctx context.Context, other BaseModel, preserveKnown bool) {
 	m.ID = helper.KeepOrUpdateValue(m.ID, other.ID, preserveKnown)
-
 	m.Description = helper.KeepOrUpdateValue(m.Description, other.Description, preserveKnown)
 	m.Created = helper.KeepOrUpdateValue(m.Created, other.Created, preserveKnown)
 	m.Updated = helper.KeepOrUpdateValue(m.Updated, other.Updated, preserveKnown)
 	m.Label = helper.KeepOrUpdateValue(m.Label, other.Label, preserveKnown)
 	m.Region = helper.KeepOrUpdateValue(m.Region, other.Region, preserveKnown)
+	m.VPCType = helper.KeepOrUpdateValue(m.VPCType, other.VPCType, preserveKnown)
 }
 
 /*
@@ -70,9 +73,14 @@ type ResourceModelIPv6 struct {
 	AllocationClass types.String                          `tfsdk:"allocation_class"`
 }
 
+type ResourceModelIPv4 struct {
+	Range types.String `tfsdk:"range"`
+}
+
 func (m *ResourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) diag.Diagnostics {
 	m.BaseModel.FlattenVPC(ctx, vpc, preserveKnown)
 
+	// Flatten IPv6
 	ipv6Models := helper.MapSlice(vpc.IPv6,
 		func(r linodego.VPCIPv6Range) ResourceModelIPv6 {
 			return ResourceModelIPv6{
@@ -94,12 +102,33 @@ func (m *ResourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, prese
 		false,
 	)
 
+	// Flatten IPv4
+	ipv4Models := helper.MapSlice(vpc.IPv4,
+		func(r linodego.VPCIPv4Range) ResourceModelIPv4 {
+			return ResourceModelIPv4{
+				Range: types.StringValue(r.Range),
+			}
+		},
+	)
+
+	ipv4List, ipv4Diags := types.ListValueFrom(ctx, ResourceSchemaIPv4NestedObject.Type(), ipv4Models)
+	if ipv4Diags.HasError() {
+		return ipv4Diags
+	}
+
+	m.IPv4 = helper.KeepOrUpdateValue(
+		m.IPv4,
+		ipv4List,
+		false,
+	)
+
 	return nil
 }
 
 func (m *ResourceModel) CopyFrom(ctx context.Context, other ResourceModel, preserveKnown bool) {
 	m.BaseModel.CopyFrom(ctx, other.BaseModel, preserveKnown)
 	m.IPv6 = helper.KeepOrUpdateValue(m.IPv6, other.IPv6, preserveKnown)
+	m.IPv4 = helper.KeepOrUpdateValue(m.IPv4, other.IPv4, preserveKnown)
 }
 
 /*
@@ -115,9 +144,14 @@ type DataSourceModelIPv6 struct {
 	Range customtypes.LinodeAutoAllocRangeValue `tfsdk:"range"`
 }
 
+type DataSourceModelIPv4 struct {
+	Range types.String `tfsdk:"range"`
+}
+
 func (m *DataSourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) diag.Diagnostics {
 	m.BaseModel.FlattenVPC(ctx, vpc, preserveKnown)
 
+	// Flatten IPv6
 	ipv6Models := helper.MapSlice(
 		vpc.IPv6,
 		func(r linodego.VPCIPv6Range) DataSourceModelIPv6 {
@@ -138,10 +172,32 @@ func (m *DataSourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, pre
 		preserveKnown,
 	)
 
+	// Flatten IPv4
+	ipv4Models := helper.MapSlice(
+		vpc.IPv4,
+		func(r linodego.VPCIPv4Range) DataSourceModelIPv4 {
+			return DataSourceModelIPv4{
+				Range: types.StringValue(r.Range),
+			}
+		},
+	)
+
+	ipv4List, ipv4Diags := types.ListValueFrom(ctx, DataSourceSchemaIPv4NestedObject.Type(), ipv4Models)
+	if ipv4Diags.HasError() {
+		return ipv4Diags
+	}
+
+	m.IPv4 = helper.KeepOrUpdateValue(
+		m.IPv4,
+		ipv4List,
+		preserveKnown,
+	)
+
 	return nil
 }
 
 func (m *DataSourceModel) CopyFrom(ctx context.Context, other DataSourceModel, preserveKnown bool) {
 	m.BaseModel.CopyFrom(ctx, other.BaseModel, preserveKnown)
 	m.IPv6 = helper.KeepOrUpdateValue(m.IPv6, other.IPv6, preserveKnown)
+	m.IPv4 = helper.KeepOrUpdateValue(m.IPv4, other.IPv4, preserveKnown)
 }

@@ -1,0 +1,7 @@
+{{ define "tag_datasource" }}
+
+data "linode_tag" "test" {
+  label = "{{ .Label }}"
+}
+
+{{ end }}

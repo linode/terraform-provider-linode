@@ -7,8 +7,10 @@ import (
 )
 
 type TemplateData struct {
-	Label  string
-	Region string
+	Label          string
+	Region         string
+	K8sVersion     string
+	NodeBalancerID int
 }
 
 func Basic(t testing.TB, nodebalancer, region string) string {
@@ -72,5 +74,27 @@ func DataVPC(t testing.TB, nodebalancer, region string) string {
 		"nodebalancer_data_vpc", TemplateData{
 			Label:  nodebalancer,
 			Region: region,
+		})
+}
+
+func ReservedIP(t testing.TB, nodebalancer, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_reserved_ip", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
+}
+
+func ReservedIPOnly(t testing.TB, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_reserved_ip_only", TemplateData{
+			Region: region,
+		})
+}
+
+func LKEClusterData(t testing.TB, nodeBalancerID int) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_data_lke_cluster", TemplateData{
+			NodeBalancerID: nodeBalancerID,
 		})
 }

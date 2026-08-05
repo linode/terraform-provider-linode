@@ -16,8 +16,6 @@ import (
 	linodediffs "github.com/linode/terraform-provider-linode/v4/linode/helper/customdiffs"
 )
 
-// Instance creation with reserved IPv4 is for internal use only : please refer to KB page for more information.
-
 const (
 	LinodeInstanceCreateTimeout = 15 * time.Minute
 	LinodeInstanceUpdateTimeout = time.Hour
@@ -82,11 +80,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		return diag.Errorf("failed to get instance configs: %s", err)
 	}
 
-	var ips []string
-	for _, ip := range instance.IPv4 {
-		ips = append(ips, ip.String())
-	}
-	d.Set("ipv4", ips)
+	d.Set("ipv4", flattenInstanceIPv4(instance.IPv4))
 	d.Set("ipv6", instance.IPv6)
 	d.Set("shared_ipv4", instanceIPSliceToString(instanceNetwork.IPv4.Shared))
 
@@ -354,12 +348,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	d.SetId(fmt.Sprintf("%d", instance.ID))
 	createPoller.EntityID = instance.ID
 
-	var ips []string
-	for _, ip := range instance.IPv4 {
-		ips = append(ips, ip.String())
-	}
-
-	d.Set("ipv4", ips)
+	d.Set("ipv4", flattenInstanceIPv4(instance.IPv4))
 	d.Set("ipv6", instance.IPv6)
 
 	for _, address := range instance.IPv4 {
@@ -927,7 +916,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 			if diags := BootInstanceAfterOfflineOperation(
 				ctx, meta.(*helper.ProviderMeta), id, bootConfig, bootReason,
-			); diags != nil {
+			); diags.HasError() {
 				return diags
 			}
 		}

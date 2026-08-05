@@ -52,6 +52,8 @@ Each Linode VPC will be stored in the `vpcs` attribute and will export the follo
 
 * `ipv6` - A list of IPv6 allocations under this VPC.
 
+* `ipv4` - A list of IPv4 ranges under this VPC.
+
 * `label` - The label of the VPC.
 
 * `region` - The region where the VPC is deployed.
@@ -65,6 +67,14 @@ Each Linode VPC will be stored in the `vpcs` attribute and will export the follo
 Contains information about a single IPv6 allocation under a VPC.
 
 * `range` - The allocated range in CIDR format.
+
+## IPv4
+
+-> **Limited Availability** Custom VPC IPv4 Ranges may not currently be available to all users.
+
+Contains information about a single IPv4 range under this VPC.
+
+* `range` - The IPv4 range in CIDR format.
 
 ## Filterable Fields
 

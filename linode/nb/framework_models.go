@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -17,21 +18,40 @@ import (
 // NodeBalancerModel describes the Terraform resource data model to match the
 // resource schema.
 type NodeBalancerModel struct {
-	ID                    types.String      `tfsdk:"id"`
-	Label                 types.String      `tfsdk:"label"`
-	Region                types.String      `tfsdk:"region"`
-	ClientConnThrottle    types.Int64       `tfsdk:"client_conn_throttle"`
-	ClientUDPSessThrottle types.Int64       `tfsdk:"client_udp_sess_throttle"`
-	FirewallID            types.Int64       `tfsdk:"firewall_id"`
-	Hostname              types.String      `tfsdk:"hostname"`
-	IPv4                  types.String      `tfsdk:"ipv4"`
-	IPv6                  types.String      `tfsdk:"ipv6"`
-	Created               timetypes.RFC3339 `tfsdk:"created"`
-	Updated               timetypes.RFC3339 `tfsdk:"updated"`
-	Transfer              types.List        `tfsdk:"transfer"`
-	Tags                  types.Set         `tfsdk:"tags"`
-	Firewalls             types.List        `tfsdk:"firewalls"`
-	VPCs                  types.List        `tfsdk:"vpcs"`
+	ID                    types.String        `tfsdk:"id"`
+	Label                 types.String        `tfsdk:"label"`
+	Region                types.String        `tfsdk:"region"`
+	ClientConnThrottle    types.Int64         `tfsdk:"client_conn_throttle"`
+	ClientUDPSessThrottle types.Int64         `tfsdk:"client_udp_sess_throttle"`
+	FirewallID            types.Int64         `tfsdk:"firewall_id"`
+	Hostname              types.String        `tfsdk:"hostname"`
+	IPv4                  iptypes.IPv4Address `tfsdk:"ipv4"`
+	IPv6                  types.String        `tfsdk:"ipv6"`
+	Created               timetypes.RFC3339   `tfsdk:"created"`
+	Updated               timetypes.RFC3339   `tfsdk:"updated"`
+	Transfer              types.List          `tfsdk:"transfer"`
+	Tags                  types.Set           `tfsdk:"tags"`
+	Firewalls             types.List          `tfsdk:"firewalls"`
+	VPCs                  types.List          `tfsdk:"vpcs"`
+	LKECluster            types.List          `tfsdk:"lke_cluster"`
+}
+
+// LKEClusterModel represents the lke_cluster nested object.
+type LKEClusterModel struct {
+	ID    types.Int64  `tfsdk:"id"`
+	Label types.String `tfsdk:"label"`
+	Type  types.String `tfsdk:"type"`
+	URL   types.String `tfsdk:"url"`
+}
+
+// LKEClusterObjectType is the attr.Type for LKEClusterModel.
+var LKEClusterObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"id":    types.Int64Type,
+		"label": types.StringType,
+		"type":  types.StringType,
+		"url":   types.StringType,
+	},
 }
 
 type FirewallModel struct {
@@ -85,7 +105,7 @@ func (data *NodeBalancerModel) Flatten(
 		data.ClientUDPSessThrottle, int64(nodebalancer.ClientUDPSessThrottle), preserveKnown,
 	)
 	data.Hostname = helper.KeepOrUpdateStringPointer(data.Hostname, nodebalancer.Hostname, preserveKnown)
-	data.IPv4 = helper.KeepOrUpdateStringPointer(data.IPv4, nodebalancer.IPv4, preserveKnown)
+	data.IPv4 = helper.KeepOrUpdateValue(data.IPv4, iptypes.NewIPv4AddressPointerValue(nodebalancer.IPv4), preserveKnown)
 	data.IPv6 = helper.KeepOrUpdateStringPointer(data.IPv6, nodebalancer.IPv6, preserveKnown)
 	data.Created = helper.KeepOrUpdateValue(
 		data.Created, timetypes.NewRFC3339TimePointerValue(nodebalancer.Created), preserveKnown,
@@ -125,6 +145,12 @@ func (data *NodeBalancerModel) Flatten(
 	//		 In the meantime, enabling preserveKnown will break the diff logic for computed fields.
 	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, vpcs, false)
 
+	lkeCluster, diags := FlattenLKECluster(ctx, nodebalancer.LKECluster)
+	if diags.HasError() {
+		return diags
+	}
+	data.LKECluster = helper.KeepOrUpdateValue(data.LKECluster, *lkeCluster, preserveKnown)
+
 	return nil
 }
 
@@ -148,6 +174,7 @@ func (data *NodeBalancerModel) CopyFrom(other NodeBalancerModel, preserveKnown b
 	data.Tags = helper.KeepOrUpdateValue(data.Tags, other.Tags, preserveKnown)
 	data.Firewalls = helper.KeepOrUpdateValue(data.Firewalls, other.Firewalls, preserveKnown)
 	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, other.VPCs, preserveKnown)
+	data.LKECluster = helper.KeepOrUpdateValue(data.LKECluster, other.LKECluster, preserveKnown)
 }
 
 func parseNBFirewalls(
@@ -252,6 +279,7 @@ type NodeBalancerDataSourceModel struct {
 	Tags                  types.Set         `tfsdk:"tags"`
 	Firewalls             []NBFirewallModel `tfsdk:"firewalls"`
 	VPCs                  types.List        `tfsdk:"vpcs"`
+	LKECluster            types.List        `tfsdk:"lke_cluster"`
 }
 
 type NBFirewallModel struct {
@@ -324,6 +352,12 @@ func (data *NodeBalancerDataSourceModel) Flatten(
 	}
 
 	data.VPCs = helper.KeepOrUpdateValue(data.VPCs, vpcs, false)
+
+	lkeCluster, diags := FlattenLKECluster(ctx, nodebalancer.LKECluster)
+	if diags.HasError() {
+		return diags
+	}
+	data.LKECluster = *lkeCluster
 
 	return nil
 }
@@ -415,4 +449,26 @@ func vpcModelsToLinodego(
 
 type DataSourceVPCModel struct {
 	BaseVPCModel
+}
+
+// FlattenLKECluster converts a linodego.NodeBalancerLKECluster pointer to a types.List.
+// Returns an empty list when lkeCluster is nil.
+func FlattenLKECluster(
+	ctx context.Context,
+	lkeCluster *linodego.NodeBalancerLKECluster,
+) (*types.List, diag.Diagnostics) {
+	if lkeCluster == nil {
+		result, diags := types.ListValueFrom(ctx, LKEClusterObjectType, []LKEClusterModel{})
+		return &result, diags
+	}
+
+	model := LKEClusterModel{
+		ID:    types.Int64Value(int64(lkeCluster.ID)),
+		Label: types.StringValue(lkeCluster.Label),
+		Type:  types.StringValue(lkeCluster.Type),
+		URL:   types.StringValue(lkeCluster.URL),
+	}
+
+	result, diags := types.ListValueFrom(ctx, LKEClusterObjectType, []LKEClusterModel{model})
+	return &result, diags
 }
