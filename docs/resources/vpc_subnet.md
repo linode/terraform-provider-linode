@@ -77,6 +77,8 @@ In addition to all the arguments above, the following attributes are exported.
 
 * `id` - The ID of the VPC Subnet.
 
+* `vpc_type` - The type of the parent VPC (`regular` or `rdma`).
+
 * `linodes` - A list of Linodes added to this subnet.
   * `id` - ID of the Linode
   * `interfaces` - A list of networking interfaces objects.
