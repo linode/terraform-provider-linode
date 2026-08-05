@@ -78,6 +78,16 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
+		"vpc_type": schema.StringAttribute{
+			Description: "The type of the VPC. Can be either 'regular' or 'rdma'. " +
+				"Defaults to 'regular'. The 'rdma' type may not be available to all users.",
+			Optional: true,
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifier.RequiresReplace(),
+			},
+		},
 		"ipv6": schema.ListNestedAttribute{
 			Description: "The IPv6 configuration of this VPC.",
 			Optional:    true,
