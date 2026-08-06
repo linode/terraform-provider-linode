@@ -52,7 +52,6 @@ var resourceSchema = schema.Schema{
 		},
 		"node_count": schema.Int64Attribute{
 			Validators: []validator.Int64{
-				int64validator.AtLeast(1),
 				int64validator.AtLeastOneOf(path.MatchRoot("autoscaler")),
 			},
 			Description: "The number of nodes in the Node Pool.",

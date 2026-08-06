@@ -16,6 +16,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
+var _ BucketAccessor = BaseModel{}
+
 type BaseModel struct {
 	Bucket             types.String `tfsdk:"bucket"`
 	Region             types.String `tfsdk:"region"`
@@ -37,6 +39,21 @@ type BaseModel struct {
 	Metadata           types.Map    `tfsdk:"metadata"`
 	VersionID          types.String `tfsdk:"version_id"`
 	WebsiteRedirect    types.String `tfsdk:"website_redirect"`
+}
+
+func (data BaseModel) BucketRegion() string {
+	return data.Region.ValueString()
+}
+
+func (data BaseModel) ObjectStorageKeys() ObjectKeys {
+	return ObjectKeys{
+		AccessKey: data.AccessKey.ValueString(),
+		SecretKey: data.SecretKey.ValueString(),
+	}
+}
+
+func (data BaseModel) BucketLabel() string {
+	return data.Bucket.ValueString()
 }
 
 // TODO: consider merging two models when resource's ID change to int type
@@ -74,70 +91,13 @@ func (data ResourceModel) getObjectBody(diags *diag.Diagnostics) (body *s3manage
 	return s3manager.ReadSeekCloser(bytes.NewReader(contentBytes))
 }
 
-func (data ResourceModel) GetObjectStorageKeys(
-	ctx context.Context,
-	client *linodego.Client,
-	config *helper.FrameworkProviderModel,
-	permissions string,
-	endpointType *linodego.ObjectStorageEndpointType,
-	diags *diag.Diagnostics,
-) (*ObjectKeys, func()) {
-	result := &ObjectKeys{}
-
-	result.AccessKey = data.AccessKey.ValueString()
-	result.SecretKey = data.SecretKey.ValueString()
-
-	if result.Ok() {
-		return result, nil
-	}
-
-	result.AccessKey = config.ObjAccessKey.ValueString()
-	result.SecretKey = config.ObjSecretKey.ValueString()
-
-	if result.Ok() {
-		return result, nil
-	}
-
-	if config.ObjUseTempKeys.ValueBool() {
-		if diags.HasError() {
-			return nil, nil
-		}
-
-		region := data.Region.ValueString()
-
-		objKey := fwCreateTempKeys(ctx, client, data.Bucket.ValueString(), region, permissions, nil, diags)
-		if diags.HasError() {
-			return nil, nil
-		}
-
-		result.AccessKey = objKey.AccessKey
-		result.SecretKey = objKey.SecretKey
-
-		teardownTempKeysCleanUp := func() {
-			cleanUpTempKeys(ctx, client, objKey.ID)
-		}
-
-		return result, teardownTempKeysCleanUp
-	}
-
-	diags.AddError(
-		"Keys Not Found",
-		"`access_key` and `secret_key` are Required but not Configured",
-	)
-
-	return nil, nil
-}
-
 func (plan *ResourceModel) ComputeEndpointIfUnknown(ctx context.Context, client *linodego.Client, diags *diag.Diagnostics) {
 	if !plan.Endpoint.IsUnknown() {
 		return
 	}
 
 	bucketName := plan.Bucket.ValueString()
-	region := plan.Region.ValueString()
-	if diags.HasError() {
-		return
-	}
+	region := plan.BucketRegion()
 
 	bucket, err := client.GetObjectStorageBucket(ctx, region, bucketName)
 	if err != nil {
