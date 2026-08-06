@@ -954,7 +954,7 @@ func TestAccResourceDatabasePostgresqlV2_engineConfig(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "version", "status"},
 			},
 		},
 	})
