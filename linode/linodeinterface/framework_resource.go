@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -221,6 +222,28 @@ func (r *Resource) Delete(
 		}
 		resp.Diagnostics.AddError(
 			"Failed to Delete Linode Interface",
+			err.Error(),
+		)
+		return
+	}
+
+	tflog.Debug(ctx, "Waiting for Linode Interface to be fully deleted")
+	err = helper.WithRetries(ctx, 10, 2*time.Second, func() (bool, error) {
+		_, err := client.GetInterface(ctx, linodeID, id)
+		if err != nil {
+			if linodego.IsNotFound(err) {
+				// Interface deleted
+				return false, nil
+			}
+			// API error
+			return false, err
+		}
+		// Interface still present
+		return true, fmt.Errorf("interface %d still exists", id)
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to delete the interface",
 			err.Error(),
 		)
 		return
