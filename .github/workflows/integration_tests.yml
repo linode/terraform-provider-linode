@@ -70,11 +70,11 @@ jobs:
               echo "LINODE_CONSUMER_TOKEN=${{ secrets.LINODE_TOKEN_USER_2 }}" >> $GITHUB_ENV
               ;;
             "USER_2")
-              echo "TEST_SUITE=databasemysqlv2,firewall,firewallsettings,firewalltemplate,firewalltemplates,firewalldevice,image,images,instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,lock,locks,nb,nbconfig,nbconfigs,nbnode,nbs,nbvpc,nbvpcs,sshkey,sshkeys,vlan,volume,volumes,vpc,vpcs,vpcsubnets,vpcips,vpcdefaultranges" >> $GITHUB_ENV
+              echo "TEST_SUITE=databasemysqlv2,firewall,firewallsettings,firewalltemplate,firewalltemplates,firewalldevice,image,images,instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,lock,locks,nb,nbconfig,nbconfigs,nbnode,nbs,nbvpc,nbvpcs,sshkey,sshkeys,vlan,volume,volumes,vpc,vpcs,vpcsubnets,vpcdefaultranges" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_2 }}" >> $GITHUB_ENV
               ;;
             "USER_3")
-              echo "TEST_SUITE=databasepostgresqlv2,firewalls,instanceconfig,instancedisk,instanceip,monitorlogsdestination,monitorlogsdestinations,monitorlogsstream,networkingip,objcluster,objkey,profile,rdns,region,regions,stackscript,stackscripts" >> $GITHUB_ENV
+              echo "TEST_SUITE=databasepostgresqlv2,firewalls,instanceconfig,instancedisk,instanceip,monitorlogsdestination,monitorlogsdestinations,monitorlogsstream,networkingip,objcluster,objkey,profile,rdns,region,regions,stackscript,stackscripts,vpcips" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_3 }}" >> $GITHUB_ENV
               ;;
             "USER_4")
