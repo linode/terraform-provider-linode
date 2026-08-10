@@ -2,8 +2,8 @@ package sshkey
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -29,29 +29,11 @@ type DataSource struct {
 	helper.BaseDataSource
 }
 
-func (data *DataSourceModel) ParseSSHKey(ssh *linodego.SSHKey) diag.Diagnostics {
-	diags := diag.Diagnostics{}
-
-	if ssh.ID == 0 {
-		diags.AddError(
-			fmt.Sprintf("Linode SSH Key with label %s was not found", data.Label.ValueString()), "",
-		)
-		return diags
-	}
-
+func (data *DataSourceModel) ParseSSHKey(ssh *linodego.SSHKey) {
+	data.ID = types.StringValue(strconv.Itoa(ssh.ID))
 	data.Label = types.StringValue(ssh.Label)
 	data.SSHKey = types.StringValue(ssh.SSHKey)
 	data.Created = timetypes.NewRFC3339TimePointerValue(ssh.Created)
-
-	id, err := json.Marshal(ssh)
-	if err != nil {
-		diags.AddError("Error marshalling json: %s", err.Error())
-		return diags
-	}
-
-	data.ID = types.StringValue(string(id))
-
-	return nil
 }
 
 type DataSourceModel struct {
@@ -68,8 +50,6 @@ func (d *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data."+d.Config.Name)
 
-	client := d.Meta.Client
-
 	var data DataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -77,29 +57,74 @@ func (d *DataSource) Read(
 		return
 	}
 
-	ctx = tflog.SetField(ctx, "sshkey_label", data.Label.ValueString())
-	tflog.Trace(ctx, "client.ListSSHKeys(...)")
+	hasID := !data.ID.IsNull() && !data.ID.IsUnknown() && data.ID.ValueString() != ""
+	hasLabel := !data.Label.IsNull() && !data.Label.IsUnknown() && data.Label.ValueString() != ""
 
-	keys, err := client.ListSSHKeys(ctx, nil)
-	if err != nil {
+	var sshkey *linodego.SSHKey
+	var ddiag diag.Diagnostic
+
+	switch {
+	case hasID:
+		id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		ctx = tflog.SetField(ctx, "sshkey_id", id)
+		sshkey, ddiag = d.getSSHKeyByID(ctx, id)
+	case hasLabel:
+		ctx = tflog.SetField(ctx, "sshkey_label", data.Label.ValueString())
+		sshkey, ddiag = d.getSSHKeyByLabel(ctx, data.Label.ValueString())
+	default:
 		resp.Diagnostics.AddError(
-			"Error listing SSH keys: %s", err.Error(),
+			"Missing required argument",
+			"Either id or label must be specified.",
 		)
 		return
 	}
 
-	var sshkey linodego.SSHKey
+	if ddiag != nil {
+		resp.Diagnostics.Append(ddiag)
+		return
+	}
 
-	for _, testkey := range keys {
-		if testkey.Label == data.Label.ValueString() {
-			sshkey = testkey
-			break
+	data.ParseSSHKey(sshkey)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (d *DataSource) getSSHKeyByID(ctx context.Context, id int) (*linodego.SSHKey, diag.Diagnostic) {
+	tflog.Trace(ctx, "client.GetSSHKey(...)")
+
+	sshkey, err := d.Meta.Client.GetSSHKey(ctx, id)
+	if err != nil {
+		return nil, diag.NewErrorDiagnostic(
+			fmt.Sprintf("Failed to get SSH Key with id %d", id),
+			err.Error(),
+		)
+	}
+
+	return sshkey, nil
+}
+
+func (d *DataSource) getSSHKeyByLabel(ctx context.Context, label string) (*linodego.SSHKey, diag.Diagnostic) {
+	tflog.Trace(ctx, "client.ListSSHKeys(...)")
+
+	keys, err := d.Meta.Client.ListSSHKeys(ctx, nil)
+	if err != nil {
+		return nil, diag.NewErrorDiagnostic(
+			"Failed to list SSH Keys",
+			err.Error(),
+		)
+	}
+
+	for i := range keys {
+		if keys[i].Label == label {
+			return &keys[i], nil
 		}
 	}
 
-	resp.Diagnostics.Append(data.ParseSSHKey(&sshkey)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	return nil, diag.NewErrorDiagnostic(
+		"Failed to retrieve Linode SSH Key",
+		fmt.Sprintf("SSH Key with label %s was not found", label),
+	)
 }
