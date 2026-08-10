@@ -95,27 +95,35 @@ func readResource(
 
 		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket.Label, region, "read_only", &bucket.EndpointType)
 		if diags.HasError() {
-			return diags
-		}
+			return diag.Diagnostics{
+				{
+					Severity: diag.Warning,
+					Summary:  "Skipped refresh of lifecycle_rule and versioning",
+					Detail: "No S3 keys are available for this bucket, so its lifecycle and versioning " +
+						"configuration could not be read and drift in these attributes will not be detected. " +
+						"Set access_key and secret_key on the resource or provider, or enable obj_use_temp_keys.",
+				},
+			}
+		} else {
+			if teardownKeysCleanUp != nil {
+				defer teardownKeysCleanUp()
+			}
 
-		if teardownKeysCleanUp != nil {
-			defer teardownKeysCleanUp()
-		}
+			endpoint := getS3Endpoint(ctx, *bucket)
+			s3Client, err := helper.S3Connection(ctx, endpoint, objKeys.AccessKey, objKeys.SecretKey)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 
-		endpoint := getS3Endpoint(ctx, *bucket)
-		s3Client, err := helper.S3Connection(ctx, endpoint, objKeys.AccessKey, objKeys.SecretKey)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+			tflog.Trace(ctx, "getting bucket lifecycle")
+			if err := readBucketLifecycle(ctx, d, s3Client); err != nil {
+				return diag.Errorf("failed to find get object storage bucket lifecycle: %s", err)
+			}
 
-		tflog.Trace(ctx, "getting bucket lifecycle")
-		if err := readBucketLifecycle(ctx, d, s3Client); err != nil {
-			return diag.Errorf("failed to find get object storage bucket lifecycle: %s", err)
-		}
-
-		tflog.Trace(ctx, "getting bucket versioning")
-		if err := readBucketVersioning(ctx, d, s3Client); err != nil {
-			return diag.Errorf("failed to find get object storage bucket versioning: %s", err)
+			tflog.Trace(ctx, "getting bucket versioning")
+			if err := readBucketVersioning(ctx, d, s3Client); err != nil {
+				return diag.Errorf("failed to find get object storage bucket versioning: %s", err)
+			}
 		}
 	}
 	d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
@@ -183,19 +191,21 @@ func createResource(
 
 	d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
 
-	diags := updateResource(ctx, d, meta)
-	if diags.HasError() {
-		// Clear lifecycle_rule and versioning from state when updateResource fails.
-		// Without this, the planned values are persisted in state
-		// despite never being applied, causing misleading
-		// state and failures on subsequent plans.
-		if err := d.Set("lifecycle_rule", nil); err != nil {
-			diags = append(diags, diag.FromErr(err)...)
-		}
-		if err := d.Set("versioning", nil); err != nil {
-			_ = d.Set("versioning", false)
-			diags = append(diags, diag.FromErr(err)...)
-		}
+	return updateResource(ctx, d, meta)
+}
+
+// revertS3ManagedFields reverts lifecycle_rule and versioning to their
+// previous state values when an S3 operation fails. This prevents planned
+// but never-applied values from being persisted in state.
+func revertS3ManagedFields(d *schema.ResourceData, diags diag.Diagnostics) diag.Diagnostics {
+	oldLifecycle, _ := d.GetChange("lifecycle_rule")
+	oldVersioning, _ := d.GetChange("versioning")
+
+	if err := d.Set("lifecycle_rule", oldLifecycle); err != nil {
+		diags = append(diags, diag.FromErr(err)...)
+	}
+	if err := d.Set("versioning", oldVersioning); err != nil {
+		diags = append(diags, diag.FromErr(err)...)
 	}
 	return diags
 }
@@ -249,7 +259,7 @@ func updateResource(
 
 		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucketLabel, region, "read_write", endpointType)
 		if diags.HasError() {
-			return diags
+			return revertS3ManagedFields(d, diags)
 		}
 
 		if teardownKeysCleanUp != nil {
