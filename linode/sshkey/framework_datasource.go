@@ -57,8 +57,8 @@ func (d *DataSource) Read(
 		return
 	}
 
-	hasID := !data.ID.IsNull() && !data.ID.IsUnknown() && data.ID.ValueString() != ""
-	hasLabel := !data.Label.IsNull() && !data.Label.IsUnknown() && data.Label.ValueString() != ""
+	hasID := !data.ID.IsNull() && !data.ID.IsUnknown()
+	hasLabel := !data.Label.IsNull() && !data.Label.IsUnknown()
 
 	var sshkey *linodego.SSHKey
 	var ddiag diag.Diagnostic
