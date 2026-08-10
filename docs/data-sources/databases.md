@@ -78,6 +78,8 @@ Each engine will be stored in the `databases` attribute and will export the foll
 
 * `label` - A unique, user-defined string referring to the Managed Database.
 
+* `platform` - The back-end platform for relational databases used by the service.
+
 * [`private_network`](#private_network) - Restricts access to this database using a virtual private cloud (VPC).
 
 * `region` - The region to use for the Managed Database.
