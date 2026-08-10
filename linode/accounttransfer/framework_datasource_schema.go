@@ -9,16 +9,16 @@ var regionTransferAttributes = map[string]schema.Attribute{
 		Description: "The Region ID for this network utilization data.",
 		Computed:    true,
 	},
-	"billable": schema.Int64Attribute{
-		Description: "The amount of your transfer pool that is billable this billing cycle for this Region.",
+"billable": schema.Int64Attribute{
+		Description: "The amount of your transfer pool that is billable this billing cycle for this Region, in GB.",
 		Computed:    true,
 	},
 	"quota": schema.Int64Attribute{
-		Description: "The amount of network usage allowed this billing cycle for this Region.",
+		Description: "The amount of network usage allowed this billing cycle for this Region, in GB.",
 		Computed:    true,
 	},
 	"used": schema.Int64Attribute{
-		Description: "The amount of network usage you have used this billing cycle for this Region.",
+		Description: "The amount of network usage you have used this billing cycle for this Region, in GB.",
 		Computed:    true,
 	},
 }

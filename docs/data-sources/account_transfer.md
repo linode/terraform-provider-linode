@@ -25,11 +25,11 @@ There are no supported arguments because the provider `token` can only access th
 
 The Linode Account Transfer data source exports the following attributes:
 
-* `billable` - The amount of your transfer pool that is billable this billing cycle.
+* `billable` - The amount of your transfer pool that is billable this billing cycle, in GB.
 
-* `quota` - The amount of network usage allowed this billing cycle.
+* `quota` - The amount of network usage allowed this billing cycle, in GB.
 
-* `used` - The amount of network usage you have used this billing cycle.
+* `used` - The amount of network usage you have used this billing cycle, in GB.
 
 * `region_transfers` - A list of network utilization details for regions with separate utilization quotas and rates.
 
