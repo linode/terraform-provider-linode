@@ -11,7 +11,7 @@ import (
 
 const (
 	SSHKeyLabelRegex        = "^[a-zA-Z0-9_\\-\\s]*$"
-	SSHKeyLabelErrorMessage = "Labels may only contain letters, number, dashes, and underscores."
+	SSHKeyLabelErrorMessage = "Labels may only contain letters, numbers, dashes, underscores, and spaces."
 )
 
 // frameworkDatasourceSchema supports lookup by either label or id.
@@ -44,6 +44,7 @@ var frameworkDatasourceSchema = schema.Schema{
 					path.MatchRoot("label"),
 					path.MatchRoot("id"),
 				),
+				stringvalidator.LengthAtLeast(1),
 			},
 		},
 		"ssh_key": schema.StringAttribute{
