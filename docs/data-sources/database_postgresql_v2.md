@@ -29,6 +29,8 @@ The following arguments are supported:
 
 The `linode_database_postgresql_v2` data source exports the following attributes:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `allow_list` - A list of IP addresses that can access the Managed Database. Each item can be a single IP address or a range in CIDR format. Use `linode_database_access_controls` to manage your allow list separately.
 
 * `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database.
@@ -53,13 +55,13 @@ The `linode_database_postgresql_v2` data source exports the following attributes
 
 * `label` - A unique, user-defined string referring to the Managed Database.
 
-* [`pending_updates`](#pending_updates) - A set of pending updates.
+* [`pending_updates`](#pending_updates) - (Nested Attribute Set) A set of pending updates.
 
 * `platform` - The back-end platform for relational databases used by the service.
 
 * `port` - The access port for this Managed Database.
 
-* [`private_network`](#private_network) - Restricts access to this database using a virtual private cloud (VPC).
+* [`private_network`](#private_network) - (Nested Attribute) Restricts access to this database using a virtual private cloud (VPC). Referenced directly (e.g. `private_network.public_access`).
 
 * `region` - The region to use for the Managed Database.
 
@@ -77,7 +79,7 @@ The `linode_database_postgresql_v2` data source exports the following attributes
 
 * `updated` - When this Managed Database was last updated.
 
-* [`updates`](#updates) - Configuration settings for automated patch update maintenance for the Managed Database.
+* [`updates`](#updates) - (Nested Attribute) Configuration settings for automated patch update maintenance for the Managed Database. Referenced directly (e.g. `updates.day_of_week`).
 
 * `version` - The Managed Database engine version. (e.g. `13.2`)
 

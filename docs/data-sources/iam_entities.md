@@ -18,9 +18,11 @@ data "linode_iam_entities" "entities" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 *While the filtering system is in place currently this endpoint does not have filter support for any field.*
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode users that meet certain requirements.
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode users that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -33,6 +35,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode entity will be stored in the `entities` attribute and will export the following attributes:
+
+* `entities` - (Nested Attribute List) The returned list of entities. Referenced by index (e.g. `entities[0].id`).
 
 * `id` - A unique identifier for each entity.
 

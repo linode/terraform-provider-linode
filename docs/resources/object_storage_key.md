@@ -58,13 +58,15 @@ resource "linode_object_storage_key" "foo" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `label` - (Required) The label given to this key. For display purposes only.
 
 * `regions` - A set of regions where the key will grant access to create buckets.
 
 - - -
 
-* `bucket_access` - (Optional) Defines this key as a Limited Access Key. Limited Access Keys restrict this Object Storage key’s access to only the bucket(s) declared in this array and define their bucket-level permissions. Not providing this block will not limit this Object Storage Key.
+* `bucket_access` - (Optional, Block Set) Defines this key as a Limited Access Key. Limited Access Keys restrict this Object Storage key’s access to only the bucket(s) declared in this array and define their bucket-level permissions. Not providing this block will not limit this Object Storage Key.
 
 ### bucket_access
 
@@ -86,7 +88,7 @@ This resource exports the following attributes:
 
 * `limited` - Whether or not this key is a limited access key.
 
-* `regions_details` - A set of objects containing the detailed info of the regions where this key can access.
+* `regions_details` - (Read-Only Object List) A set of objects containing the detailed info of the regions where this key can access. Referenced with an index (e.g. `regions_details.0.id`).
 
   * `id` - The ID of the region.
 

@@ -39,9 +39,11 @@ output "filtered-shared-images" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `sharegroup_id` - (Required) The ID of the Image Share Group to list shared Images from.
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Image Share Groups that meet certain requirements.
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Image Share Groups that meet certain requirements.
 
 ### Filter
 
@@ -54,6 +56,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Image Share will be stored in the `images_shares` attribute and will export the following attributes:
+
+* `image_shares` - (Block List) The Image Shares returned by this data source.
 
 * `id` - The unique ID assigned to this Image Share.
 
@@ -69,11 +73,11 @@ Each Image Share will be stored in the `images_shares` attribute and will export
 
 * `is_public` - True if the Image is public.
 
-* `image_sharing` - Details about image sharing, including who the image is shared with and by.
-  * `shared_with` - Details about who the image is shared with.
+* `image_sharing` - (Nested Attribute) Details about image sharing, including who the image is shared with and by. Referenced directly (e.g. `image_sharing.shared_by`).
+  * `shared_with` - (Nested Attribute) Details about who the image is shared with. Referenced directly (e.g. `image_sharing.shared_with.sharegroup_count`).
     * `sharegroup_count` - The number of sharegroups the private image is present in.
     * `sharegroup_list_url` - The GET api url to view the sharegroups in which the image is shared.
-  * `shared_by` - Details about who the image is shared by.
+  * `shared_by` - (Nested Attribute) Details about who the image is shared by. Referenced directly (e.g. `image_sharing.shared_by.sharegroup_id`).
     * `sharegroup_id` - The sharegroup_id from the im_ImageShare row.
     * `sharegroup_uuid` - The sharegroup_uuid from the im_ImageShare row.
     * `sharegroup_label` - The label from the associated im_ImageShareGroup row.

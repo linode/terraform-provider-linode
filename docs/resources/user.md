@@ -44,33 +44,35 @@ resource "linode_user" "fooser" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `username` - (required) The username of the user.
 
 * `email` - (required) The email address of the user.
 
 * `restricted` - (optional) If true, this user will only have explicit permissions granted.
 
-* [`global_grants`](#global-grants) - (optional) A structure containing the Account-level grants a User has.
+* [`global_grants`](#global-grants) - (optional, Block) A structure containing the Account-level grants a User has. Referenced with an index (e.g. `global_grants.0.account_access`).
 
 The following arguments are sets of [entity grants](#entity-grants):
 
-* `domain_grant` - (optional) The domains the user has permissions access to.
+* `domain_grant` - (optional, Block Set) The domains the user has permissions access to.
 
-* `firewall_grant` - (optional) The firewalls the user has permissions access to.
+* `firewall_grant` - (optional, Block Set) The firewalls the user has permissions access to.
 
-* `image_grant` - (optional) The images the user has permissions access to.
+* `image_grant` - (optional, Block Set) The images the user has permissions access to.
 
-* `linode_grant` - (optional) The Linodes the user has permissions access to.
+* `linode_grant` - (optional, Block Set) The Linodes the user has permissions access to.
 
-* `longview_grant` - (optional) The longview the user has permissions access to.
+* `longview_grant` - (optional, Block Set) The longview the user has permissions access to.
 
-* `nodebalancer_grant` - (optional) The NodeBalancers the user has permissions access to.
+* `nodebalancer_grant` - (optional, Block Set) The NodeBalancers the user has permissions access to.
 
-* `stackscript_grant` - (optional) The StackScripts the user has permissions access to.
+* `stackscript_grant` - (optional, Block Set) The StackScripts the user has permissions access to.
 
-* `volume_grant` - (optional) The volumes the user has permissions access to.
+* `volume_grant` - (optional, Block Set) The volumes the user has permissions access to.
 
-* `vpc_grant` - (optional) The Virtual Private Clouds (VPCs) the user has permissions access to.
+* `vpc_grant` - (optional, Block Set) The Virtual Private Clouds (VPCs) the user has permissions access to.
 
 ## Attributes Reference
 

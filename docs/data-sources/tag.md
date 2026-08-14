@@ -24,9 +24,11 @@ data "linode_tag" "example" {
 
 ## Attributes Reference
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `id` - The label of the tag.
 
-* `objects` - A list of objects associated with this tag. Each object has the following attributes:
+* `objects` - (Nested Attribute List) A list of objects associated with this tag. Each object has the following attributes:
 
   * `type` - The type of the tagged object (e.g. `linode`, `domain`, `volume`, `nodebalancer`, `reserved_ipv4_address`).
 

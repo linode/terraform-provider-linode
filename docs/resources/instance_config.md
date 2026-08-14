@@ -149,6 +149,8 @@ resource "linode_instance" "my-instance" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `linode_id` - (Required) The ID of the Linode to create this configuration profile under.
 
 * `label` - (Required) The Config’s label for display purposes only.
@@ -159,11 +161,13 @@ The following arguments are supported:
 
 * `comments` - (Optional) Optional field for arbitrary User comments on this Config.
 
-* [`devices`](#devices) - (Optional) A dictionary of device disks to use as a device map in a Linode’s configuration profile.
+* [`devices`](#devices) - (Optional, Block) A dictionary of device disks to use as a device map in a Linode’s configuration profile. Referenced with an index (e.g. `devices.0.sda`).
 
-* [`helpers`](#helpers) - (Optional) Helpers enabled when booting to this Linode Config.
+* [`device`](#device-recommended) - (Optional, Block Set) An assignment between a disk and a configuration profile device. This block supersedes the `devices` block.
 
-* [`interface`](#interface) - (Optional) An array of Network Interfaces to use for this Configuration Profile.
+* [`helpers`](#helpers) - (Optional, Block List) Helpers enabled when booting to this Linode Config.
+
+* [`interface`](#interface) - (Optional, Block List) An array of Network Interfaces to use for this Configuration Profile.
 
 * `kernel` - (Optional) A Kernel ID to boot a Linode with. Default is `linode/latest-64bit`. Examples are `linode/latest-64bit`, `linode/grub2`, `linode/direct-disk`, etc. See all kernels [here](https://api.linode.com/v4/linode/kernels). Note that this is a paginated API endpoint ([docs](https://techdocs.akamai.com/linode-api/reference/get-kernels)).
 
@@ -181,7 +185,7 @@ The following arguments are supported:
 
 The following attributes are available on devices:
 
-* `sda` ... `sdbl` - (Optional) Device slots for attaching disks and volumes (named `sda`-`sdz`, `sdaa`-`sdaz`, `sdba`-`sdbl`). The maximum number of available devices is determined by the instance type's RAM (up to 64 devices). Each slot accepts either a Disk or Volume via `disk_id` or `volume_id`.
+* `sda` ... `sdbl` - (Optional, Block) Device slots for attaching disks and volumes (named `sda`-`sdz`, `sdaa`-`sdaz`, `sdba`-`sdbl`). The maximum number of available devices is determined by the instance type's RAM (up to 64 devices). Each slot accepts either a Disk or Volume via `disk_id` or `volume_id`. Referenced with an index (e.g. `sda.0.disk_id`).
 
   * `volume_id` - (Optional) The Volume ID to map to this `device` slot.
 
@@ -242,9 +246,9 @@ The following arguments are available in an interface:
 
 * `primary` - (Optional) Whether the interface is the primary interface that should have the default route for this Linode. This field is only allowed for interfaces with the `public` or `vpc` purpose.
 
-* [`ipv4`](#ipv4) - (Optional) The IPv4 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose.
+* [`ipv4`](#ipv4) - (Optional, Block) The IPv4 configuration of the VPC interface. Referenced with an index (e.g. `ipv4.0.vpc`). This field is currently only allowed for interfaces with the `vpc` purpose.
 
-* [`ipv6`](#ipv6) - (Optional) The IPv6 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose. NOTE: IPv6 VPCs may not yet be available to all users.
+* [`ipv6`](#ipv6) - (Optional, Block) The IPv6 configuration of the VPC interface. Referenced with an index (e.g. `ipv6.0.is_public`). This field is currently only allowed for interfaces with the `vpc` purpose. NOTE: IPv6 VPCs may not yet be available to all users.
 
 The following computed attribute is available in a VPC interface:
 
@@ -268,9 +272,9 @@ The following arguments are available in an `ipv6` configuration block of an `in
 
 * `is_public` - (Optional) If true, connections from the interface to IPv6 addresses outside the VPC, and connections from IPv6 addresses outside the VPC to the interface will be permitted. (Default: `false`)
 
-* [`slaac`](#ipv6slaac) - (Optional) An array of SLAAC prefixes to use for this interface.
+* [`slaac`](#ipv6slaac) - (Optional, Block List) An array of SLAAC prefixes to use for this interface.
 
-* [`range`](#ipv6range) - (Optional) An array of IPv6 ranges to use for this interface.
+* [`range`](#ipv6range) - (Optional, Block List) An array of IPv6 ranges to use for this interface.
 
 #### ipv6.slaac
 

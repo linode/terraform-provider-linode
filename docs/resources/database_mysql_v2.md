@@ -134,6 +134,8 @@ resource "linode_database_mysql_v2" "foobar" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `engine_id` - (Required) The Managed Database engine in engine/version format. (e.g. `mysql`)
 
 * `label` - (Required) A unique, user-defined string referring to the Managed Database.
@@ -152,9 +154,9 @@ The following arguments are supported:
 
 * `fork_source` - (Optional) The ID of the database that was forked from.
 
-* [`private_network`](#private_network) - (Optional) Restricts access to this database using a virtual private cloud (VPC) that you've configured in the region where the database will live.
+* [`private_network`](#private_network) - (Optional, Nested Attribute) Restricts access to this database using a virtual private cloud (VPC) that you've configured in the region where the database will live. Referenced directly (e.g. `private_network.vpc_id`).
 
-* [`updates`](#updates) - (Optional) Configuration settings for automated patch update maintenance for the Managed Database.
+* [`updates`](#updates) - (Optional, Nested Attribute) Configuration settings for automated patch update maintenance for the Managed Database. Referenced directly (e.g. `updates.day_of_week`).
 
 * `engine_config_binlog_retention_period` - (Optional) The minimum amount of time in seconds to keep binlog entries before deletion. This may be extended for services that require binlog entries for longer than the default, for example if using the MySQL Debezium Kafka connector.
 
@@ -230,7 +232,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `host_secondary` - The secondary/private host for the managed database.
 
-* `pending_updates` - A set of pending updates.
+* `pending_updates` - (Nested Attribute Set) A set of pending updates.
 
 * `platform` - The back-end platform for relational databases used by the service.
 

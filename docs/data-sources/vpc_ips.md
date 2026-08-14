@@ -50,9 +50,11 @@ data "linode_vpc_ips" "all-vpc-ipv6" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `vpc_id` - (Optional) The id of the parent VPC for the list of VPC IPs.
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode VPC IPs that meet certain requirements.
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode VPC IPs that meet certain requirements.
 
 ### Filter
 
@@ -65,6 +67,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode VPC IP will be stored in the `vpc_ips` attribute and will export the following attributes:
+
+* `vpc_ips` - (Nested Attribute List) The Linode VPC IPs returned by this data source.
 
 * `active` - True if the VPC interface is in use, meaning that the Linode was powered on using the config_id to which the interface belongs. Otherwise false.
 
@@ -81,6 +85,10 @@ Each Linode VPC IP will be stored in the `vpc_ips` attribute and will export the
 * `linode_id` - The identifier for the Linode the VPC interface currently belongs to.
 
 * `nat_1_1` - The public IP address used for NAT 1:1 with the VPC. This is empty if NAT 1:1 isn't used.
+
+* `ipv6_addresses` - (Nested Attribute Set) The addresses within the prefix that the interface is associated with.
+
+  * `slaac_address` - The specific address within the prefix that the interface is expected to autoconfigure through SLAAC.
 
 * `prefix` - The number of bits set in the subnet mask.
 

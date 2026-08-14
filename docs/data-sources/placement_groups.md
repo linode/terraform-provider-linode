@@ -36,7 +36,9 @@ output "filtered-pgs" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode Placement Groups that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode Placement Groups that meet certain requirements.
 
 ### Filter
 
@@ -50,6 +52,8 @@ The following arguments are supported:
 
 Each Linode Placement Group will be stored in the `placement_groups` attribute and will export the following attributes:
 
+* `placement_groups` - (Nested Attribute List) The Placement Groups returned by this data source.
+
 * `label` - The label of the Placement Group. This field can only contain ASCII letters, digits and dashes.
 
 * `region` - The region of the Placement Group.
@@ -60,19 +64,19 @@ Each Linode Placement Group will be stored in the `placement_groups` attribute a
 
 * `is_compliant` - Whether all Linodes in this group are currently compliant with the group's type.
 
-* `members` - A set of Linodes currently assigned to this Placement Group.
+* `members` - (Nested Attribute Set) A set of Linodes currently assigned to this Placement Group.
 
   * `linode_id` - The ID of the Linode.
 
   * `is_compliant` - Whether this Linode is currently compliant with the group's placement group type.
 
-* `migrations` - Any Linodes that are being migrated to or from the placement group.
+* `migrations` - (Nested Attribute) Any Linodes that are being migrated to or from the placement group. Referenced directly (e.g. `migrations.inbound`).
 
-  * `inbound` - A list of the Linodes the system is migrating into the placement group.
+  * `inbound` - (Read-Only Object List) A list of the Linodes the system is migrating into the placement group. Referenced with an index (e.g. `inbound.0.linode_id`).
 
     * `linode_id` - The unique identifier for the Linode being migrated into the placement group.
 
-  * `outbound` A list of the Linodes the system is migrating out of the placement group.
+  * `outbound` - (Read-Only Object List) A list of the Linodes the system is migrating out of the placement group. Referenced with an index (e.g. `outbound.0.linode_id`).
 
     * `linode_id` - The unique identifier for the Linode being migrated out of the placement group.
 

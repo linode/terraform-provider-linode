@@ -29,6 +29,8 @@ The following arguments are supported:
 
 The Linode Object Storage global quota data source exports the following attributes:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `quota_name` - The name of the Object Storage global quota.
 
 * `description` - The description of the Object Storage global quota.
@@ -41,7 +43,7 @@ The Linode Object Storage global quota data source exports the following attribu
 
 * `has_usage` - Whether usage data is available for the Object Storage global quota.
 
-* `quota_usage` - The usage data for a specific global Object Storage quota on your account. This value is `null` when `has_usage` is `false`. For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-object-storage-global-quota-usage).
+* `quota_usage` - (Read-Only Object) The usage data for a specific global Object Storage quota on your account. This value is `null` when `has_usage` is `false`. For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-object-storage-global-quota-usage). Referenced directly (e.g. `quota_usage.quota_limit`).
 
   * `quota_limit` - The maximum quantity allowed by the quota.
 

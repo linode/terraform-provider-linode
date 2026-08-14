@@ -37,11 +37,13 @@ The following arguments are supported:
 
 In addition to all the arguments above, the following attributes are exported.
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `id` - The ID of the Placement Group.
 
 * `is_compliant` - Whether all Linodes in this group are currently compliant with the group's placement group type.
 
-* [`members`](#members) - A set of Linodes currently assigned to this Placement Group.
+* [`members`](#members) - (Read-Only Object List) A set of Linodes currently assigned to this Placement Group. Referenced with an index (e.g. `members.0.linode_id`).
 
 ### Members
 

@@ -26,7 +26,9 @@ output "users" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode users that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode users that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -44,6 +46,8 @@ The following arguments are supported:
 
 Each Linode user will be stored in the `users` attribute and will export the following attributes:
 
+* `users` - (Nested Attribute List) The returned list of Users. Referenced by index (e.g. `users[0].username`).
+
 * `username` - This User's username. This is used for logging in, and may also be displayed alongside actions the User performs (for example, in Events or public StackScripts).
 
 * `ssh_keys` - A list of SSH Key labels added by this User. These are the keys that will be deployed if this User is included in the authorized_users field of a create Linode, rebuild Linode, or create Disk request.
@@ -54,27 +58,27 @@ Each Linode user will be stored in the `users` attribute and will export the fol
 
 * `user_type` - The type of this user.
 
-* [`global_grants`](#global-grants) - The Account-level grants a User has.
+* [`global_grants`](#global-grants) - (Read-Only Object List) The Account-level grants a User has. Referenced with an index (e.g. `global_grants.0.account_access`).
 
-* [`database_grant`](#grant) - The grants this User has pertaining to Databases on this Account.
+* [`database_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Databases on this Account. Referenced with an index (e.g. `database_grant.0.id`).
 
-* [`domain_grant`](#grant) - The grants this User has pertaining to Domains on this Account.
+* [`domain_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Domains on this Account. Referenced with an index (e.g. `domain_grant.0.id`).
 
-* [`firewall_grant`](#grant) - The grants this User has pertaining to Firewalls on this Account.
+* [`firewall_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Firewalls on this Account. Referenced with an index (e.g. `firewall_grant.0.id`).
 
-* [`image_grant`](#grant) - The grants this User has pertaining to Images on this Account.
+* [`image_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Images on this Account. Referenced with an index (e.g. `image_grant.0.id`).
 
-* [`linode_grant`](#grant) - The grants this User has pertaining to Linodes on this Account.
+* [`linode_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Linodes on this Account. Referenced with an index (e.g. `linode_grant.0.id`).
 
-* [`longview_grant`](#grant) - The grants this User has pertaining to Longview Clients on this Account.
+* [`longview_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Longview Clients on this Account. Referenced with an index (e.g. `longview_grant.0.id`).
 
-* [`nodebalancer_grant`](#grant) - The grants this User has pertaining to NodeBalancers on this Account.
+* [`nodebalancer_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to NodeBalancers on this Account. Referenced with an index (e.g. `nodebalancer_grant.0.id`).
 
-* [`stackscript_grant`](#grant) - The grants this User has pertaining to StackScripts on this Account.
+* [`stackscript_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to StackScripts on this Account. Referenced with an index (e.g. `stackscript_grant.0.id`).
 
-* [`volume_grant`](#grant) - The grants this User has pertaining to Volumes on this Account.
+* [`volume_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Volumes on this Account. Referenced with an index (e.g. `volume_grant.0.id`).
 
-* [`vpc_grant`](#grant) - The grants this User has pertaining to Virtual Private Clouds (VPCs) on this Account.
+* [`vpc_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Virtual Private Clouds (VPCs) on this Account. Referenced with an index (e.g. `vpc_grant.0.id`).
 
 * `id` - The unique identifier for this DataSource.
 

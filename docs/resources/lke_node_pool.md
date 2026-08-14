@@ -105,6 +105,8 @@ resource "linode_lke_cluster" "my-cluster" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `cluster_id` - ID of the LKE Cluster where to create the current Node Pool.
 
 * `type` - (Required) A Linode Type for all nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
@@ -123,9 +125,9 @@ The following arguments are supported:
 
 * `update_strategy` - (Optional) The strategy for updating the node pool k8s version. For LKE enterprise only and may not currently available to all users even under v4beta.
 
-* [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
+* [`autoscaler`](#autoscaler) - (Optional, Block List) If defined, an autoscaler will be enabled with the given configuration.
 
-* [`taint`](#taint) - (Optional) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. To learn more, review [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools).
+* [`taint`](#taint) - (Optional, Block Set) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. To learn more, review [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools).
 
 * `disk_encryption` - (Optional) The disk encryption policy for nodes in this pool.
 
@@ -155,7 +157,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `disk_encryption` - The disk encryption policy for nodes in this pool.
 
-* [`nodes`](#nodes) - The nodes in the Node Pool.
+* [`nodes`](#nodes) - (Read-Only Object List) The nodes in the Node Pool. Referenced with an index (e.g. `nodes.0.id`).
 
 ### nodes
 
