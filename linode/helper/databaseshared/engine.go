@@ -42,8 +42,8 @@ func CreateDatabaseEngineSlug(engine, version string) string {
 
 	switch engine {
 	case "mysql":
-		if len(parts) >= 2 {
-			return fmt.Sprintf("%s/%s.%s", engine, parts[0], parts[1])
+		if len(parts) >= 1 {
+			return fmt.Sprintf("%s/%s", engine, parts[0])
 		}
 
 		return fmt.Sprintf("%s/%s", engine, version)

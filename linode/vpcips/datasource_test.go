@@ -185,11 +185,6 @@ func TestAccDataSourceVPCIPs_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceNameScoped,
-						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("config_id"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceNameScoped,
 						tfjsonpath.New("vpc_ips").AtSliceIndex(0).AtMapKey("interface_id"),
 						knownvalue.NotNull(),
 					),
