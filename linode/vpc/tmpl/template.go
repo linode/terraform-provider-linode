@@ -7,17 +7,11 @@ import (
 )
 
 type TemplateData struct {
-<<<<<<< HEAD
-	Label   string
-	Region  string
-	VPCType string
-=======
 	Label      string
 	Region     string
 	IPv4Range  string
 	IPv4Range2 string
 	VPCType    string
->>>>>>> dev
 }
 
 func Basic(t testing.TB, label, region string) string {
@@ -79,8 +73,6 @@ func DataDualStack(t testing.TB, label, region string) string {
 		})
 }
 
-<<<<<<< HEAD
-=======
 func DataIPv4(t testing.TB, label, region, ipv4Range string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_data_ipv4", TemplateData{
@@ -90,7 +82,6 @@ func DataIPv4(t testing.TB, label, region, ipv4Range string) string {
 		})
 }
 
->>>>>>> dev
 func VPCType(t testing.TB, label, region, vpcType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_vpc_type", TemplateData{
