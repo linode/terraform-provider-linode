@@ -14,12 +14,12 @@ clean:
 
 .PHONY: tflint
 tflint:
-	tfproviderlint \
+	cd tools && go tool tfproviderlint \
 		-AT001=false \
 		-AT004=false \
 		-S006=false \
 		-R018=false \
-		./...
+		../...
 
 .PHONY: lint
 lint:
@@ -28,7 +28,7 @@ lint:
 
 .PHONY: deps
 deps:
-	go generate -tags tools tools/tools.go
+	cd tools && go install tool
 
 .PHONY: format
 format:
