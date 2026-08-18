@@ -16,16 +16,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/vpcsubnet/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/vpcsubnet/tmpl"
 )
 
 var testRegion string
 
 func init() {
-	r, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes, linodego.CapabilityVPCs}, "core")
+	r, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
@@ -155,7 +155,7 @@ func TestAccResourceVPCSubnet_dualStack(t *testing.T) {
 	resName := "linode_vpc_subnet.foobar"
 	subnetLabel := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityVPCs,
 		linodego.CapabilityVPCDualStack,
 	}, "core")

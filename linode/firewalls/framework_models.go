@@ -2,14 +2,16 @@ package firewalls
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	firewallresource "github.com/linode/terraform-provider-linode/v3/linode/firewall"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/linode/linodego/v2"
+	firewallresource "github.com/linode/terraform-provider-linode/v4/linode/firewall"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
 type FirewallRuleModel struct {
@@ -21,21 +23,47 @@ type FirewallRuleModel struct {
 	IPv6     []types.String `tfsdk:"ipv6"`
 }
 
-func (data *FirewallRuleModel) ParseRule(rule linodego.FirewallRule) {
-	data.Label = types.StringValue(rule.Label)
-	data.Action = types.StringValue(rule.Action)
-	data.Protocol = types.StringValue(string(rule.Protocol))
-	data.Ports = types.StringValue(rule.Ports)
+func (data *FirewallRuleModel) ParseRule(rule any) {
+	switch r := rule.(type) {
+	case linodego.FirewallRuleInbound:
+		data.Label = types.StringValue(r.Label)
+		data.Action = types.StringValue(r.Action)
+		data.Protocol = types.StringValue(string(r.Protocol))
+		data.Ports = types.StringValue(r.Ports)
 
-	data.IPv4 = []types.String{}
-	data.IPv6 = []types.String{}
+		data.IPv4 = []types.String{}
+		data.IPv6 = []types.String{}
 
-	if rule.Addresses.IPv4 != nil {
-		data.IPv4 = helper.StringSliceToFramework(*rule.Addresses.IPv4)
-	}
+		if r.Addresses.IPv4 != nil {
+			data.IPv4 = helper.StringSliceToFramework(r.Addresses.IPv4)
+		}
 
-	if rule.Addresses.IPv6 != nil {
-		data.IPv6 = helper.StringSliceToFramework(*rule.Addresses.IPv6)
+		if r.Addresses.IPv6 != nil {
+			data.IPv6 = helper.StringSliceToFramework(r.Addresses.IPv6)
+		}
+
+	case linodego.FirewallRuleOutbound:
+		data.Label = types.StringValue(r.Label)
+		data.Action = types.StringValue(r.Action)
+		data.Protocol = types.StringValue(string(r.Protocol))
+		data.Ports = types.StringValue(r.Ports)
+
+		data.IPv4 = []types.String{}
+		data.IPv6 = []types.String{}
+
+		if r.Addresses.IPv4 != nil {
+			data.IPv4 = helper.StringSliceToFramework(r.Addresses.IPv4)
+		}
+
+		if r.Addresses.IPv6 != nil {
+			data.IPv6 = helper.StringSliceToFramework(r.Addresses.IPv6)
+		}
+
+	default:
+		tflog.Error(context.Background(),
+			fmt.Sprintf("unsupported firewall rule type %T", rule),
+		)
+		return
 	}
 }
 
@@ -51,7 +79,7 @@ func (data *FirewallDeviceModel) parseDevice(device linodego.FirewallDevice) {
 	data.ID = types.Int64Value(int64(device.ID))
 	data.EntityID = types.Int64Value(int64(device.Entity.ID))
 	data.Type = types.StringValue(string(device.Entity.Type))
-	data.Label = types.StringValue(device.Entity.Label)
+	data.Label = types.StringPointerValue(device.Entity.Label)
 	data.URL = types.StringValue(device.Entity.URL)
 }
 
@@ -64,6 +92,8 @@ type FirewallModel struct {
 	Disabled       types.Bool        `tfsdk:"disabled"`
 	InboundPolicy  types.String      `tfsdk:"inbound_policy"`
 	OutboundPolicy types.String      `tfsdk:"outbound_policy"`
+	Version        types.Int64       `tfsdk:"version"`
+	Fingerprint    types.String      `tfsdk:"fingerprint"`
 	Linodes        []types.Int64     `tfsdk:"linodes"`
 	NodeBalancers  []types.Int64     `tfsdk:"nodebalancers"`
 	Interfaces     []types.Int64     `tfsdk:"interfaces"`
@@ -78,7 +108,7 @@ type FirewallModel struct {
 
 func (data *FirewallModel) parseFirewall(
 	firewall linodego.Firewall,
-	rules linodego.FirewallRuleSet,
+	rules linodego.FirewallRules,
 	devices []linodego.FirewallDevice,
 ) {
 	data.ID = types.Int64Value(int64(firewall.ID))
@@ -87,6 +117,8 @@ func (data *FirewallModel) parseFirewall(
 	data.Disabled = types.BoolValue(firewall.Status == linodego.FirewallDisabled)
 	data.InboundPolicy = types.StringValue(rules.InboundPolicy)
 	data.OutboundPolicy = types.StringValue(rules.OutboundPolicy)
+	data.Version = types.Int64Value(int64(rules.Version))
+	data.Fingerprint = types.StringValue(rules.Fingerprint)
 	data.Linodes = helper.IntSliceToFramework(
 		firewallresource.AggregateEntityIDs(devices, linodego.FirewallDeviceLinode),
 	)

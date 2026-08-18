@@ -41,6 +41,23 @@ resource "linode_nodebalancer" "foobar" {
 }
 ```
 
+The following example shows how to create a NodeBalancer with a pre-reserved IPv4 address.
+
+```hcl
+resource "linode_networking_ip" "my_reserved_ip" {
+    region   = "us-east"
+    type     = "ipv4"
+    public   = true
+    reserved = true
+}
+
+resource "linode_nodebalancer" "foobar" {
+    label  = "mynodebalancer"
+    region = "us-east"
+    ipv4   = linode_networking_ip.my_reserved_ip.address
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -58,6 +75,8 @@ The following arguments are supported:
   * **NOTE: This argument may not be generally available.**
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
+
+* `ipv4` - (Optional) The Public IPv4 address to assign to this NodeBalancer. When provided, the address must be a reserved IPv4 address that is unassigned and owned by the account. *Changing `ipv4` forces the creation of a new Linode NodeBalancer.*
 
 ## Attributes Reference
 
@@ -78,6 +97,8 @@ This resource exports the following attributes:
 * [`firewalls`](#firewalls) - A list of Firewalls assigned to this NodeBalancer.
 
 * [`vpcs`](#vpcs) - A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+
+* [`lke_cluster`](#lke_cluster) - The LKE cluster that manages this NodeBalancer, if any. The list will be empty if this NodeBalancer isn't related to an LKE cluster.
 
 ### transfer
 
@@ -142,6 +163,18 @@ The following arguments are supported under each entry of the `vpcs` attribute:
 * `ipv6_range` - (Optional) A CIDR range for the VPC's IPv6 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
 
 * `ipv4_range_auto_assign` - (Optional, Write-Only) Enables the use of a larger ipv4_range subnet for multiple NodeBalancers within the same VPC by allocating smaller /30 subnets for each NodeBalancer's backends.
+
+### lke_cluster
+
+The following attributes are available on `lke_cluster`:
+
+* `id` - The ID of the related LKE cluster.
+
+* `label` - The label of the related LKE cluster.
+
+* `type` - The type of the related LKE cluster.
+
+* `url` - The URL where you can access the related LKE cluster.
 
 ## Import
 

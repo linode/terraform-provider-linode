@@ -4,7 +4,7 @@
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
-    group = "tf_test"
+
     type = "g1-accelerated-netint-vpu-t1u1-s"
     image = "{{.Image}}"
     region = "{{ .Region }}"

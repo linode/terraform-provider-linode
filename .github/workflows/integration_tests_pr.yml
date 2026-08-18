@@ -29,12 +29,12 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' && inputs.sha != ''
     steps:
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version: 'stable'
       - run: go version
 
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         id: disallowed-character-check
         env:
           text: ${{ inputs.test_suite }}
@@ -51,7 +51,7 @@ jobs:
 
       # Check out merge commit
       - name: Checkout PR
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.sha }}
           fetch-depth: 0
@@ -61,13 +61,14 @@ jobs:
 
       - run: make deps
 
-      - run: make TEST_SUITE="${{ inputs.test_suite }}" test-int
+      - run: make TEST_SUITE="$TEST_SUITE" test-int
         if: ${{ steps.disallowed-character-check.outputs.result == 'pass' }}
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
           LINODE_PRODUCER_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
           LINODE_CONSUMER_TOKEN: ${{ secrets.LINODE_TOKEN_USER_2 }}
           RUN_LONG_TESTS: ${{ inputs.run_long_tests }}
+          TEST_SUITE: ${{ inputs.test_suite }}
 
       - name: Get the hash value of the latest commit from the PR branch
         uses: octokit/graphql-action@v2.x
@@ -94,7 +95,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         id: update-check-run
         if: ${{ steps.disallowed-character-check.outputs.result == 'pass' && inputs.pull_request_number != '' && fromJson(steps.commit-hash.outputs.data).repository.pullRequest.headRef.target.oid == inputs.sha }}
         env:
@@ -129,7 +130,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -155,7 +156,7 @@ jobs:
 
     steps:
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.x'
 

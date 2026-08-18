@@ -12,13 +12,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
+
+var _ BucketAccessor = BaseModel{}
 
 type BaseModel struct {
 	Bucket             types.String `tfsdk:"bucket"`
-	Cluster            types.String `tfsdk:"cluster"`
 	Region             types.String `tfsdk:"region"`
 	Key                types.String `tfsdk:"key"`
 	SecretKey          types.String `tfsdk:"secret_key"`
@@ -38,6 +39,21 @@ type BaseModel struct {
 	Metadata           types.Map    `tfsdk:"metadata"`
 	VersionID          types.String `tfsdk:"version_id"`
 	WebsiteRedirect    types.String `tfsdk:"website_redirect"`
+}
+
+func (data BaseModel) BucketRegion() string {
+	return data.Region.ValueString()
+}
+
+func (data BaseModel) ObjectStorageKeys() ObjectKeys {
+	return ObjectKeys{
+		AccessKey: data.AccessKey.ValueString(),
+		SecretKey: data.SecretKey.ValueString(),
+	}
+}
+
+func (data BaseModel) BucketLabel() string {
+	return data.Bucket.ValueString()
 }
 
 // TODO: consider merging two models when resource's ID change to int type
@@ -75,71 +91,15 @@ func (data ResourceModel) getObjectBody(diags *diag.Diagnostics) (body *s3manage
 	return s3manager.ReadSeekCloser(bytes.NewReader(contentBytes))
 }
 
-func (data ResourceModel) GetObjectStorageKeys(
-	ctx context.Context,
-	client *linodego.Client,
-	config *helper.FrameworkProviderModel,
-	permissions string,
-	endpointType *linodego.ObjectStorageEndpointType,
-	diags *diag.Diagnostics,
-) (*ObjectKeys, func()) {
-	result := &ObjectKeys{}
-
-	result.AccessKey = data.AccessKey.ValueString()
-	result.SecretKey = data.SecretKey.ValueString()
-
-	if result.Ok() {
-		return result, nil
-	}
-
-	result.AccessKey = config.ObjAccessKey.ValueString()
-	result.SecretKey = config.ObjSecretKey.ValueString()
-
-	if result.Ok() {
-		return result, nil
-	}
-
-	if config.ObjUseTempKeys.ValueBool() {
-		clusterOrRegion := data.GetRegionOrCluster(ctx, diags)
-		if diags.HasError() {
-			return nil, nil
-		}
-
-		objKey := fwCreateTempKeys(ctx, client, data.Bucket.ValueString(), clusterOrRegion, permissions, nil, diags)
-		if diags.HasError() {
-			return nil, nil
-		}
-
-		result.AccessKey = objKey.AccessKey
-		result.SecretKey = objKey.SecretKey
-
-		teardownTempKeysCleanUp := func() {
-			cleanUpTempKeys(ctx, client, objKey.ID)
-		}
-
-		return result, teardownTempKeysCleanUp
-	}
-
-	diags.AddError(
-		"Keys Not Found",
-		"`access_key` and `secret_key` are Required but not Configured",
-	)
-
-	return nil, nil
-}
-
 func (plan *ResourceModel) ComputeEndpointIfUnknown(ctx context.Context, client *linodego.Client, diags *diag.Diagnostics) {
 	if !plan.Endpoint.IsUnknown() {
 		return
 	}
 
 	bucketName := plan.Bucket.ValueString()
-	regionOrCluster := plan.GetRegionOrCluster(ctx, diags)
-	if diags.HasError() {
-		return
-	}
+	region := plan.BucketRegion()
 
-	bucket, err := client.GetObjectStorageBucket(ctx, regionOrCluster, bucketName)
+	bucket, err := client.GetObjectStorageBucket(ctx, region, bucketName)
 	if err != nil {
 		diags.AddError(
 			"Failed to Find the Specified Linode ObjectStorageBucket",
@@ -159,19 +119,6 @@ func (data *ResourceModel) GenerateObjectStorageObjectID(apply bool, preserveKno
 	}
 
 	return id
-}
-
-func (data ResourceModel) GetRegionOrCluster(ctx context.Context, diags *diag.Diagnostics) string {
-	if !data.Region.IsNull() && !data.Region.IsUnknown() {
-		return data.Region.ValueString()
-	} else {
-		diags.AddWarning(
-			"Cluster is Deprecated",
-			"Cluster is deprecated for Linode Object Storage services, please consider switch to using region.",
-		)
-	}
-
-	return data.Cluster.ValueString()
 }
 
 func (data *ResourceModel) FlattenObject(
@@ -200,7 +147,6 @@ func (data ResourceModel) ETagChanged(
 func (plan *ResourceModel) CopyFrom(state ResourceModel, preserveKnown bool) {
 	plan.ID = helper.KeepOrUpdateValue(plan.ID, state.ID, preserveKnown)
 	plan.Bucket = helper.KeepOrUpdateValue(plan.Bucket, state.Bucket, preserveKnown)
-	plan.Cluster = helper.KeepOrUpdateValue(plan.Cluster, state.Cluster, preserveKnown)
 	plan.Region = helper.KeepOrUpdateValue(plan.Region, state.Region, preserveKnown)
 	plan.Key = helper.KeepOrUpdateValue(plan.Key, state.Key, preserveKnown)
 	plan.SecretKey = helper.KeepOrUpdateValue(plan.SecretKey, state.SecretKey, preserveKnown)

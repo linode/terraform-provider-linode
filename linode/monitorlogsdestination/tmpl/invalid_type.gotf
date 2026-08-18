@@ -1,0 +1,16 @@
+{{ define "monitor_logs_destination_invalid_type" }}
+
+resource "linode_monitor_logs_destination" "foobar" {
+  label = "{{.Label}}"
+  type  = "invalid_type"
+
+  akamai_object_storage_details = {
+    access_key_id     = "fake_key_id"
+    access_key_secret = "fake_secret"
+    bucket_name       = "fake-bucket"
+    host              = "fake.linodeobjects.com"
+  }
+}
+
+{{ end }}
+

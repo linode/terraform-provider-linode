@@ -5,9 +5,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
 // LKEClusterFilterModel describes the Terraform resource data model to match the
@@ -50,7 +50,7 @@ func (data *LKEClusterFilterModel) parseLKEClusters(
 	for i := range clusters {
 		var lkeCluster LKEClusterModel
 		diags := lkeCluster.parseLKECluster(ctx, &clusters[i])
-		if diags != nil {
+		if diags.HasError() {
 			return diags
 		}
 		result[i] = lkeCluster
@@ -77,7 +77,7 @@ func (data *LKEClusterModel) parseLKECluster(
 	data.StackType = types.StringValue(string(cluster.StackType))
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, cluster.Tags)
-	if diags != nil {
+	if diags.HasError() {
 		return diags
 	}
 	data.Tags = tags

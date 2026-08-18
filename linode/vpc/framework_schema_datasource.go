@@ -14,6 +14,15 @@ var DataSourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
 	},
 }
 
+var DataSourceSchemaIPv4NestedObject = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"range": schema.StringAttribute{
+			Description: "The IPv4 range assigned to this VPC.",
+			Computed:    true,
+		},
+	},
+}
+
 var VPCAttrs = map[string]schema.Attribute{
 	"id": schema.StringAttribute{
 		Description: "The id of the VPC.",
@@ -35,6 +44,11 @@ var VPCAttrs = map[string]schema.Attribute{
 		Description: "The type of the VPC ('regular' or 'rdma'). " +
 			"Omitted if the requesting account does not have access to the GPUDirect RDMA functionality.",
 		Computed: true,
+	},
+	"ipv4": schema.ListNestedAttribute{
+		Description:  "The IPv4 configuration of this VPC.",
+		Computed:     true,
+		NestedObject: DataSourceSchemaIPv4NestedObject,
 	},
 	"ipv6": schema.ListNestedAttribute{
 		Description:  "The IPv6 configuration of this VPC.",

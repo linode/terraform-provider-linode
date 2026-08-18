@@ -8,7 +8,6 @@ resource "linode_firewall" "foobar" {
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
-    group = "tf_test"
     type = "g6-nanode-1"
     image = "{{.Image}}"
     region = "{{ .Region }}"

@@ -11,12 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	linodediffs "github.com/linode/terraform-provider-linode/v3/linode/helper/customdiffs"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	linodediffs "github.com/linode/terraform-provider-linode/v4/linode/helper/customdiffs"
 )
-
-// Instance creation with reserved IPv4 is for internal use only : please refer to KB page for more information.
 
 const (
 	LinodeInstanceCreateTimeout = 15 * time.Minute
@@ -82,11 +80,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		return diag.Errorf("failed to get instance configs: %s", err)
 	}
 
-	var ips []string
-	for _, ip := range instance.IPv4 {
-		ips = append(ips, ip.String())
-	}
-	d.Set("ipv4", ips)
+	d.Set("ipv4", flattenInstanceIPv4(instance.IPv4))
 	d.Set("ipv6", instance.IPv6)
 	d.Set("shared_ipv4", instanceIPSliceToString(instanceNetwork.IPv4.Shared))
 
@@ -96,7 +90,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		oldIP, ok := d.GetOk("ip_address")
 
 		if !ok || !slices.ContainsFunc(
-			public, func(newIP *linodego.InstanceIP) bool {
+			public, func(newIP linodego.InstanceIP) bool {
 				return newIP.Address == oldIP.(string)
 			},
 		) {
@@ -110,7 +104,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		oldIP, ok := d.GetOk("private_ip_address")
 
 		if !ok || !slices.ContainsFunc(
-			private, func(newIP *linodego.InstanceIP) bool {
+			private, func(newIP linodego.InstanceIP) bool {
 				return newIP.Address == oldIP.(string)
 			},
 		) {
@@ -127,7 +121,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	d.Set("region", instance.Region)
 	d.Set("maintenance_policy", instance.MaintenancePolicy)
 	d.Set("watchdog_enabled", instance.WatchdogEnabled)
-	d.Set("group", instance.Group)
 	d.Set("tags", instance.Tags)
 	d.Set("capabilities", instance.Capabilities)
 	d.Set("locks", instance.Locks)
@@ -202,7 +195,6 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		Region:         d.Get("region").(string),
 		Type:           d.Get("type").(string),
 		Label:          d.Get("label").(string),
-		Group:          d.Get("group").(string),
 		BackupsEnabled: d.Get("backups_enabled").(bool),
 		PrivateIP:      d.Get("private_ip").(bool),
 		DiskEncryption: linodego.InstanceDiskEncryption(
@@ -292,15 +284,15 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			createOpts.AuthorizedUsers = append(createOpts.AuthorizedUsers, user.(string))
 		}
 		createOpts.RootPass = d.Get("root_pass").(string)
-		if createOpts.RootPass == "" {
-			var err error
-			createOpts.RootPass, err = helper.CreateRandomRootPassword()
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
 		createOpts.Image = d.Get("image").(string)
+
+		// When an image is provided, at least one authentication method must be specified
+		if createOpts.Image != "" &&
+			createOpts.RootPass == "" &&
+			len(createOpts.AuthorizedKeys) == 0 &&
+			len(createOpts.AuthorizedUsers) == 0 {
+			return diag.Errorf(imageAuthRequiredMessage)
+		}
 
 		if !bootedNull {
 			createOpts.Booted = &booted
@@ -311,6 +303,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			createOpts.SwapSize = &swapSize
 		}
 
+		if kernel, ok := d.GetOk("kernel"); ok {
+			createOpts.Kernel = linodego.Pointer(kernel.(string))
+		}
+
+		if bootSize, ok := d.GetOk("boot_size"); ok {
+			createOpts.BootSize = linodego.Pointer(bootSize.(int))
+		}
+
 		createOpts.StackScriptID = d.Get("stackscript_id").(int)
 
 		if stackscriptDataRaw, ok := d.GetOk("stackscript_data"); ok {
@@ -318,9 +318,16 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			if !ok {
 				return diag.Errorf("Error parsing stackscript_data: expected map[string]interface{}")
 			}
-			createOpts.StackScriptData = make(map[string]string, len(stackscriptData))
-			for name, value := range stackscriptData {
-				createOpts.StackScriptData[name] = value.(string)
+
+			if len(stackscriptData) == 0 {
+				// Prevent "{}" from being sent
+				createOpts.StackScriptData = nil
+			} else {
+				m := make(map[string]string, len(stackscriptData))
+				for name, value := range stackscriptData {
+					m[name] = value.(string)
+				}
+				createOpts.StackScriptData = m
 			}
 		}
 	} else {
@@ -349,16 +356,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	d.SetId(fmt.Sprintf("%d", instance.ID))
 	createPoller.EntityID = instance.ID
 
-	var ips []string
-	for _, ip := range instance.IPv4 {
-		ips = append(ips, ip.String())
-	}
-
-	d.Set("ipv4", ips)
+	d.Set("ipv4", flattenInstanceIPv4(instance.IPv4))
 	d.Set("ipv6", instance.IPv6)
 
 	for _, address := range instance.IPv4 {
-		if private := privateIP(*address); private {
+		if private := privateIP(address); private {
 			d.Set("private_ip_address", address.String())
 		} else {
 			setPublicIPAddress(d, address.String())
@@ -407,7 +409,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if disksOk {
 		tflog.Debug(ctx, "Waiting for instance creation to complete before provisioning disks")
 
-		_, err = createPoller.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
+		_, err = createPoller.WaitForFinished(ctx)
 		if err != nil {
 			return diag.Errorf("Error waiting for Instance to finish creating: %s", err)
 		}
@@ -483,12 +485,22 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			"config_id": bootConfig,
 		})
 
-		if err = client.BootInstance(ctx, instance.ID, bootConfig); err != nil {
+		var configID *int
+
+		if bootConfig != 0 {
+			configID = &bootConfig
+		}
+
+		instanceBootOptions := linodego.InstanceBootOptions{
+			ConfigID: configID,
+		}
+
+		if err = client.BootInstance(ctx, instance.ID, instanceBootOptions); err != nil {
 			return diag.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
 		}
 
 		event, err := p.WaitForFinished(
-			ctx, getDeadlineSeconds(ctx, d),
+			ctx,
 		)
 		if err != nil {
 			return diag.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
@@ -506,7 +518,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			"target_status": targetStatus,
 		})
 
-		if _, err = client.WaitForInstanceStatus(ctx, instance.ID, targetStatus, getDeadlineSeconds(ctx, d)); err != nil {
+		if _, err = client.WaitForInstanceStatus(ctx, instance.ID, targetStatus); err != nil {
 			return diag.Errorf("timed-out waiting for Linode instance %d to reach status %s: %s", instance.ID, targetStatus, err)
 		}
 	}
@@ -605,11 +617,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		updateOpts.Label = d.Get("label").(string)
 		simpleUpdate = true
 	}
-	if d.HasChange("group") {
-		newGroup := d.Get("group").(string)
-		updateOpts.Group = &newGroup
-		simpleUpdate = true
-	}
 	if d.HasChange("maintenance_policy") {
 		newMaintenancePolicy := d.Get("maintenance_policy").(string)
 		updateOpts.MaintenancePolicy = linodego.Pointer(newMaintenancePolicy)
@@ -617,7 +624,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 	if d.HasChange("tags") {
 		tags := helper.ExpandStringSet(d.Get("tags").(*schema.Set))
-		updateOpts.Tags = &tags
+		updateOpts.Tags = tags
 		simpleUpdate = true
 	}
 	if d.HasChange("watchdog_enabled") {
@@ -700,7 +707,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			"public": false,
 		})
 
-		privateIP, err := client.AddInstanceIPAddress(ctx, instance.ID, false)
+		instanceIPAddOptions := linodego.InstanceIPAddOptions{
+			Public: false,
+		}
+
+		privateIP, err := client.AddInstanceIPAddress(ctx, instance.ID, instanceIPAddOptions)
 		if err != nil {
 			return diag.Errorf("Error activating private networking on Instance %d: %s", instance.ID, err)
 		}
@@ -842,7 +853,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		// rebooting, or shutting_down) before checking its status. This ensures we
 		// don't skip shutdown for an instance that is effectively still online.
 		settledStatus, err := helper.WaitForInstanceNonTransientStatus(
-			ctx, &client, id, helper.GetDeadlineSeconds(ctx, d),
+			ctx, &client, id,
 		)
 		if err != nil {
 			return diag.Errorf(
@@ -864,7 +875,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			}
 
 			if err := ShutdownInstanceForOfflineOperation(
-				ctx, &client, skipImplicitReboots, id, helper.GetDeadlineSeconds(ctx, d), offlineReason,
+				ctx, &client, skipImplicitReboots, id, offlineReason,
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -912,8 +923,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			}
 
 			if diags := BootInstanceAfterOfflineOperation(
-				ctx, meta.(*helper.ProviderMeta), id, bootConfig, helper.GetDeadlineSeconds(ctx, d), bootReason,
-			); diags != nil {
+				ctx, meta.(*helper.ProviderMeta), id, bootConfig, bootReason,
+			); diags.HasError() {
 				return diags
 			}
 		}
@@ -968,14 +979,18 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 		tflog.Debug(ctx, "client.RebootInstance(...)")
 
-		err = client.RebootInstance(ctx, instance.ID, bootConfig)
+		instanceRebootOptions := linodego.InstanceRebootOptions{
+			ConfigID: &bootConfig,
+		}
+
+		err = client.RebootInstance(ctx, instance.ID, instanceRebootOptions)
 		if err != nil {
 			return diag.Errorf("Error rebooting Instance %d: %s", instance.ID, err)
 		}
 
 		tflog.Debug(ctx, "Waiting for instance reboot to complete")
 
-		_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
+		_, err = p.WaitForFinished(ctx)
 		if err != nil {
 			return diag.Errorf("Error waiting for Instance %d to finish rebooting: %s", instance.ID, err)
 		}
@@ -983,7 +998,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		tflog.Debug(ctx, "Instance has finished rebooting")
 
 		if _, err = client.WaitForInstanceStatus(
-			ctx, instance.ID, linodego.InstanceRunning, getDeadlineSeconds(ctx, d),
+			ctx, instance.ID, linodego.InstanceRunning,
 		); err != nil {
 			return diag.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
 		}
@@ -1020,7 +1035,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if !meta.(*helper.ProviderMeta).Config.SkipInstanceDeletePoll {
 		// Wait for full deletion to assure volumes are detached
-		if _, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d)); err != nil {
+		if _, err = p.WaitForFinished(ctx); err != nil {
 			return diag.Errorf("failed to wait for instance %d to be deleted: %s", id, err)
 		}
 	}

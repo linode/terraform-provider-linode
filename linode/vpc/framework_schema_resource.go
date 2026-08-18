@@ -2,11 +2,13 @@ package vpc
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/customtypes"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/stringplanmodifiers"
 )
 
 var ResourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
@@ -23,6 +25,9 @@ var ResourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
 		"allocated_range": schema.StringAttribute{
 			Description: "The IPv6 range assigned to this VPC.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"allocation_class": schema.StringAttribute{
 			Description: "The labeled IPv6 Inventory that the VPC Prefix should be allocated from.",
@@ -32,6 +37,15 @@ var ResourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
 				stringplanmodifier.UseStateForUnknown(),
 				stringplanmodifier.RequiresReplace(),
 			},
+		},
+	},
+}
+
+var ResourceSchemaIPv4NestedObject = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"range": schema.StringAttribute{
+			Description: "The IPv4 range assigned to this VPC.",
+			Required:    true,
 		},
 	},
 }
@@ -83,7 +97,15 @@ var frameworkResourceSchema = schema.Schema{
 			},
 			NestedObject: ResourceSchemaIPv6NestedObject,
 		},
-
+		"ipv4": schema.ListNestedAttribute{
+			Description: "The IPv4 configuration of this VPC.",
+			Computed:    true,
+			Optional:    true,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+			},
+			NestedObject: ResourceSchemaIPv4NestedObject,
+		},
 		"created": schema.StringAttribute{
 			Description: "The date and time when the VPC was created.",
 			Computed:    true,
@@ -96,6 +118,13 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The date and time when the VPC was updated.",
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifiers.UseStateForUnknownUnlessTheseChanged(
+					path.MatchRoot("label"),
+					path.MatchRoot("description"),
+					path.MatchRoot("ipv4"),
+				),
+			},
 		},
 	},
 }

@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 func NewResource() resource.Resource {
@@ -177,16 +177,21 @@ func (r *Resource) Update(
 			return
 		}
 
-		ruleSet := plan.ExpandFirewallRuleSet(ctx, &resp.Diagnostics)
+		rules := plan.ExpandFirewallRules(ctx, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 
-		firewallRuleSet, err := client.UpdateFirewallRules(ctx, id, ruleSet)
+		updateOpts := linodego.FirewallRulesUpdateOptions{
+			Inbound:        rules.Inbound,
+			Outbound:       rules.Outbound,
+			InboundPolicy:  rules.InboundPolicy,
+			OutboundPolicy: rules.OutboundPolicy,
+		}
+
+		firewallRuleSet, err := client.UpdateFirewallRules(ctx, id, updateOpts)
 		if err != nil {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to Update Rules for Firewall %d", id), err.Error(),
-			)
+			resp.Diagnostics.AddError(fmt.Sprintf("Failed to Update Firewall Rules %d", id), err.Error())
 			return
 		}
 

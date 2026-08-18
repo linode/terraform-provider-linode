@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlv2/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/databasepostgresqlv2/tmpl"
 )
 
 func TestAccDataSource_basic(t *testing.T) {
@@ -94,7 +94,7 @@ func TestAccDataSource_engineConfig(t *testing.T) {
 				Config: tmpl.DataEngineConfig(t, tmpl.TemplateDataEngineConfig{
 					Label:    label,
 					Region:   testRegion,
-					EngineID: "postgresql/14",
+					EngineID: "postgresql/18",
 					Type:     "g6-nanode-1",
 
 					EngineConfigPGAutovacuumAnalyzeScaleFactor:         0.1,
