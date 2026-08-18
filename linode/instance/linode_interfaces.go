@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 // linodeInterfacesSchema defines the schema for the `linode_interfaces` block
@@ -329,8 +329,8 @@ func expandLinodeInstanceInterfaces(raw []any) ([]linodego.LinodeInstanceInterfa
 	return result, nil
 }
 
-func expandLinodeDefaultRoute(m map[string]any) *linodego.InterfaceDefaultRoute {
-	dr := &linodego.InterfaceDefaultRoute{}
+func expandLinodeDefaultRoute(m map[string]any) *linodego.InterfaceDefaultRouteCreateOptions {
+	dr := &linodego.InterfaceDefaultRouteCreateOptions{}
 	if v, ok := m["ipv4"].(bool); ok {
 		dr.IPv4 = linodego.Pointer(v)
 	}
@@ -361,7 +361,7 @@ func expandLinodePublicInterface(m map[string]any) *linodego.PublicInterfaceCrea
 					}
 					addresses = append(addresses, addr)
 				}
-				opts.IPv4 = &linodego.PublicInterfaceIPv4CreateOptions{Addresses: &addresses}
+				opts.IPv4 = &linodego.PublicInterfaceIPv4CreateOptions{Addresses: addresses}
 			}
 		}
 	}
@@ -379,7 +379,7 @@ func expandLinodePublicInterface(m map[string]any) *linodego.PublicInterfaceCrea
 						rangeOpts = append(rangeOpts, linodego.PublicInterfaceIPv6RangeCreateOptions{Range: v})
 					}
 				}
-				opts.IPv6 = &linodego.PublicInterfaceIPv6CreateOptions{Ranges: &rangeOpts}
+				opts.IPv6 = &linodego.PublicInterfaceIPv6CreateOptions{Ranges: rangeOpts}
 			}
 		}
 	}
@@ -387,8 +387,8 @@ func expandLinodePublicInterface(m map[string]any) *linodego.PublicInterfaceCrea
 	return opts
 }
 
-func expandLinodeVLANInterface(m map[string]any) *linodego.VLANInterface {
-	v := &linodego.VLANInterface{}
+func expandLinodeVLANInterface(m map[string]any) *linodego.VLANInterfaceCreateOptions {
+	v := &linodego.VLANInterfaceCreateOptions{}
 	if label, ok := m["vlan_label"].(string); ok {
 		v.VLANLabel = label
 	}
@@ -427,7 +427,7 @@ func expandLinodeVPCInterface(m map[string]any) *linodego.VPCInterfaceCreateOpti
 					}
 					addrOpts = append(addrOpts, ao)
 				}
-				ipv4Opts.Addresses = &addrOpts
+				ipv4Opts.Addresses = addrOpts
 			}
 
 			if ranges, ok := ipv4Map["ranges"].([]any); ok && len(ranges) > 0 {
@@ -441,7 +441,7 @@ func expandLinodeVPCInterface(m map[string]any) *linodego.VPCInterfaceCreateOpti
 						rangeOpts = append(rangeOpts, linodego.VPCInterfaceIPv4RangeCreateOptions{Range: v})
 					}
 				}
-				ipv4Opts.Ranges = &rangeOpts
+				ipv4Opts.Ranges = rangeOpts
 			}
 
 			opts.IPv4 = ipv4Opts

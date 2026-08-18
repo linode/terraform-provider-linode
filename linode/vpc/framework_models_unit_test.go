@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/require"
 )
 
