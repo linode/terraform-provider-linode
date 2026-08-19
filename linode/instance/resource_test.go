@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"strconv"
 	"sync"
@@ -3750,6 +3751,122 @@ func TestAccResourceInstance_withLock(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "locks.#", "1"),
 					resource.TestCheckTypeSetElemAttr(resName, "locks.*", lockType),
 				),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_linodeInterfacesRDMAVPC(t *testing.T) {
+	t.Parallel()
+
+	// The RDMA plan reports as unavailable in every region and can only be
+	// created on a specific qualifying host, so both the region and the host ID
+	// are supplied by the environment rather than hardcoded.
+	rdmaRegion := os.Getenv("LINODE_RDMA_REGION")
+	if rdmaRegion == "" {
+		t.Skip("LINODE_RDMA_REGION must be set to run this test")
+	}
+
+	var rdmaHostID int
+	// `host_id` is an internal-only attribute that is only registered on the
+	// resource schema when LINODE_ENABLE_HIDDEN_HOST_ID is set. It must already
+	// be present in the environment when the test binary starts, since the
+	// provider is constructed during package initialization.
+	if rdmaHostIDRaw, ok := os.LookupEnv("LINODE_ENABLE_HIDDEN_HOST_ID"); !ok {
+		t.Skip("LINODE_ENABLE_HIDDEN_HOST_ID must be set to run this test")
+	} else {
+		id, err := strconv.Atoi(rdmaHostIDRaw)
+		require.NoErrorf(t, err, "LINODE_ENABLE_HIDDEN_HOST_ID must be an integer, got %q", rdmaHostIDRaw)
+
+		rdmaHostID = id
+	}
+
+	resName := "linode_instance.foobar"
+	instanceName := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(64)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.LinodeInterfacesRDMAVPC(t, instanceName, rdmaRegion, rootPass, rdmaHostID),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(instanceName),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("region"),
+						knownvalue.StringExact(rdmaRegion),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("interface_generation"),
+						knownvalue.StringExact("linode"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("host_id"),
+						knownvalue.Int64Exact(int64(rdmaHostID)),
+					),
+					// Eight RDMA VPC interfaces plus one regular VPC interface.
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces"),
+						knownvalue.ListSizeExact(9),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces").
+							AtSliceIndex(0).
+							AtMapKey("rdma_vpc").
+							AtSliceIndex(0).
+							AtMapKey("ipv4").
+							AtSliceIndex(0).
+							AtMapKey("addresses").
+							AtSliceIndex(0).
+							AtMapKey("address"),
+						knownvalue.StringExact("auto"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces").
+							AtSliceIndex(0).
+							AtMapKey("rdma_vpc").
+							AtSliceIndex(0).
+							AtMapKey("ipv4").
+							AtSliceIndex(0).
+							AtMapKey("addresses").
+							AtSliceIndex(0).
+							AtMapKey("primary"),
+						knownvalue.Bool(true),
+					),
+					// All eight RDMA interfaces share the same RDMA subnet.
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces").
+							AtSliceIndex(7).
+							AtMapKey("rdma_vpc").
+							AtSliceIndex(0).
+							AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					// The trailing interface is a regular VPC interface.
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces").
+							AtSliceIndex(8).
+							AtMapKey("vpc").
+							AtSliceIndex(0).
+							AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 		},
 	})

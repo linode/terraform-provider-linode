@@ -1,0 +1,72 @@
+{{ define "interfaces_rdma_vpc" }}
+
+resource "linode_vpc" "regular" {
+    label    = "{{.Label}}-vpc"
+    region   = "{{.Region}}"
+    vpc_type = "regular"
+}
+
+resource "linode_vpc_subnet" "regular" {
+    vpc_id = linode_vpc.regular.id
+    label  = "{{.Label}}-subnet"
+    ipv4   = "10.0.0.0/24"
+}
+
+resource "linode_vpc" "rdma" {
+    label    = "{{.Label}}-rdma-vpc"
+    region   = "{{.Region}}"
+    vpc_type = "rdma"
+}
+
+resource "linode_vpc_subnet" "rdma" {
+    vpc_id = linode_vpc.rdma.id
+    label  = "{{.Label}}-rdma-subnet"
+    ipv4   = "10.0.0.0/24"
+}
+
+resource "linode_instance" "foobar" {
+    label     = "{{.Label}}"
+    type      = "g3-gpu-rtxpro6000-blackwell-rdma-8"
+    region    = "{{.Region}}"
+    image     = "{{.Image}}"
+    root_pass = "{{.RootPass}}"
+    host_id   = {{.HostID}}
+    booted    = false
+
+    interface_generation = "linode"
+
+    # Eight RDMA VPC interfaces, all attached to the same RDMA subnet.
+    # Cloud Firewalls cannot be assigned to RDMA VPC interfaces, so -1 is used
+    # to explicitly opt out.
+    dynamic "linode_interfaces" {
+        for_each = range(8)
+        content {
+            firewall_id = -1
+            rdma_vpc {
+                subnet_id = linode_vpc_subnet.rdma.id
+                ipv4 {
+                    addresses {
+                        address = "auto"
+                        primary = true
+                    }
+                }
+            }
+        }
+    }
+
+    # At least one regular (non-RDMA) interface is required.
+    linode_interfaces {
+        firewall_id = -1
+        vpc {
+            subnet_id = linode_vpc_subnet.regular.id
+            ipv4 {
+                addresses {
+                    address = "auto"
+                    primary = true
+                }
+            }
+        }
+    }
+}
+
+{{ end }}

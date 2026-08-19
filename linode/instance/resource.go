@@ -24,7 +24,7 @@ const (
 
 func Resource() *schema.Resource {
 	return &schema.Resource{
-		Schema:        resourceSchema,
+		Schema:        resourceSchemaWithHiddenAttributes(),
 		ReadContext:   readResource,
 		CreateContext: createResource,
 		UpdateContext: updateResource,
@@ -222,6 +222,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if maintenancePolicyRaw, ok := d.GetOk("maintenance_policy"); ok {
 		maintenancePolicyStr := maintenancePolicyRaw.(string)
 		createOpts.MaintenancePolicy = &maintenancePolicyStr
+	}
+
+	// `host_id` is an internal-only attribute that is only registered on the
+	// schema when explicitly enabled. See schema_resource_hidden.go.
+	if hiddenHostIDEnabled() {
+		if hostID, ok := d.GetOk("host_id"); ok {
+			createOpts.HostID = hostID.(int)
+		}
 	}
 
 	if interfaces, interfacesOk := d.GetOk("interface"); interfacesOk {
