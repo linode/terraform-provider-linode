@@ -342,3 +342,42 @@ func TestAccResourceInstanceDisk_imageNoAuth(t *testing.T) {
 		},
 	})
 }
+
+func TestAccResourceInstanceDisk_swapNoImage(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance_disk.swap"
+	label := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Swap(t, label, testRegion, 512),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", label+"-swap"),
+					resource.TestCheckResourceAttr(resName, "size", "512"),
+					resource.TestCheckResourceAttr(resName, "filesystem", "swap"),
+					resource.TestCheckResourceAttr(resName, "status", "ready"),
+					// Most importantly: image should not be set for swap disks
+					resource.TestCheckNoResourceAttr(resName, "image"),
+					resource.TestCheckResourceAttrSet(resName, "linode_id"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+				// After import, image should still not be set (not populated from parent)
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckNoResourceAttr(resName, "image"),
+					resource.TestCheckResourceAttr(resName, "filesystem", "swap"),
+				),
+			},
+		},
+	})
+}
