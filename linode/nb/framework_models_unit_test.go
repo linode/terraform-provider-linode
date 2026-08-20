@@ -278,7 +278,7 @@ func TestFlattenNodeBalancerBackendVPCsPopulateComputedRanges(t *testing.T) {
 
 	options, optionDiags := backendVPCModels[0].ToLinodego()
 	assert.False(t, optionDiags.HasError())
-	assert.Equal(t, "fd00::4/126", options.IPv6Range)
+	assert.Equal(t, linodego.Pointer("fd00::4/126"), options.IPv6Range)
 }
 
 func TestFlattenNodeBalancerBackendVPCsPreserveKnownIPv4Range(t *testing.T) {

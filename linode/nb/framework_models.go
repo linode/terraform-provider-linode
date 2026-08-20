@@ -678,9 +678,9 @@ func (m *ResourceBackendVPCModel) ToLinodego() (*linodego.NodeBalancerBackendVPC
 
 	return &linodego.NodeBalancerBackendVPCOptions{
 		SubnetID:            subnetID,
-		IPv4Range:           m.IPv4Range.ValueString(),
-		IPv6Range:           m.IPv6Range.ValueString(),
-		IPv4RangeAutoAssign: m.IPv4RangeAutoAssign.ValueBool(),
+		IPv4Range:           linodego.Pointer(m.IPv4Range.ValueString()),
+		IPv6Range:           linodego.Pointer(m.IPv6Range.ValueString()),
+		IPv4RangeAutoAssign: linodego.Pointer(m.IPv4RangeAutoAssign.ValueBool()),
 	}, d
 }
 
@@ -697,8 +697,8 @@ func (m *ResourceFrontendVPCModel) ToLinodego() (*linodego.NodeBalancerFrontendV
 
 	return &linodego.NodeBalancerFrontendVPCOptions{
 		SubnetID:  subnetID,
-		IPv4Range: m.IPv4Range.ValueString(),
-		IPv6Range: m.IPv6Range.ValueString(),
+		IPv4Range: linodego.Pointer(m.IPv4Range.ValueString()),
+		IPv6Range: linodego.Pointer(m.IPv6Range.ValueString()),
 	}, d
 }
 
