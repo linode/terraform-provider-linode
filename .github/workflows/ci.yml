@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
         with:
-          go-version: 'stable'
+          go-version-file: 'go.mod'
 
       - name: Check docs
         run: make docs-check
@@ -55,7 +55,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
         with:
-          go-version: 'stable'
+          go-version-file: 'go.mod'
       - run: go version
       - name: Unit tests
         run: make test-unit
