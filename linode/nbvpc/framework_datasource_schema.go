@@ -16,13 +16,18 @@ var DataSourceSchema = schema.Schema{
 		},
 		"ipv4_range": schema.StringAttribute{
 			Description: "A CIDR range for the VPC's IPv4 addresses. " +
-				"The NodeBalancer sources IP addresses from this range when " +
-				"routing traffic to the backend VPC nodes.",
+				"When `purpose` is `backend`, the NodeBalancer sources IP addresses from " +
+				"this range when routing traffic to the backend VPC nodes. " +
+				"When `purpose` is `frontend`, this range is allocated for the " +
+				"NodeBalancer's frontend IPs.",
 			Computed: true,
 		},
 		"ipv6_range": schema.StringAttribute{
-			Description: "A CIDR range for the VPC's IPv6 addresses allocated " +
-				"as the NodeBalancer's frontend IPs.",
+			Description: "A CIDR range for the VPC's IPv6 addresses. " +
+				"When `purpose` is `backend`, the NodeBalancer sources IP addresses from " +
+				"this range when routing traffic to the backend VPC nodes. " +
+				"When `purpose` is `frontend`, this range is allocated for the " +
+				"NodeBalancer's frontend IPs.",
 			Computed: true,
 		},
 		"subnet_id": schema.Int64Attribute{

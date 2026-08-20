@@ -76,9 +76,9 @@ Each VPC configuration will be stored in the `vpc_configs` attribute and will ex
 
 * `id` - The ID of the VPC configuration.
 
-* `ipv4_range` - A CIDR range for the VPC's IPv4 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
+* `ipv4_range` - A CIDR range for the VPC's IPv4 addresses, used for backend node routing or frontend IPs depending on `purpose`.
 
-* `ipv6_range` - A CIDR range for the VPC's IPv6 addresses allocated as the NodeBalancer's frontend IPs.
+* `ipv6_range` - A CIDR range for the VPC's IPv6 addresses, used for backend node routing or frontend IPs depending on `purpose`.
 
 * `subnet_id` - The ID of this configuration's VPC subnet.
 
