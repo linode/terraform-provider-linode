@@ -117,12 +117,12 @@ func TestParseComputedAttributes(t *testing.T) {
 	assert.Equal(t, data.Inbound[0].Action.ValueString(), inboundRules[0].Action)
 	assert.Equal(t, data.Inbound[0].Protocol.ValueString(), string(inboundRules[0].Protocol))
 	assert.Equal(t, data.Inbound[0].Ports.ValueString(), inboundRules[0].Ports)
-	assert.Contains(t, data.Inbound[0].IPv4.String(), (inboundRules[0].Addresses.IPv4)[0])
+	assert.Contains(t, data.Inbound[0].IPv4.String(), inboundRules[0].Addresses.IPv4[0])
 
 	assert.Equal(t, data.Outbound[0].Action.ValueString(), outboundRules[0].Action)
 	assert.Equal(t, data.Outbound[0].Protocol.ValueString(), string(outboundRules[0].Protocol))
 	assert.Equal(t, data.Outbound[0].Ports.ValueString(), outboundRules[0].Ports)
-	assert.Contains(t, data.Outbound[0].IPv4.String(), (outboundRules[0].Addresses.IPv4)[0])
+	assert.Contains(t, data.Outbound[0].IPv4.String(), outboundRules[0].Addresses.IPv4[0])
 
 	assert.Equal(t, data.Devices[0].ID.ValueInt64(), int64(111))
 	assert.Equal(t, data.Devices[1].ID.ValueInt64(), int64(112))
