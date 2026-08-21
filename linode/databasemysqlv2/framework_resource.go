@@ -515,6 +515,16 @@ func (r *Resource) Update(
 				return
 			}
 		}
+
+		if err := client.WaitForDatabaseStatus(
+			ctx,
+			id,
+			linodego.DatabaseEngineTypeMySQL,
+			linodego.DatabaseStatusActive,
+		); err != nil {
+			resp.Diagnostics.AddError("Failed to wait for MySQL database active", err.Error())
+			return
+		}
 	}
 
 	resp.Diagnostics.Append(plan.Refresh(ctx, client, id, false)...)

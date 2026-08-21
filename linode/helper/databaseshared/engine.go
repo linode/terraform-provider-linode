@@ -42,19 +42,11 @@ func CreateDatabaseEngineSlug(engine, version string) string {
 
 	switch engine {
 	case "mysql":
-		if len(parts) >= 2 {
-			// When minor part of the engine version is 0, then API accepts major version number only to
-			// be used in config (e.g. mysql/8, not mysql/8.0.45). It is not consistent with the API response,
-			// which always returns full engine version (mysql/8.0.45). It leads to a discrepancies between
-			// config and state refreshed with the API so it needs to be handled
-			if parts[1] == "0" {
-				return fmt.Sprintf("%s/%s", engine, parts[0])
-			}
-
+		if len(parts) >= 2 && parts[1] != "0" {
 			return fmt.Sprintf("%s/%s.%s", engine, parts[0], parts[1])
 		}
 
-		return fmt.Sprintf("%s/%s", engine, version)
+		return fmt.Sprintf("%s/%s", engine, parts[0])
 
 	case "postgresql":
 		if len(parts) >= 1 {
