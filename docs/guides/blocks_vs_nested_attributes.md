@@ -28,8 +28,8 @@ because of the same legacy limitation that affects blocks, so it must be referen
 the `0` index.
 
 All new nested fields are implemented as nested attributes. Blocks are only used by
-existing fields, and are not used for new functionality because they are effectively
-unsupported by HashiCorp and carry a number of bugs and limitations.
+existing fields, and are not used for new functionality because they deprecated 
+by HashiCorp and carry a number of bugs and limitations.
 
 ## Declaration Syntax
 
