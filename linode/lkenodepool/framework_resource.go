@@ -112,7 +112,12 @@ func (r *Resource) Create(
 		return
 	}
 
-	plan.validateEnterpriseOnlyAttributes(cluster.Tier, &resp.Diagnostics)
+	var config NodePoolModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	config.validateEnterpriseOnlyAttributes(cluster.Tier, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -193,7 +198,12 @@ func (r *Resource) Update(
 		return
 	}
 
-	plan.validateEnterpriseOnlyAttributes(cluster.Tier, &resp.Diagnostics)
+	var config NodePoolModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	config.validateEnterpriseOnlyAttributes(cluster.Tier, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}

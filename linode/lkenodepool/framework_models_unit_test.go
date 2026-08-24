@@ -213,6 +213,19 @@ func TestValidateEnterpriseOnlyAttributes_IsolationUnsetForNonEnterprise(t *test
 	assert.False(t, diags.HasError())
 }
 
+func TestValidateEnterpriseOnlyAttributes_IsolationNullForNonEnterprise(t *testing.T) {
+	// Config representation of unconfigured Optional+Computed attributes is
+	// null even when plan/state hold known API values after a refresh.
+	nodePoolModel := createNodePoolModel()
+	nodePoolModel.IsolationIPv4 = types.BoolNull()
+	nodePoolModel.IsolationIPv6 = types.BoolNull()
+	var diags diag.Diagnostics
+
+	nodePoolModel.validateEnterpriseOnlyAttributes("standard", &diags)
+
+	assert.False(t, diags.HasError())
+}
+
 func TestSetNodePoolUpdateOptions(t *testing.T) {
 	nodePoolModel := createNodePoolModel()
 	state := NodePoolModel{ID: types.StringValue("123")}
