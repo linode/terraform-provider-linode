@@ -7,6 +7,9 @@ resource "linode_monitor_alert_definition" "test" {
     severity     = 1
     channel_ids  = ["{{ .AlertChannel }}"]
     wait_for     = true
+    {{- if .GroupBy }}
+    group_by     = [{{- range $i, $v := .GroupBy }}{{- if $i }}, {{ end }}"{{ $v }}"{{- end }}]
+    {{- end }}
 
     trigger_conditions = {
         criteria_condition        = "ALL"
