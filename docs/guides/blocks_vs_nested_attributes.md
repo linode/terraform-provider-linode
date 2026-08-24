@@ -72,7 +72,9 @@ so they must be referenced through the `0` index:
 
 ```hcl
 # `metadata` is a Block
-linode_instance.example.metadata.0.user_data
+output "user_data" {
+  value = linode_instance.example.metadata.0.user_data
+}
 ```
 
 Nested attributes do not have this limitation, so a single nested attribute is referenced
@@ -80,36 +82,23 @@ directly:
 
 ```hcl
 # `public` is a Nested Attribute
-linode_interface.example.public.ipv4
+output "public_ipv4" {
+  value = linode_interface.example.public.ipv4
+}
 ```
 
 List nested attributes are referenced by index, like any other list:
 
 ```hcl
-linode_interface.example.vpc.ipv4.addresses[0].address
+output "first_vpc_address" {
+  value = linode_interface.example.vpc.ipv4.addresses[0].address
+}
 ```
 
 ### Referencing Sets
 
 Sets are unordered, so their elements have no addressable keys. Any attempt to index into a
-set fails at plan time:
-
-```hcl
-# Invalid: `domain_grant` is a Block Set
-output "grant_id" {
-  value = linode_user.example.domain_grant.0.id
-}
-```
-
-```
-Error: Cannot index a set value
-
-Block type "domain_grant" is represented by a set of objects, and set elements do not have
-addressable keys. To find elements matching specific criteria, use a "for" expression with
-an "if" clause.
-```
-
-Instead, convert the set to a list, or project the values you need:
+set fails at plan time. Instead, convert the set to a list, or project the values you need:
 
 ```hcl
 # Reference every element
