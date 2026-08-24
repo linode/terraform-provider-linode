@@ -274,13 +274,13 @@ In addition to all arguments above, the following attributes are exported:
 
   * `ipv4` - (Nested Attribute) IPv4 configuration for the public interface. Referenced directly (e.g. `public.ipv4.assigned_addresses`).
 
-    * `assigned_addresses` - (Computed, Nested Attribute Set) The IPv4 addresses exclusively assigned to this Linode interface. Each object in this set supports:
+    * `assigned_addresses` - (Computed, Nested Attribute Set) The IPv4 addresses exclusively assigned to this Linode interface. Each object in this set supports: Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
       * `address` - The assigned IPv4 address.
 
       * `primary` - Whether this address is the primary address for the interface.
 
-    * `shared` - (Computed, Nested Attribute Set) The IPv4 addresses assigned to this Linode interface that are also shared with another Linode. Each object in this set supports:
+    * `shared` - (Computed, Nested Attribute Set) The IPv4 addresses assigned to this Linode interface that are also shared with another Linode. Each object in this set supports: Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
       * `address` - The shared IPv4 address.
 
@@ -288,19 +288,19 @@ In addition to all arguments above, the following attributes are exported:
 
   * `ipv6` - (Nested Attribute) IPv6 configuration for the public interface. Referenced directly (e.g. `public.ipv6.assigned_ranges`).
 
-    * `assigned_ranges` - (Computed, Nested Attribute Set) The IPv6 ranges exclusively assigned to this Linode interface. Each object in this set supports:
+    * `assigned_ranges` - (Computed, Nested Attribute Set) The IPv6 ranges exclusively assigned to this Linode interface. Each object in this set supports: Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
       * `range` - The assigned IPv6 range.
 
       * `route_target` - The public IPv6 address that the range is routed to.
 
-    * `shared` - (Computed, Nested Attribute Set) The IPv6 ranges assigned to this Linode interface that are also shared with another Linode. Each object in this set supports:
+    * `shared` - (Computed, Nested Attribute Set) The IPv6 ranges assigned to this Linode interface that are also shared with another Linode. Each object in this set supports: Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
       * `range` - The shared IPv6 range.
 
       * `route_target` - The public IPv6 address that the range is routed to.
 
-    * `slaac` - (Computed, Nested Attribute Set) The public SLAAC and subnet prefix settings for this public interface. Each object in this set supports:
+    * `slaac` - (Computed, Nested Attribute Set) The public SLAAC and subnet prefix settings for this public interface. Each object in this set supports: Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
       * `address` - The SLAAC IPv6 address.
 
@@ -310,7 +310,7 @@ In addition to all arguments above, the following attributes are exported:
 
   * `ipv4` - (Nested Attribute) IPv4 configuration for the VPC interface. Referenced directly (e.g. `vpc.ipv4.assigned_addresses`).
 
-    * `assigned_addresses` - (Computed, Nested Attribute Set) The IPv4 addresses assigned for use in the VPC subnet, calculated from the `addresses` input. Each object in this set supports:
+    * `assigned_addresses` - (Computed, Nested Attribute Set) The IPv4 addresses assigned for use in the VPC subnet, calculated from the `addresses` input. Each object in this set supports: Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
       * `address` - The assigned IPv4 address.
 
@@ -318,17 +318,17 @@ In addition to all arguments above, the following attributes are exported:
 
       * `nat_1_1_address` - The assigned 1:1 NAT IPv4 address used to associate a public IPv4 address with the interface's VPC subnet IPv4 address.
 
-    * `assigned_ranges` - (Computed, Nested Attribute Set) The IPv4 ranges assigned for use in the VPC subnet, calculated from the `ranges` input. Each object in this set supports:
+    * `assigned_ranges` - (Computed, Nested Attribute Set) The IPv4 ranges assigned for use in the VPC subnet, calculated from the `ranges` input. Each object in this set supports: Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
       * `range` - The assigned IPv4 range.
 
   * `ipv6` - (Nested Attribute) IPv6 assigned through `slaac` and `ranges`. **NOTE: IPv6 VPCs may not currently be available to all users.** Referenced directly (e.g. `vpc.ipv6.assigned_slaac`).
 
-    * `assigned_slaac` - (Nested Attribute Set) Assigned IPv6 SLAAC address ranges to use in the VPC subnet, calculated from `slaac` input.
+    * `assigned_slaac` - (Nested Attribute Set) Assigned IPv6 SLAAC address ranges to use in the VPC subnet, calculated from `slaac` input. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
       * `range` - The IPv6 network range in CIDR notation.
 
-    * `assigned_ranges` - (Nested Attribute Set) Assigned additional IPv6 ranges to use in the VPC subnet, calculated from `ranges` input.
+    * `assigned_ranges` - (Nested Attribute Set) Assigned additional IPv6 ranges to use in the VPC subnet, calculated from `ranges` input. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
       * `range` - The IPv6 network range in CIDR notation.
 

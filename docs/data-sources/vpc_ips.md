@@ -86,7 +86,7 @@ Each Linode VPC IP will be stored in the `vpc_ips` attribute and will export the
 
 * `nat_1_1` - The public IP address used for NAT 1:1 with the VPC. This is empty if NAT 1:1 isn't used.
 
-* `ipv6_addresses` - (Nested Attribute Set) The addresses within the prefix that the interface is associated with.
+* `ipv6_addresses` - (Nested Attribute Set) The addresses within the prefix that the interface is associated with. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
   * `slaac_address` - The specific address within the prefix that the interface is expected to autoconfigure through SLAAC.
 

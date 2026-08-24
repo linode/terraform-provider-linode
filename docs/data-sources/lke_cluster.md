@@ -99,7 +99,7 @@ In addition to all arguments above, the following attributes are exported:
 
     * `type` - This custom disk partition’s filesystem type.
 
-  * `taints` - (Read-Only Object List) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. Referenced with an index (e.g. `taints.0.effect`).
+  * `taints` - (Read-Only Object Set) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
     * `effect` - The Kubernetes taint effect. The accepted values are `NoSchedule`, `PreferNoSchedule` and `NoExecute`. For the descriptions of these values, see [Kubernetes Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/).
 

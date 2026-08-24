@@ -53,25 +53,25 @@ The Linode User resource exports the following attributes:
 
 * [`global_grants`](#global-grants) - (Read-Only Object List) The Account-level grants a User has. Referenced with an index (e.g. `global_grants.0.account_access`).
 
-* [`database_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Databases on this Account. Referenced with an index (e.g. `database_grant.0.id`).
+* [`database_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Databases on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`domain_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Domains on this Account. Referenced with an index (e.g. `domain_grant.0.id`).
+* [`domain_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Domains on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`firewall_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Firewalls on this Account. Referenced with an index (e.g. `firewall_grant.0.id`).
+* [`firewall_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Firewalls on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`image_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Images on this Account. Referenced with an index (e.g. `image_grant.0.id`).
+* [`image_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Images on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`linode_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Linodes on this Account. Referenced with an index (e.g. `linode_grant.0.id`).
+* [`linode_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Linodes on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`longview_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Longview Clients on this Account. Referenced with an index (e.g. `longview_grant.0.id`).
+* [`longview_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Longview Clients on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`nodebalancer_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to NodeBalancers on this Account. Referenced with an index (e.g. `nodebalancer_grant.0.id`).
+* [`nodebalancer_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to NodeBalancers on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`stackscript_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to StackScripts on this Account. Referenced with an index (e.g. `stackscript_grant.0.id`).
+* [`stackscript_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to StackScripts on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`volume_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Volumes on this Account. Referenced with an index (e.g. `volume_grant.0.id`).
+* [`volume_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Volumes on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`vpc_grant`](#grant) - (Read-Only Object List) The grants this User has pertaining to Virtual Private Clouds (VPCs) on this Account. Referenced with an index (e.g. `vpc_grant.0.id`).
+* [`vpc_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Virtual Private Clouds (VPCs) on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
 * `id` - The unique identifier for this DataSource.
 

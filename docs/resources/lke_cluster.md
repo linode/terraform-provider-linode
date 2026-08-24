@@ -236,7 +236,7 @@ The following arguments are supported in the `pool` specification block:
 
 * `tags` - (Optional) A set of tags applied to this node pool. Tags can be used to flag node pools as externally managed. See [Externally Managed Node Pools](#externally-managed-node-pools) for more details.
 
-* `taint` - (Optional, Block Set) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. See [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools).
+* `taint` - (Optional, Block Set) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. See [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools). Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
   * `effect` - (Required) The Kubernetes taint effect. Accepted values are `NoSchedule`, `PreferNoSchedule`, and `NoExecute`. For the descriptions of these values, see [Kubernetes Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/).
 

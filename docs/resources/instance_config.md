@@ -163,7 +163,7 @@ The following arguments are supported:
 
 * [`devices`](#devices) - (Optional, Block) A dictionary of device disks to use as a device map in a Linode’s configuration profile. Referenced with an index (e.g. `devices.0.sda`).
 
-* [`device`](#device-recommended) - (Optional, Block Set) An assignment between a disk and a configuration profile device. This block supersedes the `devices` block.
+* [`device`](#device-recommended) - (Optional, Block Set) An assignment between a disk and a configuration profile device. This block supersedes the `devices` block. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
 * [`helpers`](#helpers) - (Optional, Block List) Helpers enabled when booting to this Linode Config.
 

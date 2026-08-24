@@ -43,7 +43,7 @@ In addition to all the arguments above, the following attributes are exported.
 
 * `is_compliant` - Whether all Linodes in this group are currently compliant with the group's placement group type.
 
-* [`members`](#members) - (Read-Only Object List) A set of Linodes currently assigned to this Placement Group. Referenced with an index (e.g. `members.0.linode_id`).
+* [`members`](#members) - (Read-Only Object Set) A set of Linodes currently assigned to this Placement Group. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
 ### Members
 

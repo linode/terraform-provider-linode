@@ -66,7 +66,7 @@ The following arguments are supported:
 
 - - -
 
-* `bucket_access` - (Optional, Block Set) Defines this key as a Limited Access Key. Limited Access Keys restrict this Object Storage key’s access to only the bucket(s) declared in this array and define their bucket-level permissions. Not providing this block will not limit this Object Storage Key.
+* `bucket_access` - (Optional, Block Set) Defines this key as a Limited Access Key. Limited Access Keys restrict this Object Storage key’s access to only the bucket(s) declared in this array and define their bucket-level permissions. Not providing this block will not limit this Object Storage Key. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
 ### bucket_access
 
@@ -88,7 +88,7 @@ This resource exports the following attributes:
 
 * `limited` - Whether or not this key is a limited access key.
 
-* `regions_details` - (Read-Only Object List) A set of objects containing the detailed info of the regions where this key can access. Referenced with an index (e.g. `regions_details.0.id`).
+* `regions_details` - (Read-Only Object Set) A set of objects containing the detailed info of the regions where this key can access. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
   * `id` - The ID of the region.
 

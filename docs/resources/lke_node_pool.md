@@ -127,7 +127,7 @@ The following arguments are supported:
 
 * [`autoscaler`](#autoscaler) - (Optional, Block List) If defined, an autoscaler will be enabled with the given configuration.
 
-* [`taint`](#taint) - (Optional, Block Set) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. To learn more, review [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools).
+* [`taint`](#taint) - (Optional, Block Set) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. To learn more, review [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools). Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
 * `disk_encryption` - (Optional) The disk encryption policy for nodes in this pool.
 

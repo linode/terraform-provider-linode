@@ -289,7 +289,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `host_secondary` - The secondary/private host for the managed database.
 
-* `pending_updates` - (Nested Attribute Set) A set of pending updates.
+* `pending_updates` - (Nested Attribute Set) A set of pending updates. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
 * `platform` - The back-end platform for relational databases used by the service.
 

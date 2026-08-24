@@ -39,7 +39,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `is_compliant` - Whether all Linodes in this group are currently compliant with the group's placement group type.
 
-* `members` - (Nested Attribute Set) A set of Linodes currently assigned to this Placement Group.
+* `members` - (Nested Attribute Set) A set of Linodes currently assigned to this Placement Group. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
 * `migrations` - (Nested Attribute) Any Linodes that are being migrated to or from the placement group. Referenced directly (e.g. `migrations.inbound`).
 

@@ -64,7 +64,7 @@ Each Linode Placement Group will be stored in the `placement_groups` attribute a
 
 * `is_compliant` - Whether all Linodes in this group are currently compliant with the group's type.
 
-* `members` - (Nested Attribute Set) A set of Linodes currently assigned to this Placement Group.
+* `members` - (Nested Attribute Set) A set of Linodes currently assigned to this Placement Group. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
   * `linode_id` - The ID of the Linode.
 
