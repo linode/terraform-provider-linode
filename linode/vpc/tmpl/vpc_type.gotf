@@ -1,0 +1,11 @@
+{{ define "vpc_vpc_type" }}
+
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+    description = "some description"
+    vpc_type = "{{.VPCType}}"
+}
+
+{{ end }}
+

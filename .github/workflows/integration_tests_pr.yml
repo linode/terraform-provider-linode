@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' && inputs.sha != ''
     steps:
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version: 'stable'
       - run: go version
@@ -58,8 +58,6 @@ jobs:
           submodules: 'recursive'
 
       - uses: hashicorp/setup-terraform@v4
-
-      - run: make deps
 
       - run: make TEST_SUITE="$TEST_SUITE" test-int
         if: ${{ steps.disallowed-character-check.outputs.result == 'pass' }}
@@ -156,7 +154,7 @@ jobs:
 
     steps:
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.x'
 
