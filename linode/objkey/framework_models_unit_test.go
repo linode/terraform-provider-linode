@@ -8,14 +8,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestFlattenObjectStorageKey(t *testing.T) {
 	bucketAccessData := []linodego.ObjectStorageKeyBucketAccess{
 		{
-			Cluster:     "ap-south-1",
+			Region:      "ap-south",
 			BucketName:  "example-bucket",
 			Permissions: "read_only",
 		},
@@ -43,7 +43,7 @@ func TestFlattenObjectStorageKey(t *testing.T) {
 	assert.NotNil(t, data.BucketAccess)
 
 	bucketAccessEntry := data.BucketAccess[0]
-	assert.Equal(t, types.StringValue("ap-south-1"), bucketAccessEntry.Cluster)
+	assert.Equal(t, types.StringValue("ap-south"), bucketAccessEntry.Region)
 	assert.Equal(t, types.StringValue("example-bucket"), bucketAccessEntry.BucketName)
 	assert.Equal(t, types.StringValue("read_only"), bucketAccessEntry.Permissions)
 }

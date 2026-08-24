@@ -81,6 +81,10 @@ Each Linode firewall will be stored in the `firewalls` attribute and will export
 
 * `outbound_policy` - The default behavior for outbound traffic.
 
+* `version` - The current version of the Firewall rules.
+
+* `fingerprint` - The fingerprint of the current Firewall rules.
+
 * `linodes` - The IDs of Linodes this firewall is applied to.
 
 * `nodebalancers` - The IDs of NodeBalancers this firewall is applied to.
@@ -99,7 +103,7 @@ Each Linode firewall will be stored in the `firewalls` attribute and will export
 
 * `action` - Controls whether traffic is accepted or dropped by this rule (ACCEPT, DROP).
 
-* `protocol` - The network protocol this rule controls. (TCP, UDP, ICMP)
+* `protocol` - The network protocol this rule controls. Possible values include `ALL`, `TCP`, `UDP`, `ICMP`, `IPENCAP`, or a protocol number from `0` to `255`.
 
 * `ports` - A string representation of ports and/or port ranges (i.e. "443" or "80-90, 91").
 

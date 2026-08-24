@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 const (
@@ -125,7 +125,6 @@ func (r *Resource) Create(
 			linodego.AlertDefinitionStatusEnabled,
 			serviceType,
 			alertdefinition.ID,
-			int(DefaultAlertDefinitionTimeout.Seconds()),
 		)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -284,7 +283,6 @@ func (r *Resource) Update(
 				linodego.AlertDefinitionStatusEnabled,
 				alertDefinition.ServiceType,
 				alertDefinition.ID,
-				int(DefaultAlertDefinitionTimeout.Seconds()),
 			)
 			if err != nil {
 				resp.Diagnostics.AddError(

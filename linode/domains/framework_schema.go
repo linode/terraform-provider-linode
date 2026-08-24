@@ -2,13 +2,12 @@ package domains
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/v3/linode/domain"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v4/linode/domain"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
 var filterConfig = frameworkfilter.Config{
-	"group":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"tags":   {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"domain": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 

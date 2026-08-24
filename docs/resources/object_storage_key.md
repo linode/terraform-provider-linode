@@ -72,8 +72,6 @@ The following arguments are supported in the bucket_access block:
 
 * `bucket_name` - The unique label of the bucket to which the key will grant limited access.
 
-* `cluster` - (Deprecated) The Object Storage cluster where the bucket resides. Deprecated in favor of `region`.
-
 * `region` - The region where the bucket resides.
 
 * `permissions` - This Limited Access Key’s permissions for the selected bucket. *Changing `permissions` forces the creation of a new Object Storage Key.* (`read_write`, `read_only`)

@@ -18,14 +18,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/nb"
-	"github.com/linode/terraform-provider-linode/v3/linode/nb/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/nb"
+	"github.com/linode/terraform-provider-linode/v4/linode/nb/tmpl"
 )
 
-var testRegion string
+var (
+	testRegion string
+	lkeRegion  string
+	k8sVersion string
+)
 
 func init() {
 	resource.AddTestSweepers("linode_nodebalancer", &resource.Sweeper{
@@ -33,12 +37,34 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityNodeBalancers}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityNodeBalancers}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	testRegion = region
+
+	lkeReg, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLKE}, "core")
+	if err != nil {
+		log.Printf("WARNING: no LKE region found, lkeCluster datasource test will be skipped: %s", err)
+	} else {
+		lkeRegion = lkeReg
+	}
+
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatalf("failed to get client: %s", err)
+	}
+
+	versions, err := client.ListLKEVersions(context.Background(), nil)
+	if err != nil {
+		log.Printf("WARNING: failed to list LKE versions: %s", err)
+	} else if len(versions) > 0 {
+		for _, v := range versions {
+			if k8sVersion == "" || v.ID > k8sVersion {
+				k8sVersion = v.ID
+			}
+		}
+	}
 }
 
 func sweep(prefix string) error {
@@ -106,6 +132,7 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "lke_cluster.#", "0"),
 				),
 			},
 
@@ -240,7 +267,7 @@ func TestAccResourceNodeBalancer_vpc(t *testing.T) {
 	resName := "linode_nodebalancer.test"
 	nodebalancerName := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs}, "core")
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -415,4 +442,37 @@ func checkNodeBalancerDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func TestAccResourceNodeBalancer_reservedIP(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_nodebalancer.test"
+	ipResName := "linode_networking_ip.test"
+	nodebalancerName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkNodeBalancerDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ReservedIP(t, nodebalancerName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkNodeBalancerExists,
+					resource.TestCheckResourceAttrPair(resName, "ipv4", ipResName, "address"),
+					resource.TestCheckResourceAttr(ipResName, "reserved", "true"),
+				),
+			},
+			{
+				// Remove the NodeBalancer; the reserved IP must remain.
+				Config: tmpl.ReservedIPOnly(t, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(ipResName, "address"),
+					resource.TestCheckResourceAttr(ipResName, "reserved", "true"),
+				),
+			},
+		},
+	})
 }

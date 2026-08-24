@@ -3,8 +3,8 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	domain "github.com/linode/terraform-provider-linode/v3/linode/domain/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	domain "github.com/linode/terraform-provider-linode/v4/linode/domain/tmpl"
 )
 
 type TemplateData struct {

@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/customtypes"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/customtypes"
 )
 
 var LinodeInterfaceObjectType = types.ObjectType{
@@ -91,6 +91,14 @@ var frameworkResourceSchema = schema.Schema{
 			Required:    true,
 			PlanModifiers: []planmodifier.Int64{
 				int64planmodifier.RequiresReplace(),
+			},
+		},
+		"vpc_type": schema.StringAttribute{
+			Description: "The type of the parent VPC ('regular' or 'rdma'). " +
+				"Omitted if the requesting account does not have access to the GPUDirect RDMA functionality.",
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"label": schema.StringAttribute{

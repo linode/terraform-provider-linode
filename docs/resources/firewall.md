@@ -104,7 +104,7 @@ The following arguments are supported in the inbound and outbound rule blocks:
   
 * `action` - (required) Controls whether traffic is accepted or dropped by this rule (`ACCEPT`, `DROP`). Overrides the Firewall’s inbound_policy if this is an inbound rule, or the outbound_policy if this is an outbound rule.
 
-* `protocol` - (Required) The network protocol this rule controls. (`TCP`, `UDP`, `ICMP`)
+* `protocol` - (Required) The network protocol this rule controls. Accepted values are `ALL`, `TCP`, `UDP`, `ICMP`, `IPENCAP`, or a protocol number from `0` to `255`.
 
 * `ports` - (Optional) A string representation of ports and/or port ranges (i.e. "443" or "80-90, 91").
   
@@ -119,6 +119,10 @@ In addition to all arguments above, the following attributes are exported:
 * `id` - The ID of the Firewall.
 
 * `status` - The status of the Firewall.
+
+* `version` - The current version of the Firewall rules.
+
+* `fingerprint` - The fingerprint of the current Firewall rules.
 
 * [`devices`](#devices) - The devices governed by the Firewall.
 

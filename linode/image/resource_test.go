@@ -13,10 +13,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/image/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/image/tmpl"
 )
 
 // testImageBytes is a minimal Gzipped image.
@@ -60,7 +60,7 @@ func init() {
 		F:    sweep,
 	})
 
-	regions, err := acceptance.GetRegionsWithCaps([]string{linodego.CapabilityObjectStorage, linodego.CapabilityLinodes}, "core")
+	regions, err := acceptance.GetRegionsWithCaps([]linodego.RegionCapability{linodego.CapabilityObjectStorage, linodego.CapabilityLinodes}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

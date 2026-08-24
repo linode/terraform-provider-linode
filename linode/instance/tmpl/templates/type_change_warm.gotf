@@ -2,7 +2,7 @@
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
-    group = "tf_test"
+
     type = "{{.Type}}"
     region = "{{ .Region }}"
     image = "{{.Image}}"

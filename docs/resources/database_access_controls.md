@@ -30,7 +30,7 @@ resource "linode_instance" "my-instance" {
 
 resource "linode_database_mysql_v2" "my-db" {
   label = "mydatabase"
-  engine_id = "mysql/8.0.30"
+  engine_id = "mysql/8"
   region = "us-southeast"
   type = "g6-nanode-1"
 }

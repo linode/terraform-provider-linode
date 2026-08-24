@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 type DataSourceModel struct {
@@ -86,13 +86,13 @@ func flattenIPv6(network *linodego.InstanceIPv6Response, diags *diag.Diagnostics
 
 	global := helper.GenericSliceToList(network.Global, globalObjectType, flattenIPV6Range, diags)
 
-	link_local, newDiags := flattenIP(network.LinkLocal)
+	link_local, newDiags := flattenIP(*network.LinkLocal)
 	if newDiags.HasError() {
 		diags.Append(newDiags...)
 		return nil
 	}
 
-	slaac, newDiags := flattenIP(network.SLAAC)
+	slaac, newDiags := flattenIP(*network.SLAAC)
 	if newDiags.HasError() {
 		diags.Append(newDiags...)
 		return nil
@@ -141,7 +141,7 @@ func FlattenIPVPCNAT1To1(data *linodego.InstanceIPNAT1To1) (basetypes.ObjectValu
 	return obj, nil
 }
 
-func flattenVPCIP(vpc *linodego.VPCIP) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenVPCIP(vpc linodego.VPCIP) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := make(map[string]attr.Value)
 	var diags diag.Diagnostics
 
@@ -180,7 +180,7 @@ func flattenVPCIP(vpc *linodego.VPCIP) (*basetypes.ObjectValue, diag.Diagnostics
 	return &obj, nil
 }
 
-func flattenIP(network *linodego.InstanceIP) (
+func flattenIP(network linodego.InstanceIP) (
 	*basetypes.ObjectValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
@@ -208,6 +208,21 @@ func flattenIP(network *linodego.InstanceIP) (
 		result["interface_id"] = types.Int64Null()
 	}
 
+	result["reserved"] = types.BoolValue(network.Reserved)
+
+	tags := helper.StringSliceToFrameworkValueSlice(network.Tags)
+	tagsSet, tagsDiags := types.SetValue(types.StringType, tags)
+	if tagsDiags.HasError() {
+		return nil, tagsDiags
+	}
+	result["tags"] = tagsSet
+
+	assignedEntity, assignedEntityDiags := FlattenAssignedEntity(network.AssignedEntity)
+	if assignedEntityDiags.HasError() {
+		return nil, assignedEntityDiags
+	}
+	result["assigned_entity"] = assignedEntity
+
 	obj, d := types.ObjectValue(networkObjectType.AttrTypes, result)
 	if d.HasError() {
 		return nil, d
@@ -216,10 +231,25 @@ func flattenIP(network *linodego.InstanceIP) (
 	return &obj, nil
 }
 
+func FlattenAssignedEntity(entity *linodego.ReservedIPAssignedEntity) (basetypes.ObjectValue, diag.Diagnostics) {
+	if entity == nil {
+		return types.ObjectNull(AssignedEntityObjectType.AttrTypes), nil
+	}
+
+	result := map[string]attr.Value{
+		"id":    types.Int64Value(int64(entity.ID)),
+		"label": types.StringValue(entity.Label),
+		"type":  types.StringValue(entity.Type),
+		"url":   types.StringValue(entity.URL),
+	}
+
+	return types.ObjectValue(AssignedEntityObjectType.AttrTypes, result)
+}
+
 func flattenVPCIPByValue(vpc linodego.VPCIP) (
 	*basetypes.ObjectValue, diag.Diagnostics,
 ) {
-	return flattenVPCIP(&vpc)
+	return flattenVPCIP(vpc)
 }
 
 func flattenVPCIPIPv6Address(addr linodego.VPCIPIPv6Address) (
