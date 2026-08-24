@@ -145,6 +145,24 @@ func TestRegionSelector_AvailableForAccountRejectsUnsupportedCapability(t *testi
 	)
 }
 
+func TestRegionSelector_AvailableForAccountRequiresClient(t *testing.T) {
+	selector := &RegionSelector{}
+
+	_, err := selector.
+		AvailableForAccount(t.Context(), linodego.CapabilityNodeBalancers).
+		Random()
+	assert.EqualError(t, err, "region selector has no API client")
+}
+
+func TestRegionSelector_WithLinodePlansRequiresClient(t *testing.T) {
+	selector := &RegionSelector{}
+
+	_, err := selector.
+		WithLinodePlans(t.Context(), "g6-nanode-1").
+		Random()
+	assert.EqualError(t, err, "region selector has no API client")
+}
+
 func assertFirst(t *testing.T, selector *RegionSelector) string {
 	t.Helper()
 

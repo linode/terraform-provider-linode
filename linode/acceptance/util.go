@@ -749,6 +749,10 @@ func (selector *RegionSelector) AvailableForAccount(
 		return selector.filteredCopy(func(linodego.Region) bool { return true })
 	}
 
+	if selector.client == nil {
+		return selector.withError(errors.New("region selector has no API client"))
+	}
+
 	availabilities, err := selector.client.ListAccountAvailabilities(ctx, nil)
 	if err != nil {
 		return selector.withError(fmt.Errorf("list account availabilities: %w", err))
@@ -790,6 +794,10 @@ func (selector *RegionSelector) WithLinodePlans(
 
 	if len(plans) == 0 {
 		return selector.filteredCopy(func(linodego.Region) bool { return true })
+	}
+
+	if selector.client == nil {
+		return selector.withError(errors.New("region selector has no API client"))
 	}
 
 	availabilities, err := selector.client.ListRegionsAvailability(ctx, nil)
