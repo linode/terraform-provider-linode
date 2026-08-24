@@ -1,20 +1,32 @@
 {{ define "instance_disk_swap" }}
 
-# Create instance WITHOUT any image - no auto-provisioned disks at all
+# Create instance WITHOUT auto-provisioning by omitting image
+# This gives us full control over disk creation
 resource "linode_instance" "foobar" {
     label = "{{ .Label }}"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
 }
 
-# Create a swap disk
-# Even though there's no image on the instance, the test validates
-# that swap disks don't get image attributes populated
+# Manually create boot disk with an image (simulates deployed instance)
+resource "linode_instance_disk" "boot" {
+  label = "{{ .Label }}-boot"
+  linode_id = linode_instance.foobar.id
+  size = 25088
+  image = "linode/debian12"
+  root_pass = "{{ .RootPass }}"
+  filesystem = "ext4"
+}
+
+# Create swap disk - this should NOT inherit the boot disk's/instance's image
 resource "linode_instance_disk" "swap" {
   label = "{{ .Label }}-swap"
   linode_id = linode_instance.foobar.id
   size = {{ .Size }}
   filesystem = "swap"
+  
+  # Ensure boot disk is created first to avoid timing issues
+  depends_on = [linode_instance_disk.boot]
 }
 
 {{ end }}
