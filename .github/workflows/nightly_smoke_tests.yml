@@ -25,13 +25,14 @@ jobs:
           ref: ${{ github.event.inputs.sha || github.ref }}
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: '1.x'
 
-      - name: Install Dependencies
-        run: |
-          make deps
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          install-only: true
 
       - name: Run smoke tests
         id: smoke_tests
@@ -42,7 +43,7 @@ jobs:
 
       - name: Notify Slack
         if: always() && github.repository == 'linode/terraform-provider-linode'
-        uses: slackapi/slack-github-action@v3
+        uses: slackapi/slack-github-action@v4
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}

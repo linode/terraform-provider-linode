@@ -7,9 +7,10 @@ import (
 )
 
 type TemplateData struct {
-	Label  string
-	IPv4   string
-	Region string
+	Label   string
+	IPv4    string
+	Region  string
+	VPCType string
 }
 
 func Basic(t testing.TB, label, ipv4, region string) string {
@@ -90,5 +91,15 @@ func DataNodeBalancer(t testing.TB, label, ipv4, region string) string {
 			Label:  label,
 			IPv4:   ipv4,
 			Region: region,
+		})
+}
+
+func VPCType(t testing.TB, label, ipv4, region, vpcType string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_subnet_vpc_type", TemplateData{
+			Label:   label,
+			IPv4:    ipv4,
+			Region:  region,
+			VPCType: vpcType,
 		})
 }

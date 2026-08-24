@@ -51,6 +51,10 @@ func (r *Resource) Create(
 		Description: data.Description.ValueString(),
 	}
 
+	if !data.VPCType.IsUnknown() && !data.VPCType.IsNull() {
+		vpcCreateOpts.VPCType = linodego.Pointer(linodego.VPCType(data.VPCType.ValueString()))
+	}
+
 	if !data.IPv6.IsNull() {
 		modelIPv6s := make([]ResourceModelIPv6, len(data.IPv6.Elements()))
 
