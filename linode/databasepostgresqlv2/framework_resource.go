@@ -528,6 +528,16 @@ func (r *Resource) Update(
 				return
 			}
 		}
+
+		if err := client.WaitForDatabaseStatus(
+			ctx,
+			id,
+			linodego.DatabaseEngineTypePostgres,
+			linodego.DatabaseStatusActive,
+		); err != nil {
+			resp.Diagnostics.AddError("Failed to wait for PostgreSQL database active", err.Error())
+			return
+		}
 	}
 
 	resp.Diagnostics.Append(plan.Refresh(ctx, client, id, false)...)
