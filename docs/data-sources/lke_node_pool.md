@@ -30,7 +30,9 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `autoscaler` - When enabled, the number of nodes autoscales within the defined minimum and maximum values.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* `autoscaler` - (Nested Attribute) When enabled, the number of nodes autoscales within the defined minimum and maximum values. Referenced directly (e.g. `autoscaler.enabled`).
 
   * `enabled` - Whether autoscaling is enabled for this node pool.
 
@@ -44,7 +46,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `isolation_public_ipv6` - Whether nodes in this pool have public IPv6 addresses. This is only available for LKE Enterprise clusters and may not be available to all customers.
 
-* `disks` - This node pool's custom disk layout.
+* `disks` - (Nested Attribute List) This node pool's custom disk layout.
 
   * `size` - The size of this custom disk partition in MB.
 
@@ -60,7 +62,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `node_count` - The number of nodes in the node pool.
 
-* `nodes` - Status information for the nodes that are members of this node pool.
+* `nodes` - (Nested Attribute List) Status information for the nodes that are members of this node pool.
 
   * `id` - The Node's ID.
 
@@ -70,7 +72,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `tags` - An array of tags applied to this object.
 
-* `taints` - Kubernetes taints to add to node pool nodes.
+* `taints` - (Nested Attribute List) Kubernetes taints to add to node pool nodes.
 
   * `effect` - The Kubernetes taint effect.
 
