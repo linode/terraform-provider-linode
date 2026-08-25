@@ -34,10 +34,6 @@ jobs:
         with:
           install-only: true
 
-      - name: Install Dependencies
-        run: |
-          make deps
-
       - name: Run smoke tests
         id: smoke_tests
         run: |
