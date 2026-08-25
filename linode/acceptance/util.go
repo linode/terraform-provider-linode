@@ -39,7 +39,7 @@ const (
 
 	runLongTestsEnvVar  = "RUN_LONG_TESTS"
 	skipLongTestMessage = "This test has been marked as a long-running test and is skipped by default. " +
-		"If you would like to run this test, please set the RUN_LONG_TEST environment variable to true."
+		"If you would like to run this test, please set the " + runLongTestsEnvVar + " environment variable to true."
 )
 
 type (
