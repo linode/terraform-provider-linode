@@ -59,6 +59,8 @@ resource "linode_vpc" "test" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `label` - (Required) The label of the VPC. This field can only contain ASCII letters, digits and dashes.
 
 * `region` - (Required) The region of the VPC.
@@ -67,9 +69,9 @@ The following arguments are supported:
 
 * `vpc_type` - (Optional) The type of the VPC. Can be either `regular` or `rdma`. Defaults to `regular`. The `rdma` type creates an RDMA VPC and may not be available to all users. Changing this value forces the creation of a new VPC.
 
-* [`ipv6`](#ipv6) - (Optional) A list of IPv6 allocations under this VPC.
+* [`ipv6`](#ipv6) - (Optional, Nested Attribute List) A list of IPv6 allocations under this VPC.
 
-* [`ipv4`](#ipv4) - (Optional) A list of IPv4 ranges under this VPC.
+* [`ipv4`](#ipv4) - (Optional, Nested Attribute List) A list of IPv4 ranges under this VPC.
 
 ## IPv6
 
