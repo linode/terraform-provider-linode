@@ -21,6 +21,10 @@ output "regions_vpc_availability" {
 
 Each Linode region VPC availability will be stored in the `regions_vpc_availability` attribute and will export the following attributes:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* `regions_vpc_availability` - (Nested Attribute List) A list of Linode region VPC availability entries.
+
 * `available` - Whether VPCs can be created in the region.
 
 * `available_ipv6_prefix_lengths` - The IPv6 prefix lengths allowed when creating a VPC in the region.

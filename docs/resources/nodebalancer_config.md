@@ -80,6 +80,8 @@ The following arguments are supported:
 
 This resource exports the following attributes:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `udp_session_timeout` - The read-only idle time in seconds after which a session that hasn’t received packets is destroyed.
 
   * **NOTE: This attribute may not be generally available.**
@@ -88,7 +90,7 @@ This resource exports the following attributes:
 
 * `ssl_fingerprint` - The read-only fingerprint automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.
 
-* [`node_status`](#node_status) - The status of the attached nodes.
+* [`node_status`](#node_status) - (Read-Only Object List) The status of the attached nodes. Referenced with an index (e.g. `node_status.0.down`).
 
 ### node_status
 

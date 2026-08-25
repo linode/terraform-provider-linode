@@ -45,9 +45,11 @@ output "image_ids" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `latest` - (Optional) If true, only the latest image will be returned. Images without a valid `created` field are not included in the result.
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode images that meet certain requirements.
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode images that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -65,6 +67,8 @@ The following arguments are supported:
 
 Each Linode image will be stored in the `images` attribute and will export the following attributes:
 
+* `images` - (Nested Attribute List) The returned list of Images. Referenced by index (e.g. `images[0].id`).
+
 * `id` - The unique ID of this Image.  The ID of private images begin with `private/` followed by the numeric identifier of the private image, for example `private/12345`.
 
 * `label` - A short description of the Image.
@@ -81,11 +85,11 @@ Each Linode image will be stored in the `images` attribute and will export the f
 
 * `is_shared` - True if the Image is shared. (**Note: v4beta only and may not currently be available to all users.**)
 
-* `image_sharing` - Details about image sharing, including who the image is shared with and by. (**Note: v4beta only and may not currently be available to all users.**)
-  * `shared_with` - Details about who the image is shared with.
+* `image_sharing` - (Nested Attribute) Details about image sharing, including who the image is shared with and by. (**Note: v4beta only and may not currently be available to all users.**) Referenced directly (e.g. `image_sharing.shared_by`).
+  * `shared_with` - (Nested Attribute) Details about who the image is shared with. Referenced directly (e.g. `shared_with.sharegroup_count`).
     * `sharegroup_count` - The number of sharegroups the private image is present in.
     * `sharegroup_list_url` - The GET api url to view the sharegroups in which the image is shared.
-  * `shared_by` - Details about who the image is shared by.
+  * `shared_by` - (Nested Attribute) Details about who the image is shared by. Referenced directly (e.g. `shared_by.sharegroup_id`).
     * `sharegroup_id` - The sharegroup_id from the im_ImageShare row.
     * `sharegroup_uuid` - The sharegroup_uuid from the im_ImageShare row.
     * `sharegroup_label` - The label from the associated im_ImageShareGroup row.
@@ -103,7 +107,7 @@ Each Linode image will be stored in the `images` attribute and will export the f
 
 * `total_size` - The total size of the image in all available regions.
 
-* `replications` - A list of image replication regions and corresponding status.
+* `replications` - (Nested Attribute List) A list of image replication regions and corresponding status.
   * `region` - The region of an image replica.
   * `status` - The status of an image replica.
 

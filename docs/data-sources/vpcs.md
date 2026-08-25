@@ -30,7 +30,9 @@ output "vpcs" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode VPCs that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode VPCs that meet certain requirements.
 
 ### Filter
 
@@ -44,15 +46,17 @@ The following arguments are supported:
 
 Each Linode VPC will be stored in the `vpcs` attribute and will export the following attributes:
 
+* `vpcs` - (Nested Attribute List) The VPCs returned by this data source.
+
 * `id` - The unique id of this VPC.
 
 * `created` - The date and time when the VPC was created.
 
 * `description` - The user-defined description of this VPC.
 
-* `ipv6` - A list of IPv6 allocations under this VPC.
+* `ipv6` - (Nested Attribute List) A list of IPv6 allocations under this VPC.
 
-* `ipv4` - A list of IPv4 ranges under this VPC.
+* `ipv4` - (Nested Attribute List) A list of IPv4 ranges under this VPC.
 
 * `label` - The label of the VPC.
 
