@@ -1,5 +1,3 @@
-//go:build integration || instancenetworking
-
 package instancenetworking_test
 
 import (

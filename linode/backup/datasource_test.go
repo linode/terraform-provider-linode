@@ -1,5 +1,3 @@
-//go:build integration || backup
-
 package backup_test
 
 import (

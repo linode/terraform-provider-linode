@@ -1,5 +1,3 @@
-//go:build integration || producerimagesharegroup
-
 package producerimagesharegroup_test
 
 import (

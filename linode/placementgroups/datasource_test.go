@@ -1,5 +1,3 @@
-//go:build integration || placementgroups
-
 package placementgroups_test
 
 import (

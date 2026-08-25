@@ -1,5 +1,3 @@
-//go:build integration || vlan
-
 package vlan_test
 
 import (

@@ -1,5 +1,3 @@
-//go:build integration || domainzonefile
-
 package domainzonefile_test
 
 import (

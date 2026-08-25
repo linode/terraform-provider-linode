@@ -1,5 +1,3 @@
-//go:build integration || instancesharedips
-
 package instancesharedips_test
 
 import (

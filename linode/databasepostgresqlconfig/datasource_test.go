@@ -1,5 +1,3 @@
-//go:build integration || databasepostgresqlconfig
-
 package databasepostgresqlconfig_test
 
 import (

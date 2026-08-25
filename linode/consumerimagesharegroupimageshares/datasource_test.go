@@ -1,5 +1,3 @@
-//go:build integration || consumerimagesharegroupimageshares
-
 package consumerimagesharegroupimageshares_test
 
 import (

@@ -1,5 +1,3 @@
-//go:build unit
-
 package frameworkfilter
 
 var testFilterConfig = Config{

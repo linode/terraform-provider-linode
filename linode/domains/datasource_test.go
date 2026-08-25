@@ -1,5 +1,3 @@
-//go:build integration || domains
-
 package domains_test
 
 import (

@@ -1,5 +1,3 @@
-//go:build integration || objquota
-
 package objquota_test
 
 import (

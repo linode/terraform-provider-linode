@@ -1,5 +1,3 @@
-//go:build integration || region
-
 package region_test
 
 import (

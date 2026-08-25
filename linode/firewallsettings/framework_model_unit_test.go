@@ -1,5 +1,3 @@
-//go:build unit
-
 package firewallsettings_test
 
 import (

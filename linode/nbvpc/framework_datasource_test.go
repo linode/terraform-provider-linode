@@ -1,5 +1,3 @@
-//go:build integration || nbvpc
-
 package nbvpc_test
 
 import (

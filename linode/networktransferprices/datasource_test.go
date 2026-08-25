@@ -1,5 +1,3 @@
-//go:build integration || networktransferprices
-
 package networktransferprices_test
 
 import (

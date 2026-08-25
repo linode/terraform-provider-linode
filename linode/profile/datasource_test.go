@@ -1,5 +1,3 @@
-//go:build integration || profile
-
 package profile_test
 
 import (

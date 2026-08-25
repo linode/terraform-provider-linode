@@ -1,6 +1,4 @@
-//go:build integration || util
-
-// NOTE: This test file needs to be tagged as integration because the
+// NOTE: This test file needs to be run as integration because the
 // package accesses the Linode API during init.
 
 package acceptance
