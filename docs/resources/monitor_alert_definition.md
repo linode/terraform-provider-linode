@@ -20,6 +20,7 @@ resource "linode_monitor_alert_definition" "test" {
     label        = "test-alert-definition"
     severity     = 1
     channel_ids  = [10000]
+    group_by     = ["entity_id"]
     wait_for     = true
 
     trigger_conditions = {
@@ -64,6 +65,7 @@ The following arguments are supported:
 * `status` - (Optional) The status of the alert definition.
 * `scope` - (Optional) The scope of the alert definition. Allowed values: `account`, `entity`, `region`. Defaults to `entity`.
 * `regions` - (Optional) The regions the alert definition applies to. Only used for region-scoped alerts.
+* `group_by` - (Optional) A set of dimension fields used to group alert events, such as `entity_id`.
 * `wait_for` - (Optional) Whether to wait for the alert definition to be ready before completing the resource creation.
 
 ### rule_criteria
