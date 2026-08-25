@@ -145,7 +145,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	ctx = populateLogAttributes(ctx, d)
 
-	// Wait for the new domain to become visible before reading
+	// Wait for new domain to become visible before reading
 	err = helper.WithRetries(ctx, 10, 2*time.Second, func() (bool, error) {
 		_, err := client.GetDomain(ctx, domain.ID)
 		if err != nil {
