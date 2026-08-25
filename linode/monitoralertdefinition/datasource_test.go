@@ -28,7 +28,7 @@ func TestAccDataSourceAlertDefinition_basic(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, alertLabel, "avg", alertChannels, 1),
+				Config: tmpl.DataBasic(t, alertLabel, "avg", alertChannels, 1, "entity_id"),
 				Check:  checkAlertDefinitionExists,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("label"), knownvalue.NotNull()),
@@ -45,6 +45,11 @@ func TestAccDataSourceAlertDefinition_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("class"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("scope"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("regions"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("group_by"),
+						knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("entity_id")}),
+					),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("entities"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("alert_channels").AtSliceIndex(0).AtMapKey("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("alert_channels").AtSliceIndex(0).AtMapKey("label"), knownvalue.NotNull()),
