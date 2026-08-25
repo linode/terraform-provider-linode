@@ -43,6 +43,8 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `id` - The unique identifier of this reserved IP address (same as `address`).
 
 * `address` - The reserved IPv4 address.
@@ -63,9 +65,9 @@ In addition to all arguments above, the following attributes are exported:
 
 * `reserved` - Whether this IP address is reserved. Always `true` for this resource.
 
-* `vpc_nat_1_1` - Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.
+* `vpc_nat_1_1` - (Read-Only Object List) Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet. Referenced with an index (e.g. `vpc_nat_1_1.0.address`).
 
-* `assigned_entity` - The entity this reserved IP address is currently assigned to, if any. Contains:
+* `assigned_entity` - (Read-Only Object List) The entity this reserved IP address is currently assigned to, if any. Referenced with an index (e.g. `assigned_entity.0.id`). Contains:
 
   * `id` - The ID of the assigned entity.
 

@@ -40,9 +40,11 @@ output "database_ids" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `latest` - (Optional) If true, only the latest create database will be returned.
 
-* [`filter`](#filter) - (Optional) A set of filters used to select databases that meet certain requirements.
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select databases that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. (`version`)
 
@@ -59,6 +61,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each engine will be stored in the `databases` attribute and will export the following attributes:
+
+* `databases` - (Nested Attribute List) Managed Databases matching the query.
 
 * `allow_list` - A list of IP addresses that can access the Managed Database.
 
@@ -80,7 +84,7 @@ Each engine will be stored in the `databases` attribute and will export the foll
 
 * `platform` - The back-end platform for relational databases used by the service.
 
-* [`private_network`](#private_network) - Restricts access to this database using a virtual private cloud (VPC).
+* [`private_network`](#private_network) - (Nested Attribute) Restricts access to this database using a virtual private cloud (VPC). Referenced directly (e.g. `private_network.vpc_id`).
 
 * `region` - The region to use for the Managed Database.
 
