@@ -76,6 +76,7 @@ Each alert definition will be stored in the `alert_definitions` attribute and wi
 * `regions` - The regions the alert definition applies to. Only used for region-scoped alerts.
 * [`entities`](#entities) - (Nested Attribute) Entity metadata for the alert definition. Referenced directly (e.g. `entities.count`).
 * [`alert_channels`](#alert_channels) - (Nested Attribute List) A list of alert channel objects associated with the alert definition.
+* `group_by` - A set of dimension fields used to group alert events, such as `entity_id`.
 
 ### entities
 

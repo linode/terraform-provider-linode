@@ -54,6 +54,7 @@ In addition to all arguments above, the following attributes are exported:
 * `regions` - The regions the alert definition applies to. Only used for region-scoped alerts.
 * [`entities`](#entities) - (Nested Attribute) Entity metadata for the alert definition. Referenced directly (e.g. `entities.url`).
 * [`alert_channels`](#alert_channels) - (Nested Attribute List) A list of alert channel objects associated with the alert definition.
+* `group_by` - A set of dimension fields used to group alert events, such as `entity_id`.
 
 ### entities
 

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -310,6 +311,15 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The regions the alert definition applies to. Only used for region-scoped alerts.",
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"group_by": schema.SetAttribute{
+			ElementType: types.StringType,
+			Optional:    true,
+			Computed:    true,
+			Description: "The dimension fields used to group alert events, such as entity_id.",
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"entities": schema.SingleNestedAttribute{
