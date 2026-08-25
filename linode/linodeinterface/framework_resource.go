@@ -228,7 +228,7 @@ func (r *Resource) Delete(
 	}
 
 	tflog.Debug(ctx, "Waiting for Linode Interface to be fully deleted")
-	err = helper.WithRetries(ctx, 10, 2*time.Second, func() (bool, error) {
+	err = helper.WithRetries(ctx, 20, 3*time.Second, func() (bool, error) {
 		_, err := client.GetInterface(ctx, linodeID, id)
 		if err != nil {
 			if linodego.IsNotFound(err) {
