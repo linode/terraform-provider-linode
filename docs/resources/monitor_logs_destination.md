@@ -64,13 +64,15 @@ resource "linode_monitor_logs_destination" "https_example" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `label` - (Required) The label for this logs destination.
 
 * `type` - (Required, Forces New) The type of this logs destination. One of: `akamai_object_storage`, `custom_https`.
 
-* [`akamai_object_storage_details`](#akamai_object_storage_details) - (Optional) Details for an `akamai_object_storage` logs destination. Exactly one of `akamai_object_storage_details` or `custom_https_details` must be specified.
+* [`akamai_object_storage_details`](#akamai_object_storage_details) - (Optional, Nested Attribute) Details for an `akamai_object_storage` logs destination. Exactly one of `akamai_object_storage_details` or `custom_https_details` must be specified. Referenced directly (e.g. `akamai_object_storage_details.access_key_id`).
 
-* [`custom_https_details`](#custom_https_details) - (Optional) Details for a `custom_https` logs destination. Exactly one of `akamai_object_storage_details` or `custom_https_details` must be specified.
+* [`custom_https_details`](#custom_https_details) - (Optional, Nested Attribute) Details for a `custom_https` logs destination. Exactly one of `akamai_object_storage_details` or `custom_https_details` must be specified. Referenced directly (e.g. `custom_https_details.endpoint_url`).
 
 ### akamai_object_storage_details
 
@@ -92,11 +94,11 @@ The following arguments are supported:
 
 * `data_compression` - (Required) The compression format for log data. One of: `none`, `gzip`.
 
-* [`authentication`](#authentication) - (Required) Authentication configuration for the HTTPS endpoint.
+* [`authentication`](#authentication) - (Required, Nested Attribute) Authentication configuration for the HTTPS endpoint. Referenced directly (e.g. `custom_https_details.authentication.type`).
 
-* [`client_certificate_details`](#client_certificate_details) - (Optional) TLS client certificate configuration.
+* [`client_certificate_details`](#client_certificate_details) - (Optional, Nested Attribute) TLS client certificate configuration. Referenced directly (e.g. `custom_https_details.client_certificate_details.tls_hostname`).
 
-* [`custom_headers`](#custom_headers) - (Optional) Custom HTTP headers to include in log delivery requests.
+* [`custom_headers`](#custom_headers) - (Optional, Nested Attribute List) Custom HTTP headers to include in log delivery requests.
 
 #### authentication
 

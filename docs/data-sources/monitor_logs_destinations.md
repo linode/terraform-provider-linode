@@ -32,7 +32,9 @@ data "linode_monitor_logs_destinations" "object_storage" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select logs destinations that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select logs destinations that meet certain requirements.
 
 ### Filter
 
@@ -51,6 +53,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each logs destination will be stored in the `destinations` attribute and will export the following attributes:
+
+* `destinations` - (Nested Attribute List) Logs destinations matching the query.
 
 * `id` - The unique ID of this logs destination.
 
