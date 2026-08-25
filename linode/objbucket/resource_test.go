@@ -443,6 +443,46 @@ func TestAccResourceBucket_lifecycleNoID(t *testing.T) {
 	})
 }
 
+func TestAccResourceBucket_lifecycleNoKeys(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_object_storage_bucket.foobar"
+	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Step 1: Create bucket with lifecycle_rule but no access_key/secret_key.
+				// This should fail to apply the lifecycle rule but still create the bucket.
+				Config:      tmpl.LifeCycleNoKeys(t, objectStorageBucketName, testRegion),
+				ExpectError: regexp.MustCompile(`access_key and secret_key are required`),
+			},
+			{
+				// Step 2: Apply the same bucket without lifecycle_rule.
+				// Without the fix, this would fail because the stale lifecycle_rule
+				// from step 1 would persist in state, causing readResource to
+				// require S3 keys it can't get.
+				Config: tmpl.Basic(t, objectStorageBucketName, testRegion),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(objectStorageBucketName),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("region"),
+						knownvalue.StringExact(testRegion),
+					),
+				},
+			},
+		},
+	})
+}
+
 func TestAccResourceBucket_cert(t *testing.T) {
 	t.Parallel()
 

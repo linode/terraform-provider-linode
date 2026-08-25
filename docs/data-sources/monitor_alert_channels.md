@@ -32,7 +32,9 @@ data "linode_monitor_alert_channels" "system" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select monitor alert channels that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select monitor alert channels that meet certain requirements.
 
 ### Filter
 
@@ -44,6 +46,8 @@ The following arguments are supported:
 
 Each Alert Channel will be stored in the `monitor_alert_channels` attribute and will export the following attributes:
 
+* `monitor_alert_channels` - (Nested Attribute List) Monitor alert channels matching the query.
+
 * `id` - The unique ID of the channel.
 * `label` - The display label for the channel.
 * `type` - The channel type (`system` or `user`).
@@ -52,12 +56,12 @@ Each Alert Channel will be stored in the `monitor_alert_channels` attribute and 
 * `updated` - When the channel was last updated.
 * `created_by` - The user who created the channel, or `system`.
 * `updated_by` - The user who last updated the channel, or `system`.
-* `alerts` - Alert linkage metadata for this channel.
+* `alerts` - (Nested Attribute) Alert linkage metadata for this channel. Referenced directly (e.g. `alerts.alert_count`).
   * `url` - The API URL for associated alerts.
   * `type` - The alert type associated with the channel.
   * `alert_count` - The number of associated alerts.
-* `details` - Channel configuration details.
-  * `email` - Email-specific configuration details.
+* `details` - (Nested Attribute) Channel configuration details. Referenced directly (e.g. `details.email`).
+  * `email` - (Nested Attribute) Email-specific configuration details. Referenced directly (e.g. `email.recipient_type`).
     * `usernames` - Usernames that receive notifications.
     * `recipient_type` - Recipient selection mode (for example `read_write_users` or `user`).
 
