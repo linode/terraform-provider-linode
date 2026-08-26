@@ -50,6 +50,7 @@ In addition to all arguments above, the following attributes are exported:
 * `class` - "The plan type for the Managed Database cluster, either shared or dedicated. This only applies to a system alert for a service_type of dbaas (Managed Databases). For user alerts for dbaas, this is returned as null.",
 * `scope` - The scope of the alert definition. Possible values: `account`, `entity`, `region`.
 * `regions` - The regions the alert definition applies to. Only used for region-scoped alerts.
+* `group_by` - A set of dimension fields used to group alert events, such as `entity_id`.
 * [`entities`](#entities) - Entity metadata for the alert definition.
 * [`alert_channels`](#alert_channels) - A list of alert channel objects associated with the alert definition.
 
