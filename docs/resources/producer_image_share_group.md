@@ -40,11 +40,13 @@ resource "linode_producer_image_share_group" "test-images" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `label` - (Required) The label of the Image Share Group.
 
 * `description` - (Optional) The description of the Image Share Group
 
-* [`images`](#images) - (Optional) A list of Images to include in the Image Share Group.
+* [`images`](#images) - (Optional, Nested Attribute List) A list of Images to include in the Image Share Group.
 
 ## Attributes Reference
 
