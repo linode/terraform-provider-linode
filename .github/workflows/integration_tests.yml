@@ -94,7 +94,7 @@ jobs:
           LINODE_PRODUCER_TOKEN: ${{ env.LINODE_PRODUCER_TOKEN }}
           LINODE_CONSUMER_TOKEN: ${{ env.LINODE_CONSUMER_TOKEN }}
           RUN_LONG_TESTS: ${{ github.event.inputs.run_long_tests || 'false' }}
-          PARALLEL: ${{ github.event.inputs.parallel_value || '5' }}
+          PARALLEL: ${{ github.event.inputs.parallel_value || '4' }}
 
       - name: Upload Test Report as Artifact
         if: always()
