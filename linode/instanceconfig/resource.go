@@ -137,6 +137,24 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	linodeID := d.Get("linode_id").(int)
 
+	// If interface blocks are specified, verify the instance does not use Linode Interfaces
+	// (the new networking model), which is incompatible with config-profile-level interfaces.
+	if ifaces := d.Get("interface").([]any); len(ifaces) > 0 {
+		inst, err := client.GetInstance(ctx, linodeID)
+		if err != nil {
+			return diag.Errorf("failed to get instance: %s", err)
+		}
+		if inst.InterfaceGeneration == linodego.GenerationLinode {
+			return diag.Errorf(
+				"the \"interface\" attribute cannot be used in linode_instance_config for Linode %d "+
+					"because it is configured to use Linode Interfaces. "+
+					"Please remove the \"interface\" attribute from linode_instance_config and manage "+
+					"network interfaces using the linode_interface resource instead.",
+				linodeID,
+			)
+		}
+	}
+
 	createOpts := linodego.InstanceConfigCreateOptions{
 		Label:       d.Get("label").(string),
 		Comments:    d.Get("comments").(string),
@@ -289,6 +307,18 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	powerOffRequired := false
 	if d.HasChange("interface") {
+		// Linode Interfaces (the new networking model) is incompatible with config-profile-level
+		// interfaces. Attempting to update interfaces on such an instance results in a 400 error.
+		if inst.InterfaceGeneration == linodego.GenerationLinode {
+			return diag.Errorf(
+				"the \"interface\" attribute cannot be used in linode_instance_config for Linode %d "+
+					"because it is configured to use Linode Interfaces. "+
+					"Please remove the \"interface\" attribute from linode_instance_config and manage "+
+					"network interfaces using the linode_interface resource instead.",
+				linodeID,
+			)
+		}
+
 		putRequest.Interfaces = helper.ExpandConfigInterfaces(ctx, d.Get("interface").([]any))
 		config, err := client.GetInstanceConfig(ctx, linodeID, id)
 		if err != nil {

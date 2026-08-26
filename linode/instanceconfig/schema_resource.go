@@ -63,10 +63,12 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "Helpers enabled when booting to this Linode Config.",
 	},
 	"interface": {
-		Type:        schema.TypeList,
-		Elem:        instance.InterfaceSchema,
-		Optional:    true,
-		Description: "An array of Network Interfaces to add to this Linode's Configuration Profile.",
+		Type:     schema.TypeList,
+		Elem:     instance.InterfaceSchema,
+		Optional: true,
+		Description: "An array of Network Interfaces to add to this Linode's Configuration Profile. " +
+			"NOTE: This attribute is not supported when the Linode instance is configured to use Linode Interfaces " +
+			"(interface_generation = \"linode\"). Use the linode_interface resource to manage interfaces for such instances.",
 	},
 	"kernel": {
 		Type:        schema.TypeString,
