@@ -70,6 +70,7 @@ func getDomainWithRetries(
 		}
 
 		tflog.Debug(ctx, "Linode Domain not found, retrying...", map[string]any{
+			"id":      id,
 			"backoff": backoff.String(),
 		})
 
