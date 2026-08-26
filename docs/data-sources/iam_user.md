@@ -29,9 +29,11 @@ The following arguments are supported:
 
 The Linode IAM User datasource exports the following attributes:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `account_access` - A list of account level roles the user currently has.
 
-* [`entity_access`](#entity-access) - A list of specific entities the user has specific roles for.
+* [`entity_access`](#entity-access) - (Nested Attribute List) A list of specific entities the user has specific roles for.
 
 ### Entity Access
 
