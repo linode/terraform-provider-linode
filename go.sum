@@ -193,8 +193,8 @@ github.com/linode/linodego v1.69.0 h1:5Qsv6kwoTwwOBETfgietEg5UcaKg1bQEN0DDYc2wIe
 github.com/linode/linodego v1.69.0/go.mod h1:QPzvRKCy9oz1lRaIACPRORoAI9AAfKKg2AR5mXujoB0=
 github.com/linode/linodego/k8s v1.26.1 h1:7/Wln3A7DPPEiS2KfaJexSbbFHbFE/xwokUU2R2TTOc=
 github.com/linode/linodego/k8s v1.26.1/go.mod h1:54MTxB+ecs+mHnLOIRT7SbqR7y9mJ1t626CdWaP9qGs=
-github.com/linode/linodego/v2 v2.5.1-0.20260818184222-1f203048311b h1:PrIaxAtI7RtKVM6gyTWicBsiT/jfxRAxcFoI2vTjRXA=
-github.com/linode/linodego/v2 v2.5.1-0.20260818184222-1f203048311b/go.mod h1:OUjj67GEuU3qan2YaMSg0fW2xfG7u6QdnmIjKbA4CoE=
+github.com/linode/linodego/v2 v2.5.1-0.20260827201312-4fd5553acbc4 h1:Q3U6M7LTy+Mw88Yx/xqnXmA8aS2S0w6be7bkP9sCEYU=
+github.com/linode/linodego/v2 v2.5.1-0.20260827201312-4fd5553acbc4/go.mod h1:PYCnQa9auhd8uq62Xhsabt0QTQl0X5LLPTxyF6L++0Q=
 github.com/linode/terraform-provider-linode/v3 v3.14.1 h1:pC/mjZ1BT4ZQ2Am3WcQb06e6DXK50dlJzu+LLcq3ToY=
 github.com/linode/terraform-provider-linode/v3 v3.14.1/go.mod h1:cCXDIK52SVf1F3SMeCVqBGWO9dM+1c9xAt+PQlyKsgU=
 github.com/mailru/easyjson v0.7.7 h1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=
@@ -253,8 +253,8 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
-github.com/stretchr/testify v1.12.0 h1:K6Mr6jO9JICuend/5xzTM03ydSV3vdNRYAdPSukj8uI=
-github.com/stretchr/testify v1.12.0/go.mod h1:bOYBZb5qJ00vPzWfIqBUZPaxK8jWiXc6d3ErP4Ca9Gw=
+github.com/stretchr/testify v1.12.1 h1:EuwCh5fleGS7H32xRwO3wRGT7DxrDhLAT6FF8MpWDWE=
+github.com/stretchr/testify v1.12.1/go.mod h1:MDEgiDPPsNp5cuIrHPPCyornHKgEVbtFUmoNlxoYthg=
 github.com/vmihailenco/msgpack v3.3.3+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
 github.com/vmihailenco/msgpack v4.0.4+incompatible h1:dSLoQfGFAo3F6OoNhwUmLwVgaUXK79GlxNBwueZn0xI=
 github.com/vmihailenco/msgpack v4.0.4+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
@@ -285,8 +285,8 @@ go.opentelemetry.io/otel/trace v1.43.0 h1:BkNrHpup+4k4w+ZZ86CZoHHEkohws8AY+WTX09
 go.opentelemetry.io/otel/trace v1.43.0/go.mod h1:/QJhyVBUUswCphDVxq+8mld+AvhXZLhe+8WVFxiFff0=
 go.yaml.in/yaml/v2 v2.4.3 h1:6gvOSjQoTB3vt1l+CU+tSyi/HOjfOjRLJ4YwYZGwRO0=
 go.yaml.in/yaml/v2 v2.4.3/go.mod h1:zSxWcmIDjOzPXpjlTTbAsKokqkDNAVtZO0WOMiT90s8=
-go.yaml.in/yaml/v3 v3.0.4 h1:tfq32ie2Jv2UxXFdLJdh3jXuOzWiL1fo0bu/FbuKpbc=
-go.yaml.in/yaml/v3 v3.0.4/go.mod h1:DhzuOOF2ATzADvBadXxruRBLzYTpT36CKvDb3+aBEFg=
+go.yaml.in/yaml/v3 v3.0.5 h1:N6y/pJk8buWs9NY5ERU2HSMfm+IuD/OtfdAnq6kESPw=
+go.yaml.in/yaml/v3 v3.0.5/go.mod h1:HVTZu1O7/Vkt2N+BFy8Zza+lnLsABggaTM2ZpNIGuKg=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
 golang.org/x/crypto v0.55.0 h1:+KWHjbgOaAQ66dh/YlkZKHlz9ZUlq61AFirAR9ntP8M=

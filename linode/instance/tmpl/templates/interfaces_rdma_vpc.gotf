@@ -30,12 +30,10 @@ resource "linode_instance" "foobar" {
     region    = "{{.Region}}"
     image     = "{{.Image}}"
     root_pass = "{{.RootPass}}"
-    host_id   = {{.HostID}}
     booted    = false
 
     interface_generation = "linode"
 
-    # Eight RDMA VPC interfaces, all attached to the same RDMA subnet.
     # Cloud Firewalls cannot be assigned to RDMA VPC interfaces, so -1 is used
     # to explicitly opt out.
     dynamic "linode_interfaces" {

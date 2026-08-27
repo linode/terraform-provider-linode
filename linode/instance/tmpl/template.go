@@ -36,8 +36,6 @@ type TemplateData struct {
 	NetworkHelper       *bool
 	MaintenancePolicy   string
 	LockType            string
-
-	HostID int
 }
 
 func Basic(t testing.TB, label, pubKey, region string, rootPass string) string {
@@ -997,14 +995,13 @@ func KernelBootSize(t testing.TB, label, rootPass, region, kernel string, bootSi
 		})
 }
 
-func LinodeInterfacesRDMAVPC(t *testing.T, label, region, rootPass string, hostID int) string {
+func LinodeInterfacesRDMAVPC(t *testing.T, label, region, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"interfaces_rdma_vpc", TemplateData{
 			Label:    label,
 			Region:   region,
 			Image:    acceptance.TestImageLatest,
 			RootPass: rootPass,
-			HostID:   hostID,
 		},
 	)
 }
