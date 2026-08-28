@@ -36,7 +36,9 @@ output "filtered-share-groups" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Image Share Groups that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Image Share Groups that meet certain requirements.
 
 ### Filter
 
@@ -49,6 +51,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
+
+* `image_share_groups` - (Block List) The list of Image Share Groups.
 
 * `id` - The ID of the Image Share Group.
 

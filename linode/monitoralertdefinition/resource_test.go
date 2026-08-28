@@ -79,6 +79,7 @@ func TestAccResourceAlertDefinition_basic(t *testing.T) {
 	aggregateFunctionUpdate := "sum"
 	triggerOccurrences := 1
 	triggerOccurrencesUpdate := 3
+	groupBy := "entity_id"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -86,7 +87,7 @@ func TestAccResourceAlertDefinition_basic(t *testing.T) {
 		CheckDestroy:             checkAlertDefinitionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, alertLabel, aggregateFunction, alertChannels, triggerOccurrences),
+				Config: tmpl.Basic(t, alertLabel, aggregateFunction, alertChannels, triggerOccurrences, groupBy),
 				Check:  checkAlertDefinitionExists,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("label"), knownvalue.NotNull()),
@@ -103,6 +104,11 @@ func TestAccResourceAlertDefinition_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("class"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("scope"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("regions"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("group_by"),
+						knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(groupBy)}),
+					),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("entities"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("alert_channels").AtSliceIndex(0).AtMapKey("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("alert_channels").AtSliceIndex(0).AtMapKey("label"), knownvalue.NotNull()),
@@ -167,7 +173,7 @@ func TestAccResourceAlertDefinition_basic(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"wait_for", "channel_ids", "entity_ids"},
 			},
 			{
-				Config: tmpl.Updates(t, alertLabel, aggregateFunctionUpdate, alertChannels, triggerOccurrencesUpdate),
+				Config: tmpl.Updates(t, alertLabel, aggregateFunctionUpdate, alertChannels, triggerOccurrencesUpdate, groupBy),
 				Check:  checkAlertDefinitionExists,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resName, tfjsonpath.New("label"), knownvalue.StringExact(fmt.Sprintf("%s-updated", alertLabel))),
@@ -180,6 +186,11 @@ func TestAccResourceAlertDefinition_basic(t *testing.T) {
 						resName,
 						tfjsonpath.New("rule_criteria").AtMapKey("rules").AtSliceIndex(0).AtMapKey("aggregate_function"),
 						knownvalue.StringExact(aggregateFunctionUpdate),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("group_by"),
+						knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(groupBy)}),
 					),
 				},
 			},

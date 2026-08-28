@@ -27,6 +27,8 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `label` - The label of the Linode NodeBalancer.
 
 * `client_conn_throttle` - Throttle connections per second (0-20).
@@ -49,15 +51,15 @@ In addition to all arguments above, the following attributes are exported:
 
 * `region` - The Region where this Linode NodeBalancer is located. NodeBalancers only support backends in the same Region.
 
-* [`transfer`](#transfer) - The network transfer stats for the current month.
+* [`transfer`](#transfer) - (Read-Only Object List) The network transfer stats for the current month. Referenced with an index (e.g. `transfer.0.in`).
 
 * `updated` – When this Linode NodeBalancer was last updated.
 
-* [`firewalls`](#firewalls) - A list of Firewalls assigned to this NodeBalancer.
+* [`firewalls`](#firewalls) - (Nested Attribute List) A list of Firewalls assigned to this NodeBalancer.
 
-* [`vpcs`](#vpcs) - A list of VPCs assigned to this NodeBalancer.
+* [`vpcs`](#vpcs) - (Nested Attribute List) A list of VPCs assigned to this NodeBalancer.
 
-* [`lke_cluster`](#lke_cluster) - The LKE cluster that manages this NodeBalancer, if any. The list will be empty if this NodeBalancer isn't related to an LKE cluster.
+* [`lke_cluster`](#lke_cluster) - (Nested Attribute List) The LKE cluster that manages this NodeBalancer, if any. The list will be empty if this NodeBalancer isn't related to an LKE cluster.
 
 * `type` - The type of this NodeBalancer.
 
@@ -85,11 +87,11 @@ The following attributes are available on firewalls:
 
 * `tags` - The tags applied to the firewall. Tags are case-insensitive and are for organizational purposes only.
 
-* [`inbound`](#inbound-and-outbound) - A firewall rule that specifies what inbound network traffic is allowed.
+* [`inbound`](#inbound-and-outbound) - (Nested Attribute List) A firewall rule that specifies what inbound network traffic is allowed.
 
 * `inbound_policy` - The default behavior for inbound traffic. (`ACCEPT`, `DROP`).
 
-* [`outbound`](#inbound-and-outbound) - A firewall rule that specifies what outbound network traffic is allowed.
+* [`outbound`](#inbound-and-outbound) - (Nested Attribute List) A firewall rule that specifies what outbound network traffic is allowed.
 
 * `outbound_policy` - The default behavior for outbound traffic. (`ACCEPT`, `DROP`).
 

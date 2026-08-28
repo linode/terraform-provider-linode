@@ -35,7 +35,9 @@ output "nodebalancer_id" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode NodeBalancers that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode NodeBalancers that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -52,6 +54,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and will export the following attributes:
+
+* `nodebalancers` - (Nested Attribute List) The returned list of NodeBalancers. Referenced by index (e.g. `nodebalancers[0].id`).
 
 * `label` - The label of the Linode NodeBalancer.
 
@@ -77,15 +81,15 @@ Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and wil
 
 * `updated` – When this Linode NodeBalancer was last updated.
 
-* [`transfer`](#transfer) - The network transfer stats for the current month.
+* [`transfer`](#transfer) - (Read-Only Object List) The network transfer stats for the current month. Referenced with an index (e.g. `transfer.0.in`).
+
+* [`lke_cluster`](#lke_cluster) - (Nested Attribute List) The LKE cluster that manages this NodeBalancer, if any. The list will be empty if this NodeBalancer isn't related to an LKE cluster.
 
 * `type` - The type of this NodeBalancer.
 
 * `frontend_address_type` - Indicates whether incoming requests are routed to NodeBalancers using VPC frontend IPs or public frontend IPs.
 
 * `frontend_vpc_subnet_id` - The VPC subnet assigned to this NodeBalancer.
-
-* [`lke_cluster`](#lke_cluster) - The LKE cluster that manages this NodeBalancer, if any. The list will be empty if this NodeBalancer isn't related to an LKE cluster.
 
 ### transfer
 

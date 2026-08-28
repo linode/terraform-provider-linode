@@ -40,7 +40,9 @@ output "type_ids" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode Instance types that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode Instance types that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -58,6 +60,8 @@ The following arguments are supported:
 
 Each Linode Instance type will be stored in the `types` attribute and will export the following attributes:
 
+* `types` - (Nested Attribute List) The Linode Instance types returned by this data source.
+
 * `id` - The ID representing the Linode Type.
 
 * `label` - The Linode Type's label is for display purposes only.
@@ -66,13 +70,23 @@ Each Linode Instance type will be stored in the `types` attribute and will expor
 
 * `disk` - The Disk size, in MB, of the Linode Type.
 
+* `price` - (Read-Only Object List) The base cost for this Linode Type. Referenced with an index (e.g. `price.0.hourly`).
+
 * `price.0.hourly` -  Cost (in US dollars) per hour.
 
 * `price.0.monthly` - Cost (in US dollars) per month.
 
+* `addons` - (Read-Only Object List) Add-on information for this Linode Type. Referenced with an index (e.g. `addons.0.backups`).
+
+* `addons.0.backups` - (Read-Only Object List) Backup add-on pricing for this Linode Type. Referenced with an index (e.g. `addons.0.backups.0.price`).
+
+* `addons.0.backups.0.price` - (Read-Only Object List) Backup add-on costs for this Linode Type. Referenced with an index (e.g. `addons.0.backups.0.price.0.hourly`).
+
 * `addons.0.backups.0.price.0.hourly` - The cost (in US dollars) per hour to add Backups service.
 
 * `addons.0.backups.0.price.0.monthly` - The cost (in US dollars) per month to add Backups service.
+
+* `region_prices` - (Read-Only Object List) Region-specific pricing for this Linode Type. Referenced with an index (e.g. `region_prices.0.id`).
 
 * `region_prices.*.id` - The name of the Linode Region this entry corresponds to.
 
