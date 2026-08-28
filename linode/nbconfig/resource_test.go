@@ -37,6 +37,7 @@ func TestAccResourceNodeBalancerConfig_basic(t *testing.T) {
 
 	resName := "linode_nodebalancer_config.foofig"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
+	nbType := "common"
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
@@ -45,7 +46,7 @@ func TestAccResourceNodeBalancerConfig_basic(t *testing.T) {
 		ExternalProviders:         acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:       tmpl.Basic(t, nodebalancerName, testRegion),
+				Config:       tmpl.Basic(t, nodebalancerName, testRegion, nbType),
 				ResourceName: resName,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkNodeBalancerConfigExists,
@@ -86,6 +87,7 @@ func TestAccResourceNodeBalancerConfig_ssl(t *testing.T) {
 
 	resName := "linode_nodebalancer_config.foofig"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
+	nbType := "common"
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
@@ -94,7 +96,7 @@ func TestAccResourceNodeBalancerConfig_ssl(t *testing.T) {
 		ExternalProviders:         acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:       tmpl.SSL(t, nodebalancerName, testRegion, tmpl.TestCertifcate, tmpl.TestPrivateKey),
+				Config:       tmpl.SSL(t, nodebalancerName, testRegion, nbType, tmpl.TestCertifcate, tmpl.TestPrivateKey),
 				ResourceName: resName,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkNodeBalancerConfigExists,
@@ -119,6 +121,7 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 
 	resName := "linode_nodebalancer_config.foofig"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
+	nbType := "common"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -127,7 +130,7 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, nodebalancerName, testRegion),
+				Config: tmpl.Basic(t, nodebalancerName, testRegion, nbType),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8080"),
@@ -142,7 +145,7 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Updates(t, nodebalancerName, testRegion),
+				Config: tmpl.Updates(t, nodebalancerName, testRegion, nbType),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8088"),
@@ -167,6 +170,7 @@ func TestAccResourceNodeBalancerConfig_proxyProtocol(t *testing.T) {
 
 	resName := "linode_nodebalancer_config.foofig"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
+	nbType := "common"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -175,7 +179,7 @@ func TestAccResourceNodeBalancerConfig_proxyProtocol(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.ProxyProtocol(t, nodebalancerName, testRegion),
+				Config: tmpl.ProxyProtocol(t, nodebalancerName, testRegion, nbType),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "80"),

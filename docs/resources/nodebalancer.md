@@ -33,7 +33,7 @@ resource "linode_nodebalancer" "foobar" {
     label = "mynodebalancer"
     region = "us-mia"
 
-    vpcs = [
+    backend_vpcs = [
         {
           subnet_id = linode_vpc_subnet.test.id
         }
@@ -76,6 +76,8 @@ The following arguments are supported:
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
+* `type` - (Optional) The type of the NodeBalancer (`common`, `premium`, `premium_40gb`). Defaults to `common`.
+
 * `ipv4` - (Optional) The Public IPv4 address to assign to this NodeBalancer. When provided, the address must be a reserved IPv4 address that is unassigned and owned by the account. *Changing `ipv4` forces the creation of a new Linode NodeBalancer.*
 
 ## Attributes Reference
@@ -98,9 +100,17 @@ This resource exports the following attributes:
 
 * [`firewalls`](#firewalls) - (Read-Only Object List) A list of Firewalls assigned to this NodeBalancer. Referenced with an index (e.g. `firewalls.0.id`).
 
-* [`vpcs`](#vpcs) - (Nested Attribute List) A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+* [`vpcs`](#vpcs) - (Nested Attribute List. Deprecated: Prefer using `backend_vpcs` instead.) A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+
+* [`backend_vpcs`](#backend_vpcs) - A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
 * [`lke_cluster`](#lke_cluster) - (Nested Attribute List) The LKE cluster that manages this NodeBalancer, if any. The list will be empty if this NodeBalancer isn't related to an LKE cluster.
+
+* [`frontend_vpcs`](#frontend_vpcs) - For internal load balancing, where the NodeBalancer is within a VPC, indicate a VPC subnet_id. For greater flexibility, you can specify the IP range within the subnet used for allocation. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+
+* `frontend_address_type` - Indicates whether incoming requests are routed to NodeBalancers using VPC frontend IPs or public frontend IPs.
+
+* `frontend_vpc_subnet_id` - The VPC subnet assigned to this NodeBalancer.
 
 ### transfer
 
@@ -154,17 +164,49 @@ The following arguments are supported in the inbound and outbound rule blocks:
 
 #### vpcs
 
+-> **Deprecated** This attribute is deprecated in favor of `backend_vpcs`. It may be removed in a future major release.
+
 -> **Limited Availability** VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
 The following arguments are supported under each entry of the `vpcs` attribute:
 
 * `subnet_id` - (Required) The ID of a subnet to assign to this NodeBalancer.
 
-* `ipv4_range` - (Optional) A CIDR range for the VPC's IPv4 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
+* `ipv4_range` - (Optional) A CIDR range for the VPC's IPv4 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes. Cannot be set when `ipv4_range_auto_assign` is true.
 
 * `ipv6_range` - (Optional) A CIDR range for the VPC's IPv6 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
 
-* `ipv4_range_auto_assign` - (Optional, Write-Only) Enables the use of a larger ipv4_range subnet for multiple NodeBalancers within the same VPC by allocating smaller /30 subnets for each NodeBalancer's backends.
+* `ipv4_range_auto_assign` - (Optional) Enables the use of a larger ipv4_range subnet for multiple NodeBalancers within the same VPC by allocating smaller /30 subnets for each NodeBalancer's backends.
+
+#### backend_vpcs
+
+-> **Limited Availability** VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+
+The following arguments are supported under each entry of the `backend_vpcs` attribute:
+
+* `subnet_id` - (Required) The ID of a subnet to assign to this NodeBalancer.
+
+* `ipv4_range` - (Optional) A CIDR range for the VPC's IPv4 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes. Cannot be set when `ipv4_range_auto_assign` is true.
+
+* `ipv6_range` - (Optional) A CIDR range for the VPC's IPv6 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
+
+* `ipv4_range_auto_assign` - (Optional) Enables the use of a larger ipv4_range subnet for multiple NodeBalancers within the same VPC by allocating smaller /30 subnets for each NodeBalancer's backends.
+
+#### frontend_vpcs
+
+-> **Limited Availability** Frontend VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+
+The following arguments are supported under each entry of the `frontend_vpcs` attribute:
+
+* `subnet_id` - (Required) The VPC's subnet ID for the VPC based NodeBalancer.
+
+* `ipv4_range` - (Optional) A CIDR range for the VPC's IPv4 addresses allocated as the NodeBalancer's frontend IPs. Set this to `auto` to let the API choose the range.
+
+* `allocated_ipv4_range` - The IPv4 CIDR range allocated by the API for the NodeBalancer's frontend IPs.
+
+* `ipv6_range` - (Optional) A CIDR range for the VPC's IPv6 addresses allocated as the NodeBalancer's frontend IPs. Set this to `auto` to let the API choose the range.
+
+* `allocated_ipv6_range` - The IPv6 CIDR range allocated by the API for the NodeBalancer's frontend IPs.
 
 ### lke_cluster
 

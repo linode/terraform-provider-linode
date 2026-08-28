@@ -3,10 +3,9 @@
 {{ template "nbs_data_base" . }}
 
 data "linode_nodebalancers" "nbs" {
-    filter {
-        name = "label"
-        values = [linode_nodebalancer.foobar.0.label]
-    }
+    depends_on = [linode_nodebalancer.foobar]
+    order_by = "label"
+    order = "asc"
 }
 
 {{ end }}

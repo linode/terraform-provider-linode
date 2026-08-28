@@ -9,15 +9,17 @@ import (
 type TemplateData struct {
 	Label          string
 	Region         string
+	Type           string
 	K8sVersion     string
 	NodeBalancerID int
 }
 
-func Basic(t testing.TB, nodebalancer, region string) string {
+func Basic(t testing.TB, nodebalancer, region, nbType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_basic", TemplateData{
 			Label:  nodebalancer,
 			Region: region,
+			Type:   nbType,
 		})
 }
 
@@ -29,11 +31,12 @@ func Updates(t testing.TB, nodebalancer, region string) string {
 		})
 }
 
-func DataBasic(t testing.TB, nodebalancer, region string) string {
+func DataBasic(t testing.TB, nodebalancer, region, nbType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_data_basic", TemplateData{
 			Label:  nodebalancer,
 			Region: region,
+			Type:   nbType,
 		})
 }
 
@@ -61,9 +64,25 @@ func FirewallUpdate(t testing.TB, nodebalancer, region string) string {
 		})
 }
 
-func VPC(t testing.TB, nodebalancer, region string) string {
+func BackendVPC(t testing.TB, nodebalancer, region string) string {
 	return acceptance.ExecuteTemplate(t,
-		"nodebalancer_vpc", TemplateData{
+		"nodebalancer_backend_vpc", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
+}
+
+func VPCDeprecated(t testing.TB, nodebalancer, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_vpc_deprecated", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
+}
+
+func FrontendVPC(t testing.TB, nodebalancer, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_frontend_vpc", TemplateData{
 			Label:  nodebalancer,
 			Region: region,
 		})
@@ -72,6 +91,14 @@ func VPC(t testing.TB, nodebalancer, region string) string {
 func DataVPC(t testing.TB, nodebalancer, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_data_vpc", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
+}
+
+func DataFrontendVPC(t testing.TB, nodebalancer, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_data_frontend_vpc", TemplateData{
 			Label:  nodebalancer,
 			Region: region,
 		})

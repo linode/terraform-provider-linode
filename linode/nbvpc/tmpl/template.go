@@ -18,3 +18,11 @@ func DataBasic(t testing.TB, label, region string) string {
 			Region: region,
 		})
 }
+
+func DataFrontendVPC(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nbvpc_data_frontend_vpc", TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}

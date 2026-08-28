@@ -13,6 +13,7 @@ var filterConfig = frameworkfilter.Config{
 	"nodebalancer_id": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 	"subnet_id":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 	"vpc_id":          {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"purpose":         {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDatasourceSchema = schema.Schema{

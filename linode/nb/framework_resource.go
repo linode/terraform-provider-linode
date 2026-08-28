@@ -15,7 +15,10 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
-var _ resource.ResourceWithUpgradeState = &Resource{}
+var (
+	_ resource.ResourceWithUpgradeState   = &Resource{}
+	_ resource.ResourceWithValidateConfig = &Resource{}
+)
 
 func NewResource() resource.Resource {
 	return &Resource{
@@ -31,6 +34,22 @@ func NewResource() resource.Resource {
 
 type Resource struct {
 	helper.BaseResource
+}
+
+func (r *Resource) ValidateConfig(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var config NodeBalancerModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	validateIPv4RangeAutoAssignConflict(ctx, config.VPCs, "vpcs", &resp.Diagnostics)
+	validateIPv4RangeAutoAssignConflict(ctx, config.BackendVPCs, "backend_vpcs", &resp.Diagnostics)
 }
 
 func (r *Resource) Create(
@@ -68,6 +87,7 @@ func (r *Resource) Create(
 		Label:                 data.Label.ValueStringPointer(),
 		ClientConnThrottle:    &clientConnThrottle,
 		ClientUDPSessThrottle: &clientUDPSessThrottle,
+		Type:                  linodego.NodeBalancerPlanType(data.Type.ValueString()),
 	}
 
 	if !data.FirewallID.IsNull() {
@@ -80,6 +100,7 @@ func (r *Resource) Create(
 		}
 	}
 
+	// VPCs are deprecated but still supported.
 	if !data.VPCs.IsNull() {
 		vpcs, d := vpcModelsToLinodego(ctx, data.VPCs)
 		resp.Diagnostics.Append(d...)
@@ -88,6 +109,28 @@ func (r *Resource) Create(
 		}
 
 		createOpts.VPCs = vpcs
+	}
+
+	// BackendVPCs is the replacement for VPCs.
+	// They cannot be specified together due to the ConflictsWith validator on the schema.
+	if !data.BackendVPCs.IsNull() {
+		vpcs, d := backendVPCModelsToLinodego(ctx, data.BackendVPCs)
+		resp.Diagnostics.Append(d...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		createOpts.BackendVPCs = vpcs
+	}
+
+	if !data.FrontendVPCs.IsNull() {
+		frontendVPCs, d := frontendVPCModelsToLinodego(ctx, data.FrontendVPCs)
+		resp.Diagnostics.Append(d...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		createOpts.FrontendVPCs = frontendVPCs
 	}
 
 	if !data.Tags.IsNull() {
@@ -125,6 +168,9 @@ func (r *Resource) Create(
 		return
 	}
 
+	// safeListVPCConfigs lists VPC configs for backend and frontend nodes.
+	// Backend VPC configs are configured through the "backend_vpcs" attribute (or legacy "vpcs") and
+	// frontend VPC configs are configured through the "frontend_vpcs" attribute.
 	vpcConfigs := safeListVPCConfigs(
 		ctx,
 		client,
@@ -388,17 +434,23 @@ func upgradeNodebalancerResourceStateV0toV1(
 	}
 
 	nbDataV1 := NodeBalancerModel{
-		ID:                 nbDataV0.ID,
-		Label:              nbDataV0.Label,
-		Region:             nbDataV0.Region,
-		ClientConnThrottle: nbDataV0.ClientConnThrottle,
-		Hostname:           nbDataV0.Hostname,
-		IPv4:               iptypes.NewIPv4AddressPointerValue(nbDataV0.IPv4.ValueStringPointer()),
-		IPv6:               nbDataV0.IPv6,
-		Created:            timetypes.RFC3339{StringValue: nbDataV0.Created},
-		Updated:            timetypes.RFC3339{StringValue: nbDataV0.Updated},
-		Tags:               nbDataV0.Tags,
-		Firewalls:          types.ListNull(firewallObjType),
+		ID:                  nbDataV0.ID,
+		Label:               nbDataV0.Label,
+		Region:              nbDataV0.Region,
+		ClientConnThrottle:  nbDataV0.ClientConnThrottle,
+		Hostname:            nbDataV0.Hostname,
+		IPv4:                iptypes.NewIPv4AddressPointerValue(nbDataV0.IPv4.ValueStringPointer()),
+		IPv6:                nbDataV0.IPv6,
+		Created:             timetypes.RFC3339{StringValue: nbDataV0.Created},
+		Updated:             timetypes.RFC3339{StringValue: nbDataV0.Updated},
+		Tags:                nbDataV0.Tags,
+		Firewalls:           types.ListNull(firewallObjType),
+		VPCs:                types.ListNull(frameworkResourceSchemaBackendVPCs.Type()),
+		BackendVPCs:         types.ListNull(frameworkResourceSchemaBackendVPCs.Type()),
+		Type:                types.StringValue("common"),
+		FrontendVPCs:        types.ListNull(frontendVPCObjType),
+		FrontendAddressType: types.StringNull(),
+		FrontendVPCSubnetID: types.Int64Null(),
 	}
 
 	var transferMap map[string]string

@@ -1,4 +1,4 @@
-{{ define "nodebalancer_vpc" }}
+{{ define "nodebalancer_backend_vpc" }}
 
 {{ template "e2e_test_firewall" . }}
 
@@ -7,10 +7,9 @@ resource "linode_nodebalancer" "test" {
     region = "{{ .Region }}"
     firewall_id = linode_firewall.e2e_test_firewall.id
 
-    vpcs = [
+    backend_vpcs = [
         {
             subnet_id = linode_vpc_subnet.test.id
-            ipv4_range = "10.0.0.4/30"
             ipv6_range = cidrsubnet(linode_vpc_subnet.test.ipv6.0.allocated_range, 8, 128)
             ipv4_range_auto_assign = true
         }

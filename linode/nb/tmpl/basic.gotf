@@ -4,6 +4,7 @@
 
 resource "linode_nodebalancer" "foobar" {
     label = "{{.Label}}"
+    type = "{{.Type}}"
     region = "{{ .Region }}"
     client_conn_throttle = 20
     client_udp_sess_throttle = 10

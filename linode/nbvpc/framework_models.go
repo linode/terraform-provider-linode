@@ -12,6 +12,7 @@ type DataSourceModel struct {
 	IPv6Range      types.String `tfsdk:"ipv6_range"`
 	SubnetID       types.Int64  `tfsdk:"subnet_id"`
 	VPCID          types.Int64  `tfsdk:"vpc_id"`
+	Purpose        types.String `tfsdk:"purpose"`
 }
 
 func (m *DataSourceModel) Flatten(vpcConfig *linodego.NodeBalancerVPCConfig) *DataSourceModel {
@@ -23,6 +24,7 @@ func (m *DataSourceModel) Flatten(vpcConfig *linodego.NodeBalancerVPCConfig) *Da
 
 	m.VPCID = types.Int64Value(int64(vpcConfig.VPCID))
 	m.SubnetID = types.Int64Value(int64(vpcConfig.SubnetID))
+	m.Purpose = types.StringValue(string(vpcConfig.Purpose))
 
 	return m
 }

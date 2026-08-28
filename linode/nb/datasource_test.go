@@ -24,6 +24,7 @@ func TestAccDataSourceNodeBalancer_basic(t *testing.T) {
 
 	resName := "data.linode_nodebalancer.foobar"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
+	nbType := "common"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -32,10 +33,11 @@ func TestAccDataSourceNodeBalancer_basic(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, nodebalancerName, testRegion),
+				Config: tmpl.DataBasic(t, nodebalancerName, testRegion, nbType),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
+					resource.TestCheckResourceAttr(resName, "type", "common"),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 					resource.TestCheckResourceAttr(resName, "client_udp_sess_throttle", "10"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
@@ -51,6 +53,8 @@ func TestAccDataSourceNodeBalancer_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "lke_cluster.#", "0"),
+					resource.TestCheckResourceAttr(resName, "frontend_address_type", "public"),
+					resource.TestCheckNoResourceAttr(resName, "frontend_vpc_subnet_id"),
 				),
 			},
 		},
@@ -73,6 +77,7 @@ func TestAccDataSourceNodeBalancer_firewalls(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
+					resource.TestCheckResourceAttr(resName, "type", "common"),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
@@ -107,6 +112,8 @@ func TestAccDataSourceNodeBalancer_firewalls(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "firewalls.0.outbound.0.ipv6.0", "2001:db8::/32"),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.tags.#", "1"),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.tags.0", "test"),
+					resource.TestCheckResourceAttr(resName, "frontend_address_type", "public"),
+					resource.TestCheckNoResourceAttr(resName, "frontend_vpc_subnet_id"),
 				),
 			},
 		},
@@ -119,7 +126,8 @@ func TestAccDataSourceNodeBalancer_vpc(t *testing.T) {
 	dsName := "data.linode_nodebalancer.test"
 	nodebalancerName := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs}, "core")
+	// Use random region that supports premium NodeBalancers.
+	targetRegion, err := acceptance.GetRandomRegionSupportingPremiumNodeBalancers()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -134,6 +142,11 @@ func TestAccDataSourceNodeBalancer_vpc(t *testing.T) {
 				Config: tmpl.DataVPC(t, nodebalancerName, targetRegion),
 				Check:  checkNodeBalancerExists,
 				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						dsName,
+						tfjsonpath.New("type"),
+						knownvalue.StringExact("common"),
+					),
 					statecheck.ExpectKnownValue(
 						dsName,
 						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("subnet_id"),
@@ -269,6 +282,69 @@ func TestAccDataSourceNodeBalancer_lkeClusterAPL(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						dsName,
 						tfjsonpath.New("lke_cluster").AtSliceIndex(0).AtMapKey("url"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dsName,
+						tfjsonpath.New("frontend_address_type"),
+						knownvalue.StringExact("public"),
+					),
+					statecheck.ExpectKnownValue(
+						dsName,
+						tfjsonpath.New("frontend_vpc_subnet_id"),
+						knownvalue.Null(),
+					),
+				},
+			},
+		},
+	})
+}
+
+func TestAccDataSourceNodeBalancer_frontendVPC(t *testing.T) {
+	t.Parallel()
+
+	dsName := "data.linode_nodebalancer.test"
+	nodebalancerName := acctest.RandomWithPrefix("tf-test")
+
+	// Use random region that supports premium NodeBalancers.
+	targetRegion, err := acceptance.GetRandomRegionSupportingPremiumNodeBalancers()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkNodeBalancerDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataFrontendVPC(t, nodebalancerName, targetRegion),
+				Check:  checkNodeBalancerExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						dsName,
+						tfjsonpath.New("type"),
+						knownvalue.StringExact("premium"),
+					),
+					statecheck.ExpectKnownValue(
+						dsName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dsName,
+						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv4_range"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dsName,
+						tfjsonpath.New("frontend_address_type"),
+						knownvalue.StringExact("vpc"),
+					),
+					statecheck.ExpectKnownValue(
+						dsName,
+						tfjsonpath.New("frontend_vpc_subnet_id"),
 						knownvalue.NotNull(),
 					),
 				},

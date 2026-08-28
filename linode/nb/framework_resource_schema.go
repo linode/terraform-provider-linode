@@ -4,8 +4,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
@@ -16,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	linodesetplanmodifier "github.com/linode/terraform-provider-linode/v4/linode/helper/setplanmodifiers"
@@ -25,6 +28,12 @@ const (
 	NBLabelRegex        = "^[a-zA-Z0-9_-]*$"
 	NBLabelErrorMessage = "Labels may only contain letters, number, dashes, and underscores."
 )
+
+var nodeBalancerTypesStrings = []string{
+	string(linodego.NBTypeCommon),
+	string(linodego.NBTypePremium),
+	string(linodego.NBTypePremium40GB),
+}
 
 var firewallObjType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
@@ -41,7 +50,7 @@ var firewallObjType = types.ObjectType{
 	},
 }
 
-var frameworkResourceSchemaVPCs = schema.NestedAttributeObject{
+var frameworkResourceSchemaBackendVPCs = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"subnet_id": schema.Int64Attribute{
 			Description: "The ID of a subnet to assign to this NodeBalancer.",
@@ -54,7 +63,8 @@ var frameworkResourceSchemaVPCs = schema.NestedAttributeObject{
 		"ipv4_range": schema.StringAttribute{
 			Description: "A CIDR range for the VPC's IPv4 addresses. " +
 				"The NodeBalancer sources IP addresses from this range " +
-				"when routing traffic to the backend VPC nodes.",
+				"when routing traffic to the backend VPC nodes. " +
+				"Cannot be set when `ipv4_range_auto_assign` is true.",
 			Optional: true,
 			Computed: true,
 			PlanModifiers: []planmodifier.String{
@@ -77,15 +87,53 @@ var frameworkResourceSchemaVPCs = schema.NestedAttributeObject{
 			Description: "Enables the use of a larger ipv4_range subnet for multiple NodeBalancers " +
 				"within the same VPC by allocating smaller /30 subnets for " +
 				"each NodeBalancer's backends.",
-			Optional:  true,
-			WriteOnly: true,
+			Optional: true,
 			PlanModifiers: []planmodifier.Bool{
 				boolplanmodifier.RequiresReplace(),
-				boolplanmodifier.UseStateForUnknown(),
 			},
 		},
 	},
 }
+
+var frameworkResourceSchemaFrontendVPCs = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"subnet_id": schema.Int64Attribute{
+			Description: "The VPC's subnet ID for the VPC based NodeBalancer.",
+			Required:    true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+				int64planmodifier.RequiresReplace(),
+			},
+		},
+		"ipv4_range": schema.StringAttribute{
+			Description: "A CIDR range for the VPC's IPv4 addresses allocated as the NodeBalancer's frontend IPs. Use \"auto\" to let the API choose the range.",
+			Optional:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+			},
+		},
+		"allocated_ipv4_range": schema.StringAttribute{
+			Description: "The IPv4 CIDR range allocated by the API for the NodeBalancer's frontend IPs.",
+			Computed:    true,
+		},
+		"ipv6_range": schema.StringAttribute{
+			Description: "A CIDR range for the VPC's IPv6 addresses allocated as the NodeBalancer's frontend IPs. Use \"auto\" to let the API choose the range.",
+			Optional:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+			},
+		},
+		"allocated_ipv6_range": schema.StringAttribute{
+			Description: "The IPv6 CIDR range allocated by the API for the NodeBalancer's frontend IPs.",
+			Computed:    true,
+		},
+	},
+}
+
+var (
+	frontendVPCObjType = frameworkResourceSchemaFrontendVPCs.Type().(types.ObjectType)
+	backendVPCObjType  = frameworkResourceSchemaBackendVPCs.Type().(types.ObjectType)
+)
 
 var frameworkResourceSchema = schema.Schema{
 	Version: 1,
@@ -203,13 +251,35 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"vpcs": schema.ListNestedAttribute{
-			Description: "A list of VPCs to be assigned to this NodeBalancer.",
+			Description: "A VPC configuration for backend nodes.",
 			Optional:    true,
+			Computed:    true,
+			Default:     helper.EmptyListDefault(backendVPCObjType),
 			PlanModifiers: []planmodifier.List{
-				listplanmodifier.UseStateForUnknown(),
 				listplanmodifier.RequiresReplace(),
 			},
-			NestedObject: frameworkResourceSchemaVPCs,
+			NestedObject: frameworkResourceSchemaBackendVPCs,
+			Validators: []validator.List{
+				listvalidator.ConflictsWith(path.Expressions{
+					path.MatchRoot("backend_vpcs"),
+				}...),
+			},
+			DeprecationMessage: "'vpcs' is deprecated in favor of 'backend_vpcs'. This attribute may be removed in a future major release.",
+		},
+		"backend_vpcs": schema.ListNestedAttribute{
+			Description: "A VPC configuration for backend nodes.",
+			Optional:    true,
+			Computed:    true,
+			Default:     helper.EmptyListDefault(backendVPCObjType),
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.RequiresReplace(),
+			},
+			NestedObject: frameworkResourceSchemaBackendVPCs,
+			Validators: []validator.List{
+				listvalidator.ConflictsWith(path.Expressions{
+					path.MatchRoot("vpcs"),
+				}...),
+			},
 		},
 		"lke_cluster": schema.ListNestedAttribute{
 			Description: "The related LKE cluster for this NodeBalancer, if any.",
@@ -236,6 +306,44 @@ var frameworkResourceSchema = schema.Schema{
 						Computed:    true,
 					},
 				},
+			},
+		},
+		"frontend_vpcs": schema.ListNestedAttribute{
+			Description: "For internal load balancing, where the NodeBalancer is within a VPC, " +
+				"indicate a VPC subnet_id. For greater flexibility, you can specify the IP range within the subnet used for allocation.",
+			Optional: true,
+			Computed: true,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.RequiresReplace(),
+			},
+			Default:      helper.EmptyListDefault(frontendVPCObjType),
+			NestedObject: frameworkResourceSchemaFrontendVPCs,
+		},
+		"type": schema.StringAttribute{
+			Description: "The type of NodeBalancer. Possible values are 'common', 'premium' or 'premium_40gb'.",
+			Optional:    true,
+			Computed:    true,
+			Default:     stringdefault.StaticString("common"),
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifier.RequiresReplace(),
+			},
+			Validators: []validator.String{
+				stringvalidator.OneOf(nodeBalancerTypesStrings...),
+			},
+		},
+		"frontend_address_type": schema.StringAttribute{
+			Description: "Indicates whether incoming requests are routed to NodeBalancers using VPC frontend IPs or public frontend IPs.",
+			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"frontend_vpc_subnet_id": schema.Int64Attribute{
+			Description: "The VPC subnet assigned to this NodeBalancer.",
+			Computed:    true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
 			},
 		},
 	},

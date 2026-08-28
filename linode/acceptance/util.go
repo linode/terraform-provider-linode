@@ -784,6 +784,31 @@ func GetRandomRegionWithCaps(capabilities []linodego.RegionCapability, regionTyp
 	return regions[rand.Intn(len(regions))], nil
 }
 
+func GetRandomRegionSupportingPremiumNodeBalancers() (string, error) {
+	premiumRegions := []string{
+		"nl-ams",
+		"jp-tyo-3",
+		"sg-sin-2",
+		"de-fra-2",
+		"in-bom-2",
+		"gb-lon",
+		"us-lax",
+		"id-cgk",
+		"us-mia",
+		"it-mil",
+		"jp-osa",
+		"in-maa",
+		"se-sto",
+		"br-gru",
+		"us-sea",
+		"fr-par",
+		"us-iad",
+	}
+
+	// #nosec G404 -- Test data, doesn't need to be cryptography
+	return premiumRegions[rand.Intn(len(premiumRegions))], nil
+}
+
 func GetTestClient() (*linodego.Client, error) {
 	token := os.Getenv("LINODE_TOKEN")
 	if token == "" {

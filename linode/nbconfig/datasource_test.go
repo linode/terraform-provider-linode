@@ -17,6 +17,7 @@ func TestAccDataSourceNodeBalancerConfig_basic(t *testing.T) {
 
 	resName := "data.linode_nodebalancer_config.foofig"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
+	nbType := "common"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -25,7 +26,7 @@ func TestAccDataSourceNodeBalancerConfig_basic(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, nodebalancerName, testRegion),
+				Config: tmpl.DataBasic(t, nodebalancerName, testRegion, nbType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8080"),

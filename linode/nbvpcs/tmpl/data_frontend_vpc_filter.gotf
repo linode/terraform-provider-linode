@@ -1,0 +1,14 @@
+{{ define "nbvpcs_data_frontend_vpc_filter" }}
+
+{{ template "nbvpc_data_base_frontend_vpc" . }}
+
+data "linode_nodebalancer_vpcs" "test" {
+    nodebalancer_id = linode_nodebalancer.test.id
+
+    filter {
+        name = "purpose"
+        values = ["frontend"]
+    }
+}
+
+{{ end }}

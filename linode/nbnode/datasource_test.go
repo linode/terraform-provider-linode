@@ -22,6 +22,7 @@ func TestAccDataSourceNodeBalancerNode_basic(t *testing.T) {
 	resName := "data.linode_nodebalancer_node.foonode"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 	rootPass := acctest.RandString(64)
+	nbType := "common"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -30,7 +31,7 @@ func TestAccDataSourceNodeBalancerNode_basic(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, nodebalancerName, testRegion, rootPass),
+				Config: tmpl.DataBasic(t, nodebalancerName, testRegion, rootPass, nbType),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
@@ -48,7 +49,7 @@ func TestAccDataSourceNodeBalancerNode_vpc(t *testing.T) {
 
 	dsName := "data.linode_nodebalancer_node.test"
 	label := acctest.RandomWithPrefix("tf-test")
-	rootPass := acctest.RandString(64)
+	nbType := "common"
 
 	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs}, "core")
 	if err != nil {
@@ -62,7 +63,7 @@ func TestAccDataSourceNodeBalancerNode_vpc(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataVPC(t, label, targetRegion, rootPass),
+				Config: tmpl.DataVPC(t, label, targetRegion, nbType),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						dsName,
@@ -82,7 +83,7 @@ func TestAccDataSourceNodeBalancerNode_vpc(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						dsName,
 						tfjsonpath.New("address"),
-						knownvalue.StringExact("10.0.0.10:80"),
+						knownvalue.StringExact("10.0.0.50:80"),
 					),
 					statecheck.ExpectKnownValue(
 						dsName,
