@@ -89,9 +89,3 @@ resource "linode_instance" "foobar" {
 }
 
 {{ end }}
-
-{{ define "interfaces_rdma_vpc" }}
-
-{{ template "interfaces_rdma_vpc_base" . }}
-
-{{ end }}
