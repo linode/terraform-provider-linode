@@ -1,4 +1,4 @@
-{{ define "interfaces_rdma_vpc" }}
+{{ define "interfaces_rdma_vpc_base" }}
 
 resource "linode_vpc" "regular" {
     label    = "{{.Label}}-vpc"
@@ -24,6 +24,22 @@ resource "linode_vpc_subnet" "rdma" {
     ipv4   = "10.0.0.0/24"
 }
 
+# A second RDMA VPC + subnet used as the update target for the managed interface.
+# RDMA VPC interfaces cannot be deleted directly and
+# are only removed when their parent Linode is deleted, so the subnet must outlive
+# the instance to avoid error.
+resource "linode_vpc" "rdma2" {
+    label    = "{{.Label}}-rdma-vpc-2"
+    region   = "{{.Region}}"
+    vpc_type = "rdma"
+}
+
+resource "linode_vpc_subnet" "rdma2" {
+    vpc_id = linode_vpc.rdma2.id
+    label  = "{{.Label}}-rdma-subnet-2"
+    ipv4   = "10.0.1.0/24"
+}
+
 resource "linode_instance" "foobar" {
     label     = "{{.Label}}"
     type      = "g3-gpu-rtxpro6000-blackwell-rdma-8"
@@ -33,6 +49,11 @@ resource "linode_instance" "foobar" {
     booted    = false
 
     interface_generation = "linode"
+
+    # Ensure the second RDMA subnet is destroyed after this instance, since the
+    # managed RDMA interface (which pins the subnet) is only removed when the
+    # instance is deleted.
+    depends_on = [linode_vpc_subnet.rdma2]
 
     # Cloud Firewalls cannot be assigned to RDMA VPC interfaces, so -1 is used
     # to explicitly opt out.
@@ -66,5 +87,11 @@ resource "linode_instance" "foobar" {
         }
     }
 }
+
+{{ end }}
+
+{{ define "interfaces_rdma_vpc" }}
+
+{{ template "interfaces_rdma_vpc_base" . }}
 
 {{ end }}
