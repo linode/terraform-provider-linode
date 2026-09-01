@@ -52,6 +52,10 @@ The following arguments are supported:
 
 Each Linode LKE Version will be stored in the `versions` attribute and will export the following attributes:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* `versions` - (Nested Attribute List) The Linode LKE Versions returned by this data source.
+
 * `id` - The Kubernetes version numbers available for deployment to a Kubernetes cluster in the format of [major].[minor], and the latest supported patch version.
 
 * `tier` - The Kubernetes version tier. Only exported if `tier` was provided when using the datasource.

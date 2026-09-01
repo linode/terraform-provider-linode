@@ -64,6 +64,8 @@ resource "linode_monitor_logs_stream" "lke_example" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `label` - (Required) The label of the logs stream.
 
 * `type` - (Required, Forces New) The type of the logs stream. One of: `audit_logs`, `lke_audit_logs`.
@@ -72,7 +74,7 @@ The following arguments are supported:
 
 * `status` - (Optional) The status of the logs stream. One of: `active`, `inactive`, `provisioning`, `deactivating`.
 
-* [`details`](#details) - (Optional) Additional configuration details. Only applies to `lke_audit_logs` streams.
+* [`details`](#details) - (Optional, Nested Attribute) Additional configuration details. Only applies to `lke_audit_logs` streams. Referenced directly (e.g. `details.cluster_ids`).
 
 ### details
 

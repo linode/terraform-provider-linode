@@ -40,7 +40,9 @@ output "firewall_template_slugs" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode Cloud Firewalls that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode Cloud Firewalls that meet certain requirements.
 
 ### Filter
 
@@ -54,11 +56,13 @@ The following arguments are supported:
 
 The following attributes are exported:
 
+* `firewall_templates` - (Nested Attribute List) The returned list of firewall templates. Referenced by index (e.g. `firewall_templates[0].slug`).
+
 * `templates` - A list of firewall templates, where each template includes:
   * `slug` - The slug of the firewall template.
-  * `inbound` - A list of firewall rules specifying allowed inbound network traffic.
+  * `inbound` - (Read-Only Object List) A list of firewall rules specifying allowed inbound network traffic. Referenced with an index (e.g. `inbound.0.action`).
   * `inbound_policy` - The default behavior for inbound traffic.
-  * `outbound` - A list of firewall rules specifying allowed outbound network traffic.
+  * `outbound` - (Read-Only Object List) A list of firewall rules specifying allowed outbound network traffic. Referenced with an index (e.g. `outbound.0.action`).
   * `outbound_policy` - The default behavior for outbound traffic.
 
 ## Filterable Fields

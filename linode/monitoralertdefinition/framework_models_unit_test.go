@@ -69,6 +69,7 @@ func TestAlertDefinitionModel_FlattenAlertDefinition(t *testing.T) {
 		Class:             "system",
 		Scope:             linodego.AlertDefinitionScopeEntity,
 		Regions:           []string{"us-east"},
+		GroupBy:           []string{"entity_id"},
 		Entities: linodego.AlertDefinitionEntities{
 			URL:              "/v4/monitor/services/dbaas/alert-definitions/42/entities",
 			Count:            2,
@@ -93,6 +94,8 @@ func TestAlertDefinitionModel_FlattenAlertDefinition(t *testing.T) {
 	assert.Equal(t, types.StringValue("entity"), model.Scope)
 	assert.False(t, model.Regions.IsNull())
 	assert.Equal(t, 1, len(model.Regions.Elements()))
+	assert.False(t, model.GroupBy.IsNull())
+	assert.Equal(t, 1, len(model.GroupBy.Elements()))
 	assert.False(t, model.Entities.IsNull())
 	assert.Equal(t, timetypes.NewRFC3339TimePointerValue(&now), model.Created)
 	assert.Equal(t, timetypes.NewRFC3339TimePointerValue(&now), model.Updated)

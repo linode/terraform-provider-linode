@@ -26,10 +26,6 @@ lint:
 	# remove two disabled linters when their errors are addressed
 	golangci-lint run
 
-.PHONY: deps
-deps:
-	go generate -tags tools tools/tools.go
-
 .PHONY: format
 format:
 	golangci-lint fmt
