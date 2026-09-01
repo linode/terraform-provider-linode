@@ -40,7 +40,9 @@ output "example_slug_output" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode LKE types that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode LKE types that meet certain requirements.
 
 ### Filter
 
@@ -53,6 +55,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode Maintenance Policy will be stored in the `maintenance_policies` attribute and will export the following attributes:
+
+* `maintenance_policies` - (Nested Attribute List) The Linode Maintenance Policies matching the data source filters.
 
 * `slug` - Unique identifier for this policy
 
