@@ -14,7 +14,7 @@ clean:
 
 .PHONY: tflint
 tflint:
-	tfproviderlint \
+	"$$(cd tools && go tool -n tfproviderlint)" \
 		-AT001=false \
 		-AT004=false \
 		-S006=false \
