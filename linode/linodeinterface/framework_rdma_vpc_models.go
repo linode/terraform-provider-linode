@@ -39,7 +39,8 @@ func (plan *RDMAVPCAttrModel) GetUpdateOptions(
 
 	if !plan.SubnetID.IsUnknown() && !plan.SubnetID.IsNull() &&
 		(state == nil || !state.SubnetID.Equal(plan.SubnetID)) {
-		opts.SubnetID = helper.FrameworkSafeInt64ToInt(plan.SubnetID.ValueInt64(), diags)
+		subnetID := helper.FrameworkSafeInt64ToInt(plan.SubnetID.ValueInt64(), diags)
+		opts.SubnetID = &subnetID
 		shouldUpdate = true
 	}
 
@@ -60,7 +61,7 @@ func (plan *RDMAVPCAttrModel) GetUpdateOptions(
 
 		ipv4Opts, ipv4ShouldUpdate := planIPv4.GetUpdateOptions(ctx, stateIPv4, diags)
 		if ipv4ShouldUpdate {
-			opts.IPv4 = ipv4Opts
+			opts.IPv4 = &ipv4Opts
 			shouldUpdate = true
 		}
 	}

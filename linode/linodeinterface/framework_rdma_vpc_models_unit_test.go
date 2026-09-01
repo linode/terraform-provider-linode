@@ -22,7 +22,9 @@ func TestRDMAVPCAttrModelGetUpdateOptions(t *testing.T) {
 
 	require.False(t, diags.HasError())
 	require.True(t, shouldUpdate)
-	require.Equal(t, 352276, opts.SubnetID)
+	require.NotNil(t, opts.SubnetID)
+	require.Equal(t, 352276, *opts.SubnetID)
+	require.NotNil(t, opts.IPv4)
 	require.Len(t, opts.IPv4.Addresses, 1)
 	require.Equal(t, "10.0.0.29", opts.IPv4.Addresses[0].Address)
 	require.NotNil(t, opts.IPv4.Addresses[0].Primary)
