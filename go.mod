@@ -24,11 +24,9 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.23.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.1
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
-	github.com/linode/linodego v1.69.0
 	github.com/linode/linodego/k8s v1.26.1
-	github.com/linode/linodego/v2 v2.5.0
-	github.com/linode/terraform-provider-linode/v3 v3.14.1
-	github.com/stretchr/testify v1.12.0
+	github.com/linode/linodego/v2 v2.6.0
+	github.com/stretchr/testify v1.12.1
 	golang.org/x/crypto v0.55.0
 	golang.org/x/sync v0.22.0
 )
@@ -59,7 +57,6 @@ require (
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
-	github.com/go-resty/resty/v2 v2.17.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/gnostic-models v0.7.0 // indirect
 	github.com/google/go-querystring v1.2.0 // indirect
@@ -99,7 +96,7 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/zclconf/go-cty v1.18.1 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/mod v0.38.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
@@ -127,5 +124,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.2 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
-
-replace github.com/linode/linodego/v2 => github.com/linode/linodego/v2 v2.5.1-0.20260818184222-1f203048311b

@@ -476,7 +476,7 @@ func expandRDMAVPCInterface(m map[string]any) *linodego.RDMAVPCInterfaceCreateOp
 					}
 					addrOpts = append(addrOpts, ao)
 				}
-				opts.IPv4 = linodego.RDMAVPCInterfaceIPv4Options{Addresses: addrOpts}
+				opts.IPv4 = &linodego.RDMAVPCInterfaceIPv4Options{Addresses: addrOpts}
 			}
 		}
 	}

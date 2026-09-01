@@ -126,7 +126,7 @@ func TestExpandLinodeInstanceInterfaces_VPC(t *testing.T) {
 	require.Equal(t, 42, result[0].VPC.SubnetID)
 	require.NotNil(t, result[0].VPC.IPv4)
 	require.NotNil(t, result[0].VPC.IPv4.Addresses)
-	addrs := *result[0].VPC.IPv4.Addresses
+	addrs := result[0].VPC.IPv4.Addresses
 	require.Len(t, addrs, 1)
 	require.Equal(t, "10.0.0.100", *addrs[0].Address)
 	require.Equal(t, true, *addrs[0].Primary)

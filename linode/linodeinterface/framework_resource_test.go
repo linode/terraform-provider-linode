@@ -909,32 +909,3 @@ func importStateID(s *terraform.State) (string, error) {
 
 	return "", fmt.Errorf("Error finding linode_interface")
 }
-
-func rdmaVPCImportStateID(s *terraform.State) (string, error) {
-	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_instance" {
-			continue
-		}
-
-		linodeID, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return "", fmt.Errorf("Error parsing Linode ID %v to int: %s", rs.Primary.ID, err)
-		}
-
-		interfaces, err := client.ListInterfaces(context.Background(), linodeID, nil)
-		if err != nil {
-			return "", fmt.Errorf("Error listing interfaces for instance %d: %s", linodeID, err)
-		}
-
-		for _, iface := range interfaces {
-			if iface.RDMAVPC != nil {
-				return fmt.Sprintf("%d,%d", linodeID, iface.ID), nil
-			}
-		}
-		return "", fmt.Errorf("no RDMA VPC interface found for instance %d", linodeID)
-	}
-
-	return "", fmt.Errorf("no linode_instance found in state")
-}
