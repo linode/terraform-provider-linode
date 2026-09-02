@@ -3894,6 +3894,30 @@ func TestAccResourceInstance_linodeInterfacesRDMAVPC(t *testing.T) {
 					),
 				},
 			},
+			// Update the managed RDMA VPC interface's IPv4 address to "auto".
+			// The API-resolved IP is written to state (not the literal "auto"),
+			// and the "auto" custom type's semantic equality keeps the plan empty
+			// on the following refresh (no perpetual diff).
+			{
+				Config: tmpl.LinodeInterfacesRDMAVPCManageUpdated(t, instanceName, rdmaRegion, rootPass, "auto"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("address"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("primary"),
+						knownvalue.Bool(true),
+					),
+				},
+			},
 		},
 	})
 }

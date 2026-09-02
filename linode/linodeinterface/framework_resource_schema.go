@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/customtypes"
 	linodesetplanmodifier "github.com/linode/terraform-provider-linode/v4/linode/helper/setplanmodifiers"
 )
 
@@ -415,6 +416,7 @@ var vpcInterfaceSchema = schema.SingleNestedAttribute{
 var configuredRDMAVPCInterfaceIPv4Address = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
 		"address": schema.StringAttribute{
+			CustomType: customtypes.LinodeAutoAllocIPType{},
 			Description: "The IPv4 address for the RDMA VPC interface, or 'auto' to allocate one " +
 				"automatically from the subnet.",
 			Optional: true,
@@ -449,7 +451,7 @@ var resourceRDMAVPCIPv4Attribute = schema.SingleNestedAttribute{
 			},
 			Validators: []validator.List{
 				listvalidator.NoNullValues(),
-				listvalidator.SizeAtMost(1),
+				listvalidator.SizeBetween(1, 1),
 			},
 		},
 	},

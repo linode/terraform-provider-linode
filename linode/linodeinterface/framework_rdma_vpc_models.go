@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/customtypes"
 )
 
 // RDMAVPCAttrModel is the model for an RDMA VPC interface (resource).
@@ -25,8 +26,8 @@ type RDMAVPCIPv4AttrModel struct {
 
 // RDMAVPCIPv4AddressAttrModel represents a single IPv4 address on an RDMA VPC interface.
 type RDMAVPCIPv4AddressAttrModel struct {
-	Address types.String `tfsdk:"address"`
-	Primary types.Bool   `tfsdk:"primary"`
+	Address customtypes.LinodeAutoAllocIPValue `tfsdk:"address"`
+	Primary types.Bool                         `tfsdk:"primary"`
 }
 
 // GetUpdateOptions returns the linodego update options for an RDMA VPC interface.
@@ -143,7 +144,7 @@ func (data *RDMAVPCIPv4AttrModel) FlattenIPv4(
 		ipv4.Addresses,
 		func(addr linodego.RDMAVPCInterfaceIPv4Address) RDMAVPCIPv4AddressAttrModel {
 			return RDMAVPCIPv4AddressAttrModel{
-				Address: types.StringValue(addr.Address),
+				Address: customtypes.LinodeAutoAllocIPValueFrom(addr.Address),
 				Primary: types.BoolValue(addr.Primary),
 			}
 		},
@@ -157,5 +158,10 @@ func (data *RDMAVPCIPv4AttrModel) FlattenIPv4(
 		return
 	}
 
-	data.Addresses = helper.KeepOrUpdateValue(data.Addresses, addressesValue, preserveKnown)
+	// NOTE: preserveKnown is intentionally ignored (treated as false) for the
+	// addresses list so the API-resolved IP address is always written to state,
+	// even when the user configured "auto". The LinodeAutoAllocIPType semantic
+	// equality bridges the configured "auto" and the resolved address, so this
+	// does not produce a perpetual diff or an inconsistent-result error.
+	data.Addresses = helper.KeepOrUpdateValue(data.Addresses, addressesValue, false)
 }

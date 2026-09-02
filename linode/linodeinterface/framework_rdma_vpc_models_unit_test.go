@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/customtypes"
 	"github.com/stretchr/testify/require"
 )
 
@@ -60,7 +61,7 @@ func createRDMAVPCIPv4AttrModel(t *testing.T, address string) *RDMAVPCIPv4AttrMo
 
 	ctx := context.Background()
 	listValue, listDiags := types.ListValueFrom(ctx, configuredRDMAVPCInterfaceIPv4Address.Type(), []RDMAVPCIPv4AddressAttrModel{
-		{Address: types.StringValue(address), Primary: types.BoolValue(true)},
+		{Address: customtypes.LinodeAutoAllocIPValueFrom(address), Primary: types.BoolValue(true)},
 	})
 	require.False(t, listDiags.HasError())
 
@@ -72,7 +73,7 @@ func createRDMAVPCIPv4ObjectValue(t *testing.T, address string) types.Object {
 
 	ctx := context.Background()
 	listValue, listDiags := types.ListValueFrom(ctx, configuredRDMAVPCInterfaceIPv4Address.Type(), []RDMAVPCIPv4AddressAttrModel{
-		{Address: types.StringValue(address), Primary: types.BoolValue(true)},
+		{Address: customtypes.LinodeAutoAllocIPValueFrom(address), Primary: types.BoolValue(true)},
 	})
 	require.False(t, listDiags.HasError())
 
