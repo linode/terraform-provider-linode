@@ -224,7 +224,7 @@ func TestAccResourceVPC_dualStack(t *testing.T) {
 	})
 }
 
-func TestAccResourceLinodeVPC_create_InvalidLabel(t *testing.T) {
+func TestAccResourceVPC_create_InvalidLabel(t *testing.T) {
 	t.Parallel()
 
 	vpcLabel := "tf-test*123"
@@ -241,7 +241,7 @@ func TestAccResourceLinodeVPC_create_InvalidLabel(t *testing.T) {
 	})
 }
 
-func TestAccResourceLinodeVPC_update_InvalidLabel(t *testing.T) {
+func TestAccResourceVPC_update_InvalidLabel(t *testing.T) {
 	t.Parallel()
 	resName := "linode_vpc.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")

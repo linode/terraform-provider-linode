@@ -640,7 +640,7 @@ func TestAccResourceLKECluster_implicitCount(t *testing.T) {
 	})
 }
 
-func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
+func TestAccResourceLKECluster_nodePoolTaintsLabels(t *testing.T) {
 	t.Parallel()
 
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
