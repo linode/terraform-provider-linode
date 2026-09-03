@@ -20,6 +20,7 @@ type DataSourceModel struct {
 	Public       types.Object `tfsdk:"public"`
 	VLAN         types.Object `tfsdk:"vlan"`
 	VPC          types.Object `tfsdk:"vpc"`
+	RDMAVPC      types.Object `tfsdk:"rdma_vpc"`
 }
 
 // DataSourceDefaultRouteModel is the data source model for default route
@@ -120,6 +121,24 @@ type DataSourceVPCIPv6RangeModel struct {
 	Range cidrtypes.IPv6Prefix `tfsdk:"range"`
 }
 
+// DataSourceRDMAVPCModel is the data source model for an RDMA VPC interface.
+type DataSourceRDMAVPCModel struct {
+	VPCID    types.Int64  `tfsdk:"vpc_id"`
+	SubnetID types.Int64  `tfsdk:"subnet_id"`
+	IPv4     types.Object `tfsdk:"ipv4"`
+}
+
+// DataSourceRDMAVPCIPv4Model is the data source model for the IPv4 block of an RDMA VPC interface.
+type DataSourceRDMAVPCIPv4Model struct {
+	Addresses types.List `tfsdk:"addresses"`
+}
+
+// DataSourceRDMAVPCIPv4AddressModel represents an IPv4 address on an RDMA VPC interface.
+type DataSourceRDMAVPCIPv4AddressModel struct {
+	Address types.String `tfsdk:"address"`
+	Primary types.Bool   `tfsdk:"primary"`
+}
+
 // FlattenInterface flattens a linodego.LinodeInterface into the data source model
 func (data *DataSourceModel) FlattenInterface(
 	ctx context.Context,
@@ -169,6 +188,14 @@ func (data *DataSourceModel) FlattenInterface(
 	// Flatten VPC interface
 	if i.VPC != nil {
 		data.flattenVPCInterface(ctx, *i.VPC, diags)
+		if diags.HasError() {
+			return
+		}
+	}
+
+	// Flatten RDMA VPC interface
+	if i.RDMAVPC != nil {
+		data.flattenRDMAVPCInterface(ctx, *i.RDMAVPC, diags)
 		if diags.HasError() {
 			return
 		}
@@ -396,4 +423,54 @@ func (data *DataSourceModel) flattenVPCInterface(
 	}
 
 	data.VPC = vpcObj
+}
+
+func (data *DataSourceModel) flattenRDMAVPCInterface(
+	ctx context.Context,
+	rdma linodego.RDMAVPCInterface,
+	diags *diag.Diagnostics,
+) {
+	tflog.Trace(ctx, "Enter DataSourceModel.flattenRDMAVPCInterface")
+
+	addresses := make([]DataSourceRDMAVPCIPv4AddressModel, len(rdma.IPv4.Addresses))
+	for i, addr := range rdma.IPv4.Addresses {
+		addresses[i] = DataSourceRDMAVPCIPv4AddressModel{
+			Address: types.StringValue(addr.Address),
+			Primary: types.BoolValue(addr.Primary),
+		}
+	}
+
+	addressesList, addressesDiags := types.ListValueFrom(
+		ctx, dataSourceRDMAVPCIPv4AddressAttribute.Type(), addresses,
+	)
+	diags.Append(addressesDiags...)
+	if diags.HasError() {
+		return
+	}
+
+	ipv4Obj, ipv4Diags := types.ObjectValueFrom(
+		ctx,
+		dataSourceRDMAVPCIPv4Attribute.GetType().(types.ObjectType).AttrTypes,
+		DataSourceRDMAVPCIPv4Model{Addresses: addressesList},
+	)
+	diags.Append(ipv4Diags...)
+	if diags.HasError() {
+		return
+	}
+
+	rdmaModel := DataSourceRDMAVPCModel{
+		VPCID:    types.Int64Value(int64(rdma.VPCID)),
+		SubnetID: types.Int64Value(int64(rdma.SubnetID)),
+		IPv4:     ipv4Obj,
+	}
+
+	rdmaObj, rdmaDiags := types.ObjectValueFrom(
+		ctx, dataSourceRDMAVPCAttribute.GetType().(types.ObjectType).AttrTypes, rdmaModel,
+	)
+	diags.Append(rdmaDiags...)
+	if diags.HasError() {
+		return
+	}
+
+	data.RDMAVPC = rdmaObj
 }

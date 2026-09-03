@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -227,11 +228,10 @@ func waitForNodesDeleted(
 	ticker := time.NewTicker(time.Duration(intervalMS) * time.Millisecond)
 	defer ticker.Stop()
 
-	// Let's track which nodes still haven't been deleted
-	// using a pseudo-set
-	remainingNodes := make(map[int]bool, len(nodes))
+	// Let's track which nodes still haven't been deleted.
+	remainingNodes := set.New[int](len(nodes))
 	for _, node := range nodes {
-		remainingNodes[node.InstanceID] = true
+		remainingNodes.Insert(node.InstanceID)
 	}
 
 	// Filter down to only instance deletion events
@@ -285,17 +285,16 @@ func waitForNodesDeleted(
 					continue
 				}
 
-				if _, ok := remainingNodes[instID]; ok {
-					delete(remainingNodes, instID)
+				if remainingNodes.Remove(instID) {
 					tflog.Trace(ctx, "Node detected as deleted", map[string]any{
 						"instance_id":     instID,
-						"nodes_remaining": len(remainingNodes),
+						"nodes_remaining": remainingNodes.Size(),
 					})
 				}
 			}
 
 			// All nodes have been deleted
-			if len(remainingNodes) < 1 {
+			if remainingNodes.Empty() {
 				return nil
 			}
 		case <-ctx.Done():
@@ -361,7 +360,7 @@ func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, dec
 	}
 
 	// Tracks which local pools have been processed
-	pairedDeclaredPools := make(map[int]bool)
+	pairedDeclaredPools := set.New[int](len(declaredPools))
 
 	// First let's match any pools in state with an ID
 	for i, declaredPool := range declaredPools {
@@ -380,7 +379,7 @@ func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, dec
 		// Pair the found pool with the declared pool
 		result[i] = apiPool
 		delete(apiPools, poolID)
-		pairedDeclaredPools[i] = true
+		pairedDeclaredPools.Insert(i)
 	}
 
 	// Second, let's match pools that have all matching attributes.
@@ -390,7 +389,7 @@ func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, dec
 		declaredPool := declaredPool.(map[string]any)
 		declaredAutoscaler := expandLinodeLKEClusterAutoscalerFromPool(declaredPool)
 
-		if _, ok := pairedDeclaredPools[i]; ok {
+		if pairedDeclaredPools.Contains(i) {
 			// This apiPool has already been handled in the previous step,
 			// we can skip it
 			continue
@@ -727,10 +726,7 @@ func filterExternalPools(ctx context.Context, externalPoolTags []string, pools [
 	if len(externalPoolTags) == 0 {
 		return pools
 	}
-	tagSet := make(map[string]bool, len(externalPoolTags))
-	for _, tag := range externalPoolTags {
-		tagSet[tag] = true
-	}
+	tagSet := set.From(externalPoolTags)
 	for _, pool := range pools {
 		tag := poolHasAnyOfTags(pool, tagSet)
 		if tag != nil {
@@ -746,9 +742,9 @@ func filterExternalPools(ctx context.Context, externalPoolTags []string, pools [
 	return filteredPools
 }
 
-func poolHasAnyOfTags(pool linodego.LKENodePool, tagSet map[string]bool) *string {
+func poolHasAnyOfTags(pool linodego.LKENodePool, tagSet *set.Set[string]) *string {
 	for _, poolTag := range pool.Tags {
-		if _, exists := tagSet[poolTag]; exists {
+		if tagSet.Contains(poolTag) {
 			result := poolTag
 			return &result
 		}

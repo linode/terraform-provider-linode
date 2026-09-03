@@ -18,6 +18,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/hashicorp/go-set/v3"
 	fwDiag "github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -49,7 +50,7 @@ type (
 )
 
 var (
-	optInTests               map[string]struct{}
+	optInTests               *set.Set[string]
 	privateKeyMaterial       string
 	PublicKeyMaterial        string
 	TestAccSDKv2Providers    map[string]*schema.Provider
@@ -61,7 +62,7 @@ var (
 )
 
 func initOptInTests() {
-	optInTests = make(map[string]struct{})
+	optInTests = set.New[string](0)
 
 	optInTestsValue, ok := os.LookupEnv(optInTestsEnvVar)
 	if !ok {
@@ -69,7 +70,7 @@ func initOptInTests() {
 	}
 
 	for testName := range strings.SplitSeq(optInTestsValue, ",") {
-		optInTests[testName] = struct{}{}
+		optInTests.Insert(testName)
 	}
 }
 
@@ -164,7 +165,7 @@ func PreCheck(t testing.TB) {
 func OptInTest(t testing.TB) {
 	t.Helper()
 
-	if _, ok := optInTests[t.Name()]; !ok {
+	if !optInTests.Contains(t.Name()) {
 		t.Skipf("skipping opt-in test; specify test in environment variable %q to run", optInTestsEnvVar)
 	}
 }
@@ -667,12 +668,12 @@ func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
 }
 
 // accountAvailabilityCaps are capabilities that must be verified both at the region level and at the account availability level.
-var accountAvailabilityCaps = map[linodego.RegionCapability]bool{
-	linodego.CapabilityLinodes:       true,
-	linodego.CapabilityNodeBalancers: true,
-	linodego.CapabilityBlockStorage:  true,
-	linodego.CapabilityLKE:           true,
-}
+var accountAvailabilityCaps = set.From([]linodego.RegionCapability{
+	linodego.CapabilityLinodes,
+	linodego.CapabilityNodeBalancers,
+	linodego.CapabilityBlockStorage,
+	linodego.CapabilityLKE,
+})
 
 // GetRegionsWithCaps returns a list of region IDs that support the given capabilities
 // Parameters:
@@ -691,7 +692,7 @@ func GetRegionsWithCaps(capabilities []linodego.RegionCapability, regionType str
 	}
 
 	// Fetch per-region account availabilities. On failure, log a warning and proceed without account-level filtering.
-	accountAvail := make(map[string]map[string]bool)
+	accountAvail := make(map[string]*set.Set[string])
 	acctAvailabilities, err := client.ListAccountAvailabilities(context.Background(), nil)
 	if err != nil {
 		log.Printf("[WARN] Failed to retrieve account availabilities for regions. "+
@@ -699,9 +700,9 @@ func GetRegionsWithCaps(capabilities []linodego.RegionCapability, regionType str
 			"Tests may fail if the account lacks access to necessary capabilities in the selected region. err=%v", err)
 	} else {
 		for _, aa := range acctAvailabilities {
-			avail := make(map[string]bool, len(aa.Available))
+			avail := set.New[string](len(aa.Available))
 			for _, a := range aa.Available {
-				avail[a] = true
+				avail.Insert(a)
 			}
 			accountAvail[aa.Region] = avail
 		}
@@ -710,7 +711,7 @@ func GetRegionsWithCaps(capabilities []linodego.RegionCapability, regionType str
 	// Determine which of the requested capabilities also require account-level checks.
 	var requiredAccountCaps []linodego.RegionCapability
 	for _, c := range capabilities {
-		if accountAvailabilityCaps[c] {
+		if accountAvailabilityCaps.Contains(c) {
 			requiredAccountCaps = append(requiredAccountCaps, c)
 		}
 	}
@@ -723,14 +724,14 @@ func GetRegionsWithCaps(capabilities []linodego.RegionCapability, regionType str
 			return true
 		}
 
-		capsMap := make(map[linodego.RegionCapability]bool)
+		capsMap := set.New[linodego.RegionCapability](len(region.Capabilities))
 
 		for _, c := range region.Capabilities {
-			capsMap[linodego.RegionCapability(strings.ToUpper(c))] = true
+			capsMap.Insert(linodego.RegionCapability(strings.ToUpper(c)))
 		}
 
 		for _, c := range capabilities {
-			if !capsMap[linodego.RegionCapability(strings.ToUpper(string(c)))] {
+			if !capsMap.Contains(linodego.RegionCapability(strings.ToUpper(string(c)))) {
 				return true
 			}
 		}
@@ -744,7 +745,7 @@ func GetRegionsWithCaps(capabilities []linodego.RegionCapability, regionType str
 				return true
 			}
 			for _, c := range requiredAccountCaps {
-				if !regionAvail[string(c)] {
+				if !regionAvail.Contains(string(c)) {
 					return true
 				}
 			}

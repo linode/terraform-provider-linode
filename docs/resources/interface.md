@@ -212,7 +212,7 @@ The following arguments are supported:
 
   * `ipv6` - (Optional) If set to true, the interface is used for the IPv6 default route.
 
-* `public` - (Optional, Nested Attribute) Nested attributes object for a Linode public interface. Exactly one of `public`, `vlan`, or `vpc` must be specified. Referenced directly (e.g. `public.ipv4`).
+* `public` - (Optional, Nested Attribute) Nested attributes object for a Linode public interface. At most one of `public`, `vlan`, `vpc`, or `rdma_vpc` may be specified. Referenced directly (e.g. `public.ipv4`).
 
   * `ipv4` - (Optional, Nested Attribute) IPv4 addresses for this interface. Referenced directly (e.g. `public.ipv4.addresses`).
 
@@ -228,13 +228,13 @@ The following arguments are supported:
 
       * `range` - (Required) The IPv6 range.
 
-* `vlan` - (Optional, Nested Attribute) Nested attributes object for a Linode VLAN interface. Exactly one of `public`, `vlan`, or `vpc` must be specified. Referenced directly (e.g. `vlan.ipam_address`).
+* `vlan` - (Optional, Nested Attribute) Nested attributes object for a Linode VLAN interface. At most one of `public`, `vlan`, `vpc`, or `rdma_vpc` may be specified. Referenced directly (e.g. `vlan.ipam_address`).
 
   * `ipam_address` - (Optional) The VLAN interface's private IPv4 address in CIDR notation.
 
   * `vlan_label` - (Required) The VLAN's unique label. Must be between 1 and 64 characters.
 
-* `vpc` - (Optional, Nested Attribute) Nested attributes object for a Linode VPC interface. Exactly one of `public`, `vlan`, or `vpc` must be specified. Referenced directly (e.g. `vpc.subnet_id`).
+* `vpc` - (Optional, Nested Attribute) Nested attributes object for a Linode VPC interface. At most one of `public`, `vlan`, `vpc`, or `rdma_vpc` may be specified. Referenced directly (e.g. `vpc.subnet_id`).
 
   * `subnet_id` - (Required) The VPC subnet identifier for this interface.
 
@@ -263,6 +263,18 @@ The following arguments are supported:
     * `ranges` - (Optional, Nested Attribute List) Defines additional IPv6 network ranges.
 
       * `range` - (Optional) The IPv6 network range in CIDR notation.
+
+* `rdma_vpc` - (Optional, Nested Attribute) Nested attributes object for a Linode RDMA VPC interface. At most one of `public`, `vlan`, `vpc`, or `rdma_vpc` may be specified. **NOTE: RDMA VPC interfaces cannot be created or deleted via this resource; they can only be created as part of a GPUDirect RDMA Linode and may only be updated/read here. RDMA VPC interfaces may not currently be available to all users.** Referenced directly (e.g. `rdma_vpc.subnet_id`).
+
+  * `subnet_id` - (Required) The ID of the RDMA VPC subnet this interface is attached to.
+
+  * `ipv4` - (Optional) IPv4 configuration for the RDMA VPC interface.
+
+    * `addresses` - (Optional) The list of IPv4 addresses for the RDMA VPC interface. Must contain exactly one element.
+
+      * `address` - (Optional) The IPv4 address. Defaults to `auto` for automatic assignment from the subnet.
+
+      * `primary` - (Optional) Whether this is the primary IPv4 address for the interface. Exactly one address must be primary.
 
 ## Attributes Reference
 

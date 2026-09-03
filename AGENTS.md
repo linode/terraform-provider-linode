@@ -2,16 +2,17 @@
 
 ## Architecture Overview
 
-This is a Terraform provider that uses **both** SDKv2 and Plugin Framework patterns (muxed together). Resources/data sources live under `linode/<resource-name>/` with each package being self-contained.
+This is a Terraform provider that uses **both** SDKv2 and Plugin Framework patterns (muxed together). Resources and data sources generally live under `linode/<resource-name>/` and use shared code from `linode/helper/` and, where needed, other resource packages.
 
-- **SDKv2 resources** (legacy): `linode/instance/`, `linode/domain/`, `linode/lke/` - use `resource.go`, `datasource.go`
+- **SDKv2 resources** (legacy): for example, `linode/instance/` uses `resource.go` and `datasource.go`
+- **Mixed packages**: `linode/domain/` and `linode/lke/` use an SDKv2 `resource.go` with a Framework data source
 - **Plugin Framework resources** (preferred for new work): `linode/vpc/`, `linode/volume/`, `linode/vpcsubnet/` - use `framework_resource.go`, `framework_datasource.go`, `framework_models.go`
 - **Provider registration**: SDKv2 in `linode/provider.go`, Framework in `linode/framework_provider.go`
 - **Shared utilities**: `linode/helper/` - conversion functions, base resource/datasource, plan modifiers
 
 ## Framework Resource Structure (New Resources)
 
-Each Framework resource package follows this pattern:
+A full Framework resource package commonly follows this pattern, although smaller packages may omit files. New Plugin Framework tests must use `framework_resource_test.go` and `framework_datasource_test.go`; `resource_test.go` and `datasource_test.go` are legacy SDKv2 filenames.
 
 ```
 linode/<resource-name>/
@@ -20,8 +21,8 @@ linode/<resource-name>/
 ├── framework_models.go            # Terraform state models with Flatten/CopyFrom methods
 ├── framework_schema_resource.go   # Resource schema definition
 ├── framework_schema_datasource.go # Data source schema definition
-├── resource_test.go               # Integration tests
-├── datasource_test.go             # Data source integration tests
+├── framework_resource_test.go     # Resource integration tests
+├── framework_datasource_test.go   # Data source integration tests
 ├── tmpl/                          # Test templates
 │   ├── template.go                # Go functions returning HCL configs
 │   └── *.gotf                     # HCL template files
@@ -29,16 +30,18 @@ linode/<resource-name>/
 
 ### Key Model Patterns
 
-Models must implement:
-- `FlattenXxx(ctx, apiObject, preserveKnown)` - Converts Linode API response to Terraform state
-- `CopyFrom(ctx, other, preserveKnown)` - Copies values between model instances for updates
+Resource models commonly provide:
+- A `FlattenXxx` or `ParseXxx` method that converts a Linode API response to Terraform state
+- A `CopyFrom` method for preserving or copying values during updates when the resource workflow needs one
+
+Signatures vary by package; some methods accept a context or diagnostics parameter, return diagnostics, or omit context when it is unnecessary. Follow the established pattern in the package being changed.
 
 Use `helper.KeepOrUpdateValue()`, `helper.KeepOrUpdateString()`, `helper.KeepOrUpdateInt64()` to handle `preserveKnown` flag which prevents overwriting known plan values with computed values.
 
 ## Test Commands
 
 ```bash
-# Run all tests for a package
+# Run an integration test suite selected by build tag
 make TEST_SUITE="vpcsubnet" test-int
 
 # Run a specific test
@@ -51,7 +54,7 @@ make test-unit
 make PKG_NAME="instance" test-unit
 ```
 
-**Important**: Set `LINODE_TOKEN` environment variable or use `.env` file. Tests create real resources (costs money).
+**Important**: Export the `LINODE_TOKEN` environment variable before running acceptance tests. The repository does not automatically load a `.env` file. Acceptance tests create real resources and may incur costs.
 
 ## Test Template Pattern
 
@@ -78,7 +81,7 @@ resource "linode_example" "foobar" {
 
 ## Build Tags
 
-- `//go:build integration` or `//go:build <resource-name>` - Integration tests (require API token)
+- `//go:build integration || <resource-name>` - Typical integration-test tag expression (requires an API token); some specialized suites add other tags or conditions
 - `//go:build unit` - Unit tests (no API calls)
 
 ## Integration Test Style
@@ -145,13 +148,12 @@ Common `statecheck` / `knownvalue` helpers:
 3. Define models in `framework_models.go` with `Flatten*` and `CopyFrom` methods
 4. Implement CRUD in `framework_resource.go`
 5. Register in `linode/framework_provider.go` Resources() method
-6. Add tests with `tmpl/` directory
+6. Add `framework_resource_test.go` and/or `framework_datasource_test.go` with a `tmpl/` directory
 7. Add docs in `docs/resources/<resource>.md`
 
 **Debugging tests:**
 - `TF_LOG_PROVIDER=DEBUG` - Provider logging
 - `TF_LOG_PROVIDER_LINODE_REQUESTS=DEBUG` - API request logging
-- `TF_SCHEMA_PANIC_ON_ERROR=1` - Force panic on schema errors
 
 ## Linode API Client
 
@@ -165,34 +167,24 @@ Uses `github.com/linode/linodego/v2` client. Access via:
 - Use `tflog.Debug(ctx, ...)` for logging in resources
 - Prefer Framework over SDKv2 for new resources
 - Unit test files use `*_unit_test.go` naming with `//go:build unit` tag
+- Keep this `AGENTS.md` synchronized with the repository: update it when a change contradicts its guidance, and correct any factual inaccuracies you discover while working.
 
 ## Go Idioms
 
-**Sets using maps (Go 1.23+):**
-Use `helper.StringSet` and `helper.ExistsInSet` for set operations, then extract keys with `slices.Collect(maps.Keys())`:
+**Sets (Go 1.23+):**
+Use `github.com/hashicorp/go-set/v3` for set operations:
 
 ```go
 import (
-    "maps"
-    "slices"
-    "github.com/linode/terraform-provider-linode/v4/linode/helper"
+    "github.com/hashicorp/go-set/v3"
 )
 
 // Create a set
-regionSet := make(helper.StringSet)
+regionSet := set.New[string](len(endpoints))
 for _, endpoint := range endpoints {
-    regionSet[endpoint.Region] = helper.ExistsInSet
+    regionSet.Insert(endpoint.Region)
 }
 
-// Extract keys as a slice (Go 1.23+)
-regions := slices.Collect(maps.Keys(regionSet))
-```
-
-This is preferred over the manual loop pattern:
-```go
-// Avoid this verbose pattern
-regions := make([]string, 0, len(regionSet))
-for region := range regionSet {
-    regions = append(regions, region)
-}
+// Extract elements as a slice
+regions := regionSet.Slice()
 ```
