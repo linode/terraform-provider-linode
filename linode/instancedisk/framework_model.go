@@ -84,6 +84,13 @@ func (data *ResourceModel) PopulateImageFromParentInstance(
 		return
 	}
 
+	// Only populate image for filesystems that can be deployed from images.
+	// Swap, raw, and initrd filesystems don't have associated images.
+	fs := data.Filesystem.ValueString()
+	if fs == "swap" || fs == "raw" || fs == "initrd" {
+		return
+	}
+
 	instance, err := client.GetInstance(ctx, linodeID)
 	if err != nil {
 		tflog.Debug(ctx, "Failed to fetch parent instance for disk image fallback", map[string]any{

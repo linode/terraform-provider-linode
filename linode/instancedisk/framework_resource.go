@@ -229,9 +229,9 @@ func (r *Resource) Read(
 		return
 	}
 
-	state.PopulateImageFromParentInstance(ctx, client, linodeID)
-
 	state.FlattenDisk(disk, false)
+
+	state.PopulateImageFromParentInstance(ctx, client, linodeID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
