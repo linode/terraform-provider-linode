@@ -37,6 +37,16 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "Indicates the local disk encryption setting for this LKE node pool.",
 			Computed:    true,
 		},
+		"isolation_public_ipv4": schema.BoolAttribute{
+			Description: "Whether nodes in this pool have public IPv4 addresses. " +
+				"This is only available for LKE Enterprise clusters and may not be available to all customers.",
+			Computed: true,
+		},
+		"isolation_public_ipv6": schema.BoolAttribute{
+			Description: "Whether nodes in this pool have public IPv6 addresses. " +
+				"This is only available for LKE Enterprise clusters and may not be available to all customers.",
+			Computed: true,
+		},
 		"disks": schema.ListNestedAttribute{
 			Description: "This node pool's custom disk layout.",
 			Computed:    true,

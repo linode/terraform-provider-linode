@@ -31,7 +31,9 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `streams` - The historical versions of the logs stream. Each entry exports the following attributes:
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* `streams` - (Nested Attribute List) The historical versions of the logs stream. Each entry exports the following attributes:
 
   * `id` - The ID of the logs stream version.
 
@@ -53,7 +55,7 @@ In addition to all arguments above, the following attributes are exported:
 
   * `updated_by` - The user who last updated this stream version.
 
-  * [`details`](#details) - Additional configuration details at this version.
+  * [`details`](#details) - (Nested Attribute) Additional configuration details at this version. Referenced directly (e.g. `streams[0].details.cluster_ids`).
 
 ### details
 

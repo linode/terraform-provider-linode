@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego/v2"
 )
@@ -47,7 +48,7 @@ func shouldRetryOn400sForDatabasePropagation(
 	}
 
 	// Aggregate which databases still exist on the current account
-	validDatabaseIDs := make(map[int]bool, len(databases))
+	validDatabaseIDs := set.New[int](len(databases))
 	for _, db := range databases {
 		if db.PrivateNetwork == nil || db.PrivateNetwork.VPCID != vpcID {
 			// If this is a detachment that hasn't yet propagated,
@@ -55,17 +56,17 @@ func shouldRetryOn400sForDatabasePropagation(
 			continue
 		}
 
-		validDatabaseIDs[db.ID] = true
+		validDatabaseIDs.Insert(db.ID)
 	}
 
 	// Aggregate which databases are still registered with the subnet
 	// but do not exist on the current account
-	pendingDetachPropagation := make(map[int]bool)
+	pendingDetachPropagation := set.New[int](len(vpcSubnet.Databases))
 	for _, db := range vpcSubnet.Databases {
-		if _, ok := validDatabaseIDs[db.ID]; !ok {
-			pendingDetachPropagation[db.ID] = true
+		if !validDatabaseIDs.Contains(db.ID) {
+			pendingDetachPropagation.Insert(db.ID)
 		}
 	}
 
-	return len(pendingDetachPropagation) >= len(vpcSubnet.Databases), nil
+	return pendingDetachPropagation.Size() >= len(vpcSubnet.Databases), nil
 }

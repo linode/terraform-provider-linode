@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego/v2"
@@ -125,17 +126,17 @@ func expandDevicesBlock(devicesBlock any) (*linodego.InstanceConfigDeviceMap, er
 		return nil, nil
 	}
 
-	seenDevices := make(map[string]bool)
+	seenDevices := set.New[string](len(devices))
 
 	for _, rawDevice := range devices {
 		device := rawDevice.(map[string]any)
 		linodeGoDevice := createDevice(device)
 
 		if deviceName, ok := device["device_name"]; ok {
-			if seenDevices[deviceName.(string)] {
+			if seenDevices.Contains(deviceName.(string)) {
 				log.Printf("[WARN] device %v was defined more than once", deviceName)
 			} else {
-				seenDevices[deviceName.(string)] = true
+				seenDevices.Insert(deviceName.(string))
 			}
 
 			err := setDeviceMapField(&result, deviceName.(string), linodeGoDevice)
