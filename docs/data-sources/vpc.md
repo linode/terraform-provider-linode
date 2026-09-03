@@ -33,13 +33,15 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `label` - The label of the VPC.
 
 * `description` - The user-defined description of this VPC.
 
-* `ipv6` - A list of IPv6 allocations under this VPC.
+* `ipv6` - (Nested Attribute List) A list of IPv6 allocations under this VPC.
 
-* `ipv4` - A list of IPv4 ranges under this VPC.
+* `ipv4` - (Nested Attribute List) A list of IPv4 ranges under this VPC.
 
 * `region` - The region where the VPC is deployed.
 

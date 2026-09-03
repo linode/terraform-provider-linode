@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"strconv"
 	"sync"
@@ -3753,4 +3754,199 @@ func TestAccResourceInstance_withLock(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccResourceInstance_linodeInterfacesRDMAVPC(t *testing.T) {
+	t.Parallel()
+
+	// The RDMA plan reports as unavailable in every region. To reduce race conditions,
+	// we require to set a region that supports RDMA via an environment variable.
+	rdmaRegion := os.Getenv("LINODE_RDMA_REGION")
+	if rdmaRegion == "" {
+		t.Skip("LINODE_RDMA_REGION must be set to run this test")
+	}
+
+	resName := "linode_instance.foobar"
+	ifaceResName := "linode_interface.foobar_iface"
+	instanceName := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(64)
+	updatedIPv4 := "10.0.1.5"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.LinodeInterfacesRDMAVPC(t, instanceName, rdmaRegion, rootPass),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(instanceName),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("region"),
+						knownvalue.StringExact(rdmaRegion),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("interface_generation"),
+						knownvalue.StringExact("linode"),
+					),
+					// Eight RDMA VPC interfaces plus one regular VPC interface.
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces"),
+						knownvalue.ListSizeExact(9),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces").
+							AtSliceIndex(0).
+							AtMapKey("rdma_vpc").
+							AtSliceIndex(0).
+							AtMapKey("ipv4").
+							AtSliceIndex(0).
+							AtMapKey("addresses").
+							AtSliceIndex(0).
+							AtMapKey("address"),
+						knownvalue.StringExact("auto"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces").
+							AtSliceIndex(0).
+							AtMapKey("rdma_vpc").
+							AtSliceIndex(0).
+							AtMapKey("ipv4").
+							AtSliceIndex(0).
+							AtMapKey("addresses").
+							AtSliceIndex(0).
+							AtMapKey("primary"),
+						knownvalue.Bool(true),
+					),
+					// All eight RDMA interfaces share the same RDMA subnet.
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces").
+							AtSliceIndex(7).
+							AtMapKey("rdma_vpc").
+							AtSliceIndex(0).
+							AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					// The trailing interface is a regular VPC interface.
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces").
+							AtSliceIndex(8).
+							AtMapKey("vpc").
+							AtSliceIndex(0).
+							AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+				},
+			},
+			// Import one of the instance's existing RDMA VPC interfaces into a
+			// linode_interface resource. RDMA VPC interfaces cannot be created via
+			// the linode_interface resource, so it is imported (and persisted) rather
+			// than applied.
+			{
+				Config:             tmpl.LinodeInterfacesRDMAVPCManage(t, instanceName, rdmaRegion, rootPass),
+				ResourceName:       ifaceResName,
+				ImportState:        true,
+				ImportStatePersist: true,
+				ImportStateIdFunc:  rdmaVPCImportStateID,
+			},
+			// Update the managed RDMA VPC interface: move it to a second RDMA subnet
+			// and assign a specific primary IPv4 address.
+			{
+				Config: tmpl.LinodeInterfacesRDMAVPCManageUpdated(t, instanceName, rdmaRegion, rootPass, updatedIPv4),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(ifaceResName, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(ifaceResName, tfjsonpath.New("linode_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(ifaceResName, tfjsonpath.New("rdma_vpc").AtMapKey("vpc_id"), knownvalue.NotNull()),
+					// The interface now points at the second RDMA subnet.
+					statecheck.CompareValuePairs(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("subnet_id"),
+						"linode_vpc_subnet.rdma2",
+						tfjsonpath.New("id"),
+						helper.TypeAgnosticComparer(),
+					),
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("address"),
+						knownvalue.StringExact(updatedIPv4),
+					),
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("primary"),
+						knownvalue.Bool(true),
+					),
+				},
+			},
+			// Update the managed RDMA VPC interface's IPv4 address to "auto".
+			// The API-resolved IP is written to state (not the literal "auto"),
+			// and the "auto" custom type's semantic equality keeps the plan empty
+			// on the following refresh (no perpetual diff).
+			{
+				Config: tmpl.LinodeInterfacesRDMAVPCManageUpdated(t, instanceName, rdmaRegion, rootPass, "auto"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("address"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("primary"),
+						knownvalue.Bool(true),
+					),
+				},
+			},
+		},
+	})
+}
+
+func rdmaVPCImportStateID(s *terraform.State) (string, error) {
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_instance" {
+			continue
+		}
+
+		linodeID, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return "", fmt.Errorf("Error parsing Linode ID %v to int: %s", rs.Primary.ID, err)
+		}
+
+		interfaces, err := client.ListInterfaces(context.Background(), linodeID, nil)
+		if err != nil {
+			return "", fmt.Errorf("Error listing interfaces for instance %d: %s", linodeID, err)
+		}
+
+		for _, iface := range interfaces {
+			if iface.RDMAVPC != nil {
+				return fmt.Sprintf("%d,%d", linodeID, iface.ID), nil
+			}
+		}
+		return "", fmt.Errorf("no RDMA VPC interface found for instance %d", linodeID)
+	}
+
+	return "", fmt.Errorf("no linode_instance found in state")
 }
