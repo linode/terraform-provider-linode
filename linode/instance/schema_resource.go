@@ -765,6 +765,7 @@ var resourceSchema = map[string]*schema.Schema{
 		RequiredWith:  []string{"image"},
 		Elem:          InterfaceSchema,
 	},
+	"linode_interfaces": linodeInterfacesSchema,
 	"config": {
 		Optional: true,
 		Computed: true,

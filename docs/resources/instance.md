@@ -214,6 +214,8 @@ The following arguments are supported:
 
 * [`interface`](#interface) - (Optional) A list of network interfaces to be assigned to the Linode on creation. If an explicit config or disk is defined, interfaces must be declared in the [`config` block](#configs).
 
+* [`linode_interfaces`](#linode_interfaces) - (Optional) A list of new-generation Linode Interfaces (`public`, `vlan`, `vpc`, `rdma_vpc`) to attach to the Linode at creation. Requires `interface_generation = "linode"`. Conflicts with `interface`, `disk`, and `config`. **NOTE:** RDMA VPC interfaces may not currently be available to all users.
+
 * `interface_generation` - (Optional) Specifies the interface type for the Linode. If set to `linode`, Linode interfaces must be created using a separate resource before this Linode can be booted. (`linode`, `legacy_config`; default is determined by the account `interfaces_for_new_linodes` setting)
 
 * TODO(Linode Interfaces): Link to a usage example using the `linode_instance_interface` resource
@@ -404,6 +406,50 @@ The following arguments are available in a `range` configuration block of an [`i
 * `range` - (Optional) A prefix to add to this interface, or `auto` for a new IPv6 prefix to be automatically allocated.
 
 * `allocated_range` - (Read-Only) The value of range computed by the API. This is necessary when needing to access the range implicitly allocated using `auto`.
+
+### linode_interfaces
+
+`linode_interfaces` is a list of new-generation Linode Interfaces to attach to the instance at creation time. Each entry may specify at most one of `public`, `vlan`, `vpc`, or `rdma_vpc`. This block is mutually exclusive with the legacy `interface` block, and requires `interface_generation = "linode"`. All values are `ForceNew`; in-place modifications of these interfaces should be made via the standalone `linode_interface` resource (which does not support creating RDMA VPC interfaces).
+
+Each interface entry supports:
+
+* `firewall_id` - (Optional) The ID of an enabled firewall to attach to this interface. Not allowed for VLAN interfaces.
+
+* `default_route` - (Optional) Default route configuration for the interface.
+
+  * `ipv4` - (Optional) Whether this interface is used for the IPv4 default route.
+
+  * `ipv6` - (Optional) Whether this interface is used for the IPv6 default route.
+
+* `public` - (Optional) Configuration for a Linode public interface.
+
+  * `ipv4.addresses[].address` - (Optional) The IPv4 address (or `auto` for automatic assignment).
+
+  * `ipv4.addresses[].primary` - (Optional) Whether this is the primary IPv4 address.
+
+  * `ipv6.ranges[].range` - (Required when set) The IPv6 range in CIDR notation.
+
+* `vlan` - (Optional) Configuration for a Linode VLAN interface.
+
+  * `vlan_label` - (Required) The label of the VLAN to join.
+
+  * `ipam_address` - (Optional) The VLAN IPAM address in CIDR notation.
+
+* `vpc` - (Optional) Configuration for a Linode VPC interface.
+
+  * `subnet_id` - (Required) The ID of the VPC subnet.
+
+  * `ipv4.addresses[]` - (Optional) The list of IPv4 addresses to assign in the VPC subnet. Each address supports `address`, `primary`, and `nat_1_1_address`.
+
+  * `ipv4.ranges[]` - (Optional) IPv4 CIDR ranges routed to the interface.
+
+* `rdma_vpc` - (Optional) Configuration for a GPUDirect RDMA VPC interface. **NOTE:** RDMA VPC interfaces can only be created as part of an instance creation request. They cannot be added, removed, or recreated later via the standalone `linode_interface` resource. RDMA VPC interfaces may not currently be available to all users.
+
+  * `subnet_id` - (Required) The ID of the RDMA VPC subnet to attach this interface to.
+
+  * `ipv4.addresses[].address` - (Optional) The IPv4 address for the RDMA VPC interface, or `auto` (the default) to allocate one automatically from the subnet.
+
+  * `ipv4.addresses[].primary` - (Optional) Whether this is the primary IPv4 address for the interface. Defaults to `true`. Exactly one address must be primary.
 
 ### Timeouts
 
