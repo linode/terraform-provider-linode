@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -81,6 +82,26 @@ var resourceSchema = schema.Schema{
 					string(linodego.InstanceDiskEncryptionEnabled),
 					string(linodego.InstanceDiskEncryptionDisabled),
 				),
+			},
+		},
+		"isolation_public_ipv4": schema.BoolAttribute{
+			Description: "Whether nodes in this pool have public IPv4 addresses. " +
+				"This is only available for LKE Enterprise clusters and may not be available to all customers.",
+			Optional: true,
+			Computed: true,
+			PlanModifiers: []planmodifier.Bool{
+				boolplanmodifier.UseStateForUnknown(),
+				boolplanmodifier.RequiresReplaceIfConfigured(),
+			},
+		},
+		"isolation_public_ipv6": schema.BoolAttribute{
+			Description: "Whether nodes in this pool have public IPv6 addresses. " +
+				"This is only available for LKE Enterprise clusters and may not be available to all customers.",
+			Optional: true,
+			Computed: true,
+			PlanModifiers: []planmodifier.Bool{
+				boolplanmodifier.UseStateForUnknown(),
+				boolplanmodifier.RequiresReplaceIfConfigured(),
 			},
 		},
 		"tags": schema.SetAttribute{

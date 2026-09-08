@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseNodePool(t *testing.T) {
@@ -23,6 +24,10 @@ func TestParseNodePool(t *testing.T) {
 		Type:           "g6-standard-2",
 		FirewallID:     &poolFirewallId,
 		DiskEncryption: linodego.InstanceDiskEncryptionEnabled,
+		Isolation: &linodego.LKENodePoolIsolation{
+			PublicIPv4: false,
+			PublicIPv6: true,
+		},
 		Disks: []linodego.LKENodePoolDisk{
 			{Size: 50, Type: "ssd"},
 		},
@@ -52,6 +57,9 @@ func TestParseNodePool(t *testing.T) {
 	assert.Equal(t, "enabled", nodePoolModel.DiskEncryption.ValueString())
 	assert.Equal(t, int64(12345), nodePoolModel.FirewallID.ValueInt64())
 	assert.Len(t, nodePoolModel.Nodes.Elements(), 3)
+	require.NotNil(t, nodePoolModel.IsolationIPv4.ValueBoolPointer())
+	assert.False(t, *nodePoolModel.IsolationIPv4.ValueBoolPointer())
+	assert.True(t, nodePoolModel.IsolationIPv6.ValueBool())
 
 	tags := make([]string, len(nodePoolModel.Tags.Elements()))
 	for i, v := range nodePoolModel.Tags.Elements() {
@@ -64,6 +72,56 @@ func TestParseNodePool(t *testing.T) {
 	assert.NotNil(t, nodePoolModel.Autoscaler)
 	assert.Equal(t, int64(1), nodePoolModel.Autoscaler[0].Min.ValueInt64())
 	assert.Equal(t, int64(5), nodePoolModel.Autoscaler[0].Max.ValueInt64())
+}
+
+func TestParseNodePoolDataSourceIsolation(t *testing.T) {
+	nodePoolModel := nodePoolDataSourceModel{}
+	diags := nodePoolModel.parseLKENodePool(context.Background(), &linodego.LKENodePool{
+		Isolation: &linodego.LKENodePoolIsolation{
+			PublicIPv4: false,
+			PublicIPv6: true,
+		},
+	})
+
+	assert.False(t, diags.HasError())
+	assert.False(t, nodePoolModel.IsolationIPv4.ValueBool())
+	assert.True(t, nodePoolModel.IsolationIPv6.ValueBool())
+}
+
+func TestParseNodePoolIsolationNil(t *testing.T) {
+	nodePoolModel := NodePoolModel{
+		IsolationIPv4: types.BoolValue(true),
+		IsolationIPv6: types.BoolValue(true),
+	}
+	var diags diag.Diagnostics
+
+	nodePoolModel.FlattenLKENodePool(context.Background(), &linodego.LKENodePool{
+		ID:    123,
+		Count: 1,
+		Type:  "g6-standard-2",
+	}, false, &diags)
+
+	assert.False(t, diags.HasError())
+	assert.True(t, nodePoolModel.IsolationIPv4.IsNull())
+	assert.True(t, nodePoolModel.IsolationIPv6.IsNull())
+}
+
+func TestParseNodePoolIsolationNilPreserveKnown(t *testing.T) {
+	nodePoolModel := NodePoolModel{
+		IsolationIPv4: types.BoolValue(false),
+		IsolationIPv6: types.BoolValue(true),
+	}
+	var diags diag.Diagnostics
+
+	nodePoolModel.FlattenLKENodePool(context.Background(), &linodego.LKENodePool{
+		ID:    123,
+		Count: 1,
+		Type:  "g6-standard-2",
+	}, true, &diags)
+
+	assert.False(t, diags.HasError())
+	assert.False(t, nodePoolModel.IsolationIPv4.ValueBool())
+	assert.True(t, nodePoolModel.IsolationIPv6.ValueBool())
 }
 
 func TestSetNodePoolCreateOptions(t *testing.T) {
@@ -88,6 +146,84 @@ func TestSetNodePoolCreateOptions(t *testing.T) {
 	assert.Equal(t, "k8s_version", *createOpts.K8sVersion)
 	assert.Equal(t, "on_recycle", string(*createOpts.UpdateStrategy))
 	assert.Equal(t, "disabled", string(*createOpts.DiskEncryption))
+	require.NotNil(t, createOpts.Isolation.PublicIPv4)
+	assert.False(t, *createOpts.Isolation.PublicIPv4)
+	require.NotNil(t, createOpts.Isolation.PublicIPv6)
+	assert.True(t, *createOpts.Isolation.PublicIPv6)
+}
+
+func TestSetNodePoolCreateOptions_IsolationUnset(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	nodePoolModel.IsolationIPv4 = types.BoolUnknown()
+	nodePoolModel.IsolationIPv6 = types.BoolUnknown()
+
+	var createOpts linodego.LKENodePoolCreateOptions
+	var diags diag.Diagnostics
+
+	nodePoolModel.SetNodePoolCreateOptions(context.Background(), &createOpts, &diags, "enterprise")
+
+	assert.False(t, diags.HasError())
+	assert.Nil(t, createOpts.Isolation)
+}
+
+func TestSetNodePoolCreateOptions_IsolationPartiallyKnown(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	nodePoolModel.IsolationIPv4 = types.BoolUnknown()
+	nodePoolModel.IsolationIPv6 = types.BoolValue(false)
+
+	var createOpts linodego.LKENodePoolCreateOptions
+	var diags diag.Diagnostics
+
+	nodePoolModel.SetNodePoolCreateOptions(context.Background(), &createOpts, &diags, "enterprise")
+
+	assert.False(t, diags.HasError())
+	assert.NotNil(t, createOpts.Isolation)
+	assert.Nil(t, createOpts.Isolation.PublicIPv4)
+	assert.False(t, *createOpts.Isolation.PublicIPv6)
+}
+
+func TestValidateEnterpriseOnlyAttributes_IsolationAllowedForEnterprise(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	var diags diag.Diagnostics
+
+	nodePoolModel.validateEnterpriseOnlyAttributes("enterprise", &diags)
+
+	assert.False(t, diags.HasError())
+}
+
+func TestValidateEnterpriseOnlyAttributes_IsolationRejectedForNonEnterprise(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	var diags diag.Diagnostics
+
+	nodePoolModel.validateEnterpriseOnlyAttributes("standard", &diags)
+
+	assert.True(t, diags.HasError())
+	assert.Len(t, diags.Errors(), 1)
+	assert.Contains(t, diags.Errors()[0].Summary(), "isolation")
+}
+
+func TestValidateEnterpriseOnlyAttributes_IsolationUnsetForNonEnterprise(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	nodePoolModel.IsolationIPv4 = types.BoolUnknown()
+	nodePoolModel.IsolationIPv6 = types.BoolUnknown()
+	var diags diag.Diagnostics
+
+	nodePoolModel.validateEnterpriseOnlyAttributes("standard", &diags)
+
+	assert.False(t, diags.HasError())
+}
+
+func TestValidateEnterpriseOnlyAttributes_IsolationNullForNonEnterprise(t *testing.T) {
+	// Config representation of unconfigured Optional+Computed attributes is
+	// null even when plan/state hold known API values after a refresh.
+	nodePoolModel := createNodePoolModel()
+	nodePoolModel.IsolationIPv4 = types.BoolNull()
+	nodePoolModel.IsolationIPv6 = types.BoolNull()
+	var diags diag.Diagnostics
+
+	nodePoolModel.validateEnterpriseOnlyAttributes("standard", &diags)
+
+	assert.False(t, diags.HasError())
 }
 
 func TestSetNodePoolUpdateOptions(t *testing.T) {
@@ -153,6 +289,8 @@ func createNodePoolModel() *NodePoolModel {
 		K8sVersion:     types.StringValue("k8s_version"),
 		UpdateStrategy: types.StringValue("on_recycle"),
 		DiskEncryption: types.StringValue(string(linodego.InstanceDiskEncryptionDisabled)),
+		IsolationIPv4:  types.BoolValue(false),
+		IsolationIPv6:  types.BoolValue(true),
 	}
 
 	nodePoolModel.Labels = types.MapValueMust(types.StringType, map[string]attr.Value{})
