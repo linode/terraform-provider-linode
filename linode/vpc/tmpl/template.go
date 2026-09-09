@@ -90,3 +90,21 @@ func VPCType(t testing.TB, label, region, vpcType string) string {
 			VPCType: vpcType,
 		})
 }
+
+func WithSubnet(t testing.TB, label, region, ipv4Range string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_with_subnet", TemplateData{
+			Label:     label,
+			Region:    region,
+			IPv4Range: ipv4Range,
+		})
+}
+
+func DataWithSubnet(t testing.TB, label, region, ipv4Range string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_data_with_subnet", TemplateData{
+			Label:     label,
+			Region:    region,
+			IPv4Range: ipv4Range,
+		})
+}

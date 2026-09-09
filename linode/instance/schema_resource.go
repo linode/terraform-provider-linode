@@ -299,7 +299,8 @@ var resourceSchema = map[string]*schema.Schema{
 	"stackscript_id": {
 		Type: schema.TypeInt,
 		Description: "The StackScript to deploy to the newly created Linode. If provided, 'image' must also be " +
-			"provided, and must be an Image that is compatible with this StackScript.",
+			"provided, and must be an Image that is compatible with this StackScript. Only valid with the top-level " +
+			"image attribute (implicit disks), not with explicit disks; set this on the disk instead.",
 		Optional:      true,
 		ForceNew:      true,
 		RequiredWith:  []string{"image"},
@@ -309,7 +310,8 @@ var resourceSchema = map[string]*schema.Schema{
 		Type: schema.TypeMap,
 		Description: "An object containing responses to any User Defined Fields present in the StackScript " +
 			"being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend " +
-			"on the StackScript being deployed.",
+			"on the StackScript being deployed. Only valid with the top-level image attribute (implicit disks), " +
+			"not with explicit disks; set this on the disk instead.",
 		Optional:      true,
 		ForceNew:      true,
 		Sensitive:     true,
@@ -764,6 +766,7 @@ var resourceSchema = map[string]*schema.Schema{
 		RequiredWith:  []string{"image"},
 		Elem:          InterfaceSchema,
 	},
+	"linode_interfaces": linodeInterfacesSchema,
 	"config": {
 		Optional: true,
 		Computed: true,

@@ -244,6 +244,48 @@ var (
 			"ipv6": dataSourceVPCIPv6Attribute,
 		},
 	}
+
+	dataSourceRDMAVPCIPv4AddressAttribute = schema.NestedAttributeObject{
+		Attributes: map[string]schema.Attribute{
+			"address": schema.StringAttribute{
+				Description: "The IPv4 address on the RDMA VPC interface.",
+				Computed:    true,
+			},
+			"primary": schema.BoolAttribute{
+				Description: "Whether this is the primary IPv4 address.",
+				Computed:    true,
+			},
+		},
+	}
+
+	dataSourceRDMAVPCIPv4Attribute = schema.SingleNestedAttribute{
+		Description: "The IPv4 configuration for the RDMA VPC interface.",
+		Computed:    true,
+		Attributes: map[string]schema.Attribute{
+			"addresses": schema.ListNestedAttribute{
+				Description:  "IPv4 addresses for the RDMA VPC interface.",
+				Computed:     true,
+				NestedObject: dataSourceRDMAVPCIPv4AddressAttribute,
+			},
+		},
+	}
+
+	dataSourceRDMAVPCAttribute = schema.SingleNestedAttribute{
+		Description: "Configuration profile for the RDMA VPC interface. " +
+			"NOTE: RDMA VPC interfaces may not currently be available to all users.",
+		Computed: true,
+		Attributes: map[string]schema.Attribute{
+			"vpc_id": schema.Int64Attribute{
+				Description: "The ID of the parent RDMA VPC.",
+				Computed:    true,
+			},
+			"subnet_id": schema.Int64Attribute{
+				Description: "The ID of the RDMA VPC subnet.",
+				Computed:    true,
+			},
+			"ipv4": dataSourceRDMAVPCIPv4Attribute,
+		},
+	}
 )
 
 var frameworkDataSourceSchema = schema.Schema{
@@ -260,5 +302,6 @@ var frameworkDataSourceSchema = schema.Schema{
 		"public":        dataSourcePublicAttribute,
 		"vlan":          dataSourceVLANAttribute,
 		"vpc":           dataSourceVPCAttribute,
+		"rdma_vpc":      dataSourceRDMAVPCAttribute,
 	},
 }

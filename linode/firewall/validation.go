@@ -5,16 +5,11 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-var firewallProtocolKeywords = map[string]struct{}{
-	"ALL":     {},
-	"TCP":     {},
-	"UDP":     {},
-	"ICMP":    {},
-	"IPENCAP": {},
-}
+var firewallProtocolKeywords = set.From([]string{"ALL", "TCP", "UDP", "ICMP", "IPENCAP"})
 
 var _ validator.String = firewallProtocolValidator{}
 
@@ -53,7 +48,7 @@ func (v firewallProtocolValidator) ValidateString(
 }
 
 func isValidFirewallProtocol(protocol string) bool {
-	if _, ok := firewallProtocolKeywords[protocol]; ok {
+	if firewallProtocolKeywords.Contains(protocol) {
 		return true
 	}
 

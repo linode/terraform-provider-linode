@@ -47,6 +47,16 @@ func (r *Resource) Create(
 		return
 	}
 
+	if !plan.RDMAVPC.IsUnknown() && !plan.RDMAVPC.IsNull() {
+		resp.Diagnostics.AddError(
+			"RDMA VPC interfaces cannot be created via the linode_interface resource.",
+			"RDMA VPC interfaces can only be created as part of a GPUDirect RDMA Linode "+
+				"creation request. They may be managed (updated, imported) by this "+
+				"resource, but not created or deleted here.",
+		)
+		return
+	}
+
 	helper.SetLogFieldBulk(ctx, map[string]any{"linode_id": plan.LinodeID})
 	client := r.Meta.Client
 
@@ -206,6 +216,23 @@ func (r *Resource) Delete(
 
 	linodeID, id := state.GetIDs(ctx, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// RDMA VPC interfaces cannot be deleted through the API; they are only removed
+	// when their parent Linode is deleted. Drop the resource from state without
+	// issuing a delete request so that removing it from configuration does not fail.
+	if !state.RDMAVPC.IsNull() && !state.RDMAVPC.IsUnknown() {
+		resp.Diagnostics.AddWarning(
+			"RDMA VPC Interface Not Deleted",
+			fmt.Sprintf(
+				"RDMA VPC interface %v cannot be deleted via the linode_interface resource. "+
+					"It has been removed from Terraform state, but it remains attached to Linode %v "+
+					"and is no longer managed by Terraform. RDMA VPC interfaces are only removed when "+
+					"their parent Linode is deleted; to manage this interface again, re-import it.",
+				id, linodeID,
+			),
+		)
 		return
 	}
 
