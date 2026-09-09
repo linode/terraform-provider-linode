@@ -71,6 +71,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstream"
 	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstreamhistory"
 	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstreams"
+	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstreamsquotas"
 	"github.com/linode/terraform-provider-linode/v4/linode/nb"
 	"github.com/linode/terraform-provider-linode/v4/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/v4/linode/nbconfigs"
@@ -405,6 +406,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		monitorlogsdestinations.NewDataSource,
 		monitorlogsstream.NewDataSource,
 		monitorlogsstreamhistory.NewDataSource,
+		monitorlogsstreamsquotas.NewDataSource,
 		monitorlogsstreams.NewDataSource,
 		monitoralertchannels.NewDataSource,
 		vpcdefaultranges.NewDataSource,
