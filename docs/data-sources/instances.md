@@ -47,11 +47,11 @@ The following arguments are supported:
 
 **NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
 
-* [`filter`](#filter) - (Optional, Block List) A set of filters used to select Linode instances that meet certain requirements.
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode instances that meet certain requirements.
 
-* `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
+* `order_by` - (Optional) The attribute to order the results by. (`id`, `image`, `label`, `region`, `lke_cluster_id`)
 
-* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `asc`)
+* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `desc`)
 
 ### Filter
 
@@ -75,6 +75,8 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `label` - The Linode's label is for display purposes only.
 
+* `boot_config_label` - The label of the Config used to boot this Linode. Only populated when the Linode has exactly one Config.
+
 * `tags` - A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
 * `maintenance_policy` - The maintenance policy of this Linode instance.
@@ -83,8 +85,6 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `locks` - A list of locks applied to this Linode.
 
-* `private_ip` - If true, the Linode has private networking enabled, allowing use of the 192.168.128.0/17 network within the Linode's region.
-  
 * `alerts` - (Read-Only Object List) The alert thresholds for this Linode. Referenced with an index (e.g. `alerts.0.cpu`).
 
 * `alerts.0.cpu` - The percentage of CPU usage required to trigger an alert. If the average CPU usage over two hours exceeds this value, we'll send you an alert. If this is set to 0, the alert is disabled.
@@ -114,6 +114,8 @@ Each Linode instance will be stored in the `instances` attribute and will export
 * `ipv4` - This Linode's IPv4 Addresses. Each Linode is assigned a single public IPv4 address upon creation, and may get a single private IPv4 address if needed. You may need to open a support ticket to get additional IPv4 addresses.
 
 * `has_user_data` - Whether this Instance was created with user-data.
+
+* `host_uuid` - The Linode's host machine, as a UUID.
 
 * `interface_generation` - The interface type for this Instance. (`linode`, `legacy_config`)
 
@@ -161,6 +163,8 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
 * `config` - (Read-Only Object List) A list of configs associated with the Linode. Referenced with an index (e.g. `config.0.label`).
 
+  * `id` - The unique ID of this Config.
+
   * `label` - The Config's label for display purposes.  Also used by `boot_config_label`.
 
   * `kernel` - A Kernel ID to boot a Linode with. Default is based on image choice. Examples are `linode/latest-64bit`, `linode/grub2`, `linode/direct-disk`, etc. See all kernels [here](https://api.linode.com/v4/linode/kernels). Note that this is a paginated API endpoint ([docs](https://techdocs.akamai.com/linode-api/reference/get-kernels)).
@@ -185,6 +189,8 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
     * `network` -  Controls the behavior of the Linode Config's Network Helper setting, used to automatically configure additional IP addresses assigned to this instance.
 
+    * `devtmpfs_automount` - Populates the /dev directory early during boot without udev.
+
   * `devices` - (Read-Only Object List) A list of `disk` or `volume` attachments for this `config`.  If the `boot_config_label` omits a `devices` block, the Linode will not be booted. Referenced with an index (e.g. `devices.0.sda`).
 
     * `sda` ... `sdbl` - (Read-Only Object List) Device slots for attaching disks and volumes (named `sda`-`sdz`, `sdaa`-`sdaz`, `sdba`-`sdbl`). The maximum number of available devices is determined by the instance type's RAM (up to 64 devices). Each slot accepts either a Disk or Volume via `disk_label` or `volume_id`. Referenced with an index (e.g. `sda.0.disk_label`).
@@ -203,6 +209,8 @@ Interface defines a network interfaces that is exposed to a Linode. See the offi
 
 Each interface exports the following attributes:
 
+* `id` - The ID of the interface.
+
 * `purpose` - The type of interface. (`public`, `vlan`, `vpc`)
 
 * `ipam_address` - This Network Interface’s private IP address in Classless Inter-Domain Routing (CIDR) notation. (e.g. `10.0.0.1/24`) This field is only allowed for interfaces with the `vlan` purpose.
@@ -212,6 +220,8 @@ Each interface exports the following attributes:
 * `subnet_id` - The name of the VPC Subnet to join. This field is only allowed and required for interfaces with the `vpc` purpose.
 
 * `primary` - Whether the interface is the primary interface that should have the default route for this Linode. This field is only allowed for interfaces with the `public` or `vpc` purpose.
+
+* `active` - Whether this interface is currently booted and active.
 
 * [`ipv4`](#ipv4) - (Read-Only Object List) The IPv4 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose. Referenced with an index (e.g. `ipv4.0.vpc`).
 
@@ -247,6 +257,8 @@ The following arguments are available in a `slaac` configuration block of an [`i
 
 * `range` - A prefix to add to this interface, or `auto` for a new IPv6 prefix to be automatically allocated.
 
+* `assigned_range` - The value of `range` computed by the API.
+
 * `address` - The SLAAC address chosen for this interface.
 
 #### ipv6.range
@@ -255,9 +267,13 @@ The following arguments are available in a `range` configuration block of an [`i
 
 * `range` - A prefix to add to this interface, or `auto` for a new IPv6 prefix to be automatically allocated.
 
+* `assigned_range` - The value of `range` computed by the API.
+
 ### Backups
 
 * `backups` - (Read-Only Object List) Information about the Linode's backup status. Referenced with an index (e.g. `backups.0.enabled`).
+
+  * `available` - Whether this Backup is available for restoration.
 
   * `enabled` - If this Linode has the Backup service enabled.
 
@@ -281,11 +297,17 @@ The following arguments are available in a `range` configuration block of an [`i
 
 ## Filterable Fields
 
+* `disk_encryption`
+
 * `id`
 
 * `image`
 
+* `interface_generation`
+
 * `label`
+
+* `lke_cluster_id`
 
 * `region`
 
