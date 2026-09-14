@@ -276,7 +276,7 @@ func TestAccDataSourceInstances_explicitInterfaceGeneration(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceInstance_interfaceVPCIPv6(t *testing.T) {
+func TestAccDataSourceInstances_interfaceVPCIPv6(t *testing.T) {
 	t.Parallel()
 
 	dataSourceName := "data.linode_instances.foobar"

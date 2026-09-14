@@ -308,6 +308,7 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 	"stackscript_data": {
 		Type: schema.TypeMap,
+		Elem: &schema.Schema{Type: schema.TypeString},
 		Description: "An object containing responses to any User Defined Fields present in the StackScript " +
 			"being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend " +
 			"on the StackScript being deployed. Only valid with the top-level image attribute (implicit disks), " +
@@ -988,6 +989,7 @@ var resourceSchema = map[string]*schema.Schema{
 				},
 				"stackscript_data": {
 					Type: schema.TypeMap,
+					Elem: &schema.Schema{Type: schema.TypeString},
 					Description: "An object containing responses to any User Defined Fields present in the " +
 						"StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. " +
 						"The required values depend on the StackScript being deployed.",
