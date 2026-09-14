@@ -24,7 +24,7 @@ func (m *DataSourceModel) Flatten(vpcConfig *linodego.NodeBalancerVPCConfig) *Da
 
 	m.VPCID = types.Int64Value(int64(vpcConfig.VPCID))
 	m.SubnetID = types.Int64Value(int64(vpcConfig.SubnetID))
-	m.Purpose = types.StringValue(string(vpcConfig.Purpose))
+	m.Purpose = types.StringValue(string(*vpcConfig.Purpose))
 
 	return m
 }

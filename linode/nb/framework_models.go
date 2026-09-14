@@ -196,7 +196,7 @@ func filterVPCConfigsByPurpose(
 ) []linodego.NodeBalancerVPCConfig {
 	filtered := make([]linodego.NodeBalancerVPCConfig, 0)
 	for _, vpcConfig := range vpcConfigs {
-		if vpcConfig.Purpose == purpose {
+		if vpcConfig.Purpose == linodego.Pointer(purpose) {
 			filtered = append(filtered, vpcConfig)
 		}
 	}
