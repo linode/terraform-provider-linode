@@ -34,10 +34,12 @@ This data source accepts the following arguments:
 
 This data source exports the following attributes:
 
-* `ipv4_range` - A CIDR range for the VPC's IPv4 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
+* `ipv4_range` - A CIDR range for the VPC's IPv4 addresses, used for backend node routing or frontend IPs depending on `purpose`.
 
-* `ipv6_range` - A CIDR range for the VPC's IPv6 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
+* `ipv6_range` - A CIDR range for the VPC's IPv6 addresses, used for backend node routing or frontend IPs depending on `purpose`.
 
 * `subnet_id` - The ID of this configuration's VPC subnet.
 
 * `vpc_id` - The ID of this configuration's VPC.
+
+* `purpose` - Indicates whether the VPC configuration applies to backend nodes that serve requests or to the NodeBalancer frontend which manages incoming traffic.

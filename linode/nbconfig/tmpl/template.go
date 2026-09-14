@@ -105,27 +105,29 @@ type TemplateData struct {
 	SSLKey       string
 }
 
-func Basic(t testing.TB, nodebalancerName, region string) string {
+func Basic(t testing.TB, nodebalancerName, region, nbType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_config_basic", TemplateData{
 			NodeBalancer: nodebalancer.TemplateData{
 				Label:  nodebalancerName,
 				Region: region,
+				Type:   nbType,
 			},
 		})
 }
 
-func Updates(t testing.TB, nodebalancerName, region string) string {
+func Updates(t testing.TB, nodebalancerName, region, nbType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_config_updates", TemplateData{
 			NodeBalancer: nodebalancer.TemplateData{
 				Label:  nodebalancerName,
 				Region: region,
+				Type:   nbType,
 			},
 		})
 }
 
-func SSL(t testing.TB, nodebalancerName, region, cert, privKey string) string {
+func SSL(t testing.TB, nodebalancerName, region, nbType, cert, privKey string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_config_ssl", TemplateData{
 			SSLCert: cert,
@@ -133,26 +135,29 @@ func SSL(t testing.TB, nodebalancerName, region, cert, privKey string) string {
 			NodeBalancer: nodebalancer.TemplateData{
 				Label:  nodebalancerName,
 				Region: region,
+				Type:   nbType,
 			},
 		})
 }
 
-func ProxyProtocol(t testing.TB, nodebalancerName, region string) string {
+func ProxyProtocol(t testing.TB, nodebalancerName, region, nbType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_config_proxy_protocol", TemplateData{
 			NodeBalancer: nodebalancer.TemplateData{
 				Label:  nodebalancerName,
 				Region: region,
+				Type:   nbType,
 			},
 		})
 }
 
-func DataBasic(t testing.TB, nodebalancerName, region string) string {
+func DataBasic(t testing.TB, nodebalancerName, region, nbType string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_config_data_basic", TemplateData{
 			NodeBalancer: nodebalancer.TemplateData{
 				Label:  nodebalancerName,
 				Region: region,
+				Type:   nbType,
 			},
 		})
 }

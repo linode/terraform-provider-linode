@@ -14,21 +14,25 @@ resource "linode_vpc_subnet" "test" {
 }
 
 resource "linode_instance" "test" {
-    label  = "{{ .Label }}"
+    label = "{{ .Label }}"
+    type = "g6-nanode-1"
     region = "{{ .Config.NodeBalancer.Region }}"
-    type   = "g6-nanode-1"
-    booted = false
-}
+    firewall_id = linode_firewall.e2e_test_firewall.id
 
-resource "linode_instance_config" "test" {
-    linode_id = linode_instance.test.id
-    label     = "test-config"
+     config {
+        label = "config"
+        kernel = "linode/latest-64bit"
+        root_device = "/dev/sda"
+        helpers {
+            network = true
+        }
 
-    interface {
-        purpose   = "vpc"
-        subnet_id = linode_vpc_subnet.test.id
-        ipv4 {
-            vpc = "10.0.0.10"
+        interface {
+            purpose = "vpc"
+            subnet_id = linode_vpc_subnet.test.id
+            ipv4 {
+                vpc = "${cidrhost(linode_vpc_subnet.test.ipv4, 50)}"
+            }
         }
     }
 }
@@ -41,12 +45,11 @@ resource "linode_nodebalancer" "test" {
     vpcs = [
         {
             subnet_id = linode_vpc_subnet.test.id
-            ipv4_range = "10.0.0.4/30"
             ipv4_range_auto_assign = true
         }
     ]
 
-    depends_on = [linode_instance_config.test]
+    depends_on = [linode_instance.test]
 }
 
 resource "linode_nodebalancer_config" "test" {
@@ -65,11 +68,11 @@ resource "linode_nodebalancer_node" "test" {
     nodebalancer_id = linode_nodebalancer.test.id
     config_id       = linode_nodebalancer_config.test.id
     subnet_id       = linode_vpc_subnet.test.id
-    address         = "10.0.0.10:80"
+    address         = "10.0.0.50:80"
     label           = "{{ .Label }}"
     weight          = 50
 
-    depends_on = [linode_instance_config.test]
+    depends_on = [linode_instance.test]
 }
 
 {{ end }}

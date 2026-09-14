@@ -1,0 +1,39 @@
+{{ define "nbvpc_data_base_frontend_vpc" }}
+
+{{ template "e2e_test_firewall" . }}
+
+resource "linode_nodebalancer" "test" {
+    label = "{{ .Label }}"
+    region = "{{ .Region }}"
+    firewall_id = linode_firewall.e2e_test_firewall.id
+    type = "premium"
+
+    frontend_vpcs = [
+        {
+            subnet_id = linode_vpc_subnet.frontend_subnet_test.id
+        }
+    ]
+}
+
+resource "linode_vpc" "frontend_vpc_test" {
+    label = "{{ .Label }}-frontend"
+    region = "{{ .Region }}"
+    ipv6 = [
+        {
+            range = "auto"
+        }
+    ]
+}
+
+resource "linode_vpc_subnet" "frontend_subnet_test" {
+    vpc_id = linode_vpc.frontend_vpc_test.id
+    label = "tf-test-frontend"
+    ipv4 = "10.0.0.0/24"
+    ipv6 = [
+        {
+            range = "auto"
+        }
+    ]
+}
+
+{{ end }}
