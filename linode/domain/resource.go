@@ -203,6 +203,19 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	ctx = populateLogAttributes(ctx, d)
 
+	// Wait for new domain to become visible before reading
+	err = helper.WithRetries(ctx, 10, 2*time.Second, func() (bool, error) {
+		_, err := client.GetDomain(ctx, domain.ID)
+		if err != nil {
+			// The domain may not be immediately visible after creation
+			return linodego.IsNotFound(err), err
+		}
+		return false, nil
+	})
+	if err != nil {
+		return diag.Errorf("Error waiting for Linode Domain %d to become visible: %s", domain.ID, err)
+	}
+
 	return readResource(ctx, d, meta)
 }
 
