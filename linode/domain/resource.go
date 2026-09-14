@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -32,6 +33,57 @@ func Resource() *schema.Resource {
 	}
 }
 
+const (
+	// domainReadNotFoundDeadline is the maximum amount of time a domain GET
+	// request will be retried for when the API returns a 404. This works around
+	// eventual consistency in the API where a recently created domain may not
+	// immediately be returned.
+	domainReadNotFoundDeadline = 15 * time.Second
+
+	// domainReadNotFoundInitialBackoff is the delay before the first retry.
+	domainReadNotFoundInitialBackoff = 500 * time.Millisecond
+
+	// domainReadNotFoundMaxBackoff caps the exponential backoff between retries.
+	domainReadNotFoundMaxBackoff = 4 * time.Second
+)
+
+// getDomainWithRetries wraps client.GetDomain(...), retrying with a short
+// exponential backoff and deadline when the API returns a 404.
+func getDomainWithRetries(
+	ctx context.Context,
+	client linodego.Client,
+	id int,
+	timeout, initialBackoff, maxBackoff time.Duration,
+) (*linodego.Domain, error) {
+	deadline := time.Now().Add(timeout)
+	backoff := initialBackoff
+
+	for {
+		domain, err := client.GetDomain(ctx, id)
+		if err == nil || !linodego.IsNotFound(err) {
+			return domain, err
+		}
+
+		// Don't sleep past the deadline, return the last 404 instead.
+		if !time.Now().Add(backoff).Before(deadline) {
+			return nil, err
+		}
+
+		tflog.Debug(ctx, "Linode Domain not found, retrying...", map[string]any{
+			"id":      id,
+			"backoff": backoff.String(),
+		})
+
+		select {
+		case <-ctx.Done():
+			return nil, err
+		case <-time.After(backoff):
+		}
+
+		backoff = min(backoff*2, maxBackoff)
+	}
+}
+
 func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_domain")
@@ -42,7 +94,14 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		return diag.Errorf("Error parsing Linode Domain ID %s as int: %s", d.Id(), err)
 	}
 
-	domain, err := client.GetDomain(ctx, id)
+	domain, err := getDomainWithRetries(
+		ctx,
+		client,
+		id,
+		domainReadNotFoundDeadline,
+		domainReadNotFoundInitialBackoff,
+		domainReadNotFoundMaxBackoff,
+	)
 	if err != nil {
 		if linodego.IsNotFound(err) {
 			log.Printf("[WARN] removing Linode Domain ID %q from state because it no longer exists", d.Id())
@@ -143,6 +202,19 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	d.SetId(fmt.Sprintf("%d", domain.ID))
 
 	ctx = populateLogAttributes(ctx, d)
+
+	// Wait for new domain to become visible before reading
+	err = helper.WithRetries(ctx, 10, 2*time.Second, func() (bool, error) {
+		_, err := client.GetDomain(ctx, domain.ID)
+		if err != nil {
+			// The domain may not be immediately visible after creation
+			return linodego.IsNotFound(err), err
+		}
+		return false, nil
+	})
+	if err != nil {
+		return diag.Errorf("Error waiting for Linode Domain %d to become visible: %s", domain.ID, err)
+	}
 
 	return readResource(ctx, d, meta)
 }
