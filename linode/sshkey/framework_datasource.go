@@ -45,7 +45,7 @@ func (data *DataSourceModel) ParseSSHKey(ssh *linodego.SSHKey) diag.Diagnostics 
 
 	id, err := json.Marshal(ssh)
 	if err != nil {
-		diags.AddError("Error marshalling json: %s", err.Error())
+		diags.AddError("Error marshaling json: %s", err.Error())
 		return diags
 	}
 

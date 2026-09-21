@@ -37,7 +37,7 @@ func (data *DataSourceModel) parseInstanceIPAddressResponse(
 
 	id, err := json.Marshal(ip)
 	if err != nil {
-		diags.AddError("Error marshalling json: %s", err.Error())
+		diags.AddError("Error marshaling json: %s", err.Error())
 		return
 	}
 
