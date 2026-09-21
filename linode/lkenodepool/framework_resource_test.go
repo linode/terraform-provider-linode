@@ -419,7 +419,7 @@ func TestAccResourceNodePool_taints_labels(t *testing.T) {
 	})
 }
 
-func TestAccResourceNodePoolEnterprise_basic(t *testing.T) {
+func TestAccResourceNodePool_enterprise_basic(t *testing.T) {
 	t.Parallel()
 	resName := "linode_lke_node_pool.foobar"
 	clusterLabel := acctest.RandomWithPrefix("tf_test_")
@@ -491,7 +491,7 @@ func TestAccResourceNodePoolEnterprise_basic(t *testing.T) {
 	})
 }
 
-func TestAccResourceNodePoolEnterprise_withFirewall(t *testing.T) {
+func TestAccResourceNodePool_enterprise_withFirewall(t *testing.T) {
 	t.Parallel()
 	resName := "linode_lke_node_pool.foobar"
 	clusterLabel := acctest.RandomWithPrefix("tf_test_")
