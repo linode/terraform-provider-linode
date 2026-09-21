@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net"
 	"os"
 	"path/filepath"
 	"slices"
@@ -207,7 +208,7 @@ func GetSSHClient(t testing.TB, user, addr string) (client *ssh.Client) {
 	attempts := 3
 
 	for attempts != 0 {
-		client, err = ssh.Dial("tcp", addr+":22", config)
+		client, err = ssh.Dial("tcp", net.JoinHostPort(addr, "22"), config)
 		if err == nil {
 			break
 		}
