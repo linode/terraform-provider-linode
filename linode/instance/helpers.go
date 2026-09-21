@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -762,7 +763,7 @@ func getInstanceDiskSpecDiffs(
 	removed = make(map[string]diskSpec)
 	existing = make(map[string]diskSpec)
 
-	placed := make(map[string]struct{})
+	placed := set.New[string](len(newDiskSpecs))
 	for label, spec := range newDiskSpecs {
 		_, exists := oldDiskSpecs[label]
 		if exists {
@@ -770,11 +771,11 @@ func getInstanceDiskSpecDiffs(
 		} else {
 			added[label] = spec
 		}
-		placed[label] = struct{}{}
+		placed.Insert(label)
 	}
 
 	for label, spec := range oldDiskSpecs {
-		if _, ok := placed[label]; !ok {
+		if !placed.Contains(label) {
 			removed[label] = spec
 		}
 	}
@@ -805,7 +806,7 @@ func updateInstanceDisks(
 		}
 	}
 	// keep track of all disks visited for accounting
-	visited := make(map[string]struct{})
+	visited := set.New[string](len(disks))
 
 	// remove disks staged for removal
 	for label := range removed {
@@ -839,7 +840,7 @@ func updateInstanceDisks(
 
 		tflog.Debug(ctx, "Unused disk finished deleting")
 
-		visited[label] = struct{}{}
+		visited.Insert(label)
 	}
 
 	// ensure state is consistent with existing disks specs
@@ -856,7 +857,7 @@ func updateInstanceDisks(
 		if spec["filesystem"].(string) != string(existingDisk.Filesystem) {
 			return hasChanges, fmt.Errorf("failed to update disk %d; filesystems can not be changed", existingDisk.ID)
 		}
-		visited[label] = struct{}{}
+		visited.Insert(label)
 	}
 
 	// create disks staged for creation
@@ -868,7 +869,7 @@ func updateInstanceDisks(
 
 	// ensure all disks visited
 	for label, disk := range disks {
-		if _, ok := visited[label]; !ok {
+		if !visited.Contains(label) {
 			// warn if disk found that is not in terraform state
 			fmt.Printf("[WARN] found disk %s (%d) on instance %d not found in state", label, disk.ID, instance.ID)
 		}

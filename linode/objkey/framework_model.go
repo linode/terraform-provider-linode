@@ -2,10 +2,9 @@ package objkey
 
 import (
 	"context"
-	"maps"
-	"slices"
 	"strconv"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
@@ -76,12 +75,12 @@ func (plan ResourceModel) GetCreateOptions(ctx context.Context) (opts linodego.O
 }
 
 func getObjectStorageKeyRegionIDsSet(regions []linodego.ObjectStorageKeyRegion) []string {
-	regionSet := make(helper.StringSet)
+	regionSet := set.New[string](len(regions))
 	for _, r := range regions {
-		regionSet[r.ID] = helper.ExistsInSet
+		regionSet.Insert(r.ID)
 	}
 
-	return slices.Collect(maps.Keys(regionSet))
+	return regionSet.Slice()
 }
 
 func getRegionDetails(regions []linodego.ObjectStorageKeyRegion) []RegionDetail {
