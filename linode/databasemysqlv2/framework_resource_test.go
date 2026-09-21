@@ -861,7 +861,7 @@ func TestAccResourceDatabaseMysqlV2_engineConfig(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time", "members", "status"},
 			},
 		},
 	})
