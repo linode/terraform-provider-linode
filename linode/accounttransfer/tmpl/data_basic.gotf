@@ -1,0 +1,5 @@
+{{ define "account_transfer_data_basic" }}
+
+data "linode_account_transfer" "foobar" {}
+
+{{ end }}

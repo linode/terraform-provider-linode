@@ -37,7 +37,9 @@ data "linode_monitor_logs_streams" "active_audit" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select logs streams that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select logs streams that meet certain requirements.
 
 ### Filter
 
@@ -56,6 +58,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each logs stream will be stored in the `streams` attribute and will export the following attributes:
+
+* `streams` - (Nested Attribute List) The returned list of logs streams. Referenced by index (e.g. `streams[0].id`).
 
 * `id` - The unique ID of this logs stream.
 

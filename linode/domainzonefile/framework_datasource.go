@@ -38,7 +38,7 @@ func (data *DataSourceModel) parseDomainZoneFile(
 
 	id, err := json.Marshal(zone)
 	if err != nil {
-		diags.AddError("Error marshalling json: %s", err.Error())
+		diags.AddError("Error marshaling json: %s", err.Error())
 		return diags
 	}
 

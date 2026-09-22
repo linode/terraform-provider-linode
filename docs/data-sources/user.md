@@ -41,6 +41,8 @@ The following arguments are supported:
 
 The Linode User resource exports the following attributes:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `ssh_keys` - A list of SSH Key labels added by this User. These are the keys that will be deployed if this User is included in the authorized_users field of a create Linode, rebuild Linode, or create Disk request.
 
 * `email` - The email address for this User, for account management communications, and may be used for other communications as configured.
@@ -49,27 +51,27 @@ The Linode User resource exports the following attributes:
 
 * `user_type` - The type of this user.
 
-* [`global_grants`](#global-grants) - The Account-level grants a User has.
+* [`global_grants`](#global-grants) - (Read-Only Object List) The Account-level grants a User has. Referenced with an index (e.g. `global_grants.0.account_access`).
 
-* [`database_grant`](#grant) - The grants this User has pertaining to Databases on this Account.
+* [`database_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Databases on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`domain_grant`](#grant) - The grants this User has pertaining to Domains on this Account.
+* [`domain_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Domains on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`firewall_grant`](#grant) - The grants this User has pertaining to Firewalls on this Account.
+* [`firewall_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Firewalls on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`image_grant`](#grant) - The grants this User has pertaining to Images on this Account.
+* [`image_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Images on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`linode_grant`](#grant) - The grants this User has pertaining to Linodes on this Account.
+* [`linode_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Linodes on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`longview_grant`](#grant) - The grants this User has pertaining to Longview Clients on this Account.
+* [`longview_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Longview Clients on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`nodebalancer_grant`](#grant) - The grants this User has pertaining to NodeBalancers on this Account.
+* [`nodebalancer_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to NodeBalancers on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`stackscript_grant`](#grant) - The grants this User has pertaining to StackScripts on this Account.
+* [`stackscript_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to StackScripts on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`volume_grant`](#grant) - The grants this User has pertaining to Volumes on this Account.
+* [`volume_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Volumes on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* [`vpc_grant`](#grant) - The grants this User has pertaining to Virtual Private Clouds (VPCs) on this Account.
+* [`vpc_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Virtual Private Clouds (VPCs) on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
 * `id` - The unique identifier for this DataSource.
 

@@ -74,15 +74,17 @@ resource "linode_instance" "my_instance" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `label` - (Required) This Firewall's unique label.
 
 * `disabled` - (Optional) If `true`, the Firewall's rules are not enforced (defaults to `false`).
 
-* [`inbound`](#inbound) - (Optional) A firewall rule that specifies what inbound network traffic is allowed.
+* [`inbound`](#inbound) - (Optional, Block List) A firewall rule that specifies what inbound network traffic is allowed.
   
 * `inbound_policy` - (Required) The default behavior for inbound traffic. This setting can be overridden by updating the inbound.action property of the Firewall Rule. (`ACCEPT`, `DROP`)
 
-* [`outbound`](#outbound) - (Optional) A firewall rule that specifies what outbound network traffic is allowed.
+* [`outbound`](#outbound) - (Optional, Block List) A firewall rule that specifies what outbound network traffic is allowed.
   
 * `outbound_policy` - (Required) The default behavior for outbound traffic. This setting can be overridden by updating the outbound.action property for an individual Firewall Rule. (`ACCEPT`, `DROP`)
 
@@ -124,7 +126,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `fingerprint` - The fingerprint of the current Firewall rules.
 
-* [`devices`](#devices) - The devices governed by the Firewall.
+* [`devices`](#devices) - (Read-Only Object List) The devices governed by the Firewall. Referenced with an index (e.g. `devices.0.id`).
 
 ### devices
 

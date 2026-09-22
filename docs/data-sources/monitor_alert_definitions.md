@@ -33,9 +33,11 @@ data "linode_monitor_alert_definitions" "all" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `service_type` - (Optional) The service type (e.g., dbaas).
 
-* [`filter`](#filter) - (Optional) A set of filters used to select IP addresses that meet certain requirements.
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select IP addresses that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -53,13 +55,15 @@ The following arguments are supported:
 
 Each alert definition will be stored in the `alert_definitions` attribute and will export the following attributes:
 
+* `alert_definitions` - (Nested Attribute List) Alert definitions matching the query.
+
 * `service_type` - The service type (e.g., dbaas).
 * `id` - The ID of the alert definition.
 * `label` - The label for the alert definition.
 * `channel_ids` - A list of channel IDs to associate with the alert definition.
 * `severity` - The severity level of the alert definition.
-* [`rule_criteria`](#rule_criteria) - The criteria expression for the alert.
-* [`trigger_conditions`](#trigger_conditions) - The conditions that need to be met to send a notification for the alert.
+* [`rule_criteria`](#rule_criteria) - (Nested Attribute) The criteria expression for the alert. Referenced directly (e.g. `rule_criteria.rules`).
+* [`trigger_conditions`](#trigger_conditions) - (Nested Attribute) The conditions that need to be met to send a notification for the alert. Referenced directly (e.g. `trigger_conditions.criteria_condition`).
 * `description` - A description for the alert definition.
 * `status` -  The status of the alert definition.
 * `type` - The type of alert. This can be either user for an alert specific to the current user, or system for one that applies to all users on your account.
@@ -70,9 +74,9 @@ Each alert definition will be stored in the `alert_definitions` attribute and wi
 * `class` - "The plan type for the Managed Database cluster, either shared or dedicated. This only applies to a system alert for a service_type of dbaas (Managed Databases). For user alerts for dbaas, this is returned as null.",
 * `scope` - The scope of the alert definition. Possible values: `account`, `entity`, `region`.
 * `regions` - The regions the alert definition applies to. Only used for region-scoped alerts.
+* [`entities`](#entities) - (Nested Attribute) Entity metadata for the alert definition. Referenced directly (e.g. `entities.count`).
+* [`alert_channels`](#alert_channels) - (Nested Attribute List) A list of alert channel objects associated with the alert definition.
 * `group_by` - A set of dimension fields used to group alert events, such as `entity_id`.
-* [`entities`](#entities) - Entity metadata for the alert definition.
-* [`alert_channels`](#alert_channels) - A list of alert channel objects associated with the alert definition.
 
 ### entities
 
@@ -86,14 +90,14 @@ The following attributes are exported in the `entities` block:
 
 The following arguments are supported in the `rule_criteria` specification block:
 
-* [`rules`](#rules) -  A list of rule objects defining the criteria for the alert.
+* [`rules`](#rules) - (Nested Attribute List) A list of rule objects defining the criteria for the alert.
 
 #### rules
 
 The following attributes are supported in each `rules` specification block:
 
 * `aggregate_function` - The aggregate function to apply to the metric data.
-* [`dimension_filters`](#dimension_filters) - A list of dimension filter objects to filter the metric data.
+* [`dimension_filters`](#dimension_filters) - (Nested Attribute List) A list of dimension filter objects to filter the metric data.
 * `metric` - The metric to query.
 * `operator` - The operator to apply to the metric. Allowed values: eq, gt, lt, gte, lte.
 * `threshold` - The predefined value or condition that triggers an alert when met or exceeded.

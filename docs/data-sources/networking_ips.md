@@ -31,7 +31,9 @@ data "linode_networking_ips" "filtered" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select IP addresses that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select IP addresses that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -48,6 +50,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each IP address will be stored in the `ip_addresses` attribute and will export the following attributes:
+
+* `ip_addresses` - (Nested Attribute List) The list of IP addresses.
 
 * `address` - The IP address.
 
@@ -73,7 +77,7 @@ Each IP address will be stored in the `ip_addresses` attribute and will export t
 
 * `tags` - A set of tags associated with this IP address.
 
-* `assigned_entity` - The entity this IP address has been assigned to. This is null if the address is not assigned to an entity.
+* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is null if the address is not assigned to an entity. Referenced directly (e.g. `assigned_entity.id`).
 
   * `id` - The ID of the entity.
 
@@ -83,7 +87,7 @@ Each IP address will be stored in the `ip_addresses` attribute and will export t
 
   * `url` - The URL of the entity.
 
-* `vpc_nat_1_1` - Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.
+* `vpc_nat_1_1` - (Read-Only Object) Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet. Referenced directly (e.g. `vpc_nat_1_1.address`).
 
   * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
 

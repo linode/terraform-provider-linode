@@ -40,7 +40,9 @@ output "available-endpoints" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode Object Storage endpoints that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode Object Storage endpoints that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -57,6 +59,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode Object Storage endpoint type will export the following attributes:
+
+* `endpoints` - (Nested Attribute List) The Linode Object Storage endpoints returned by this data source.
 
 * `endpoint_type` - The type of `s3_endpoint` available to the active `user`. See [Endpoint types](https://techdocs.akamai.com/cloud-computing/docs/object-storage#endpoint-type) for more information.
 

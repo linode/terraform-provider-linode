@@ -29,6 +29,8 @@ The following arguments are supported:
 
 The Linode Instance Type resource exports the following attributes:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `id` - The ID representing the Linode Type
 
 * `label` - The Linode Type's label is for display purposes only
@@ -37,13 +39,23 @@ The Linode Instance Type resource exports the following attributes:
 
 * `disk` - The Disk size, in MB, of the Linode Type
 
+* `price` - (Read-Only Object List) Pricing information for this Linode Type. Referenced with an index (e.g. `price.0.hourly`).
+
 * `price.0.hourly` -  Cost (in US dollars) per hour.
 
 * `price.0.monthly` - Cost (in US dollars) per month.
 
+* `addons` - (Read-Only Object List) Add-ons available for this Linode Type. Referenced with an index (e.g. `addons.0.backups`).
+
+* `addons.0.backups` - (Read-Only Object List) Backups add-on pricing information. Referenced with an index (e.g. `addons.0.backups.0.price`).
+
+* `addons.0.backups.0.price` - (Read-Only Object List) The price to add Backups service. Referenced with an index (e.g. `addons.0.backups.0.price.0.hourly`).
+
 * `addons.0.backups.0.price.0.hourly` - The cost (in US dollars) per hour to add Backups service.
 
 * `addons.0.backups.0.price.0.monthly` - The cost (in US dollars) per month to add Backups service.
+
+* `region_prices` - (Read-Only Object List) Region-specific pricing information for this Linode Type. Referenced with an index (e.g. `region_prices.0.id`).
 
 * `region_prices.*.id` - The name of the Linode Region this entry corresponds to.
 

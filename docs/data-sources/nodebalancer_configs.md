@@ -31,9 +31,11 @@ output "nodebalancer_config_id" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `nodebalancer_id` - (Required) The ID of the NodeBalancer to access.
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode NodeBalancers that meet certain requirements.
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode NodeBalancers that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -50,6 +52,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode NodeBalancer Config will be stored in the `nodebalancer_configs` attribute and will export the following attributes:
+
+* `nodebalancer_configs` - (Nested Attribute List) The list of Linode NodeBalancer Configs.
 
 * `id` - The config's ID.
 
@@ -93,7 +97,7 @@ Each Linode NodeBalancer Config will be stored in the `nodebalancer_configs` att
 
 * `ssl_fingerprint` - The read-only fingerprint automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.
 
-* [`node_status`](#node_status) - The status of the attached nodes.
+* [`node_status`](#node_status) - (Read-Only Object List) The status of the attached nodes. Referenced with an index (e.g. `node_status.0.up`).
 
 ### node_status
 

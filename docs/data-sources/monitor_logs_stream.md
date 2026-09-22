@@ -31,6 +31,8 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `label` - The label of the logs stream.
 
 * `type` - The type of the logs stream. One of: `audit_logs`, `lke_audit_logs`.
@@ -49,7 +51,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `updated_by` - The user who last updated the logs stream.
 
-* [`details`](#details) - Additional configuration details. Only populated for `lke_audit_logs` streams.
+* [`details`](#details) - (Nested Attribute) Additional configuration details. Only populated for `lke_audit_logs` streams. Referenced directly (e.g. `details.cluster_ids`).
 
 ### details
 
