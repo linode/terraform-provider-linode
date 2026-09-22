@@ -87,7 +87,7 @@ func (data *ResourceModel) PopulateImageFromParentInstance(
 	// Only populate image for filesystems that can be deployed from images.
 	// Swap, raw, and initrd filesystems don't have associated images.
 	fs := data.Filesystem.ValueString()
-	if fs == "swap" || fs == "raw" || fs == "initrd" {
+	if fs != string(linodego.FilesystemSwap) && fs != string(linodego.FilesystemRaw) && fs != string(linodego.FilesystemInitrd) {
 		return
 	}
 
