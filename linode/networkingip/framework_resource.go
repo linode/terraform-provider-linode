@@ -356,7 +356,7 @@ func reconcileIPAssignments(
 	}
 
 	if !plan.LinodeID.IsNull() {
-		// Asign the IP to a new Linode if necessary
+		// Assign the IP to a new Linode if necessary
 		planLinodeID := helper.FrameworkSafeInt64ToInt(plan.LinodeID.ValueInt64(), &d)
 		if d.HasError() {
 			return d

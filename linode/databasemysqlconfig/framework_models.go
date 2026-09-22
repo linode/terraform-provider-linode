@@ -36,7 +36,7 @@ func (data *DataSourceModel) ParseMySQLConfig(
 
 	jsonBytes, err := json.Marshal(config)
 	if err != nil {
-		diags.AddError("Error marshalling json", err.Error())
+		diags.AddError("Error marshaling json", err.Error())
 		return
 	}
 
