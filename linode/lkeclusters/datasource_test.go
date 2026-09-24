@@ -57,6 +57,7 @@ func TestAccDataSourceLKEClusters_basic(t *testing.T) {
 	t.Parallel()
 
 	dataSourceName := "data.linode_lke_clusters.test"
+	tagsDataSourceName := "data.linode_lke_clusters.test_tags"
 
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
@@ -82,6 +83,11 @@ func TestAccDataSourceLKEClusters_basic(t *testing.T) {
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.tags.#", "1"),
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.tier", "standard"),
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.control_plane.high_availability", "false"),
+
+						resource.TestCheckResourceAttr(tagsDataSourceName, "lke_clusters.#", "1"),
+						resource.TestCheckResourceAttr(tagsDataSourceName, "lke_clusters.0.label", clusterName+"-2"),
+						resource.TestCheckResourceAttr(tagsDataSourceName, "lke_clusters.0.tags.#", "1"),
+						resource.TestCheckResourceAttr(tagsDataSourceName, "lke_clusters.0.tags.0", "test-2"),
 					),
 				},
 			},
