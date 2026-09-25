@@ -61,19 +61,21 @@ func TestAccDataSourceLKEClusters_basic(t *testing.T) {
 
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
+		tag1Name := acctest.RandomWithPrefix("test_1")
+		tag2Name := acctest.RandomWithPrefix("test_2")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.DataBasic(t, clusterName, k8sVersionLatest, testRegion),
+					Config: tmpl.DataBasic(t, clusterName, k8sVersionLatest, testRegion, tag1Name, tag2Name),
 					Check: resource.ComposeTestCheckFunc(
 						acceptance.CheckResourceAttrGreaterThan(dataSourceName, "lke_clusters.#", 1),
 					),
 				},
 				{
-					Config: tmpl.DataFilter(t, clusterName, k8sVersionLatest, testRegion),
+					Config: tmpl.DataFilter(t, clusterName, k8sVersionLatest, testRegion, tag1Name, tag2Name),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.#", "1"),
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.label", clusterName),
@@ -87,7 +89,7 @@ func TestAccDataSourceLKEClusters_basic(t *testing.T) {
 						resource.TestCheckResourceAttr(tagsDataSourceName, "lke_clusters.#", "1"),
 						resource.TestCheckResourceAttr(tagsDataSourceName, "lke_clusters.0.label", clusterName+"-2"),
 						resource.TestCheckResourceAttr(tagsDataSourceName, "lke_clusters.0.tags.#", "1"),
-						resource.TestCheckResourceAttr(tagsDataSourceName, "lke_clusters.0.tags.0", "test-2"),
+						resource.TestCheckResourceAttr(tagsDataSourceName, "lke_clusters.0.tags.0", tag2Name),
 					),
 				},
 			},

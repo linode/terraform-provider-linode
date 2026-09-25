@@ -20,7 +20,7 @@ data "linode_lke_clusters" "test_tags" {
 
     filter {
         name   = "tags"
-        values = ["test-2"]
+        values = ["{{.Tag2Name}}"]
     }
 }
 
