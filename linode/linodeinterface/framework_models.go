@@ -34,7 +34,7 @@ func (state *LinodeInterfaceModel) GetIDs(ctx context.Context, diags *diag.Diagn
 			"Failed to Convert ID Type",
 			fmt.Sprintf(
 				"This is always an error in the provider. Please report the following to the provider developer:\n\n"+
-					"Failed to convert string ID %q to an integer.\n", id,
+					"Failed to convert string ID '%d' to an integer.\n", id,
 			),
 		)
 	}
