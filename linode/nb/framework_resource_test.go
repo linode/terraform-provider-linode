@@ -267,7 +267,10 @@ func TestAccResourceNodeBalancer_vpc(t *testing.T) {
 	resName := "linode_nodebalancer.test"
 	nodebalancerName := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs}, "core")
+	targetRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]linodego.RegionCapability{linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs, linodego.CapabilityVPCDualStack},
+		"core",
+	)
 	if err != nil {
 		log.Fatal(err)
 	}

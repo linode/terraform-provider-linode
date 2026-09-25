@@ -34,7 +34,7 @@ func (data *VLANsFilterModel) parseVLANs(
 
 	id, err := json.Marshal(vlans)
 	if err != nil {
-		diags.AddError("Error marshalling json", err.Error())
+		diags.AddError("Error marshaling json", err.Error())
 		return diags
 	}
 

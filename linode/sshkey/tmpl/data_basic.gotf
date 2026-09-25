@@ -1,7 +1,11 @@
 {{ define "sshkey_data_basic" }}
 
+{{ template "sshkey_basic" . }}
+
 data "linode_sshkey" "foobar" {
     label = "{{.Label}}"
+
+    depends_on = [linode_sshkey.foobar]
 }
 
 {{ end }}
