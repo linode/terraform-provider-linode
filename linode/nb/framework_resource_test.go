@@ -146,6 +146,52 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 	})
 }
 
+func TestAccResourceNodeBalancer_backendConnectivity(t *testing.T) {
+	t.Parallel()
+
+	label := acctest.RandomWithPrefix("tf-test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkNodeBalancerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Connectivity(t, label, testRegion),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"linode_nodebalancer.test", tfjsonpath.New("type"), knownvalue.StringExact("common"),
+					),
+					statecheck.ExpectKnownValue(
+						"linode_nodebalancer.test", tfjsonpath.New("backend_connectivity"), knownvalue.StringExact("ipv6"),
+					),
+					statecheck.ExpectKnownValue(
+						"data.linode_nodebalancer.test", tfjsonpath.New("type"), knownvalue.StringExact("common"),
+					),
+					statecheck.ExpectKnownValue(
+						"data.linode_nodebalancer.test", tfjsonpath.New("backend_connectivity"), knownvalue.StringExact("ipv6"),
+					),
+					statecheck.ExpectKnownValue(
+						"data.linode_nodebalancers.test",
+						tfjsonpath.New("nodebalancers").AtSliceIndex(0).AtMapKey("type"),
+						knownvalue.StringExact("common"),
+					),
+					statecheck.ExpectKnownValue(
+						"data.linode_nodebalancers.test",
+						tfjsonpath.New("nodebalancers").AtSliceIndex(0).AtMapKey("backend_connectivity"),
+						knownvalue.StringExact("ipv6"),
+					),
+				},
+			},
+			{
+				ResourceName:            "linode_nodebalancer.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"created", "updated"},
+			},
+		},
+	})
+}
+
 func TestAccResourceNodeBalancer_update(t *testing.T) {
 	t.Parallel()
 

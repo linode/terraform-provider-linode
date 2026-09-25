@@ -21,6 +21,8 @@ type NodeBalancerModel struct {
 	ID                    types.String        `tfsdk:"id"`
 	Label                 types.String        `tfsdk:"label"`
 	Region                types.String        `tfsdk:"region"`
+	Type                  types.String        `tfsdk:"type"`
+	BackendConnectivity   types.String        `tfsdk:"backend_connectivity"`
 	ClientConnThrottle    types.Int64         `tfsdk:"client_conn_throttle"`
 	ClientUDPSessThrottle types.Int64         `tfsdk:"client_udp_sess_throttle"`
 	FirewallID            types.Int64         `tfsdk:"firewall_id"`
@@ -34,6 +36,22 @@ type NodeBalancerModel struct {
 	Firewalls             types.List          `tfsdk:"firewalls"`
 	VPCs                  types.List          `tfsdk:"vpcs"`
 	LKECluster            types.List          `tfsdk:"lke_cluster"`
+}
+
+func (data *NodeBalancerModel) GetCreateOptions(clientConnThrottle, clientUDPSessThrottle int) linodego.NodeBalancerCreateOptions {
+	opts := linodego.NodeBalancerCreateOptions{
+		Region:                data.Region.ValueString(),
+		Label:                 data.Label.ValueStringPointer(),
+		ClientConnThrottle:    &clientConnThrottle,
+		ClientUDPSessThrottle: &clientUDPSessThrottle,
+	}
+	if !data.Type.IsNull() && !data.Type.IsUnknown() {
+		opts.Type = linodego.NodeBalancerPlanType(data.Type.ValueString())
+	}
+	if !data.BackendConnectivity.IsNull() && !data.BackendConnectivity.IsUnknown() {
+		opts.BackendConnectivity = new(linodego.NodeBalancerBackendConnectivity(data.BackendConnectivity.ValueString()))
+	}
+	return opts
 }
 
 // LKEClusterModel represents the lke_cluster nested object.
@@ -98,6 +116,10 @@ func (data *NodeBalancerModel) Flatten(
 	data.Tags = helper.KeepOrUpdateValue(data.Tags, tags, preserveKnown)
 
 	data.Region = helper.KeepOrUpdateString(data.Region, nodebalancer.Region, preserveKnown)
+	data.Type = helper.KeepOrUpdateString(data.Type, string(nodebalancer.Type), preserveKnown)
+	data.BackendConnectivity = helper.KeepOrUpdateStringPointer(
+		data.BackendConnectivity, helper.StringPtr(nodebalancer.BackendConnectivity), preserveKnown,
+	)
 	data.ClientConnThrottle = helper.KeepOrUpdateInt64(
 		data.ClientConnThrottle, int64(nodebalancer.ClientConnThrottle), preserveKnown,
 	)
@@ -158,6 +180,10 @@ func (data *NodeBalancerModel) CopyFrom(other NodeBalancerModel, preserveKnown b
 	data.ID = helper.KeepOrUpdateValue(data.ID, other.ID, preserveKnown)
 	data.Label = helper.KeepOrUpdateValue(data.Label, other.Label, preserveKnown)
 	data.Region = helper.KeepOrUpdateValue(data.Region, other.Region, preserveKnown)
+	data.Type = helper.KeepOrUpdateValue(data.Type, other.Type, preserveKnown)
+	data.BackendConnectivity = helper.KeepOrUpdateValue(
+		data.BackendConnectivity, other.BackendConnectivity, preserveKnown,
+	)
 	data.ClientConnThrottle = helper.KeepOrUpdateValue(
 		data.ClientConnThrottle, other.ClientConnThrottle, preserveKnown,
 	)
@@ -268,6 +294,8 @@ type NodeBalancerDataSourceModel struct {
 	ID                    types.Int64       `tfsdk:"id"`
 	Label                 types.String      `tfsdk:"label"`
 	Region                types.String      `tfsdk:"region"`
+	Type                  types.String      `tfsdk:"type"`
+	BackendConnectivity   types.String      `tfsdk:"backend_connectivity"`
 	ClientConnThrottle    types.Int64       `tfsdk:"client_conn_throttle"`
 	ClientUDPSessThrottle types.Int64       `tfsdk:"client_udp_sess_throttle"`
 	Hostname              types.String      `tfsdk:"hostname"`
@@ -304,6 +332,10 @@ func (data *NodeBalancerDataSourceModel) Flatten(
 	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Label = types.StringPointerValue(nodebalancer.Label)
 	data.Region = types.StringValue(nodebalancer.Region)
+	data.Type = types.StringValue(string(nodebalancer.Type))
+	data.BackendConnectivity = types.StringPointerValue(
+		helper.StringPtr(nodebalancer.BackendConnectivity),
+	)
 	data.ClientConnThrottle = types.Int64Value(int64(nodebalancer.ClientConnThrottle))
 	data.ClientUDPSessThrottle = types.Int64Value(int64(nodebalancer.ClientUDPSessThrottle))
 	data.Hostname = types.StringPointerValue(nodebalancer.Hostname)
