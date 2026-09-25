@@ -69,6 +69,14 @@ var frameworkDatasourceSchema = schema.Schema{
 				"the outbound.action property for an individual Firewall Rule.",
 			Computed: true,
 		},
+		"version": schema.Int64Attribute{
+			Description: "The current version of the Firewall rules.",
+			Computed:    true,
+		},
+		"fingerprint": schema.StringAttribute{
+			Description: "The fingerprint of the current Firewall rules.",
+			Computed:    true,
+		},
 		"linodes": schema.SetAttribute{
 			ElementType: types.Int64Type,
 			Description: "The IDs of Linodes assigned to this Firewall.",

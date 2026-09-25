@@ -35,9 +35,9 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
       - uses: actions/checkout@v7
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
-          go-version: 'stable'
+          go-version-file: 'go.mod'
 
       - name: Check docs
         run: make docs-check
@@ -45,7 +45,6 @@ jobs:
         uses: golangci/golangci-lint-action@v9
       - name: Tidy
         run: go mod tidy
-      - run: make deps
       - name: tflint
         run: make tflint
       - name: Fail if changes
@@ -54,9 +53,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
-          go-version: 'stable'
+          go-version-file: 'go.mod'
       - run: go version
       - name: Unit tests
         run: make test-unit

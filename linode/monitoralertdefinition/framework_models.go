@@ -39,6 +39,7 @@ type AlertDefinitionDataSourceModel struct {
 	Class             types.String      `tfsdk:"class"`
 	Scope             types.String      `tfsdk:"scope"`
 	Regions           types.List        `tfsdk:"regions"`
+	GroupBy           types.Set         `tfsdk:"group_by"`
 	Entities          types.Object      `tfsdk:"entities"`
 }
 
@@ -170,6 +171,17 @@ func (data *AlertDefinitionDataSourceModel) FlattenDataSourceModel(
 		return diags
 	}
 
+	data.GroupBy = helper.KeepOrUpdateStringSet(
+		data.GroupBy,
+		alertDefinition.GroupBy,
+		preserveKnown,
+		&diags,
+	)
+
+	if diags.HasError() {
+		return diags
+	}
+
 	entities := flattenEntities(ctx, alertDefinition.Entities, &diags)
 	if diags.HasError() {
 		return diags
@@ -255,6 +267,17 @@ func (data *AlertDefinitionResourceModel) flattenResourceModel(
 		types.StringType,
 		data.Regions,
 		helper.StringSliceToFrameworkValueSlice(alertDefinition.Regions),
+		preserveKnown,
+		&diags,
+	)
+
+	if diags.HasError() {
+		return diags
+	}
+
+	data.GroupBy = helper.KeepOrUpdateStringSet(
+		data.GroupBy,
+		alertDefinition.GroupBy,
 		preserveKnown,
 		&diags,
 	)
@@ -585,6 +608,7 @@ func (data *AlertDefinitionResourceModel) CopyFrom(other AlertDefinitionResource
 	data.Class = helper.KeepOrUpdateValue(data.Class, other.Class, preserveKnown)
 	data.Scope = helper.KeepOrUpdateValue(data.Scope, other.Scope, preserveKnown)
 	data.Regions = helper.KeepOrUpdateValue(data.Regions, other.Regions, preserveKnown)
+	data.GroupBy = helper.KeepOrUpdateValue(data.GroupBy, other.GroupBy, preserveKnown)
 	data.Entities = helper.KeepOrUpdateValue(data.Entities, other.Entities, preserveKnown)
 	data.EntityIDs = helper.KeepOrUpdateValue(data.EntityIDs, other.EntityIDs, preserveKnown)
 	data.ChannelIDs = helper.KeepOrUpdateValue(data.ChannelIDs, other.ChannelIDs, preserveKnown)

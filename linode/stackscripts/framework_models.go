@@ -27,7 +27,7 @@ func (data *StackscriptFilterModel) parseStackscripts(
 	for i := range stackscripts {
 		var stackscript stackscript.StackScriptModel
 		diags := stackscript.FlattenStackScript(&stackscripts[i], false)
-		if diags != nil {
+		if diags.HasError() {
 			return diags
 		}
 		result[i] = stackscript

@@ -30,6 +30,8 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `region` - The region where this nodebalancer_config will be deployed.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc. See all regions [here](https://api.linode.com/v4/regions).
   
 * `protocol` - The protocol this port is configured to serve. If this is set to https you must include an ssl_cert and an ssl_key. (`http`, `https`, `tcp`) (Defaults to `http`)
@@ -68,7 +70,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `ssl_fingerprint` - The read-only fingerprint automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.
 
-* [`node_status`](#node_status) - The status of the attached nodes.
+* [`node_status`](#node_status) - (Read-Only Object List) The status of the attached nodes. Referenced with an index (e.g. `node_status.0.down`).
 
 ### node_status
 

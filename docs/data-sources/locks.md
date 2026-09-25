@@ -39,7 +39,9 @@ output "all_lock_ids" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode Locks that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode Locks that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -57,7 +59,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `locks` - A list of Linode Locks that match the filter criteria.
+* `locks` - (Nested Attribute List) A list of Linode Locks that match the filter criteria.
 
 ### Lock Attributes
 

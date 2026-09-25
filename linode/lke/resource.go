@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -350,6 +351,12 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	oldPools, newPools := d.GetChange("pool")
 
+	oldPoolSpecs := expandLinodeLKENodePoolSpecs(oldPools.([]any), false)
+	newPoolSpecs := expandLinodeLKENodePoolSpecs(newPools.([]any), true)
+
+	clearUnconfiguredNodePoolCounts(d.GetRawConfig().GetAttr("pool"), oldPoolSpecs)
+	clearUnconfiguredNodePoolCounts(d.GetRawConfig().GetAttr("pool"), newPoolSpecs)
+
 	var enterprise bool
 
 	cluster, err := client.GetLKECluster(ctx, id)
@@ -368,8 +375,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	updates, err := ReconcileLKENodePoolSpecs(
 		ctx,
-		expandLinodeLKENodePoolSpecs(oldPools.([]any), false),
-		expandLinodeLKENodePoolSpecs(newPools.([]any), true),
+		oldPoolSpecs,
+		newPoolSpecs,
 		enterprise,
 	)
 	if err != nil {
@@ -576,6 +583,25 @@ func customDiffValidateOptionalCount(ctx context.Context, diff *schema.ResourceD
 	}
 
 	return nil
+}
+
+func clearUnconfiguredNodePoolCounts(rawPools cty.Value, specs []NodePoolSpec) {
+	if !rawPools.IsKnown() || rawPools.IsNull() {
+		return
+	}
+
+	poolIterator := rawPools.ElementIterator()
+	for poolIterator.Next() {
+		rawKey, rawPool := poolIterator.Element()
+		index, _ := rawKey.AsBigFloat().Int64()
+		if index < 0 || index >= int64(len(specs)) || !rawPool.IsKnown() || rawPool.IsNull() {
+			continue
+		}
+
+		if rawPool.GetAttr("count").IsNull() {
+			specs[index].Count = 0
+		}
+	}
 }
 
 // customDiffValidatePoolForStandardTier ensures that at least one pool

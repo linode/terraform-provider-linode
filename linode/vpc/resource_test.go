@@ -85,11 +85,102 @@ func TestAccResourceVPC_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("subnets"),
+						knownvalue.ListSizeExact(0),
+					),
+				},
 			},
 			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccResourceVPC_withSubnet(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc.foobar"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+	subnetIPv4 := "10.0.1.0/24"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.WithSubnet(t, vpcLabel, testRegion, subnetIPv4),
+				Check:  checkVPCExists,
+			},
+			{
+				RefreshState: true,
+			},
+			{
+				Config: tmpl.WithSubnet(t, vpcLabel, testRegion, subnetIPv4),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(vpcLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("subnets"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("subnets").AtSliceIndex(0).AtMapKey("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("subnets").AtSliceIndex(0).AtMapKey("label"),
+						knownvalue.StringExact(vpcLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("subnets").AtSliceIndex(0).AtMapKey("ipv4"),
+						knownvalue.StringExact(subnetIPv4),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("subnets").AtSliceIndex(0).AtMapKey("created"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("subnets").AtSliceIndex(0).AtMapKey("updated"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("subnets").AtSliceIndex(0).AtMapKey("linodes"),
+						knownvalue.ListSizeExact(0),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("subnets").AtSliceIndex(0).AtMapKey("databases"),
+						knownvalue.ListSizeExact(0),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("subnets").AtSliceIndex(0).AtMapKey("nodebalancers"),
+						knownvalue.ListSizeExact(0),
+					),
+				},
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated"},
 			},
 		},
 	})
@@ -224,7 +315,8 @@ func TestAccResourceVPC_dualStack(t *testing.T) {
 	})
 }
 
-func TestAccResourceLinodeVPC_create_InvalidLabel(t *testing.T) {
+func TestAccResourceVPC_create_InvalidLabel(t *testing.T) {
+	t.Skip("Reason: waits for release of ARB-8019")
 	t.Parallel()
 
 	vpcLabel := "tf-test*123"
@@ -241,7 +333,8 @@ func TestAccResourceLinodeVPC_create_InvalidLabel(t *testing.T) {
 	})
 }
 
-func TestAccResourceLinodeVPC_update_InvalidLabel(t *testing.T) {
+func TestAccResourceVPC_update_InvalidLabel(t *testing.T) {
+	t.Skip("Reason: waits for release of ARB-8019")
 	t.Parallel()
 	resName := "linode_vpc.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
@@ -377,6 +470,139 @@ func TestAccResourceVPC_ipv4(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"updated"},
+			},
+		},
+	})
+}
+
+func TestAccResourceVPC_vpcType(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc.foobar"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPCType(t, vpcLabel, testRegion, "regular"),
+				Check:  checkVPCExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(vpcLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpc_type"),
+						knownvalue.StringExact("regular"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("region"),
+						knownvalue.StringExact(testRegion),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("created"),
+						knownvalue.NotNull(),
+					),
+				},
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccResourceVPC_vpcTypeRDMA(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc.foobar"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPCType(t, vpcLabel, testRegion, "rdma"),
+				Check:  checkVPCExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(vpcLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpc_type"),
+						knownvalue.StringExact("rdma"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("region"),
+						knownvalue.StringExact(testRegion),
+					),
+				},
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccResourceVPC_vpcTypeDefault(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc.foobar"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Basic(t, vpcLabel, testRegion),
+				Check:  checkVPCExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(vpcLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpc_type"),
+						knownvalue.StringExact("regular"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 		},
 	})

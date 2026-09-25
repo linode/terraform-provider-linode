@@ -30,7 +30,9 @@ output "lke_cluster" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select LKE Clusters that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select LKE Clusters that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -47,6 +49,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each LKE Cluster will be stored in the `lke_clusters` attribute and will export the following attributes:
+
+* `lke_clusters` - (Nested Attribute List) The LKE Clusters matching the data source filters.
 
 * `id` - The LKE Cluster's ID.
 
@@ -71,6 +75,8 @@ Each LKE Cluster will be stored in the `lke_clusters` attribute and will export 
 * `vpc_id` - The ID of the VPC to use for the Kubernetes cluster.
 
 * `stack_type` - The networking stack type of the Kubernetes cluster.
+
+* `control_plane` - (Nested Attribute) The cluster Control Plane configuration. Referenced directly (e.g. `lke_clusters[0].control_plane.high_availability`).
 
 * `control_plane.high_availability` - Whether High Availability is enabled for the cluster Control Plane.
 

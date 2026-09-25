@@ -31,9 +31,11 @@ output "vpc_subnets" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `vpc_id` - (Required) The id of the parent VPC for the list of VPCs.
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode VPC subnets that meet certain requirements.
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode VPC subnets that meet certain requirements.
 
 ### Filter
 
@@ -47,19 +49,21 @@ The following arguments are supported:
 
 Each Linode VPC subnet will be stored in the `vpc_subnets` attribute and will export the following attributes:
 
+* `vpc_subnets` - (Nested Attribute List) The returned list of subnets under a VPC. Referenced by index (e.g. `vpc_subnets[0].id`).
+
 * `id` - The unique id of the VPC subnet.
 
 * `label` - The label of the VPC subnet.
 
 * `ipv4` - The IPv4 range of this subnet in CIDR format.
 
-* [`ipv6`](#ipv6) - A list of IPv6 ranges under this subnet.
+* [`ipv6`](#ipv6) - (Nested Attribute List) A list of IPv6 ranges under this subnet.
 
-* `linodes` - A list of Linodes added to this subnet.
+* `linodes` - (Read-Only Object List) A list of Linodes added to this subnet. Referenced with an index (e.g. `linodes.0.id`).
 
   * `id` - ID of the Linode
 
-  * `interfaces` - A list of networking interfaces objects.
+  * `interfaces` - (Read-Only Object List) A list of networking interfaces objects. Referenced with an index (e.g. `interfaces.0.id`).
 
     * `id` - ID of the interface.
 
@@ -67,23 +71,23 @@ Each Linode VPC subnet will be stored in the `vpc_subnets` attribute and will ex
 
     * `active` - Whether the Interface is actively in use.
 
-* `databases` - A list of Managed databases assigned to the VPC Subnet.
+* `databases` - (Read-Only Object List) A list of Managed databases assigned to the VPC Subnet. Referenced with an index (e.g. `databases.0.id`).
 
   * `id` - ID of a managed database assigned to the VPC Subnet.
 
   * `ipv4_range` - IPv4 range assigned to the database.
 
-  * `ipv6_ranges` - A list of IPv6 ranges assigned to the database.
+  * `ipv6_ranges` - (Read-Only Object List) A list of IPv6 ranges assigned to the database. Referenced with an index (e.g. `ipv6_ranges.0.range`).
 
     * `range` - An IPv6 address range in CIDR notation.
 
-* `nodebalancers` - A list of NodeBalancers assigned to the VPC Subnet.
+* `nodebalancers` - (Read-Only Object List) A list of NodeBalancers assigned to the VPC Subnet. Referenced with an index (e.g. `nodebalancers.0.id`).
 
   * `id` - ID of a NodeBalancer assigned to the VPC Subnet.
 
   * `ipv4_range` - IPv4 range assigned to the NodeBalancer.
 
-  * `ipv6_ranges` - A list of IPv6 ranges assigned to the NodeBalancer.
+  * `ipv6_ranges` - (Read-Only Object List) A list of IPv6 ranges assigned to the NodeBalancer. Referenced with an index (e.g. `ipv6_ranges.0.range`).
 
     * `range` - An IPv6 address range in CIDR notation.
 

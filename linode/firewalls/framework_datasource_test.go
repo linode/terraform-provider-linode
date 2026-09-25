@@ -4,6 +4,7 @@ package firewalls_test
 
 import (
 	"log"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -85,6 +86,16 @@ func TestAccDataSourceFirewalls_basic(t *testing.T) {
 							testFirewallDataName,
 							tfjsonpath.New("firewalls").AtSliceIndex(0).AtMapKey("outbound_policy"),
 							knownvalue.StringExact("ACCEPT"),
+						),
+						statecheck.ExpectKnownValue(
+							testFirewallDataName,
+							tfjsonpath.New("firewalls").AtSliceIndex(0).AtMapKey("version"),
+							knownvalue.Int64Exact(1),
+						),
+						statecheck.ExpectKnownValue(
+							testFirewallDataName,
+							tfjsonpath.New("firewalls").AtSliceIndex(0).AtMapKey("fingerprint"),
+							knownvalue.StringRegexp(regexp.MustCompile(".+")),
 						),
 						statecheck.ExpectKnownValue(
 							testFirewallDataName,

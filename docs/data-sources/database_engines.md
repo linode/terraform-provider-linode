@@ -60,9 +60,11 @@ data "linode_database_engines" "mysql" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `latest` - (Optional) If true, only the latest engine version will be returned.
 
-* [`filter`](#filter) - (Optional) A set of filters used to select engines that meet certain requirements.
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select engines that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. (`version`)
 
@@ -79,6 +81,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each engine will be stored in the `engines` attribute and will export the following attributes:
+
+* `engines` - (Nested Attribute List) The returned list of engines. Referenced by index (e.g. `engines[0].id`).
 
 * `engine` - The Managed Database engine type.
 

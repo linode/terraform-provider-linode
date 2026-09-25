@@ -14,10 +14,10 @@ clean:
 
 .PHONY: tflint
 tflint:
-	tfproviderlint \
+	export GOTOOLCHAIN=go1.25.14; \
+	"$$(cd tools && go tool -n tfproviderlint)" \
 		-AT001=false \
 		-AT004=false \
-		-S006=false \
 		-R018=false \
 		./...
 
@@ -25,10 +25,6 @@ tflint:
 lint:
 	# remove two disabled linters when their errors are addressed
 	golangci-lint run
-
-.PHONY: deps
-deps:
-	go generate -tags tools tools/tools.go
 
 .PHONY: format
 format:

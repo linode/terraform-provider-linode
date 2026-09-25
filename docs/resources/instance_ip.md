@@ -45,6 +45,8 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `gateway` - The default gateway for this address
 
 * `prefix` - The number of bits set in the subnet mask.
@@ -56,3 +58,11 @@ In addition to all arguments above, the following attributes are exported:
 * `subnet_mask` - The mask that separates host bits from network bits for this address.
 
 * `type` - The type of IP address. (`ipv4`, `ipv6`, `ipv6/pool`, `ipv6/range`)
+
+* `vpc_nat_1_1` - (Read-Only Object List) Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet. Referenced with an index (e.g. `vpc_nat_1_1.0.address`).
+
+  * `address` - The VPC IPv4 address this address is NATted with.
+
+  * `subnet_id` - The ID of the VPC subnet containing the NATted address.
+
+  * `vpc_id` - The ID of the VPC containing the NATted address.

@@ -9,11 +9,11 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"label":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"region":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"status":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"type":    {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"version": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"label":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"region":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"status":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"type":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"version": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 
 	"engine":         {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"allow_list":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
@@ -25,6 +25,7 @@ var filterConfig = frameworkfilter.Config{
 	"host_standby":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"id":             {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 	"instance_uri":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"platform":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"updated":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
@@ -100,6 +101,10 @@ var frameworkDataSourceSchema = schema.Schema{
 					},
 					"label": schema.StringAttribute{
 						Description: "A unique, user-defined string referring to the Managed Database.",
+						Computed:    true,
+					},
+					"platform": schema.StringAttribute{
+						Description: "The back-end platform for relational databases used by the service.",
 						Computed:    true,
 					},
 					"private_network": databaseshared.DataSourceAttributePrivateNetwork,

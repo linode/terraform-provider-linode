@@ -39,7 +39,9 @@ output "filtered-share-group-members" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Image Share Groups that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Image Share Groups that meet certain requirements.
 
 * `sharegroup_id` - (Required) The ID of the Image Share Group for which to list members.
 
@@ -54,6 +56,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
+
+* `members` - (Block List) The Image Share Group members returned by this data source.
 
 * `token_uuid` - The UUID of member's token.
 

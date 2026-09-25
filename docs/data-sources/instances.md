@@ -45,7 +45,9 @@ output "instance_ids" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode instances that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block List) A set of filters used to select Linode instances that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -62,6 +64,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode instance will be stored in the `instances` attribute and will export the following attributes:
+
+* `instances` - (Read-Only Object List) The matched Linode instances. Referenced with an index (e.g. `instances.0.id`).
 
 * `id` - The ID of the Linode instance.
 
@@ -81,6 +85,8 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `private_ip` - If true, the Linode has private networking enabled, allowing use of the 192.168.128.0/17 network within the Linode's region.
   
+* `alerts` - (Read-Only Object List) The alert thresholds for this Linode. Referenced with an index (e.g. `alerts.0.cpu`).
+
 * `alerts.0.cpu` - The percentage of CPU usage required to trigger an alert. If the average CPU usage over two hours exceeds this value, we'll send you an alert. If this is set to 0, the alert is disabled.
 
 * `alerts.0.network_in` - The amount of incoming traffic, in Mbit/s, required to trigger an alert. If the average incoming traffic over two hours exceeds this value, we'll send you an alert. If this is set to 0 (zero), the alert is disabled.
@@ -115,6 +121,8 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `lke_cluster_id` - If applicable, the ID of the LKE cluster this instance is a part of.
 
+* `specs` - (Read-Only Object List) Information about the resources available to this Linode. Referenced with an index (e.g. `specs.0.disk`).
+
 * `specs.0.disk` -  The amount of storage space, in GB. this Linode has access to. A typical Linode will divide this space between a primary disk with an image deployed to it, and a swap disk, usually 512 MB. This is the default configuration created when deploying a Linode with an image through POST /linode/instances.
 
 * `specs.0.memory` - The amount of RAM, in MB, this Linode has access to. Typically a Linode will choose to boot with all of its available RAM, but this can be configured in a Config profile.
@@ -127,17 +135,17 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `specs.0.transfer` - The amount of network transfer this Linode is allotted each month.
 
-* [`disk`](#disks) - A list of disks associated with the Linode.
+* [`disk`](#disks) - (Read-Only Object List) A list of disks associated with the Linode. Referenced with an index (e.g. `disk.0.label`).
 
-* [`config`](#configs) - A list of configs associated with the Linode.
+* [`config`](#configs) - (Read-Only Object List) A list of configs associated with the Linode. Referenced with an index (e.g. `config.0.label`).
 
-* [`backups`](#backups) - Information about the Linode's backup status.
+* [`backups`](#backups) - (Read-Only Object List) Information about the Linode's backup status. Referenced with an index (e.g. `backups.0.enabled`).
 
-* [`placement_group`](#placement-groups) - Information about the Linode's Placement Groups.
+* [`placement_group`](#placement-groups) - (Read-Only Object List) Information about the Linode's Placement Groups. Referenced with an index (e.g. `placement_group.0.id`).
 
 ### Disks
 
-* `disk`
+* `disk` - (Read-Only Object List) A list of disks associated with the Linode. Referenced with an index (e.g. `disk.0.label`).
 
   * `label` - The disks label, which acts as an identifier in Terraform.  This must be unique within each Linode Instance.
 
@@ -151,7 +159,7 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 Configuration profiles define the VM settings and boot behavior of the Linode Instance.  Multiple configurations profiles can be provided but their `label` values must be unique.
 
-* `config`
+* `config` - (Read-Only Object List) A list of configs associated with the Linode. Referenced with an index (e.g. `config.0.label`).
 
   * `label` - The Config's label for display purposes.  Also used by `boot_config_label`.
 
@@ -167,7 +175,7 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
   * `memory_limit` - Defaults to the total RAM of the Linode
 
-  * `helpers` - Helpers enabled when booting to this Linode Config.
+  * `helpers` - (Read-Only Object List) Helpers enabled when booting to this Linode Config. Referenced with an index (e.g. `helpers.0.distro`).
 
     * `updatedb_disabled` -  Disables updatedb cron job to avoid disk thrashing.
 
@@ -177,9 +185,9 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
     * `network` -  Controls the behavior of the Linode Config's Network Helper setting, used to automatically configure additional IP addresses assigned to this instance.
 
-  * `devices` -  A list of `disk` or `volume` attachments for this `config`.  If the `boot_config_label` omits a `devices` block, the Linode will not be booted.
+  * `devices` - (Read-Only Object List) A list of `disk` or `volume` attachments for this `config`.  If the `boot_config_label` omits a `devices` block, the Linode will not be booted. Referenced with an index (e.g. `devices.0.sda`).
 
-    * `sda` ... `sdbl` - Device slots for attaching disks and volumes (named `sda`-`sdz`, `sdaa`-`sdaz`, `sdba`-`sdbl`). The maximum number of available devices is determined by the instance type's RAM (up to 64 devices). Each slot accepts either a Disk or Volume via `disk_label` or `volume_id`.
+    * `sda` ... `sdbl` - (Read-Only Object List) Device slots for attaching disks and volumes (named `sda`-`sdz`, `sdaa`-`sdaz`, `sdba`-`sdbl`). The maximum number of available devices is determined by the instance type's RAM (up to 64 devices). Each slot accepts either a Disk or Volume via `disk_label` or `volume_id`. Referenced with an index (e.g. `sda.0.disk_label`).
 
     * `disk_label` -  The `label` of the `disk` to map to this `device` slot.
 
@@ -187,7 +195,7 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
     * `disk_id` - The Disk ID of the associated `disk_label`, if used
 
-  * [`interface`](#interface) - A list of network interfaces to be assigned to the Linode.
+  * [`interface`](#interface) - (Read-Only Object List) A list of network interfaces to be assigned to the Linode. Referenced with an index (e.g. `interface.0.purpose`).
 
 ### Interface
 
@@ -205,9 +213,9 @@ Each interface exports the following attributes:
 
 * `primary` - Whether the interface is the primary interface that should have the default route for this Linode. This field is only allowed for interfaces with the `public` or `vpc` purpose.
 
-* [`ipv4`](#ipv4) -The IPv4 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose.
+* [`ipv4`](#ipv4) - (Read-Only Object List) The IPv4 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose. Referenced with an index (e.g. `ipv4.0.vpc`).
 
-* [`ipv6`](#ipv6) - The IPv6 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose.  NOTE: IPv6 VPCs may not yet be available to all users.
+* [`ipv6`](#ipv6) - (Read-Only Object List) The IPv6 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose.  NOTE: IPv6 VPCs may not yet be available to all users. Referenced with an index (e.g. `ipv6.0.is_public`).
 
 * `vpc_id` - The ID of VPC which this interface is attached to.
 
@@ -229,9 +237,9 @@ The following arguments are available in an `ipv6` configuration block of an `in
 
 * `is_public` - If true, connections from the interface to IPv6 addresses outside the VPC, and connections from IPv6 addresses outside the VPC to the interface will be permitted. (Default: `false`)
 
-* [`slaac`](#ipv6slaac) - An array of SLAAC prefixes to use for this interface.
+* [`slaac`](#ipv6slaac) - (Read-Only Object List) An array of SLAAC prefixes to use for this interface. Referenced with an index (e.g. `slaac.0.range`).
 
-* [`range`](#ipv6range) - An array of IPv6 ranges to use for this interface.
+* [`range`](#ipv6range) - (Read-Only Object List) An array of IPv6 ranges to use for this interface. Referenced with an index (e.g. `range.0.range`).
 
 #### ipv6.slaac
 
@@ -249,11 +257,11 @@ The following arguments are available in a `range` configuration block of an [`i
 
 ### Backups
 
-* `backups`
+* `backups` - (Read-Only Object List) Information about the Linode's backup status. Referenced with an index (e.g. `backups.0.enabled`).
 
   * `enabled` - If this Linode has the Backup service enabled.
 
-  * `schedule`
+  * `schedule` - (Read-Only Object List) The backup schedule. Referenced with an index (e.g. `schedule.0.day`).
 
     * `day` -  The day of the week that your Linode's weekly Backup is taken. If not set manually, a day will be chosen for you. Backups are taken every day, but backups taken on this day are preferred when selecting backups to retain for a longer period.  If not set manually, then when backups are initially enabled, this may come back as "Scheduling" until the day is automatically selected.
 
@@ -261,7 +269,7 @@ The following arguments are available in a `range` configuration block of an [`i
 
 ### Placement Groups
 
-* `placement_group`
+* `placement_group` - (Read-Only Object List) Information about the Linode's Placement Groups. Referenced with an index (e.g. `placement_group.0.id`).
 
   * `id` -  The ID of the Placement Group in the Linode API.
 

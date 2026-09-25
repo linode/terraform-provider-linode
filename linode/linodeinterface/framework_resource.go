@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -44,6 +45,16 @@ func (r *Resource) Create(
 	var plan LinodeInterfaceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !plan.RDMAVPC.IsUnknown() && !plan.RDMAVPC.IsNull() {
+		resp.Diagnostics.AddError(
+			"RDMA VPC interfaces cannot be created via the linode_interface resource.",
+			"RDMA VPC interfaces can only be created as part of a GPUDirect RDMA Linode "+
+				"creation request. They may be managed (updated, imported) by this "+
+				"resource, but not created or deleted here.",
+		)
 		return
 	}
 
@@ -209,6 +220,23 @@ func (r *Resource) Delete(
 		return
 	}
 
+	// RDMA VPC interfaces cannot be deleted through the API; they are only removed
+	// when their parent Linode is deleted. Drop the resource from state without
+	// issuing a delete request so that removing it from configuration does not fail.
+	if !state.RDMAVPC.IsNull() && !state.RDMAVPC.IsUnknown() {
+		resp.Diagnostics.AddWarning(
+			"RDMA VPC Interface Not Deleted",
+			fmt.Sprintf(
+				"RDMA VPC interface %v cannot be deleted via the linode_interface resource. "+
+					"It has been removed from Terraform state, but it remains attached to Linode %v "+
+					"and is no longer managed by Terraform. RDMA VPC interfaces are only removed when "+
+					"their parent Linode is deleted; to manage this interface again, re-import it.",
+				id, linodeID,
+			),
+		)
+		return
+	}
+
 	tflog.Debug(ctx, "client.DeleteInterface(...)")
 	err := client.DeleteInterface(ctx, linodeID, id)
 	if err != nil {
@@ -221,6 +249,28 @@ func (r *Resource) Delete(
 		}
 		resp.Diagnostics.AddError(
 			"Failed to Delete Linode Interface",
+			err.Error(),
+		)
+		return
+	}
+
+	tflog.Debug(ctx, "Waiting for Linode Interface to be fully deleted")
+	err = helper.WithRetries(ctx, 20, 3*time.Second, func() (bool, error) {
+		_, err := client.GetInterface(ctx, linodeID, id)
+		if err != nil {
+			if linodego.IsNotFound(err) {
+				// Interface deleted
+				return false, nil
+			}
+			// API error
+			return false, err
+		}
+		// Interface still present
+		return true, fmt.Errorf("interface %d still exists", id)
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to delete the interface",
 			err.Error(),
 		)
 		return

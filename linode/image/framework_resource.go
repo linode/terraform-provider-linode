@@ -8,7 +8,9 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -337,7 +339,7 @@ func (r *Resource) Update(
 
 	if !state.ReplicaRegions.Equal(plan.ReplicaRegions) {
 		isAvailableRegionLeft, diags := atLeastOneAvailableRegion(ctx, &plan, &state)
-		if diags != nil {
+		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
 		}
@@ -554,15 +556,13 @@ func atLeastOneAvailableRegion(
 		return false, diags
 	}
 
-	set := make(map[string]bool)
+	stateRegionSet := set.New[string](len(stateRegions))
 	for _, v := range stateRegions {
-		set[v] = true
+		stateRegionSet.Insert(v)
 	}
 
-	for _, v := range planRegions {
-		if set[v] {
-			return true, nil
-		}
+	if slices.ContainsFunc(planRegions, stateRegionSet.Contains) {
+		return true, nil
 	}
 
 	return false, nil

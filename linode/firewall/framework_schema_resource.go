@@ -136,6 +136,14 @@ var frameworkResourceSchema = schema.Schema{
 				stringvalidator.OneOf("ACCEPT", "DROP"),
 			},
 		},
+		"version": schema.Int64Attribute{
+			Description: "The current version of the Firewall rules.",
+			Computed:    true,
+		},
+		"fingerprint": schema.StringAttribute{
+			Description: "The fingerprint of the current Firewall rules.",
+			Computed:    true,
+		},
 		"linodes": schema.SetAttribute{
 			Description: "The IDs of Linodes to apply this firewall to.",
 			Optional:    true,

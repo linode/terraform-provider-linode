@@ -20,6 +20,7 @@ Shared Implementation
 type BaseModel struct {
 	ID            types.String      `tfsdk:"id"`
 	VPCId         types.Int64       `tfsdk:"vpc_id"`
+	VPCType       types.String      `tfsdk:"vpc_type"`
 	Label         types.String      `tfsdk:"label"`
 	IPv4          types.String      `tfsdk:"ipv4"`
 	Linodes       types.List        `tfsdk:"linodes"`
@@ -230,6 +231,7 @@ func FlattenSubnetNodebalancers(
 func (m *BaseModel) CopyFrom(other BaseModel, preserveKnown bool) {
 	m.ID = helper.KeepOrUpdateValue(m.ID, other.ID, preserveKnown)
 	m.VPCId = helper.KeepOrUpdateValue(m.VPCId, other.VPCId, preserveKnown)
+	m.VPCType = helper.KeepOrUpdateValue(m.VPCType, other.VPCType, preserveKnown)
 
 	m.Created = helper.KeepOrUpdateValue(m.Created, other.Created, preserveKnown)
 	m.Updated = helper.KeepOrUpdateValue(m.Updated, other.Updated, preserveKnown)
@@ -266,6 +268,7 @@ func (d *BaseModel) FlattenSubnet(
 	d.Label = helper.KeepOrUpdateString(d.Label, subnet.Label, preserveKnown)
 
 	d.IPv4 = helper.KeepOrUpdateString(d.IPv4, subnet.IPv4, preserveKnown)
+	d.VPCType = helper.KeepOrUpdateString(d.VPCType, string(subnet.VPCType), preserveKnown)
 
 	dbsList, diags := FlattenSubnetDatabases(ctx, subnet.Databases)
 	if diags.HasError() {

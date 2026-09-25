@@ -31,7 +31,9 @@ output "regions" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode regions that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode regions that meet certain requirements.
 
 ### Filter
 
@@ -45,6 +47,8 @@ The following arguments are supported:
 
 Each Linode region will be stored in the `regions` attribute and will export the following attributes:
 
+* `regions` - (Nested Attribute List) The Regions returned by this data source.
+
 * `country` - The country the region resides in.
 
 * `label` - Detailed location information for this Region, including city, state or region, and country.
@@ -55,11 +59,11 @@ Each Linode region will be stored in the `regions` attribute and will export the
 
 * `site_type` - The type of this region.
 
-* [`resolvers`] (#resolvers) - An object representing the IP addresses for this region's DNS resolvers.
+* [`resolvers`] (#resolvers) - (Nested Attribute List) An object representing the IP addresses for this region's DNS resolvers.
 
-* [`placement_group_limits`] (#placement-group-limits) - An object representing the limits relating to placement groups in this region.
+* [`placement_group_limits`] (#placement-group-limits) - (Read-Only Object List) An object representing the limits relating to placement groups in this region. Referenced with an index (e.g. `placement_group_limits.0.maximum_linodes_per_pg`).
 
-* [`monitors`] (#monitors) - An object representing the monitor services available in a region.
+* [`monitors`] (#monitors) - (Read-Only Object) An object representing the monitor services available in a region. Referenced directly (e.g. `monitors.metrics`).
 
 ### Resolvers
 

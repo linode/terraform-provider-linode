@@ -144,6 +144,20 @@ func TestReconcileLKENodePoolSpecs(t *testing.T) {
 			expectedToDelete: []int{},
 			expectedToCreate: []linodego.LKENodePoolCreateOptions{},
 		},
+		{
+			name: "autoscaler update with omitted count",
+			oldSpecs: []lke.NodePoolSpec{
+				{ID: 123, Type: "g6-standard-3", AutoScalerEnabled: true, AutoScalerMin: 3, AutoScalerMax: 7},
+			},
+			newSpecs: []lke.NodePoolSpec{
+				{ID: 123, Type: "g6-standard-3", AutoScalerEnabled: true, AutoScalerMin: 5, AutoScalerMax: 10},
+			},
+			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{
+				123: {Autoscaler: &linodego.LKENodePoolAutoscaler{Enabled: true, Min: 5, Max: 10}},
+			},
+			expectedToDelete: []int{},
+			expectedToCreate: []linodego.LKENodePoolCreateOptions{},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			updates, err := lke.ReconcileLKENodePoolSpecs(context.Background(), tc.oldSpecs, tc.newSpecs, false)

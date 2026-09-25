@@ -27,6 +27,8 @@ data "linode_placement_group" "pg" {
 
 In addition to all arguments above, the following attributes are exported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `label` - The label of the Placement Group. This field can only contain ASCII letters, digits and dashes.
 
 * `region` - The region of the Placement Group.
@@ -37,15 +39,15 @@ In addition to all arguments above, the following attributes are exported:
 
 * `is_compliant` - Whether all Linodes in this group are currently compliant with the group's placement group type.
 
-* `members` - A set of Linodes currently assigned to this Placement Group.
+* `members` - (Nested Attribute Set) A set of Linodes currently assigned to this Placement Group. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
-* `migrations` - Any Linodes that are being migrated to or from the placement group.
+* `migrations` - (Nested Attribute) Any Linodes that are being migrated to or from the placement group. Referenced directly (e.g. `migrations.inbound`).
 
-  * `inbound` - A list of the Linodes the system is migrating into the placement group.
+  * `inbound` - (Read-Only Object List) A list of the Linodes the system is migrating into the placement group. Referenced with an index (e.g. `migrations.inbound.0.linode_id`).
 
     * `linode_id` - The unique identifier for the Linode being migrated into the placement group.
 
-  * `outbound` A list of the Linodes the system is migrating out of the placement group.
+  * `outbound` - (Read-Only Object List) A list of the Linodes the system is migrating out of the placement group. Referenced with an index (e.g. `migrations.outbound.0.linode_id`).
 
     * `linode_id` - The unique identifier for the Linode being migrated out of the placement group.
 

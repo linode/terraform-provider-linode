@@ -92,6 +92,8 @@ type FirewallModel struct {
 	Disabled       types.Bool        `tfsdk:"disabled"`
 	InboundPolicy  types.String      `tfsdk:"inbound_policy"`
 	OutboundPolicy types.String      `tfsdk:"outbound_policy"`
+	Version        types.Int64       `tfsdk:"version"`
+	Fingerprint    types.String      `tfsdk:"fingerprint"`
 	Linodes        []types.Int64     `tfsdk:"linodes"`
 	NodeBalancers  []types.Int64     `tfsdk:"nodebalancers"`
 	Interfaces     []types.Int64     `tfsdk:"interfaces"`
@@ -115,6 +117,8 @@ func (data *FirewallModel) parseFirewall(
 	data.Disabled = types.BoolValue(firewall.Status == linodego.FirewallDisabled)
 	data.InboundPolicy = types.StringValue(rules.InboundPolicy)
 	data.OutboundPolicy = types.StringValue(rules.OutboundPolicy)
+	data.Version = types.Int64Value(int64(rules.Version))
+	data.Fingerprint = types.StringValue(rules.Fingerprint)
 	data.Linodes = helper.IntSliceToFramework(
 		firewallresource.AggregateEntityIDs(devices, linodego.FirewallDeviceLinode),
 	)
@@ -166,7 +170,7 @@ func (data *FirewallFilterModel) parseFirewalls(
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	result := make([]FirewallModel, len(firewalls))
+	result := make([]FirewallModel, 0, len(firewalls))
 
 	for i := range firewalls {
 		var fwData FirewallModel
@@ -175,19 +179,27 @@ func (data *FirewallFilterModel) parseFirewalls(
 
 		devices, err := client.ListFirewallDevices(ctx, fw.ID, nil)
 		if err != nil {
+			if linodego.IsNotFound(err) {
+				continue
+			}
+
 			diags.AddError("Failed to list Firewall devices", err.Error())
 			return diags
 		}
 
 		rules, err := client.GetFirewallRules(ctx, fw.ID)
 		if err != nil {
+			if linodego.IsNotFound(err) {
+				continue
+			}
+
 			diags.AddError("Failed to get Firewall rules", err.Error())
 			return diags
 		}
 
 		fwData.parseFirewall(fw, *rules, devices)
 
-		result[i] = fwData
+		result = append(result, fwData)
 	}
 
 	data.Firewalls = result

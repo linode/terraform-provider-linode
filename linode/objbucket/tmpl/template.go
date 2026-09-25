@@ -109,6 +109,14 @@ func LifeCycleUpdates(t testing.TB, label, region, keyName string) string {
 		})
 }
 
+func LifeCycleNoKeys(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"object_bucket_lifecycle_no_keys", TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}
+
 func LifeCycleRemoved(t testing.TB, label, region, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle_removed", TemplateData{

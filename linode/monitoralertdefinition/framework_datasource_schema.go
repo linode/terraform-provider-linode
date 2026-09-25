@@ -184,6 +184,11 @@ var AlertDefinitionAttributes = map[string]schema.Attribute{
 		Computed:    true,
 		Description: "The regions the alert definition applies to. Only used for region-scoped alerts.",
 	},
+	"group_by": schema.SetAttribute{
+		ElementType: types.StringType,
+		Computed:    true,
+		Description: "The dimension fields used to group alert events, such as entity_id.",
+	},
 	"entities": schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
 			"url": schema.StringAttribute{

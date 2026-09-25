@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -85,10 +86,18 @@ func TestAccResourceVPCSubnet_nodebalancer(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "databases.#", "0"),
 				),
 			},
+			// Update and wait until the API reflects the NB attachment before asserting
 			{
 				Config: tmpl.UpdatesWithNodebalancer(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
+					waitForVPCSubnetNodebalancer(resName, 1, 60*time.Second),
+				),
+			},
+			// Re-apply the same config to force a refresh, then assert on fresh state
+			{
+				Config: tmpl.UpdatesWithNodebalancer(t, subnetLabel, "10.0.0.0/24", testRegion),
+				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", subnetLabel)),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
@@ -217,6 +226,7 @@ func TestAccResourceVPCSubnet_dualStack(t *testing.T) {
 }
 
 func TestAccResourceVPCSubnet_create_InvalidLabel_basic(t *testing.T) {
+	t.Skip("Reason: defect ARB-8019")
 	t.Parallel()
 
 	subnetLabel := acctest.RandomWithPrefix("tf-test") + "__"
@@ -235,6 +245,7 @@ func TestAccResourceVPCSubnet_create_InvalidLabel_basic(t *testing.T) {
 }
 
 func TestAccResourceVPCSubnet_update_invalidLabel(t *testing.T) {
+	t.Skip("Reason: defect ARB-8019")
 	t.Parallel()
 	resName := "linode_vpc_subnet.foobar"
 	subnetLabel := acctest.RandomWithPrefix("tf-test")
@@ -293,6 +304,125 @@ func TestAccResourceVPCSubnet_attached(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "linodes.0.interfaces.0.id"),
 					resource.TestCheckResourceAttr(resName, "linodes.0.interfaces.0.active", "false"),
 				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
+func TestAccResourceVPCSubnet_vpcType(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc_subnet.foobar"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPCType(t, subnetLabel, "10.0.0.0/24", testRegion, "regular"),
+				Check:  checkVPCSubnetExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(subnetLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpc_type"),
+						knownvalue.StringExact("regular"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv4"),
+						knownvalue.StringExact("10.0.0.0/24"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("created"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("databases"),
+						knownvalue.ListSizeExact(0),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("nodebalancers"),
+						knownvalue.ListSizeExact(0),
+					),
+				},
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
+func TestAccResourceVPCSubnet_vpcTypeRDMA(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc_subnet.foobar"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPCType(t, subnetLabel, "10.0.0.0/24", testRegion, "rdma"),
+				Check:  checkVPCSubnetExists,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(subnetLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("vpc_type"),
+						knownvalue.StringExact("rdma"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("ipv4"),
+						knownvalue.StringExact("10.0.0.0/24"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("databases"),
+						knownvalue.ListSizeExact(0),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("nodebalancers"),
+						knownvalue.ListSizeExact(0),
+					),
+				},
 			},
 			{
 				ResourceName:      resName,

@@ -44,7 +44,7 @@ func (data *UserFilterModel) parseUsers(
 				return diags
 			}
 			diags := userModel.ParseUserGrants(ctx, grants)
-			if diags != nil {
+			if diags.HasError() {
 				return diags
 			}
 		} else {

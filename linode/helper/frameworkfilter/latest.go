@@ -73,7 +73,7 @@ func getCreatedTime(elem any, attr string) (time.Time, diag.Diagnostic) {
 	}
 
 	// Parse the field into a time with validation
-	result, ok := val.Interface().(time.Time)
+	result, ok := reflect.TypeAssert[time.Time](val)
 	if !ok {
 		return time.Time{}, diag.NewErrorDiagnostic(
 			"Field has incorrect type",
