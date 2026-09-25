@@ -10,6 +10,11 @@ var filterConfig = frameworkfilter.Config{
 	"label":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"ipv4":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"region": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"type":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"backend_connectivity": {
+		APIFilterable: false,
+		TypeFunc:      frameworkfilter.FilterTypeString,
+	},
 
 	// temporarily use client-side filter while API filter for tags is not working properly
 	"tags": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},

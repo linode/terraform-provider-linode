@@ -31,6 +31,10 @@ In addition to all arguments above, the following attributes are exported:
 
 * `label` - The label of the Linode NodeBalancer
 
+* `type` - The NodeBalancer plan type (`common`, `premium`, or `enterprise`).
+
+* `backend_connectivity` - The backend communication mode (`legacy`, `ipv6`, `vpc`, or `undefined` if not specified).
+
 * `client_conn_throttle` - Throttle connections per second (0-20).
 
 * `client_udp_sess_throttle` - Throttle UDP sessions per second (0-20).

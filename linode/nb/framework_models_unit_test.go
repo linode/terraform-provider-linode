@@ -4,11 +4,15 @@ package nb
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
@@ -206,6 +210,117 @@ func TestFlattenNodeBalancerIPv4(t *testing.T) {
 		assert.False(t, diags.HasError())
 		assert.Equal(t, iptypes.NewIPv4AddressValue(reservedIP), model.IPv4)
 	})
+}
+
+func TestNodeBalancerCreateOptionsConnectivity(t *testing.T) {
+	model := NodeBalancerModel{
+		Region:              types.StringValue("us-east"),
+		Type:                types.StringValue(string(linodego.NBTypePremium)),
+		BackendConnectivity: types.StringValue(string(linodego.NBBackendConnectivityIPv6)),
+	}
+
+	opts := model.GetCreateOptions(10, 5)
+	assert.Equal(t, linodego.NBTypePremium, opts.Type)
+	if assert.NotNil(t, opts.BackendConnectivity) {
+		assert.Equal(t, linodego.NBBackendConnectivityIPv6, *opts.BackendConnectivity)
+	}
+	payload, err := json.Marshal(opts)
+	assert.NoError(t, err)
+	assert.Contains(t, string(payload), `"type":"premium"`)
+	assert.Contains(t, string(payload), `"backend_connectivity":"ipv6"`)
+
+	model.Type = types.StringUnknown()
+	model.BackendConnectivity = types.StringUnknown()
+	opts = model.GetCreateOptions(10, 5)
+	assert.Empty(t, opts.Type)
+	assert.Nil(t, opts.BackendConnectivity)
+	payload, err = json.Marshal(opts)
+	assert.NoError(t, err)
+	assert.NotContains(t, string(payload), `"type"`)
+	assert.NotContains(t, string(payload), `"backend_connectivity"`)
+
+	model.Type = types.StringNull()
+	model.BackendConnectivity = types.StringNull()
+	opts = model.GetCreateOptions(10, 5)
+	assert.Empty(t, opts.Type)
+	assert.Nil(t, opts.BackendConnectivity)
+}
+
+func TestNodeBalancerCreateOnlyFieldValidators(t *testing.T) {
+	tests := []struct {
+		field     string
+		value     string
+		wantError bool
+	}{
+		{"type", "common", false},
+		{"type", "premium", false},
+		{"type", "enterprise", false},
+		{"type", "premium_40gb", true},
+		{"backend_connectivity", "legacy", false},
+		{"backend_connectivity", "ipv6", false},
+		{"backend_connectivity", "vpc", false},
+		{"backend_connectivity", "undefined", true},
+		{"backend_connectivity", "ipv6_and_vpc", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.field+"/"+tt.value, func(t *testing.T) {
+			attr := frameworkResourceSchema.Attributes[tt.field].(schema.StringAttribute)
+			var resp validator.StringResponse
+			attr.Validators[0].ValidateString(t.Context(), validator.StringRequest{
+				Path:        path.Root(tt.field),
+				ConfigValue: types.StringValue(tt.value),
+			}, &resp)
+			assert.Equal(t, tt.wantError, resp.Diagnostics.HasError())
+		})
+	}
+}
+
+func TestFlattenNodeBalancerConnectivity(t *testing.T) {
+	connectivity := linodego.NBBackendConnectivityIPv6
+	nodeBalancer := &linodego.NodeBalancer{
+		ID:                  123,
+		Type:                linodego.NBTypePremium,
+		BackendConnectivity: &connectivity,
+	}
+
+	model := &NodeBalancerModel{
+		Type:                types.StringUnknown(),
+		BackendConnectivity: types.StringUnknown(),
+	}
+	diags := model.Flatten(t.Context(), nodeBalancer, nil, nil, true)
+	assert.False(t, diags.HasError())
+	assert.Equal(t, types.StringValue("premium"), model.Type)
+	assert.Equal(t, types.StringValue("ipv6"), model.BackendConnectivity)
+
+	model.Type = types.StringValue("common")
+	model.BackendConnectivity = types.StringValue("vpc")
+	diags = model.Flatten(t.Context(), nodeBalancer, nil, nil, true)
+	assert.False(t, diags.HasError())
+	assert.Equal(t, types.StringValue("common"), model.Type)
+	assert.Equal(t, types.StringValue("vpc"), model.BackendConnectivity)
+
+	diags = model.Flatten(t.Context(), nodeBalancer, nil, nil, false)
+	assert.False(t, diags.HasError())
+	assert.Equal(t, types.StringValue("premium"), model.Type)
+	assert.Equal(t, types.StringValue("ipv6"), model.BackendConnectivity)
+
+	nodeBalancer.BackendConnectivity = nil
+	diags = model.Flatten(t.Context(), nodeBalancer, nil, nil, false)
+	assert.False(t, diags.HasError())
+	assert.True(t, model.BackendConnectivity.IsNull())
+}
+
+func TestFlattenNodeBalancerDataSourceConnectivity(t *testing.T) {
+	connectivity := linodego.NBBackendConnectivityVPC
+	model := &NodeBalancerDataSourceModel{}
+	diags := model.Flatten(t.Context(), &linodego.NodeBalancer{
+		Type:                linodego.NBTypeEnterprise,
+		BackendConnectivity: &connectivity,
+	}, nil, nil)
+	assert.False(t, diags.HasError())
+	assert.Equal(t, types.StringValue("enterprise"), model.Type)
+	assert.Equal(t, types.StringValue("vpc"), model.BackendConnectivity)
 }
 
 func TestUpgradeResourceStateValue(t *testing.T) {

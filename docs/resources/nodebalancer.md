@@ -58,6 +58,22 @@ resource "linode_nodebalancer" "foobar" {
 }
 ```
 
+The following example requests a premium NodeBalancer that communicates with IPv6 backends.
+Backend connectivity requires the `v4beta` API version and may not be available to all accounts.
+
+```hcl
+provider "linode" {
+    api_version = "v4beta"
+}
+
+resource "linode_nodebalancer" "ipv6" {
+    label                = "ipv6-backends"
+    region               = "us-east"
+    type                 = "premium"
+    backend_connectivity = "ipv6"
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -67,6 +83,10 @@ The following arguments are supported:
 - - -
 
 * `label` - (Optional) The label of the Linode NodeBalancer
+
+* `type` - (Optional) NodeBalancer plan type: `common` (the API default), `premium`, or `enterprise`. Availability depends on the account and region. Changing this value replaces the NodeBalancer.
+
+* `backend_connectivity` - (Optional) Backend communication mode: `legacy` (private IPv4), `ipv6`, or `vpc`. Requires `api_version = "v4beta"` and may not be available to all users. Changing this value replaces the NodeBalancer. When omitted, the API chooses the mode; it may report `undefined` if no mode, nodes, or VPCs were specified. `undefined` is read-only and cannot be configured.
 
 * `client_conn_throttle` - (Optional) Throttle connections per second (0-20). Set to 0 (default) to disable throttling.
 
@@ -83,6 +103,10 @@ The following arguments are supported:
 This resource exports the following attributes:
 
 **NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* `type` - The NodeBalancer plan type.
+
+* `backend_connectivity` - The backend communication mode, possibly `undefined` if not specified.
 
 * `hostname` - This NodeBalancer's hostname, ending with .nodebalancer.linode.com
 

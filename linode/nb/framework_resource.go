@@ -63,12 +63,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	createOpts := linodego.NodeBalancerCreateOptions{
-		Region:                data.Region.ValueString(),
-		Label:                 data.Label.ValueStringPointer(),
-		ClientConnThrottle:    &clientConnThrottle,
-		ClientUDPSessThrottle: &clientUDPSessThrottle,
-	}
+	createOpts := data.GetCreateOptions(clientConnThrottle, clientUDPSessThrottle)
 
 	if !data.FirewallID.IsNull() {
 		createOpts.FirewallID = helper.FrameworkSafeInt64ToInt(

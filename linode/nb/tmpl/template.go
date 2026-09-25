@@ -21,6 +21,14 @@ func Basic(t testing.TB, nodebalancer, region string) string {
 		})
 }
 
+func Connectivity(t testing.TB, nodebalancer, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_connectivity", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
+}
+
 func Updates(t testing.TB, nodebalancer, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_updates", TemplateData{
