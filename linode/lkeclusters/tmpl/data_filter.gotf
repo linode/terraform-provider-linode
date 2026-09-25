@@ -15,4 +15,13 @@ data "linode_lke_clusters" "test" {
     }
 }
 
+data "linode_lke_clusters" "test_tags" {
+    depends_on = [linode_lke_cluster.test, linode_lke_cluster.test2]
+
+    filter {
+        name   = "tags"
+        values = ["{{.Tag2Name}}"]
+    }
+}
+
 {{ end }}
