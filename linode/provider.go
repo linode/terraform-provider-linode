@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego/v2"
-	"github.com/linode/terraform-provider-linode/v4/linode/databaseaccesscontrols"
 	"github.com/linode/terraform-provider-linode/v4/linode/domain"
 	"github.com/linode/terraform-provider-linode/v4/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
@@ -148,14 +147,13 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"linode_database_access_controls": databaseaccesscontrols.Resource(),
-			"linode_domain":                   domain.Resource(),
-			"linode_domain_record":            domainrecord.Resource(),
-			"linode_instance":                 instance.Resource(),
-			"linode_instance_config":          instanceconfig.Resource(),
-			"linode_lke_cluster":              lke.Resource(),
-			"linode_object_storage_bucket":    objbucket.Resource(),
-			"linode_user":                     user.Resource(),
+			"linode_domain":                domain.Resource(),
+			"linode_domain_record":         domainrecord.Resource(),
+			"linode_instance":              instance.Resource(),
+			"linode_instance_config":       instanceconfig.Resource(),
+			"linode_lke_cluster":           lke.Resource(),
+			"linode_object_storage_bucket": objbucket.Resource(),
+			"linode_user":                  user.Resource(),
 		},
 	}
 
