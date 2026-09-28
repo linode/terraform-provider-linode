@@ -53,6 +53,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `ipv6` - The Public IPv6 Address of this NodeBalancer
 
+* `backend_ipv6_prefix` - The /96 IPv6 source range used when this NodeBalancer connects to backends. Null if no backend IPv6 prefix is assigned.
+
 * `region` - The Region where this Linode NodeBalancer is located. NodeBalancers only support backends in the same Region.
 
 * [`transfer`](#transfer) - (Read-Only Object List) The network transfer stats for the current month. Referenced with an index (e.g. `transfer.0.in`).

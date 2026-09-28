@@ -83,6 +83,8 @@ Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and wil
 
 * `ipv6` - The Public IPv6 Address of this NodeBalancer
 
+* `backend_ipv6_prefix` - The /96 IPv6 source range used when this NodeBalancer connects to backends. Null if no backend IPv6 prefix is assigned.
+
 * `region` - The Region where this Linode NodeBalancer is located. NodeBalancers only support backends in the same Region.
 
 * `updated` – When this Linode NodeBalancer was last updated

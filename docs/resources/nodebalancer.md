@@ -114,6 +114,8 @@ This resource exports the following attributes:
 
 * `ipv6` - The Public IPv6 Address of this NodeBalancer
 
+* `backend_ipv6_prefix` - The /96 IPv6 source range used when this NodeBalancer connects to backends. Null if no backend IPv6 prefix is assigned.
+
 * `created` - When this NodeBalancer was created
 
 * `updated` - When this NodeBalancer was last updated.

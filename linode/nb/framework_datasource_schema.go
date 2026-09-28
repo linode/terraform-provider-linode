@@ -67,6 +67,11 @@ var DataSourceAttributes = map[string]schema.Attribute{
 		Description: "The Public IPv6 Address of this NodeBalancer",
 		Computed:    true,
 	},
+	"backend_ipv6_prefix": schema.StringAttribute{
+		Description: "The /96 IPv6 source range used when this NodeBalancer connects to backends. " +
+			"Null if no backend IPv6 prefix is assigned.",
+		Computed: true,
+	},
 	"created": schema.StringAttribute{
 		Description: "When this NodeBalancer was created.",
 		Computed:    true,

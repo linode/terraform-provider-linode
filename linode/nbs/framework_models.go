@@ -33,6 +33,7 @@ type NodeBalancerModel struct {
 	Hostname              types.String      `tfsdk:"hostname"`
 	Ipv4                  types.String      `tfsdk:"ipv4"`
 	Ipv6                  types.String      `tfsdk:"ipv6"`
+	BackendIPv6Prefix     types.String      `tfsdk:"backend_ipv6_prefix"`
 	Created               timetypes.RFC3339 `tfsdk:"created"`
 	Updated               timetypes.RFC3339 `tfsdk:"updated"`
 	Transfer              types.List        `tfsdk:"transfer"`
@@ -68,6 +69,7 @@ func (data *NodeBalancerModel) flattenNodeBalancer(
 	data.Hostname = types.StringPointerValue(nodebalancer.Hostname)
 	data.Ipv4 = types.StringPointerValue(nodebalancer.IPv4)
 	data.Ipv6 = types.StringPointerValue(nodebalancer.IPv6)
+	data.BackendIPv6Prefix = types.StringPointerValue(nodebalancer.BackendIPv6Prefix)
 	data.Created = timetypes.NewRFC3339TimePointerValue(nodebalancer.Created)
 	data.Updated = timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated)
 

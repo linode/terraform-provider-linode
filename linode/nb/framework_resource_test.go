@@ -168,10 +168,16 @@ func TestAccResourceNodeBalancer_backendConnectivity(t *testing.T) {
 						"linode_nodebalancer.test", tfjsonpath.New("backend_connectivity"), knownvalue.StringExact("ipv6"),
 					),
 					statecheck.ExpectKnownValue(
+						"linode_nodebalancer.test", tfjsonpath.New("backend_ipv6_prefix"), knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
 						"data.linode_nodebalancer.test", tfjsonpath.New("type"), knownvalue.StringExact("common"),
 					),
 					statecheck.ExpectKnownValue(
 						"data.linode_nodebalancer.test", tfjsonpath.New("backend_connectivity"), knownvalue.StringExact("ipv6"),
+					),
+					statecheck.ExpectKnownValue(
+						"data.linode_nodebalancer.test", tfjsonpath.New("backend_ipv6_prefix"), knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						"data.linode_nodebalancers.test",
@@ -182,6 +188,11 @@ func TestAccResourceNodeBalancer_backendConnectivity(t *testing.T) {
 						"data.linode_nodebalancers.test",
 						tfjsonpath.New("nodebalancers").AtSliceIndex(0).AtMapKey("backend_connectivity"),
 						knownvalue.StringExact("ipv6"),
+					),
+					statecheck.ExpectKnownValue(
+						"data.linode_nodebalancers.test",
+						tfjsonpath.New("nodebalancers").AtSliceIndex(0).AtMapKey("backend_ipv6_prefix"),
+						knownvalue.NotNull(),
 					),
 				},
 			},

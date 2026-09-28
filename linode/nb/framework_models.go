@@ -29,6 +29,7 @@ type NodeBalancerModel struct {
 	Hostname              types.String        `tfsdk:"hostname"`
 	IPv4                  iptypes.IPv4Address `tfsdk:"ipv4"`
 	IPv6                  types.String        `tfsdk:"ipv6"`
+	BackendIPv6Prefix     types.String        `tfsdk:"backend_ipv6_prefix"`
 	Created               timetypes.RFC3339   `tfsdk:"created"`
 	Updated               timetypes.RFC3339   `tfsdk:"updated"`
 	Transfer              types.List          `tfsdk:"transfer"`
@@ -129,6 +130,9 @@ func (data *NodeBalancerModel) Flatten(
 	data.Hostname = helper.KeepOrUpdateStringPointer(data.Hostname, nodebalancer.Hostname, preserveKnown)
 	data.IPv4 = helper.KeepOrUpdateValue(data.IPv4, iptypes.NewIPv4AddressPointerValue(nodebalancer.IPv4), preserveKnown)
 	data.IPv6 = helper.KeepOrUpdateStringPointer(data.IPv6, nodebalancer.IPv6, preserveKnown)
+	data.BackendIPv6Prefix = helper.KeepOrUpdateStringPointer(
+		data.BackendIPv6Prefix, nodebalancer.BackendIPv6Prefix, preserveKnown,
+	)
 	data.Created = helper.KeepOrUpdateValue(
 		data.Created, timetypes.NewRFC3339TimePointerValue(nodebalancer.Created), preserveKnown,
 	)
@@ -194,6 +198,7 @@ func (data *NodeBalancerModel) CopyFrom(other NodeBalancerModel, preserveKnown b
 	data.Hostname = helper.KeepOrUpdateValue(data.Hostname, other.Hostname, preserveKnown)
 	data.IPv4 = helper.KeepOrUpdateValue(data.IPv4, other.IPv4, preserveKnown)
 	data.IPv6 = helper.KeepOrUpdateValue(data.IPv6, other.IPv6, preserveKnown)
+	data.BackendIPv6Prefix = helper.KeepOrUpdateValue(data.BackendIPv6Prefix, other.BackendIPv6Prefix, preserveKnown)
 	data.Created = helper.KeepOrUpdateValue(data.Created, other.Created, preserveKnown)
 	data.Updated = helper.KeepOrUpdateValue(data.Updated, other.Updated, preserveKnown)
 	data.Transfer = helper.KeepOrUpdateValue(data.Transfer, other.Transfer, preserveKnown)
@@ -301,6 +306,7 @@ type NodeBalancerDataSourceModel struct {
 	Hostname              types.String      `tfsdk:"hostname"`
 	IPv4                  types.String      `tfsdk:"ipv4"`
 	IPv6                  types.String      `tfsdk:"ipv6"`
+	BackendIPv6Prefix     types.String      `tfsdk:"backend_ipv6_prefix"`
 	Created               timetypes.RFC3339 `tfsdk:"created"`
 	Updated               timetypes.RFC3339 `tfsdk:"updated"`
 	Transfer              types.List        `tfsdk:"transfer"`
@@ -341,6 +347,7 @@ func (data *NodeBalancerDataSourceModel) Flatten(
 	data.Hostname = types.StringPointerValue(nodebalancer.Hostname)
 	data.IPv4 = types.StringPointerValue(nodebalancer.IPv4)
 	data.IPv6 = types.StringPointerValue(nodebalancer.IPv6)
+	data.BackendIPv6Prefix = types.StringPointerValue(nodebalancer.BackendIPv6Prefix)
 	data.Created = timetypes.NewRFC3339TimePointerValue(nodebalancer.Created)
 	data.Updated = timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated)
 

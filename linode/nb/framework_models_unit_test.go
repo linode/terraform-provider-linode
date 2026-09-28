@@ -48,6 +48,7 @@ func TestFlattenNodeBalancer(t *testing.T) {
 	hostname := "example.nodebalancer.linode.com"
 	IPv4 := "192.168.1.1"
 	IPv6 := "2001:db8::1"
+	backendIPv6Prefix := "2001:db8:1::/96"
 
 	createdTime := time.Date(2023, time.August, 17, 12, 0, 0, 0, time.UTC)
 	updatedTime := time.Date(2023, time.August, 17, 14, 0, 0, 0, time.UTC)
@@ -67,6 +68,7 @@ func TestFlattenNodeBalancer(t *testing.T) {
 		Hostname:              &hostname,
 		IPv4:                  &IPv4,
 		IPv6:                  &IPv6,
+		BackendIPv6Prefix:     &backendIPv6Prefix,
 		Created:               &createdTime,
 		Updated:               &updatedTime,
 		Transfer: linodego.NodeBalancerTransfer{
@@ -111,6 +113,7 @@ func TestFlattenNodeBalancer(t *testing.T) {
 	assert.Equal(t, types.StringPointerValue(&hostname), nodeBalancerModel.Hostname)
 	assert.Equal(t, iptypes.NewIPv4AddressPointerValue(&IPv4), nodeBalancerModel.IPv4)
 	assert.Equal(t, types.StringPointerValue(&IPv6), nodeBalancerModel.IPv6)
+	assert.Equal(t, types.StringValue(backendIPv6Prefix), nodeBalancerModel.BackendIPv6Prefix)
 
 	assert.NotNil(t, nodeBalancerModel.Created)
 	assert.NotNil(t, nodeBalancerModel.Updated)
@@ -278,49 +281,65 @@ func TestNodeBalancerCreateOnlyFieldValidators(t *testing.T) {
 
 func TestFlattenNodeBalancerConnectivity(t *testing.T) {
 	connectivity := linodego.NBBackendConnectivityIPv6
+	backendIPv6Prefix := "2600:3c22:1:20:0:3039::/96"
 	nodeBalancer := &linodego.NodeBalancer{
 		ID:                  123,
 		Type:                linodego.NBTypePremium,
 		BackendConnectivity: &connectivity,
+		BackendIPv6Prefix:   &backendIPv6Prefix,
 	}
 
 	model := &NodeBalancerModel{
 		Type:                types.StringUnknown(),
 		BackendConnectivity: types.StringUnknown(),
+		BackendIPv6Prefix:   types.StringUnknown(),
 	}
 	diags := model.Flatten(t.Context(), nodeBalancer, nil, nil, true)
 	assert.False(t, diags.HasError())
 	assert.Equal(t, types.StringValue("premium"), model.Type)
 	assert.Equal(t, types.StringValue("ipv6"), model.BackendConnectivity)
+	assert.Equal(t, types.StringValue(backendIPv6Prefix), model.BackendIPv6Prefix)
 
 	model.Type = types.StringValue("common")
 	model.BackendConnectivity = types.StringValue("vpc")
+	model.BackendIPv6Prefix = types.StringValue("2001:db8::/96")
 	diags = model.Flatten(t.Context(), nodeBalancer, nil, nil, true)
 	assert.False(t, diags.HasError())
 	assert.Equal(t, types.StringValue("common"), model.Type)
 	assert.Equal(t, types.StringValue("vpc"), model.BackendConnectivity)
+	assert.Equal(t, types.StringValue("2001:db8::/96"), model.BackendIPv6Prefix)
 
 	diags = model.Flatten(t.Context(), nodeBalancer, nil, nil, false)
 	assert.False(t, diags.HasError())
 	assert.Equal(t, types.StringValue("premium"), model.Type)
 	assert.Equal(t, types.StringValue("ipv6"), model.BackendConnectivity)
+	assert.Equal(t, types.StringValue(backendIPv6Prefix), model.BackendIPv6Prefix)
 
 	nodeBalancer.BackendConnectivity = nil
+	nodeBalancer.BackendIPv6Prefix = nil
 	diags = model.Flatten(t.Context(), nodeBalancer, nil, nil, false)
 	assert.False(t, diags.HasError())
 	assert.True(t, model.BackendConnectivity.IsNull())
+	assert.True(t, model.BackendIPv6Prefix.IsNull())
 }
 
 func TestFlattenNodeBalancerDataSourceConnectivity(t *testing.T) {
 	connectivity := linodego.NBBackendConnectivityVPC
+	backendIPv6Prefix := "2600:3c22:1:20:0:3039::/96"
 	model := &NodeBalancerDataSourceModel{}
 	diags := model.Flatten(t.Context(), &linodego.NodeBalancer{
 		Type:                linodego.NBTypeEnterprise,
 		BackendConnectivity: &connectivity,
+		BackendIPv6Prefix:   &backendIPv6Prefix,
 	}, nil, nil)
 	assert.False(t, diags.HasError())
 	assert.Equal(t, types.StringValue("enterprise"), model.Type)
 	assert.Equal(t, types.StringValue("vpc"), model.BackendConnectivity)
+	assert.Equal(t, types.StringValue(backendIPv6Prefix), model.BackendIPv6Prefix)
+
+	diags = model.Flatten(t.Context(), &linodego.NodeBalancer{}, nil, nil)
+	assert.False(t, diags.HasError())
+	assert.True(t, model.BackendIPv6Prefix.IsNull())
 }
 
 func TestUpgradeResourceStateValue(t *testing.T) {
