@@ -37,7 +37,10 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityNodeBalancers}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
+		linodego.CapabilityNodeBalancers,
+		linodego.CapabilityPremiumNodeBalancer,
+	}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
