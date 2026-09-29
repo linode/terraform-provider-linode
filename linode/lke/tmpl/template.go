@@ -55,7 +55,7 @@ func ComplexPools(t testing.TB, name, version, region string) string {
 
 func LabelledPools(t testing.TB, name, version, region, poolLabel string) string {
 	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_labelled_pools", TemplateData{Label: name, K8sVersion: version, Region: region, PoolLabel: poolLabel})
+		"lke_cluster_labeled_pools", TemplateData{Label: name, K8sVersion: version, Region: region, PoolLabel: poolLabel})
 }
 
 func Autoscaler(t testing.TB, name, version, region string) string {

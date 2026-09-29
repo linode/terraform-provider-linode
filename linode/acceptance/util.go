@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net"
 	"os"
 	"path/filepath"
 	"slices"
@@ -40,7 +41,7 @@ const (
 
 	runLongTestsEnvVar  = "RUN_LONG_TESTS"
 	skipLongTestMessage = "This test has been marked as a long-running test and is skipped by default. " +
-		"If you would like to run this test, please set the RUN_LONG_TEST environment variable to true."
+		"If you would like to run this test, please set the " + runLongTestsEnvVar + " environment variable to true."
 )
 
 type (
@@ -207,7 +208,7 @@ func GetSSHClient(t testing.TB, user, addr string) (client *ssh.Client) {
 	attempts := 3
 
 	for attempts != 0 {
-		client, err = ssh.Dial("tcp", addr+":22", config)
+		client, err = ssh.Dial("tcp", net.JoinHostPort(addr, "22"), config)
 		if err == nil {
 			break
 		}

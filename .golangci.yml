@@ -5,10 +5,13 @@ run:
 linters:
   default: standard
   enable:
+    - misspell
     - modernize
   settings:
     dupl:
       threshold: 100
+    misspell:
+      locale: US
     errcheck:
       exclude-functions:
         - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceData).Set

@@ -14,10 +14,10 @@ clean:
 
 .PHONY: tflint
 tflint:
+	export GOTOOLCHAIN=go1.25.14; \
 	"$$(cd tools && go tool -n tfproviderlint)" \
 		-AT001=false \
 		-AT004=false \
-		-S006=false \
 		-R018=false \
 		./...
 

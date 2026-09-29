@@ -1,0 +1,7 @@
+{{ define "sshkey_data_missing" }}
+
+data "linode_sshkey" "foobar" {
+    label = "{{.Label}}"
+}
+
+{{ end }}
