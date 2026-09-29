@@ -39,6 +39,14 @@ var DataSourceAttributes = map[string]schema.Attribute{
 		Description: "The region where this NodeBalancer will be deployed.",
 		Computed:    true,
 	},
+	"type": schema.StringAttribute{
+		Description: "The NodeBalancer plan type.",
+		Computed:    true,
+	},
+	"backend_connectivity": schema.StringAttribute{
+		Description: "How this NodeBalancer communicates with backends. May be `undefined` if not configured.",
+		Computed:    true,
+	},
 	"client_conn_throttle": schema.Int64Attribute{
 		Description: "Throttle connections per second (0-20). Set to 0 (zero) to disable throttling.",
 		Computed:    true,
@@ -58,6 +66,11 @@ var DataSourceAttributes = map[string]schema.Attribute{
 	"ipv6": schema.StringAttribute{
 		Description: "The Public IPv6 Address of this NodeBalancer",
 		Computed:    true,
+	},
+	"backend_ipv6_prefix": schema.StringAttribute{
+		Description: "The /96 IPv6 source range used when this NodeBalancer connects to backends. " +
+			"Null if no backend IPv6 prefix is assigned.",
+		Computed: true,
 	},
 	"created": schema.StringAttribute{
 		Description: "When this NodeBalancer was created.",
