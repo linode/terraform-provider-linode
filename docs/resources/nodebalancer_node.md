@@ -73,7 +73,7 @@ The following arguments are supported:
 
 * `config_id` - (Required) The ID of the NodeBalancerConfig to access.
 
-* `address` - (Required) The private IP Address where this backend can be reached. This must be a private IP address.
+* `address` - (Required) The backend IP address and port (`IPv4:PORT` or `[IPv6]:PORT`). IPv4 backends use private IP addresses. IPv6 backends require `backend_connectivity = "ipv6"` on the NodeBalancer.
 
 - - -
 
