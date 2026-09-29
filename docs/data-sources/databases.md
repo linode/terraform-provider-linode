@@ -48,7 +48,7 @@ The following arguments are supported:
 
 * `order_by` - (Optional) The attribute to order the results by. (`version`)
 
-* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `asc`)
+* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `desc`)
 
 ### Filter
 
