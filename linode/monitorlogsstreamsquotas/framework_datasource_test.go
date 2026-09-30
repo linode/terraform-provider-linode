@@ -42,6 +42,11 @@ func TestAccDataSourceMonitorLogsStreamQuotas_basic(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						dataName,
+						tfjsonpath.New("id"),
+						knownvalue.StringExact("monitor_logs_stream_quotas"),
+					),
+					statecheck.ExpectKnownValue(
+						dataName,
 						tfjsonpath.New("quotas"),
 						knownvalue.ListSizeExact(len(quotas)),
 					),

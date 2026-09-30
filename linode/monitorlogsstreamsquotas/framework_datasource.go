@@ -4,9 +4,12 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
+
+const monitorLogsStreamQuotasDataSourceID = "monitor_logs_stream_quotas"
 
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
@@ -43,6 +46,7 @@ func (d *DataSource) Read(
 		return
 	}
 
+	data.ID = types.StringValue(monitorLogsStreamQuotasDataSourceID)
 	data.parseQuotas(quotas)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
