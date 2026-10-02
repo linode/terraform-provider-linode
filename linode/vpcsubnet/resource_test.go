@@ -226,10 +226,9 @@ func TestAccResourceVPCSubnet_dualStack(t *testing.T) {
 }
 
 func TestAccResourceVPCSubnet_create_InvalidLabel_basic(t *testing.T) {
-	t.Skip("Reason: defect ARB-8019")
 	t.Parallel()
 
-	subnetLabel := acctest.RandomWithPrefix("tf-test") + "__"
+	subnetLabel := acctest.RandomWithPrefix("tf-test") + "!?#"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -238,19 +237,18 @@ func TestAccResourceVPCSubnet_create_InvalidLabel_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.Basic(t, subnetLabel, "172.16.0.0/24", testRegion),
-				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and dashes"),
+				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, underscores, dashes and\\s+periods"),
 			},
 		},
 	})
 }
 
 func TestAccResourceVPCSubnet_update_invalidLabel(t *testing.T) {
-	t.Skip("Reason: defect ARB-8019")
 	t.Parallel()
 	resName := "linode_vpc_subnet.foobar"
 	subnetLabel := acctest.RandomWithPrefix("tf-test")
 
-	invalidLabel := "invalid_test_label"
+	invalidLabel := "invalid_test_label_!?#"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -268,7 +266,7 @@ func TestAccResourceVPCSubnet_update_invalidLabel(t *testing.T) {
 			},
 			{
 				Config:      tmpl.Updates(t, invalidLabel, "192.168.0.0/26", testRegion),
-				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and dashes"),
+				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, underscores, dashes and\\s+periods"),
 			},
 		},
 	})
