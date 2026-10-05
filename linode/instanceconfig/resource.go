@@ -309,7 +309,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if d.HasChange("interface") {
 		// Linode Interfaces (the new networking model) is incompatible with config-profile-level
 		// interfaces. Attempting to update interfaces on such an instance results in a 400 error.
-		if inst.InterfaceGeneration == linodego.GenerationLinode {
+		// Note: this only rejects the change if interface blocks are still configured, so that
+		// users migrating to Linode Interfaces can remove their legacy interface blocks.
+		if newIfaces := d.Get("interface").([]any); len(newIfaces) > 0 &&
+			inst.InterfaceGeneration == linodego.GenerationLinode {
 			return diag.Errorf(
 				"the \"interface\" attribute cannot be used in linode_instance_config for Linode %d "+
 					"because it is configured to use Linode Interfaces. "+

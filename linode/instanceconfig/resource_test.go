@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -352,6 +353,83 @@ func TestAccResourceInstanceConfig_provisioner(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
+// TestAccResourceInstanceConfig_linodeInterfaceRejected verifies that creating a
+// linode_instance_config with an "interface" block against a Linode that is configured
+// to use Linode Interfaces (the new networking model) is rejected with a clear error.
+func TestAccResourceInstanceConfig_linodeInterfaceRejected(t *testing.T) {
+	t.Parallel()
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(64)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.LinodeInterfacesRejected(t, instanceName, testRegion, rootPass),
+				ExpectError: regexp.MustCompile(
+					"the \"interface\" attribute cannot be used in linode_instance_config",
+				),
+			},
+		},
+	})
+}
+
+// TestAccResourceInstanceConfig_linodeInterfaceRemovalAllowed verifies that a
+// linode_instance_config can have its legacy "interface" blocks removed after the
+// underlying Linode has been migrated to Linode Interfaces, even though adding or
+// keeping such blocks on a migrated Linode is rejected.
+func TestAccResourceInstanceConfig_linodeInterfaceRemovalAllowed(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+
+	resName := "linode_instance_config.foobar"
+	instanceResName := "linode_instance.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(64)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.LegacyWithInterface(t, instanceName, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					acceptance.CheckInstanceExists(instanceResName, &instance),
+					resource.TestCheckResourceAttr(resName, "interface.#", "1"),
+				),
+			},
+			{
+				PreConfig: func() {
+					client, err := acceptance.GetTestClient()
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					if _, err := client.UpgradeInterfaces(
+						context.Background(), instance.ID, linodego.LinodeInterfacesUpgradeOptions{
+							DryRun: linodego.Pointer(false),
+						},
+					); err != nil {
+						t.Fatalf("failed to migrate instance to Linode Interfaces: %v", err)
+					}
+				},
+				Config: tmpl.LegacyInterfaceRemoved(t, instanceName, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					acceptance.CheckInstanceExists(instanceResName, &instance),
+					resource.TestCheckResourceAttr(resName, "interface.#", "0"),
+				),
 			},
 		},
 	})
