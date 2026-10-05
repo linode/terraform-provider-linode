@@ -176,6 +176,39 @@ func VPCInterfaceIPv61(t testing.TB, label, region string, rootPass string) stri
 	)
 }
 
+func LinodeInterfacesRejected(t testing.TB, label, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"instance_config_linode_interfaces_rejected", TemplateData{
+			Label:    label,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+}
+
+func LegacyWithInterface(t testing.TB, label, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"instance_config_legacy_with_interface", TemplateData{
+			Label:    label,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+}
+
+func LegacyInterfaceRemoved(t testing.TB, label, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"instance_config_legacy_interface_removed", TemplateData{
+			Label:    label,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+}
+
 func DeviceBlockExt(t testing.TB, label, instanceType, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(
 		t,

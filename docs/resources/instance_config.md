@@ -167,7 +167,7 @@ The following arguments are supported:
 
 * [`helpers`](#helpers) - (Optional, Block List) Helpers enabled when booting to this Linode Config.
 
-* [`interface`](#interface) - (Optional, Block List) An array of Network Interfaces to use for this Configuration Profile.
+* [`interface`](#interface) - (Optional, Block List) An array of Network Interfaces to add to this Linode's Configuration Profile. **NOTE: This attribute is not supported when the Linode instance is configured to use Linode Interfaces (`interface_generation = "linode"`). Use the `linode_interface` resource to manage interfaces for such instances.**
 
 * `kernel` - (Optional) A Kernel ID to boot a Linode with. Default is `linode/latest-64bit`. Examples are `linode/latest-64bit`, `linode/grub2`, `linode/direct-disk`, etc. See all kernels [here](https://api.linode.com/v4/linode/kernels). Note that this is a paginated API endpoint ([docs](https://techdocs.akamai.com/linode-api/reference/get-kernels)).
 
