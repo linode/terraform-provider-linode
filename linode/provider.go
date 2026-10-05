@@ -143,10 +143,6 @@ func Provider() *schema.Provider {
 			},
 		},
 
-		DataSourcesMap: map[string]*schema.Resource{
-			"linode_instances": instance.DataSource(),
-		},
-
 		ResourcesMap: map[string]*schema.Resource{
 			"linode_database_access_controls": databaseaccesscontrols.Resource(),
 			"linode_domain":                   domain.Resource(),
