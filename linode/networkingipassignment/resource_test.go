@@ -32,7 +32,7 @@ func init() {
 	testRegion = region
 }
 
-func TestAccResourceNetworkingIPsAssign(t *testing.T) {
+func TestAccResourceNetworkingIPsAssign_basic(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "linode_networking_ip_assignment.test"

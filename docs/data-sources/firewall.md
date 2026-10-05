@@ -27,17 +27,19 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `label` - The label for the firewall.
 
 * `tags` - The tags applied to the firewall. Tags are case-insensitive and are for organizational purposes only.
 
 * `disabled` - If true, the firewall is inactive.
 
-* [`inbound`](#inbound-and-outbound) - A firewall rule that specifies what inbound network traffic is allowed.
+* [`inbound`](#inbound-and-outbound) - (Read-Only Object List) A firewall rule that specifies what inbound network traffic is allowed. Referenced with an index (e.g. `inbound.0.action`).
 
 * `inbound_policy` - The default behavior for inbound traffic. (`ACCEPT`, `DROP`)
 
-* [`outbound`](#inbound-and-outbound) - A firewall rule that specifies what outbound network traffic is allowed.
+* [`outbound`](#inbound-and-outbound) - (Read-Only Object List) A firewall rule that specifies what outbound network traffic is allowed. Referenced with an index (e.g. `outbound.0.action`).
 
 * `outbound_policy` - The default behavior for outbound traffic. (`ACCEPT`, `DROP`)
 
@@ -57,7 +59,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `updated` - When this firewall was last updated.
 
-* [`devices`](#devices) - The devices governed by the Firewall.
+* [`devices`](#devices) - (Read-Only Object List) The devices governed by the Firewall. Referenced with an index (e.g. `devices.0.id`).
 
 ### inbound and outbound
 

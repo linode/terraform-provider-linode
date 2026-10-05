@@ -31,9 +31,11 @@ resource "linode_networking_ip_assignment" "foobar" {
 
 ## Argument Reference
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `region` - (Required) The region where the IP addresses will be assigned.
 
-* `assignments` - (Required) A list of IP/Linode assignments to apply.
+* `assignments` - (Required, Nested Attribute List) A list of IP/Linode assignments to apply.
 
 ## assignments
 
@@ -47,13 +49,13 @@ The following attributes can be defined under each entry in the `assignments` fi
 
 * `id` - The unique ID of this resource.
 
-* `assignments` - The list of IP/Linode assignments. In addition to the configurable arguments above, each entry exposes the following computed attributes after assignment:
+* `assignments` - (Nested Attribute List) The list of IP/Linode assignments. In addition to the configurable arguments above, each entry exposes the following computed attributes after assignment:
 
   * `reserved` - Whether this IP address is a reserved IP.
 
   * `tags` - A set of tags associated with this IP address.
 
-  * `assigned_entity` - The entity this IP address has been assigned to.
+  * `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. Referenced directly (e.g. `assigned_entity.id`).
 
     * `id` - The ID of the entity.
 

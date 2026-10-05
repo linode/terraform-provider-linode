@@ -40,7 +40,9 @@ output "label" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Reserved IP types that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Reserved IP types that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -58,13 +60,19 @@ The following arguments are supported:
 
 Each Reserved IP type will be stored in the `types` attribute and will export the following attributes:
 
+* `types` - (Nested Attribute List) Reserved IP types matching the query.
+
 * `id` - The unique ID of this Reserved IP type (e.g. `reserved-ip`).
 
 * `label` - The human-readable label for this Reserved IP type.
 
+* `price` - (Read-Only Object List) Pricing information for this Reserved IP type. Referenced with an index (e.g. `price.0.hourly`).
+
 * `price.0.hourly` - Cost (in US dollars) per hour.
 
 * `price.0.monthly` - Cost (in US dollars) per month.
+
+* `region_prices` - (Read-Only Object List) Region-specific pricing information for this Reserved IP type. Referenced with an index (e.g. `region_prices.0.hourly`).
 
 * `region_prices.*.id` - The ID of the region this price entry applies to.
 

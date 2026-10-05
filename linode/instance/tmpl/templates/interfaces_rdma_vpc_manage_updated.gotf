@@ -1,0 +1,23 @@
+{{ define "interfaces_rdma_vpc_manage_updated" }}
+
+{{ template "interfaces_rdma_vpc_base" . }}
+
+# Update the managed RDMA VPC interface to point at the second RDMA subnet
+# (declared in the base) and assign a specific primary IPv4 address within it.
+resource "linode_interface" "foobar_iface" {
+    linode_id = linode_instance.foobar.id
+
+    rdma_vpc = {
+        subnet_id = linode_vpc_subnet.rdma2.id
+        ipv4 = {
+            addresses = [
+                {
+                    address = "{{.IPv4Address}}"
+                    primary = true
+                }
+            ]
+        }
+    }
+}
+
+{{ end }}

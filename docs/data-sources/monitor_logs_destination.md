@@ -31,6 +31,8 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `label` - The label for this logs destination.
 
 * `type` - The type of this logs destination. One of: `akamai_object_storage`, `custom_https`.
@@ -47,7 +49,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `version` - The version of this logs destination.
 
-* [`details`](#details) - The details returned by the API. Write-only fields are not included.
+* [`details`](#details) - (Nested Attribute) The details returned by the API. Write-only fields are not included. Referenced directly (e.g. `details.access_key_id`).
 
 ### details
 

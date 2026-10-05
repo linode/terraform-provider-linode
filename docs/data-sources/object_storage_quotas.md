@@ -26,7 +26,9 @@ data "linode_object_storage_quotas" "max_buckets_quotas" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Object Storage quotas that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Object Storage quotas that meet certain requirements.
 
 ### Filter
 
@@ -39,6 +41,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode Object Storage quota will be stored in the `quotas` attribute and will export the following attributes:
+
+* `quotas` - (Nested Attribute List) The list of Object Storage quotas.
 
 * `quota_id` - The ID of the Object Storage quota.
 

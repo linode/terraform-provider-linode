@@ -29,6 +29,8 @@ The following arguments are supported:
 
 The Linode Object Storage quota data source exports the following attributes:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `quota_name` - The name of the Object Storage quota.
 
 * `endpoint_type` - The type of the S3 endpoint of the Object Storage.
@@ -45,7 +47,7 @@ The Linode Object Storage quota data source exports the following attributes:
 
 * `has_usage` - Whether usage data is available for the Object Storage quota.
 
-* `quota_usage` - The usage data for a specific Object Storage related quota on your account. This value is `null` when `has_usage` is `false`. For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-object-storage-quota-usage).
+* `quota_usage` - (Read-Only Object) The usage data for a specific Object Storage related quota on your account. This value is `null` when `has_usage` is `false`. For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-object-storage-quota-usage). Referenced directly (e.g. `quota_usage.quota_limit`).
 
   * `quota_limit` - The maximum quantity allowed by the quota.
 

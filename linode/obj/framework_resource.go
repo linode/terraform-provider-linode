@@ -56,6 +56,9 @@ func (r *Resource) Create(
 	}
 
 	plan.ComputeEndpointIfUnknown(ctx, client, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	s3client, teardownKeys := getS3ClientFromModel(
 		ctx, client, config, plan, READ_WRITE_PERMISSION, nil, &resp.Diagnostics,

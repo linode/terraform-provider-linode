@@ -27,6 +27,8 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `k8s_version` - The Kubernetes version for this Kubernetes cluster in the format of `major.minor` (e.g. `1.17`).
 
 * `region` - This Kubernetes cluster's location.
@@ -53,7 +55,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `stack_type` - The networking stack type of the Kubernetes cluster.
 
-* `pools` - Node pools associated with this cluster.
+* `pools` - (Nested Attribute List) Node pools associated with this cluster.
 
   * `id` - The ID of the Node Pool.
 
@@ -75,7 +77,7 @@ In addition to all arguments above, the following attributes are exported:
 
   * `update_strategy` - The strategy for updating the Node Pool k8s version. For LKE enterprise only and may not currently available to all users even under v4beta.
 
-  * `nodes` - The nodes in the Node Pool.
+  * `nodes` - (Nested Attribute List) The nodes in the Node Pool.
 
     * `id` - The ID of the node.
 
@@ -83,7 +85,7 @@ In addition to all arguments above, the following attributes are exported:
 
     * `status` - The status of the node. (`ready`, `not_ready`)
 
-  * `autoscaler` - The configuration options for the autoscaler. This field only contains an autoscaler configuration if autoscaling is enabled on this cluster.
+  * `autoscaler` - (Nested Attribute List) The configuration options for the autoscaler. This field only contains an autoscaler configuration if autoscaling is enabled on this cluster.
 
     * `enabled` - Whether autoscaling is enabled for this Node Pool. Defaults to false.
 
@@ -91,7 +93,13 @@ In addition to all arguments above, the following attributes are exported:
 
     * `max` - The maximum number of nodes to autoscale to.
 
-  * `taints` - Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods.
+  * `disks` - (Nested Attribute List) This Node Pool’s custom disk layout.
+
+    * `size` - The size of this custom disk partition in MB.
+
+    * `type` - This custom disk partition’s filesystem type.
+
+  * `taints` - (Read-Only Object Set) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
     * `effect` - The Kubernetes taint effect. The accepted values are `NoSchedule`, `PreferNoSchedule` and `NoExecute`. For the descriptions of these values, see [Kubernetes Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/).
 
@@ -101,17 +109,17 @@ In addition to all arguments above, the following attributes are exported:
 
   * `labels` - Key-value pairs added as labels to nodes in the node pool. Labels help classify your nodes and to easily select subsets of objects.
 
-* `control_plane` - The settings for the Kubernetes Control Plane.
+* `control_plane` - (Nested Attribute List) The settings for the Kubernetes Control Plane.
 
   * `high_availability` - Whether High Availability is enabled for the cluster Control Plane.
   
   * `audit_logs_enabled` - Enables audit logs on the cluster's control plane.
 
-  * `acl` - The ACL configuration for an LKE cluster's control plane.
+  * `acl` - (Nested Attribute List) The ACL configuration for an LKE cluster's control plane.
 
     * `enabled` - The default policy. A value of true means a default policy of DENY. A value of false means a default policy of ALLOW.
 
-    * `addresses` - A list of ip addresses to allow.
+    * `addresses` - (Nested Attribute List) A list of ip addresses to allow.
 
       * `ipv4` - A set of individual ipv4 addresses or CIDRs to ALLOW.
 

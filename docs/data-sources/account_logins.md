@@ -35,7 +35,9 @@ output "login_ids" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode account logins that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode account logins that meet certain requirements.
 
 ### Filter
 
@@ -48,6 +50,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode account login will be stored in the `logins` attribute and will export the following attributes:
+
+* `logins` - (Nested Attribute List) The list of Linode account logins.
 
 * `id` - The unique ID of this login object.
 

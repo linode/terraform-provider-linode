@@ -38,11 +38,13 @@ data "linode_monitor_alert_definition_entities" "test" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `service_type` - (Required) The service type for the alert definition (e.g., `dbaas`).
 
 * `alert_id` - (Required) The unique identifier for the alert definition.
 
-* [`filter`](#filter) - (Optional) A set of filters used to select entities that meet certain requirements.
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select entities that meet certain requirements.
 
 ### Filter
 
@@ -55,6 +57,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each entity will be stored in the `entities` attribute and will export the following attributes:
+
+* `entities` - (Nested Attribute List) The returned list of entities associated with the alert definition. Referenced by index (e.g. `entities[0].id`).
 
 * `id` - The unique identifier for this entity.
 

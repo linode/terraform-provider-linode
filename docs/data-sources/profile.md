@@ -25,6 +25,8 @@ There are no supported arguments because the provider `token` can only access th
 
 The Linode Profile resource exports the following attributes:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `email` - The profile email address. This address will be used for communication with Linode as necessary.
 
 * `timezone` - The profile's preferred timezone. This is not used by the API, and is for the benefit of clients only. All times the API returns are in UTC.
@@ -43,7 +45,7 @@ The Linode Profile resource exports the following attributes:
 
 * `restricted` - If true, the user has restrictions on what can be accessed on the Account.
 
-* `referrals` - Credit Card information associated with this Account.
+* `referrals` - (Read-Only Object List) Credit Card information associated with this Account. Referenced with an index (e.g. `referrals.0.code`).
 
 * `referrals.total` - The number of users who have signed up with the referral code.
 

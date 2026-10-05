@@ -40,7 +40,9 @@ output "type_id" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode Node Balancer types that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode Node Balancer types that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -58,13 +60,19 @@ The following arguments are supported:
 
 Each Linode Node Balancer type will export the following attributes:
 
+* `types` - (Nested Attribute List) The returned list of NodeBalancer types. Referenced by index (e.g. `types[0].id`).
+
 * `id` - The ID representing the Node Balancer type.
 
 * `label` - The Node Balancer type label is for display purposes only.
 
+* `price` - (Read-Only Object List) Pricing information for this Node Balancer type. Referenced with an index (e.g. `price.0.hourly`).
+
 * `price.0.hourly` -  Cost (in US dollars) per hour.
 
 * `price.0.monthly` - Cost (in US dollars) per month.
+
+* `region_prices` - (Read-Only Object List) Regional pricing information for this Node Balancer type. Referenced with an index (e.g. `region_prices.0.hourly`).
 
 * `region_prices.*.id` - The Region ID for these prices.
 

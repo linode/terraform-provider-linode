@@ -6,12 +6,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"maps"
-	"slices"
 	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -102,12 +101,12 @@ func TestAccResourceObjectKey_all_regions(t *testing.T) {
 	}
 
 	// Extract unique regions from endpoints
-	regionSet := make(helper.StringSet)
+	regionSet := set.New[string](len(endpoints))
 	for _, endpoint := range endpoints {
-		regionSet[endpoint.Region] = helper.ExistsInSet
+		regionSet.Insert(endpoint.Region)
 	}
 
-	regions := slices.Collect(maps.Keys(regionSet))
+	regions := regionSet.Slice()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

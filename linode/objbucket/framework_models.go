@@ -6,7 +6,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/obj"
 )
+
+var _ obj.BucketAccessor = BaseModel{}
 
 type BaseModel struct {
 	ID           types.String      `tfsdk:"id"`
@@ -18,6 +21,18 @@ type BaseModel struct {
 	Objects      types.Int64       `tfsdk:"objects"`
 	Size         types.Int64       `tfsdk:"size"`
 	Created      timetypes.RFC3339 `tfsdk:"created"`
+}
+
+func (data BaseModel) ObjectStorageKeys() obj.ObjectKeys {
+	return obj.ObjectKeys{}
+}
+
+func (data BaseModel) BucketLabel() string {
+	return data.Label.ValueString()
+}
+
+func (data BaseModel) BucketRegion() string {
+	return data.Region.ValueString()
 }
 
 type DataSourceModel struct {

@@ -27,6 +27,8 @@ data "linode_region" "region" {
 
 In addition to all arguments above, the following attributes are exported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `country` - The country the region resides in.
 
 * `label` - Detailed location information for this Region, including city, state or region, and country.
@@ -37,11 +39,11 @@ In addition to all arguments above, the following attributes are exported:
 
 * `site_type` - The type of this region.
 
-* [`resolvers`] (#resolvers) - An object representing the IP addresses for this region's DNS resolvers.
+* [`resolvers`] (#resolvers) - (Nested Attribute List) An object representing the IP addresses for this region's DNS resolvers.
 
-* [`placement_group_limits`] (#placement-group-limits) - An object representing the limits relating to placement groups in this region.
+* [`placement_group_limits`] (#placement-group-limits) - (Read-Only Object List) An object representing the limits relating to placement groups in this region. Referenced with an index (e.g. `placement_group_limits.0.maximum_pgs_per_customer`).
 
-* [`monitors`] (#monitors) - An object representing the monitor services available in a region.
+* [`monitors`] (#monitors) - (Read-Only Object) An object representing the monitor services available in a region. Referenced directly (e.g. `monitors.alerts`).
 
 ### Resolvers
 

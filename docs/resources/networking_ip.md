@@ -44,6 +44,8 @@ The following arguments are only available when reserving an IP address:
 
 In addition to all arguments above, the following attributes are exported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `id` - The unique identifier of this IP address.
 
 * `address` - The IP address.
@@ -58,7 +60,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `tags` - A set of tags associated with this IP address.
 
-* `assigned_entity` - The entity this IP address has been assigned to. This is null if the address is not assigned to an entity.
+* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is null if the address is not assigned to an entity. Referenced directly (e.g. `assigned_entity.id`).
 
   * `id` - The ID of the entity.
 
@@ -68,7 +70,7 @@ In addition to all arguments above, the following attributes are exported:
 
   * `url` - The URL of the entity.
 
-* `vpc_nat_1_1` - Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.
+* `vpc_nat_1_1` - (Read-Only Object) Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet. Referenced directly (e.g. `vpc_nat_1_1.address`).
 
   * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
 

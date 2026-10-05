@@ -74,6 +74,13 @@ func (r *Resource) Create(
 		}
 	}
 
+	if !data.GroupBy.IsUnknown() && !data.GroupBy.IsNull() {
+		resp.Diagnostics.Append(data.GroupBy.ElementsAs(ctx, &createOpts.GroupBy, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	if !data.TriggerConditions.IsUnknown() && !data.TriggerConditions.IsNull() {
 		createOpts.TriggerConditions = flattenTriggerConditions(ctx, data.TriggerConditions, &resp.Diagnostics)
 	}
@@ -211,7 +218,8 @@ func (r *Resource) Update(
 		state.EntityIDs.Equal(plan.EntityIDs) &&
 		state.ChannelIDs.Equal(plan.ChannelIDs) &&
 		state.Status.Equal(plan.Status) &&
-		state.Regions.Equal(plan.Regions)
+		state.Regions.Equal(plan.Regions) &&
+		state.GroupBy.Equal(plan.GroupBy)
 
 	if !isEqual {
 		severity := helper.FrameworkSafeInt64ToInt(plan.Severity.ValueInt64(), &resp.Diagnostics)
@@ -237,6 +245,13 @@ func (r *Resource) Update(
 
 		if !plan.Regions.IsUnknown() && !plan.Regions.IsNull() {
 			resp.Diagnostics.Append(plan.Regions.ElementsAs(ctx, &updateOpts.Regions, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+		}
+
+		if !plan.GroupBy.IsUnknown() && !plan.GroupBy.IsNull() {
+			resp.Diagnostics.Append(plan.GroupBy.ElementsAs(ctx, &updateOpts.GroupBy, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}

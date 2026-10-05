@@ -170,7 +170,7 @@ func (data *FirewallFilterModel) parseFirewalls(
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	result := make([]FirewallModel, len(firewalls))
+	result := make([]FirewallModel, 0, len(firewalls))
 
 	for i := range firewalls {
 		var fwData FirewallModel
@@ -179,19 +179,27 @@ func (data *FirewallFilterModel) parseFirewalls(
 
 		devices, err := client.ListFirewallDevices(ctx, fw.ID, nil)
 		if err != nil {
+			if linodego.IsNotFound(err) {
+				continue
+			}
+
 			diags.AddError("Failed to list Firewall devices", err.Error())
 			return diags
 		}
 
 		rules, err := client.GetFirewallRules(ctx, fw.ID)
 		if err != nil {
+			if linodego.IsNotFound(err) {
+				continue
+			}
+
 			diags.AddError("Failed to get Firewall rules", err.Error())
 			return diags
 		}
 
 		fwData.parseFirewall(fw, *rules, devices)
 
-		result[i] = fwData
+		result = append(result, fwData)
 	}
 
 	data.Firewalls = result

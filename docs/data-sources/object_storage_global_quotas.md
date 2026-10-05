@@ -26,7 +26,9 @@ data "linode_object_storage_global_quotas" "keys" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Object Storage global quotas that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Object Storage global quotas that meet certain requirements.
 
 ### Filter
 
@@ -39,6 +41,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode Object Storage global quota will be stored in the `quotas` attribute and will export the following attributes:
+
+* `quotas` - (Nested Attribute List) Object Storage global quotas matching the query.
 
 * `quota_id` - The ID of the Object Storage global quota.
 

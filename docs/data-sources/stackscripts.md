@@ -37,9 +37,11 @@ output "stackscript_id" {
 
 The following arguments are supported:
 
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
 * `latest` - (Optional) If true, only the latest StackScript will be returned. StackScripts without a valid `created` field are not included in the result.
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode StackScripts that meet certain requirements.
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode StackScripts that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -56,6 +58,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode StackScript will be stored in the `stackscripts` attribute and will export the following attributes:
+
+* `stackscripts` - (Nested Attribute List) The returned list of StackScripts. Referenced by index (e.g. `stackscripts[0].id`).
 
 * `id` - The unique ID of the StackScript.
 
@@ -83,7 +87,7 @@ Each Linode StackScript will be stored in the `stackscripts` attribute and will 
 
 * `updated` - The date this StackScript was updated.
 
-* `user_defined_fields` - This is a list of fields defined with a special syntax inside this StackScript that allow for supplying customized parameters during deployment.
+* `user_defined_fields` - (Read-Only Object List) This is a list of fields defined with a special syntax inside this StackScript that allow for supplying customized parameters during deployment. Referenced with an index (e.g. `user_defined_fields.0.default`).
 
   * `label` - A human-readable label for the field that will serve as the input prompt for entering the value during deployment.
 
