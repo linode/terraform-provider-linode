@@ -56,7 +56,7 @@ func (data *DataSourceModel) FlattenTaggedObjects(
 			}
 		default:
 			diags.AddWarning("Unknown tagged object type",
-				fmt.Sprintf("tagged object type %q is not recognised; ID will be empty", obj.Type))
+				fmt.Sprintf("tagged object type %q is not recognized; ID will be empty", obj.Type))
 			m.ID = types.StringValue("")
 		}
 

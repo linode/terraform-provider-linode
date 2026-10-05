@@ -117,7 +117,7 @@ func (f Config) OrderBySchema() schema.StringAttribute {
 func (f Config) GenerateID(filters []FilterModel) (types.String, diag.Diagnostic) {
 	jsonMap := make([]map[string]any, len(filters))
 
-	// Terraform types cannot be marshalled directly into JSON,
+	// Terraform types cannot be marshaled directly into JSON,
 	// so we should convert them into their underlying primitives.
 	for i, filter := range filters {
 		values := make([]string, len(filter.Values))

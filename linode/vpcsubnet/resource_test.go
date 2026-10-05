@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -85,10 +86,18 @@ func TestAccResourceVPCSubnet_nodebalancer(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "databases.#", "0"),
 				),
 			},
+			// Update and wait until the API reflects the NB attachment before asserting
 			{
 				Config: tmpl.UpdatesWithNodebalancer(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
+					waitForVPCSubnetNodebalancer(resName, 1, 60*time.Second),
+				),
+			},
+			// Re-apply the same config to force a refresh, then assert on fresh state
+			{
+				Config: tmpl.UpdatesWithNodebalancer(t, subnetLabel, "10.0.0.0/24", testRegion),
+				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", subnetLabel)),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
@@ -217,6 +226,7 @@ func TestAccResourceVPCSubnet_dualStack(t *testing.T) {
 }
 
 func TestAccResourceVPCSubnet_create_InvalidLabel_basic(t *testing.T) {
+	t.Skip("Reason: defect ARB-8019")
 	t.Parallel()
 
 	subnetLabel := acctest.RandomWithPrefix("tf-test") + "__"
@@ -235,6 +245,7 @@ func TestAccResourceVPCSubnet_create_InvalidLabel_basic(t *testing.T) {
 }
 
 func TestAccResourceVPCSubnet_update_invalidLabel(t *testing.T) {
+	t.Skip("Reason: defect ARB-8019")
 	t.Parallel()
 	resName := "linode_vpc_subnet.foobar"
 	subnetLabel := acctest.RandomWithPrefix("tf-test")

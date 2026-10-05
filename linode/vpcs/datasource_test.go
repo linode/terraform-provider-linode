@@ -3,9 +3,11 @@
 package vpcs_test
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -16,6 +18,50 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v4/linode/vpcs/tmpl"
 )
+
+// preConfigVPCPoll returns a PreConfig function that waits for a VPC with the
+// given label to be returned by the list endpoint.
+func preConfigVPCPoll(t testing.TB, vpcLabel string) func() {
+	return func() {
+		client, err := acceptance.GetTestClient()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := waitForVPCWithLabel(client, vpcLabel, 60); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+// waitForVPCWithLabel polls the list endpoint until a VPC with the given label
+// is returned.
+func waitForVPCWithLabel(client *linodego.Client, label string, timeoutSeconds int) (*linodego.VPC, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeoutSeconds))
+	defer cancel()
+
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			vpcs, err := client.ListVPCs(ctx,
+				&linodego.ListOptions{Filter: fmt.Sprintf("{\"label\": \"%s\"}", label)})
+			if err != nil {
+				return nil, err
+			}
+
+			for i := range vpcs {
+				if vpcs[i].Label == label {
+					return &vpcs[i], nil
+				}
+			}
+
+		case <-ctx.Done():
+			return nil, fmt.Errorf("Error waiting for VPC %s: %w", label, ctx.Err())
+		}
+	}
+}
 
 func TestAccDataSourceVPCs_basic_smoke(t *testing.T) {
 	t.Parallel()
@@ -65,6 +111,10 @@ func TestAccDataSourceVPCs_dualStack(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataDualStack(t, vpcLabel, targetRegion),
+			},
+			{
+				PreConfig: preConfigVPCPoll(t, vpcLabel),
+				Config:    tmpl.DataDualStack(t, vpcLabel, targetRegion),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -155,6 +205,10 @@ func TestAccDataSourceVPCs_ipv4(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataIPv4(t, vpcLabel, targetRegion, "10.0.0.0/8"),
+			},
+			{
+				PreConfig: preConfigVPCPoll(t, vpcLabel),
+				Config:    tmpl.DataIPv4(t, vpcLabel, targetRegion, "10.0.0.0/8"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resourceName,

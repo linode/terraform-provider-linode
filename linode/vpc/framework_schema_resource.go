@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/customtypes"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/stringplanmodifiers"
+	"github.com/linode/terraform-provider-linode/v4/linode/vpcsubnet"
 )
 
 var ResourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
@@ -50,6 +51,62 @@ var ResourceSchemaIPv4NestedObject = schema.NestedAttributeObject{
 	},
 }
 
+var ResourceSchemaSubnetIPv6NestedObject = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"range": schema.StringAttribute{
+			Description: "An IPv6 range allocated to this subnet.",
+			Computed:    true,
+		},
+	},
+}
+
+var ResourceSchemaSubnetNestedObject = schema.NestedAttributeObject{
+	Attributes: map[string]schema.Attribute{
+		"id": schema.Int64Attribute{
+			Description: "The id of the VPC Subnet.",
+			Computed:    true,
+		},
+		"label": schema.StringAttribute{
+			Description: "The label of the VPC Subnet.",
+			Computed:    true,
+		},
+		"ipv4": schema.StringAttribute{
+			Description: "The IPv4 range of this subnet in CIDR format.",
+			Computed:    true,
+		},
+		"ipv6": schema.ListNestedAttribute{
+			Description:  "The IPv6 ranges of this subnet.",
+			Computed:     true,
+			NestedObject: ResourceSchemaSubnetIPv6NestedObject,
+		},
+		"linodes": schema.ListAttribute{
+			Description: "A list of Linodes assigned to this subnet.",
+			Computed:    true,
+			ElementType: vpcsubnet.LinodeObjectType,
+		},
+		"databases": schema.ListAttribute{
+			Description: "A list of Managed Databases assigned to this subnet.",
+			Computed:    true,
+			ElementType: vpcsubnet.DatabaseObjectType,
+		},
+		"nodebalancers": schema.ListAttribute{
+			Description: "A list of NodeBalancers assigned to this subnet.",
+			Computed:    true,
+			ElementType: vpcsubnet.NodebalancerObjectType,
+		},
+		"created": schema.StringAttribute{
+			Description: "The date and time when the VPC Subnet was created.",
+			Computed:    true,
+			CustomType:  timetypes.RFC3339Type{},
+		},
+		"updated": schema.StringAttribute{
+			Description: "The date and time when the VPC Subnet was updated.",
+			Computed:    true,
+			CustomType:  timetypes.RFC3339Type{},
+		},
+	},
+}
+
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
@@ -70,14 +127,6 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.RequiresReplace(),
 			},
 		},
-		"description": schema.StringAttribute{
-			Description: "The user-defined description of this VPC.",
-			Optional:    true,
-			Computed:    true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
-		},
 		"vpc_type": schema.StringAttribute{
 			Description: "The type of the VPC. Can be either 'regular' or 'rdma'. " +
 				"Defaults to 'regular'. The 'rdma' type may not be available to all users.",
@@ -86,6 +135,14 @@ var frameworkResourceSchema = schema.Schema{
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 				stringplanmodifier.RequiresReplace(),
+			},
+		},
+		"description": schema.StringAttribute{
+			Description: "The user-defined description of this VPC.",
+			Optional:    true,
+			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"ipv6": schema.ListNestedAttribute{
@@ -105,6 +162,14 @@ var frameworkResourceSchema = schema.Schema{
 				listplanmodifier.UseStateForUnknown(),
 			},
 			NestedObject: ResourceSchemaIPv4NestedObject,
+		},
+		"subnets": schema.ListNestedAttribute{
+			Description: "A list of subnets under this VPC.",
+			Computed:    true,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+			},
+			NestedObject: ResourceSchemaSubnetNestedObject,
 		},
 		"created": schema.StringAttribute{
 			Description: "The date and time when the VPC was created.",

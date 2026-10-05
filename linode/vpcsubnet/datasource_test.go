@@ -5,6 +5,7 @@ package vpcsubnet_test
 import (
 	"log"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -115,6 +116,14 @@ func TestAccDataSourceVPCSubnet_nodebalancer(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
+			// Wait for NB to be created and visible via API
+			{
+				Config: tmpl.DataNodeBalancer(t, subnetLabel, "10.0.0.0/24", testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					waitForVPCSubnetNodebalancer(resourceName, 1, 60*time.Second),
+				),
+			},
+			// Retrieve and assert NB using data source
 			{
 				Config: tmpl.DataNodeBalancer(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(

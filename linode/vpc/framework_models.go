@@ -5,11 +5,13 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/customtypes"
+	"github.com/linode/terraform-provider-linode/v4/linode/vpcsubnet"
 )
 
 /*
@@ -25,6 +27,99 @@ type BaseModel struct {
 	Created     timetypes.RFC3339 `tfsdk:"created"`
 	Updated     timetypes.RFC3339 `tfsdk:"updated"`
 	IPv4        types.List        `tfsdk:"ipv4"`
+	Subnets     types.List        `tfsdk:"subnets"`
+}
+
+type SubnetModel struct {
+	ID            types.Int64       `tfsdk:"id"`
+	Label         types.String      `tfsdk:"label"`
+	IPv4          types.String      `tfsdk:"ipv4"`
+	IPv6          types.List        `tfsdk:"ipv6"`
+	Linodes       types.List        `tfsdk:"linodes"`
+	Databases     types.List        `tfsdk:"databases"`
+	Nodebalancers types.List        `tfsdk:"nodebalancers"`
+	Created       timetypes.RFC3339 `tfsdk:"created"`
+	Updated       timetypes.RFC3339 `tfsdk:"updated"`
+}
+
+type SubnetModelIPv6 struct {
+	Range types.String `tfsdk:"range"`
+}
+
+func FlattenSubnets(
+	ctx context.Context,
+	subnets []linodego.VPCSubnet,
+	subnetObjectType attr.Type,
+	ipv6ObjectType attr.Type,
+	preserveKnown bool,
+) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	subnetModels := make([]SubnetModel, len(subnets))
+	for i, subnet := range subnets {
+		var model SubnetModel
+
+		model.ID = helper.KeepOrUpdateInt64(model.ID, int64(subnet.ID), preserveKnown)
+		model.Label = helper.KeepOrUpdateString(model.Label, subnet.Label, preserveKnown)
+		model.IPv4 = helper.KeepOrUpdateString(model.IPv4, subnet.IPv4, preserveKnown)
+		model.Created = helper.KeepOrUpdateValue(
+			model.Created,
+			timetypes.NewRFC3339TimePointerValue(subnet.Created),
+			preserveKnown,
+		)
+		model.Updated = helper.KeepOrUpdateValue(
+			model.Updated,
+			timetypes.NewRFC3339TimePointerValue(subnet.Updated),
+			preserveKnown,
+		)
+
+		ipv6Models := helper.MapSlice(
+			subnet.IPv6,
+			func(r linodego.VPCIPv6Range) SubnetModelIPv6 {
+				return SubnetModelIPv6{
+					Range: types.StringValue(r.Range),
+				}
+			},
+		)
+
+		ipv6List, d := types.ListValueFrom(ctx, ipv6ObjectType, ipv6Models)
+		diags.Append(d...)
+		if diags.HasError() {
+			return types.ListNull(subnetObjectType), diags
+		}
+		model.IPv6 = helper.KeepOrUpdateValue(model.IPv6, ipv6List, preserveKnown)
+
+		linodesList, d := vpcsubnet.FlattenSubnetLinodes(ctx, subnet.Linodes)
+		diags.Append(d...)
+		if diags.HasError() {
+			return types.ListNull(subnetObjectType), diags
+		}
+		model.Linodes = helper.KeepOrUpdateValue(model.Linodes, *linodesList, preserveKnown)
+
+		databasesList, d := vpcsubnet.FlattenSubnetDatabases(ctx, subnet.Databases)
+		diags.Append(d...)
+		if diags.HasError() {
+			return types.ListNull(subnetObjectType), diags
+		}
+		model.Databases = helper.KeepOrUpdateValue(model.Databases, *databasesList, preserveKnown)
+
+		nodebalancersList, d := vpcsubnet.FlattenSubnetNodebalancers(ctx, subnet.Nodebalancers)
+		diags.Append(d...)
+		if diags.HasError() {
+			return types.ListNull(subnetObjectType), diags
+		}
+		model.Nodebalancers = helper.KeepOrUpdateValue(model.Nodebalancers, *nodebalancersList, preserveKnown)
+
+		subnetModels[i] = model
+	}
+
+	subnetList, d := types.ListValueFrom(ctx, subnetObjectType, subnetModels)
+	diags.Append(d...)
+	if diags.HasError() {
+		return types.ListNull(subnetObjectType), diags
+	}
+
+	return subnetList, diags
 }
 
 func (m *BaseModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) diag.Diagnostics {
@@ -56,6 +151,7 @@ func (m *BaseModel) CopyFrom(ctx context.Context, other BaseModel, preserveKnown
 	m.Label = helper.KeepOrUpdateValue(m.Label, other.Label, preserveKnown)
 	m.Region = helper.KeepOrUpdateValue(m.Region, other.Region, preserveKnown)
 	m.VPCType = helper.KeepOrUpdateValue(m.VPCType, other.VPCType, preserveKnown)
+	m.Subnets = helper.KeepOrUpdateValue(m.Subnets, other.Subnets, preserveKnown)
 }
 
 /*
@@ -121,6 +217,22 @@ func (m *ResourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, prese
 		ipv4List,
 		false,
 	)
+
+	// Flatten Subnets
+	// NOTE: preserveKnown is false here because subnets is computed-only and must
+	// always be populated from the API response.
+	subnetList, subnetDiags := FlattenSubnets(
+		ctx,
+		vpc.Subnets,
+		ResourceSchemaSubnetNestedObject.Type(),
+		ResourceSchemaSubnetIPv6NestedObject.Type(),
+		false,
+	)
+	if subnetDiags.HasError() {
+		return subnetDiags
+	}
+
+	m.Subnets = helper.KeepOrUpdateValue(m.Subnets, subnetList, false)
 
 	return nil
 }
@@ -192,6 +304,20 @@ func (m *DataSourceModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, pre
 		ipv4List,
 		preserveKnown,
 	)
+
+	// Flatten Subnets
+	subnetList, subnetDiags := FlattenSubnets(
+		ctx,
+		vpc.Subnets,
+		DataSourceSchemaSubnetNestedObject.Type(),
+		DataSourceSchemaSubnetIPv6NestedObject.Type(),
+		preserveKnown,
+	)
+	if subnetDiags.HasError() {
+		return subnetDiags
+	}
+
+	m.Subnets = helper.KeepOrUpdateValue(m.Subnets, subnetList, preserveKnown)
 
 	return nil
 }

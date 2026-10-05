@@ -4,7 +4,7 @@ resource "linode_lke_cluster" "test" {
     label       = "{{.Label}}"
     region      = "{{ .Region }}"
     k8s_version = "{{.K8sVersion}}"
-    tags        = ["test"]
+    tags        = ["{{.Tag1Name}}"]
     tier = "standard"
 
     pool {
@@ -17,7 +17,7 @@ resource "linode_lke_cluster" "test2" {
     label       = "{{.Label}}-2"
     region      = "{{ .Region }}"
     k8s_version = "{{.K8sVersion}}"
-    tags        = ["test-2"]
+    tags        = ["{{.Tag2Name}}"]
     tier = "standard"
 
     pool {

@@ -1,0 +1,17 @@
+{{ define "interfaces_rdma_vpc_manage" }}
+
+{{ template "interfaces_rdma_vpc_base" . }}
+
+# Import one of the instance's existing RDMA VPC interfaces so it can be managed
+# (and updated) through the linode_interface resource. The interface is imported
+# in the test rather than created, since RDMA VPC interfaces cannot be created
+# via this resource.
+resource "linode_interface" "foobar_iface" {
+    linode_id = linode_instance.foobar.id
+
+    rdma_vpc = {
+        subnet_id = linode_vpc_subnet.rdma.id
+    }
+}
+
+{{ end }}

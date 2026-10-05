@@ -191,9 +191,9 @@ The following arguments are exposed by each entry in the `pending_updates` attri
 
 The following arguments are supported in the `updates` specification block:
 
-* `day_of_week` - The day to perform maintenance. (`monday`, `tuesday`, ...)
+* `day_of_week` - The numeric reference for the day of the week to perform maintenance. 1 is Monday, 2 is Tuesday, through to 7 which is Sunday.
 
-* `duration` - The maximum maintenance window time in hours. (`1`..`3`)
+* `duration` - The maximum maintenance window time in hours. (`4`)
 
 * `frequency` - The frequency at which maintenance occurs. (`weekly`)
 
