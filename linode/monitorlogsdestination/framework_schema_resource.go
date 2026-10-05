@@ -26,13 +26,13 @@ var frameworkResourceSchema = schema.Schema{
 			Required:    true,
 		},
 		"type": schema.StringAttribute{
-			Description: "The type of this logs destination. One of: akamai_object_storage, custom_https.",
+			Description: "The type of this logs destination. One of: akamai_object_storage, custom_https, traffic_peak.",
 			Required:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
 			},
 			Validators: []validator.String{
-				stringvalidator.OneOf("akamai_object_storage", "custom_https"),
+				stringvalidator.OneOf("akamai_object_storage", "custom_https", "traffic_peak"),
 			},
 		},
 		"status": schema.StringAttribute{
@@ -67,6 +67,7 @@ var frameworkResourceSchema = schema.Schema{
 			Validators: []validator.Object{
 				objectvalidator.ExactlyOneOf(
 					path.MatchRoot("custom_https_details"),
+					path.MatchRoot("traffic_peak_details"),
 				),
 			},
 			Attributes: map[string]schema.Attribute{
@@ -101,6 +102,7 @@ var frameworkResourceSchema = schema.Schema{
 			Validators: []validator.Object{
 				objectvalidator.ExactlyOneOf(
 					path.MatchRoot("akamai_object_storage_details"),
+					path.MatchRoot("traffic_peak_details"),
 				),
 			},
 			Attributes: map[string]schema.Attribute{
@@ -190,6 +192,67 @@ var frameworkResourceSchema = schema.Schema{
 								Required:  true,
 								Sensitive: true,
 							},
+						},
+					},
+				},
+			},
+		},
+		"traffic_peak_details": schema.SingleNestedAttribute{
+			Description: "Details for a traffic_peak logs destination.",
+			Optional:    true,
+			Validators: []validator.Object{
+				objectvalidator.ExactlyOneOf(
+					path.MatchRoot("akamai_object_storage_details"),
+					path.MatchRoot("custom_https_details"),
+				),
+			},
+			Attributes: map[string]schema.Attribute{
+				"endpoint_url": schema.StringAttribute{
+					Description: "The TrafficPeak endpoint URL to send logs to.",
+					Required:    true,
+				},
+				"content_type": schema.StringAttribute{
+					Description: "The content type of the log data. One of: application/json, application/json; charset=utf-8.",
+					Required:    true,
+					Validators: []validator.String{
+						stringvalidator.OneOf("application/json", "application/json; charset=utf-8"),
+					},
+				},
+				"data_compression": schema.StringAttribute{
+					Description: "The compression format for log data. One of: none, gzip.",
+					Required:    true,
+					Validators: []validator.String{
+						stringvalidator.OneOf("none", "gzip"),
+					},
+				},
+				"authentication": schema.SingleNestedAttribute{
+					Description: "Basic authentication configuration for the TrafficPeak endpoint. " +
+						"This value is write-only and will not be returned by the API.",
+					Required: true,
+					Attributes: map[string]schema.Attribute{
+						"type": schema.StringAttribute{
+							Description: "The authentication type. Optional in requests; if specified, must be: basic. " +
+								"The API always returns basic.",
+							Optional: true,
+							Computed: true,
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
+							Validators: []validator.String{
+								stringvalidator.OneOf("basic"),
+							},
+						},
+						"username": schema.StringAttribute{
+							Description: "The username for basic authentication. " +
+								"This value is write-only and will not be returned by the API.",
+							Required:  true,
+							Sensitive: true,
+						},
+						"password": schema.StringAttribute{
+							Description: "The password for basic authentication. " +
+								"This value is write-only and will not be returned by the API.",
+							Required:  true,
+							Sensitive: true,
 						},
 					},
 				},

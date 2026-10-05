@@ -25,6 +25,7 @@ type LogsDestinationResourceModel struct {
 
 	AkamaiObjectStorageDetails *LogsDestinationAkamaiDetailsModel      `tfsdk:"akamai_object_storage_details"`
 	CustomHTTPSDetails         *LogsDestinationCustomHTTPSDetailsModel `tfsdk:"custom_https_details"`
+	TrafficPeakDetails         *LogsDestinationTrafficPeakDetailsModel `tfsdk:"traffic_peak_details"`
 }
 
 // LogsDestinationAkamaiDetailsModel holds details for an akamai_object_storage destination.
@@ -46,7 +47,15 @@ type LogsDestinationCustomHTTPSDetailsModel struct {
 	CustomHeaders            []LogsDestinationCustomHeaderModel     `tfsdk:"custom_headers"`
 }
 
-// LogsDestinationAuthModel holds authentication config for a custom_https destination.
+// LogsDestinationTrafficPeakDetailsModel holds details for a traffic_peak destination.
+type LogsDestinationTrafficPeakDetailsModel struct {
+	EndpointURL     types.String              `tfsdk:"endpoint_url"`
+	ContentType     types.String              `tfsdk:"content_type"`
+	DataCompression types.String              `tfsdk:"data_compression"`
+	Authentication  *LogsDestinationAuthModel `tfsdk:"authentication"`
+}
+
+// LogsDestinationAuthModel holds authentication config for a custom_https or traffic_peak destination.
 type LogsDestinationAuthModel struct {
 	Type     types.String `tfsdk:"type"`
 	Username types.String `tfsdk:"username"` // write-only, not returned by API
@@ -89,7 +98,7 @@ type LogsDestinationFlatDetailsModel struct {
 	BucketName  types.String `tfsdk:"bucket_name"`
 	Host        types.String `tfsdk:"host"`
 	Path        types.String `tfsdk:"path"`
-	// custom_https fields
+	// custom_https and traffic_peak fields
 	EndpointURL        types.String `tfsdk:"endpoint_url"`
 	ContentType        types.String `tfsdk:"content_type"`
 	DataCompression    types.String `tfsdk:"data_compression"`
@@ -183,6 +192,28 @@ func (m *LogsDestinationResourceModel) FlattenLogsDestination(
 		} else if !preserveKnown {
 			d.CustomHeaders = nil
 		}
+
+	case linodego.LogsDestinationTypeTrafficPeak:
+		if m.TrafficPeakDetails == nil {
+			m.TrafficPeakDetails = &LogsDestinationTrafficPeakDetailsModel{}
+		}
+		d := m.TrafficPeakDetails
+		d.EndpointURL = helper.KeepOrUpdateString(d.EndpointURL, dest.Details.EndpointURL, preserveKnown)
+		d.ContentType = helper.KeepOrUpdateString(d.ContentType, dest.Details.ContentType, preserveKnown)
+		d.DataCompression = helper.KeepOrUpdateString(d.DataCompression, dest.Details.DataCompression, preserveKnown)
+
+		// The API always returns authentication.type ("basic") for traffic_peak
+		if dest.Details.Authentication != nil {
+			if d.Authentication == nil {
+				d.Authentication = &LogsDestinationAuthModel{}
+			}
+			d.Authentication.Type = helper.KeepOrUpdateString(
+				d.Authentication.Type,
+				string(dest.Details.Authentication.Type),
+				preserveKnown,
+			)
+			// Username and Password are write-only — never updated from API response
+		}
 	}
 
 	return resultDiags
@@ -207,6 +238,10 @@ func (m *LogsDestinationResourceModel) CopyFrom(other LogsDestinationResourceMod
 	if m.CustomHTTPSDetails == nil && other.CustomHTTPSDetails != nil {
 		copied := *other.CustomHTTPSDetails
 		m.CustomHTTPSDetails = &copied
+	}
+	if m.TrafficPeakDetails == nil && other.TrafficPeakDetails != nil {
+		copied := *other.TrafficPeakDetails
+		m.TrafficPeakDetails = &copied
 	}
 }
 
