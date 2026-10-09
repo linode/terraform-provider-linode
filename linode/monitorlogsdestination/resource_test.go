@@ -201,8 +201,13 @@ func checkLogsDestinationDestroy(s *terraform.State) error {
 }
 
 const (
-	trafficPeakEndpoint           = "TRAFFIC_PEAK_ENDPOINT_URL"
-	defaultTrafficPeakEndpointURL = "https://example.com"
+	trafficPeakEndpoint             = "TRAFFIC_PEAK_ENDPOINT"
+	defaultTrafficPeakEndpointURL   = "https://example.com"
+	customHttpsBasicAuthEndpointURL = "https://pl-labkrk-2-https-server-dev.cloud-streams-dev.akadns.net/stream-custom-https-server-api/logs/basic-auth"
+	customHttpsNoAuthEndpointURL    = "https://pl-labkrk-2-https-server-dev.cloud-streams-dev.akadns.net/stream-custom-https-server-api/logs/no-auth"
+
+	customHttpsUsernameEnvVar = "CUSTOM_HTTPS_BASIC_AUTH_USERNAME"
+	customHttpsPasswordEnvVar = "CUSTOM_HTTPS_BASIC_AUTH_PASSWORD"
 )
 
 func trafficPeakEndpointURL() string {
@@ -210,6 +215,25 @@ func trafficPeakEndpointURL() string {
 		return v
 	}
 	return defaultTrafficPeakEndpointURL
+}
+
+// customHttpsBasicAuthCredentials returns the credentials accepted by the
+// basic-auth custom_https endpoint. They cannot be randomly generated because the
+// endpoint validates them, so the test is skipped when they are not configured.
+func customHttpsBasicAuthCredentials(t *testing.T) (string, string) {
+	t.Helper()
+
+	username := os.Getenv(customHttpsUsernameEnvVar)
+	password := os.Getenv(customHttpsPasswordEnvVar)
+
+	if username == "" || password == "" {
+		t.Skipf(
+			"Skipping test: both %s and %s must be set to run custom_https basic auth tests",
+			customHttpsUsernameEnvVar, customHttpsPasswordEnvVar,
+		)
+	}
+
+	return username, password
 }
 
 // TestAccResourceLogsDestination_trafficPeak covers create, update, and import
@@ -321,6 +345,210 @@ func TestAccResourceLogsDestination_trafficPeakMissingContentType(t *testing.T) 
 			{
 				Config:      tmpl.TrafficPeakMissingContentType(t, acctest.RandomWithPrefix("tf-test")),
 				ExpectError: regexp.MustCompile(`(?s)"content_type" is required`),
+			},
+		},
+	})
+}
+
+// TestAccResourceLogsDestination_customHTTPS covers a basic-auth custom_https
+// destination. The test endpoint rejects the connection unless the
+// X-Logs-Custom-Path header is sent.
+// Requires basic auth credentials to be configured.
+func TestAccResourceLogsDestination_customHTTPS(t *testing.T) {
+	t.Parallel()
+
+	username, password := customHttpsBasicAuthCredentials(t)
+
+	resName := "linode_monitor_logs_destination.foobar"
+	label := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkLogsDestinationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.CustomHTTPSBasic(t, label, customHttpsBasicAuthEndpointURL, username, password),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("label"), knownvalue.StringExact(label)),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("type"), knownvalue.StringExact("custom_https")),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("status"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("endpoint_url"),
+						knownvalue.StringExact(customHttpsBasicAuthEndpointURL)),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("content_type"),
+						knownvalue.StringExact("application/json")),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("data_compression"),
+						knownvalue.StringExact("gzip")),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("authentication").AtMapKey("type"),
+						knownvalue.StringExact("basic")),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("client_certificate_details"),
+						knownvalue.Null()),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("custom_headers"),
+						knownvalue.ListSizeExact(1)),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("custom_headers").
+							AtSliceIndex(0).AtMapKey("name"),
+						knownvalue.StringExact("X-Logs-Custom-Path")),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("traffic_peak_details"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("akamai_object_storage_details"), knownvalue.Null()),
+				},
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"custom_https_details.authentication.username",
+					"custom_https_details.authentication.password",
+					"custom_https_details.custom_headers",
+				},
+			},
+		},
+	})
+}
+
+// TestAccResourceLogsDestination_customHTTPSAuthNone covers authentication.type
+// "none", which requires no credentials, with content_type omitted to confirm it
+// is optional for custom_https destinations. It also covers the optional
+// custom_headers block, which is independent of the authentication type. The test
+// endpoint rejects the connection unless the X-Logs-Custom-Path header is sent, so
+// it is included in both steps.
+func TestAccResourceLogsDestination_customHTTPSAuthNone(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_monitor_logs_destination.foobar"
+	label := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkLogsDestinationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.CustomHTTPSAuthNone(t, label, customHttpsNoAuthEndpointURL),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("type"),
+						knownvalue.StringExact("custom_https")),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("endpoint_url"),
+						knownvalue.StringExact(customHttpsNoAuthEndpointURL)),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("authentication").AtMapKey("type"),
+						knownvalue.StringExact("none")),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("authentication").AtMapKey("username"),
+						knownvalue.Null()),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("authentication").AtMapKey("password"),
+						knownvalue.Null()),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("custom_headers"),
+						knownvalue.ListSizeExact(1)),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("custom_headers").
+							AtSliceIndex(0).AtMapKey("name"),
+						knownvalue.StringExact("X-Logs-Custom-Path")),
+				},
+			},
+			{
+				// Optional content_type and additional custom_headers.
+				Config: tmpl.CustomHTTPSFull(t, label, customHttpsNoAuthEndpointURL),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("content_type"),
+						knownvalue.StringExact("application/json; charset=utf-8")),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("data_compression"),
+						knownvalue.StringExact("gzip")),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("client_certificate_details"),
+						knownvalue.Null()),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("custom_headers"),
+						knownvalue.ListSizeExact(2)),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("custom_https_details").AtMapKey("custom_headers").
+							AtSliceIndex(1).AtMapKey("name"),
+						knownvalue.StringExact("X-Second-Header")),
+				},
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"custom_https_details.custom_headers",
+				},
+			},
+		},
+	})
+}
+
+func TestAccResourceLogsDestination_customHTTPSInvalidAuthType(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.CustomHTTPSInvalidAuthType(t, acctest.RandomWithPrefix("tf-test")),
+				ExpectError: regexp.MustCompile(`value must be one of`),
+			},
+		},
+	})
+}
+
+func TestAccResourceLogsDestination_customHTTPSMissingAuth(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.CustomHTTPSMissingAuth(t, acctest.RandomWithPrefix("tf-test")),
+				ExpectError: regexp.MustCompile(`(?s)"authentication" is required`),
+			},
+		},
+	})
+}
+
+// data_compression is required for custom_https destinations.
+func TestAccResourceLogsDestination_customHTTPSMissingDataCompression(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.CustomHTTPSMissingDataCompression(t, acctest.RandomWithPrefix("tf-test")),
+				ExpectError: regexp.MustCompile(`(?s)"data_compression" is required`),
+			},
+		},
+	})
+}
+
+func TestAccResourceLogsDestination_customHTTPSInvalidContentType(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.CustomHTTPSInvalidContentType(t, acctest.RandomWithPrefix("tf-test")),
+				ExpectError: regexp.MustCompile(`value must be one of`),
 			},
 		},
 	})

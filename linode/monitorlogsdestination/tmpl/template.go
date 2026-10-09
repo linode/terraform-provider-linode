@@ -117,3 +117,59 @@ func TrafficPeakMissingContentType(t testing.TB, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"monitor_logs_destination_traffic_peak_missing_content_type", TemplateData{Label: label})
 }
+
+func CustomHTTPSBasic(t testing.TB, label, endpointURL, username, password string) string {
+	return acceptance.ExecuteTemplate(t,
+		"monitor_logs_destination_custom_https_basic", TemplateData{
+			Label:       label,
+			EndpointURL: endpointURL,
+			Username:    username,
+			Password:    password,
+		})
+}
+
+func CustomHTTPSAuthNone(t testing.TB, label, endpointURL string) string {
+	return acceptance.ExecuteTemplate(t,
+		"monitor_logs_destination_custom_https_auth_none", TemplateData{
+			Label:       label,
+			EndpointURL: endpointURL,
+		})
+}
+
+func CustomHTTPSFull(t testing.TB, label, endpointURL string) string {
+	return acceptance.ExecuteTemplate(t,
+		"monitor_logs_destination_custom_https_full", TemplateData{
+			Label:       label,
+			EndpointURL: endpointURL,
+		})
+}
+
+func CustomHTTPSDataBasic(t testing.TB, label, endpointURL, username, password string) string {
+	return acceptance.ExecuteTemplate(t,
+		"monitor_logs_destination_custom_https_data_basic", TemplateData{
+			Label:       label,
+			EndpointURL: endpointURL,
+			Username:    username,
+			Password:    password,
+		})
+}
+
+func CustomHTTPSInvalidAuthType(t testing.TB, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"monitor_logs_destination_custom_https_invalid_auth_type", TemplateData{Label: label})
+}
+
+func CustomHTTPSMissingAuth(t testing.TB, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"monitor_logs_destination_custom_https_missing_auth", TemplateData{Label: label})
+}
+
+func CustomHTTPSMissingDataCompression(t testing.TB, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"monitor_logs_destination_custom_https_missing_data_compression", TemplateData{Label: label})
+}
+
+func CustomHTTPSInvalidContentType(t testing.TB, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"monitor_logs_destination_custom_https_invalid_content_type", TemplateData{Label: label})
+}

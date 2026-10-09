@@ -111,8 +111,10 @@ var frameworkResourceSchema = schema.Schema{
 					Required:    true,
 				},
 				"content_type": schema.StringAttribute{
-					Description: "The content type of the log data. One of: application/json, application/json; charset=utf-8.",
-					Required:    true,
+					Description: "The content type of the log data. Optional. " +
+						"One of: application/json, application/json; charset=utf-8.",
+					Optional: true,
+					Computed: true,
 					Validators: []validator.String{
 						stringvalidator.OneOf("application/json", "application/json; charset=utf-8"),
 					},
