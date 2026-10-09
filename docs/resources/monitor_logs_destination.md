@@ -60,6 +60,27 @@ resource "linode_monitor_logs_destination" "https_example" {
 }
 ```
 
+Creating a logs destination using TrafficPeak:
+
+```terraform
+resource "linode_monitor_logs_destination" "traffic_peak_example" {
+  label = "my-traffic-peak-destination"
+  type  = "traffic_peak"
+
+  traffic_peak_details = {
+    endpoint_url     = "https://trafficpeak.example.com/ingest"
+    content_type     = "application/json"
+    data_compression = "gzip"
+
+    authentication = {
+      type     = "basic"
+      username = "myuser"
+      password = "mypassword"
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -68,11 +89,13 @@ The following arguments are supported:
 
 * `label` - (Required) The label for this logs destination.
 
-* `type` - (Required, Forces New) The type of this logs destination. One of: `akamai_object_storage`, `custom_https`.
+* `type` - (Required, Forces New) The type of this logs destination. One of: `akamai_object_storage`, `custom_https`, `traffic_peak`.
 
-* [`akamai_object_storage_details`](#akamai_object_storage_details) - (Optional, Nested Attribute) Details for an `akamai_object_storage` logs destination. Exactly one of `akamai_object_storage_details` or `custom_https_details` must be specified. Referenced directly (e.g. `akamai_object_storage_details.access_key_id`).
+* [`akamai_object_storage_details`](#akamai_object_storage_details) - (Optional, Nested Attribute) Details for an `akamai_object_storage` logs destination. Exactly one of `akamai_object_storage_details`, `custom_https_details`, or `traffic_peak_details` must be specified. Referenced directly (e.g. `akamai_object_storage_details.access_key_id`).
 
-* [`custom_https_details`](#custom_https_details) - (Optional, Nested Attribute) Details for a `custom_https` logs destination. Exactly one of `akamai_object_storage_details` or `custom_https_details` must be specified. Referenced directly (e.g. `custom_https_details.endpoint_url`).
+* [`custom_https_details`](#custom_https_details) - (Optional, Nested Attribute) Details for a `custom_https` logs destination. Exactly one of `akamai_object_storage_details`, `custom_https_details`, or `traffic_peak_details` must be specified. Referenced directly (e.g. `custom_https_details.endpoint_url`).
+
+* [`traffic_peak_details`](#traffic_peak_details) - (Optional, Nested Attribute) Details for a `traffic_peak` logs destination. Exactly one of `akamai_object_storage_details`, `custom_https_details`, or `traffic_peak_details` must be specified. Referenced directly (e.g. `traffic_peak_details.endpoint_url`).
 
 ### akamai_object_storage_details
 
@@ -123,6 +146,24 @@ The following arguments are supported:
 * `name` - (Required) The name of the HTTP header.
 
 * `value` - (Required, Sensitive) The value of the HTTP header. This value is write-only and will not be returned by the API.
+
+### traffic_peak_details
+
+* `endpoint_url` - (Required) The TrafficPeak endpoint URL to send logs to.
+
+* `content_type` - (Required) The content type of the log data. One of: `application/json`, `application/json; charset=utf-8`.
+
+* `data_compression` - (Required) The compression format for log data. One of: `none`, `gzip`.
+
+* [`authentication`](#traffic_peak_details-authentication) - (Required, Nested Attribute) Basic authentication configuration for the TrafficPeak endpoint. This value is write-only and will not be returned by the API. Referenced directly (e.g. `traffic_peak_details.authentication.username`).
+
+#### traffic_peak_details authentication
+
+* `type` - (Optional) The authentication type. If specified, must be `basic`. Optional in requests; the API always returns `basic`.
+
+* `username` - (Required, Sensitive) The username for basic authentication. This value is write-only and will not be returned by the API.
+
+* `password` - (Required, Sensitive) The password for basic authentication. This value is write-only and will not be returned by the API.
 
 ## Attributes Reference
 

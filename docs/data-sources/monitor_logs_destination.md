@@ -35,7 +35,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `label` - The label for this logs destination.
 
-* `type` - The type of this logs destination. One of: `akamai_object_storage`, `custom_https`.
+* `type` - The type of this logs destination. One of: `akamai_object_storage`, `custom_https`, `traffic_peak`.
 
 * `status` - The status of this logs destination.
 
@@ -61,12 +61,12 @@ In addition to all arguments above, the following attributes are exported:
 
 * `path` - The path within the bucket (applies to `akamai_object_storage` type).
 
-* `endpoint_url` - The HTTPS endpoint URL (applies to `custom_https` type).
+* `endpoint_url` - The HTTPS endpoint URL (applies to `custom_https` and `traffic_peak` types).
 
-* `content_type` - The content type of log data. One of: `application/json`, `application/json; charset=utf-8` (applies to `custom_https` type).
+* `content_type` - The content type of log data. One of: `application/json`, `application/json; charset=utf-8` (applies to `custom_https` and `traffic_peak` types).
 
-* `data_compression` - The compression format (applies to `custom_https` type).
+* `data_compression` - The compression format (applies to `custom_https` and `traffic_peak` types).
 
-* `authentication_type` - The authentication type (applies to `custom_https` type).
+* `authentication_type` - The authentication type (applies to `custom_https` and `traffic_peak` types).
 
 * `tls_hostname` - The TLS hostname (applies to `custom_https` type).

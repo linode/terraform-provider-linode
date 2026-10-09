@@ -115,6 +115,16 @@ func (r *Resource) Create(
 			details.CustomHeaders = headers
 		}
 		createOpts.Details = details
+
+	case linodego.LogsDestinationTypeTrafficPeak:
+		if data.TrafficPeakDetails == nil {
+			resp.Diagnostics.AddError(
+				"Missing traffic_peak_details",
+				"traffic_peak_details is required when type is traffic_peak.",
+			)
+			return
+		}
+		createOpts.Details = expandTrafficPeakCreateOptions(data.TrafficPeakDetails)
 	}
 
 	tflog.Debug(ctx, "client.CreateLogsDestination(...)")
@@ -273,6 +283,11 @@ func (r *Resource) Update(
 			}
 			updateOpts.Details = details
 		}
+
+	case linodego.LogsDestinationTypeTrafficPeak:
+		if plan.TrafficPeakDetails != nil {
+			updateOpts.Details = expandTrafficPeakUpdateOptions(plan.TrafficPeakDetails)
+		}
 	}
 
 	tflog.Debug(ctx, "client.UpdateLogsDestination(...)")
@@ -327,5 +342,37 @@ func (r *Resource) Delete(
 			fmt.Sprintf("Failed to delete logs destination (%d).", id),
 			err.Error(),
 		)
+	}
+}
+
+func expandTrafficPeakAuth(auth *LogsDestinationAuthModel) linodego.LogsDestinationTrafficPeakAuthDetails {
+	return linodego.LogsDestinationTrafficPeakAuthDetails{
+		Details: linodego.LogsDestinationTrafficPeakBasicAuthDetails{
+			Username: auth.Username.ValueString(),
+			Password: auth.Password.ValueString(),
+		},
+	}
+}
+
+func expandTrafficPeakCreateOptions(
+	d *LogsDestinationTrafficPeakDetailsModel,
+) linodego.LogsDestinationTrafficPeakDetailsCreateOptions {
+	return linodego.LogsDestinationTrafficPeakDetailsCreateOptions{
+		EndpointURL:     d.EndpointURL.ValueString(),
+		Authentication:  expandTrafficPeakAuth(d.Authentication),
+		ContentType:     d.ContentType.ValueStringPointer(),
+		DataCompression: d.DataCompression.ValueStringPointer(),
+	}
+}
+
+func expandTrafficPeakUpdateOptions(
+	d *LogsDestinationTrafficPeakDetailsModel,
+) linodego.LogsDestinationTrafficPeakDetailsUpdateOptions {
+	auth := expandTrafficPeakAuth(d.Authentication)
+	return linodego.LogsDestinationTrafficPeakDetailsUpdateOptions{
+		EndpointURL:     d.EndpointURL.ValueStringPointer(),
+		Authentication:  &auth,
+		ContentType:     d.ContentType.ValueStringPointer(),
+		DataCompression: d.DataCompression.ValueStringPointer(),
 	}
 }
