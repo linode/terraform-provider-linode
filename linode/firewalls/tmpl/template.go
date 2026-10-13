@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
 )
 
 type TemplateData struct {
@@ -24,5 +24,12 @@ func DataFilter(t testing.TB, label, region string) string {
 		"data_linode_firewalls_filter", TemplateData{
 			Label:  label,
 			Region: region,
+		})
+}
+
+func DataProtocolAllNumeric(t testing.TB, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"data_linode_firewalls_protocol_all_numeric", TemplateData{
+			Label: label,
 		})
 }

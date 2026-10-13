@@ -10,7 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 const (
@@ -137,7 +137,7 @@ func normalizeValue(field any) (string, diag.Diagnostic) {
 	}
 
 	// Special handler for time.Time values
-	if t, ok := rField.Interface().(time.Time); ok {
+	if t, ok := reflect.TypeAssert[time.Time](rField); ok {
 		return t.Format(helper.TIME_FORMAT), nil
 	}
 

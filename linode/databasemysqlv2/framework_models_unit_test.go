@@ -10,10 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlv2"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/unit"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/databasemysqlv2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/databaseshared"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/unit"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,7 +28,7 @@ var (
 		Region:    "us-mia",
 		Type:      "g6-nanode-1",
 		Engine:    "mysql",
-		Version:   "8",
+		Version:   "8.0.45",
 		Encrypted: true,
 		AllowList: []string{"0.0.0.0/0", "10.0.0.1/32"},
 
@@ -97,7 +97,7 @@ func TestModel_Flatten(t *testing.T) {
 	require.Equal(t, "g6-nanode-1", model.Type.ValueString())
 	require.Equal(t, "mysql/8", model.EngineID.ValueString())
 	require.Equal(t, "mysql", model.Engine.ValueString())
-	require.Equal(t, "8", model.Version.ValueString())
+	require.Equal(t, "8.0.45", model.Version.ValueString())
 	require.Equal(t, true, model.Encrypted.ValueBool())
 	require.Equal(t, "foobar", model.Platform.ValueString())
 

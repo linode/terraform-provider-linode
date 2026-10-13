@@ -24,7 +24,9 @@ resource "linode_firewall_settings" "example" {
 
 ## Argument Reference
 
-* `default_firewall_ids` - (Optional) A map of default firewall IDs for various interfaces.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* `default_firewall_ids` - (Optional, Nested Attribute) A map of default firewall IDs for various interfaces. Referenced directly (e.g. `default_firewall_ids.linode`).
   * `linode` - (Optional) The Linode's default firewall.
   * `nodebalancer` - (Optional) The NodeBalancer's default firewall.
   * `public_interface` - (Optional) The public interface's default firewall.

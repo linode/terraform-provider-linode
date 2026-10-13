@@ -1,0 +1,16 @@
+{{ define "vpc_ipv4" }}
+
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+    description = "some description"
+
+    ipv4 = [
+        {
+            range = "{{.IPv4Range}}"
+        }
+    ]
+}
+
+{{ end }}
+

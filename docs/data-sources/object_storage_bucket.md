@@ -24,9 +24,7 @@ data "linode_object_storage_bucket" "my-bucket" {
 
 * `label` - (Required) The name of this bucket.
 
-* `region` - The ID of the region this bucket is in. Required if `cluster` is not configured.
-
-* `cluster` - (Deprecated) The ID of the Object Storage Cluster this bucket is in. Required if `region` is not configured.
+* `region` - (Required) The ID of the region this bucket is in.
 
 ### Attributes Reference
 

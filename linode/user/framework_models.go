@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 type DataSourceModel struct {
@@ -59,7 +59,7 @@ func (data *DataSourceModel) ParseUser(
 
 	id, err := json.Marshal(user)
 	if err != nil {
-		diags.AddError("Error marshalling json: %s", err.Error())
+		diags.AddError("Error marshaling json: %s", err.Error())
 		return diags
 	}
 

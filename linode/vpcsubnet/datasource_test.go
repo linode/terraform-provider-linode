@@ -5,15 +5,16 @@ package vpcsubnet_test
 import (
 	"log"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/vpcsubnet/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/vpcsubnet/tmpl"
 )
 
 func TestAccDataSourceVPCSubnet_basic(t *testing.T) {
@@ -54,7 +55,7 @@ func TestAccDataSourceVPCSubnet_dualStack(t *testing.T) {
 	resourceName := "data.linode_vpc_subnet.foo"
 	subnetLabel := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityVPCs,
 		linodego.CapabilityVPCDualStack,
 	}, "core")
@@ -115,6 +116,14 @@ func TestAccDataSourceVPCSubnet_nodebalancer(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
+			// Wait for NB to be created and visible via API
+			{
+				Config: tmpl.DataNodeBalancer(t, subnetLabel, "10.0.0.0/24", testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					waitForVPCSubnetNodebalancer(resourceName, 1, 60*time.Second),
+				),
+			},
+			// Retrieve and assert NB using data source
 			{
 				Config: tmpl.DataNodeBalancer(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(

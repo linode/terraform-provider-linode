@@ -83,13 +83,11 @@ make TEST_SUITE="volume" test-int
 
 There are a number of useful flags and variables to aid in debugging.
 
-- `TF_LOG_PROVIDER` - This instructs Terraform to emit provider logging messages at the given level.
+- `TF_LOG_PROVIDER` - This instructs Terraform to emit provider logging messages at the given level. Accepted values are `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `OFF`, and `JSON` (case-insensitive).
 
-- `TF_LOG` - This instructs Terraform to emit logging messages at the given level.
+- `TF_LOG` - This instructs Terraform to emit logging messages at the given level. Accepted values are `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `OFF`, and `JSON` (case-insensitive). `JSON` enables `TRACE`-level logs in JSON format.
 
-- `TF_LOG_PROVIDER_LINODE_REQUESTS` - This instructs terraform-provider-linode to output API request logs at the given level.
-
-- `TF_SCHEMA_PANIC_ON_ERROR` - This forces Terraform to panic if a Schema Set command failed.
+- `TF_LOG_PROVIDER_LINODE_REQUESTS` - This instructs terraform-provider-linode to output API request logs at the given level. Accepted values are `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, and `OFF` (case-insensitive). **Warning:** `DEBUG` and `TRACE` logs may expose sensitive information contained in API requests or responses. Review and protect log output accordingly.
 
 These values (along with `LINODE_TOKEN`) can be placed in a `.env` file in the repository root to avoid repeating them on the command line.
 

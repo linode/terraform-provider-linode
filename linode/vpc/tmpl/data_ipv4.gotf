@@ -1,0 +1,10 @@
+{{ define "vpc_data_ipv4" }}
+
+{{ template "vpc_ipv4" . }}
+
+data "linode_vpc" "foo" {
+    id = linode_vpc.foobar.id
+}
+
+{{ end }}
+

@@ -36,13 +36,15 @@ The following arguments are supported:
 
 The following arguments are only available when reserving an IP address:
 
-* `reserved` - (Optional) Whether this IP address should be a reserved IP.
+* `reserved` - (Optional) Whether this IP address should be a reserved IP. Changing this value on an assigned IP triggers an in-place update (not replacement). Setting `reserved = true` converts an ephemeral IP to reserved. Setting `reserved = false` converts a reserved IP to ephemeral when the address is assigned. If the reserved IP is unassigned, the API deletes the IP as a side effect of setting `reserved = false`, and the provider returns an `IP Address Deleted During Update` error; after this occurs, remove the resource from your Terraform configuration so future applies succeed.
 
 * `region` - (Optional) The region where the reserved IP should be allocated.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
+
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
 
 * `id` - The unique identifier of this IP address.
 
@@ -56,7 +58,19 @@ In addition to all arguments above, the following attributes are exported:
 
 * `subnet_mask` - The mask that separates host bits from network bits for this address.
 
-* `vpc_nat_1_1` - Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.
+* `tags` - A set of tags associated with this IP address.
+
+* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is null if the address is not assigned to an entity. Referenced directly (e.g. `assigned_entity.id`).
+
+  * `id` - The ID of the entity.
+
+  * `label` - The label of the entity.
+
+  * `type` - The type of the entity.
+
+  * `url` - The URL of the entity.
+
+* `vpc_nat_1_1` - (Read-Only Object) Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet. Referenced directly (e.g. `vpc_nat_1_1.address`).
 
   * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
 

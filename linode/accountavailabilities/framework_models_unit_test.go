@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 func TestParseAvailabilities(t *testing.T) {

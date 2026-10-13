@@ -30,11 +30,13 @@ output "domain" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode Cloud Domains that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode Cloud Domains that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
-* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `asc`)
+* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `desc`)
 
 ### Filter
 
@@ -48,13 +50,13 @@ The following arguments are supported:
 
 Each Linode Domain will be stored in the `domains` attribute and will export the following attributes:
 
+* `domains` - (Nested Attribute List) The returned list of Domains. Referenced by index (e.g. `domains[0].id`).
+
 * `id` - The unique ID of this Domain.
 
 * `domain` - The domain this Domain represents. These must be unique in our system; you cannot have two Domains representing the same domain
 
 * `type` - If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave) (`master`, `slave`)
-
-* `group` - The group this Domain belongs to.
 
 * `status` - Used to control whether this Domain is currently being rendered. (`disabled`, `active`)
 
@@ -77,8 +79,6 @@ Each Linode Domain will be stored in the `domains` attribute and will export the
 * `tags` - An array of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
 ## Filterable Fields
-
-* `group`
 
 * `tags`
 

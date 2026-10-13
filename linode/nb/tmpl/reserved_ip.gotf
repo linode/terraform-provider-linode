@@ -1,0 +1,27 @@
+{{ define "nodebalancer_reserved_ip" }}
+
+resource "linode_networking_ip" "test" {
+  region   = "{{ .Region }}"
+  public   = true
+  type     = "ipv4"
+  reserved = true
+}
+
+resource "linode_nodebalancer" "test" {
+  label  = "{{ .Label }}"
+  region = "{{ .Region }}"
+  ipv4   = linode_networking_ip.test.address
+}
+
+{{ end }}
+
+{{ define "nodebalancer_reserved_ip_only" }}
+
+resource "linode_networking_ip" "test" {
+  region   = "{{ .Region }}"
+  public   = true
+  type     = "ipv4"
+  reserved = true
+}
+
+{{ end }}

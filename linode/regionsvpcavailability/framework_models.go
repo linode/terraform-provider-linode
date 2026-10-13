@@ -6,8 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/regionvpcavailability"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/regionvpcavailability"
 )
 
 type regionsVPCAvailabilityModel struct {
@@ -34,7 +34,7 @@ func (model *regionsVPCAvailabilityModel) parseRegionsVPCAvailability(
 
 	id, err := json.Marshal(regionsVPCAvailability)
 	if err != nil {
-		diags.AddError("Error marshalling json", err.Error())
+		diags.AddError("Error marshaling json", err.Error())
 		return diags
 	}
 	model.ID = types.StringValue(string(id))

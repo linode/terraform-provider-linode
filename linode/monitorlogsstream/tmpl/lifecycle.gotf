@@ -1,0 +1,53 @@
+{{ define "monitor_logs_stream_lifecycle" }}
+
+provider "linode" {
+  obj_use_temp_keys       = true
+  obj_bucket_force_delete = true
+}
+
+resource "linode_object_storage_key" "foobar" {
+  label   = "{{.Label}}-key"
+  regions = ["{{.Region}}"]
+}
+
+resource "linode_object_storage_bucket" "foobar" {
+  region     = "{{.Region}}"
+  label      = "{{.Label}}-bucket"
+  access_key = linode_object_storage_key.foobar.access_key
+  secret_key = linode_object_storage_key.foobar.secret_key
+}
+
+resource "linode_monitor_logs_destination" "foobar" {
+  label = "{{.Label}}"
+  type  = "akamai_object_storage"
+
+  akamai_object_storage_details = {
+    access_key_id     = linode_object_storage_key.foobar.access_key
+    access_key_secret = linode_object_storage_key.foobar.secret_key
+    bucket_name       = linode_object_storage_bucket.foobar.label
+    host              = linode_object_storage_bucket.foobar.hostname
+  }
+}
+
+resource "linode_monitor_logs_stream" "foobar" {
+  label        = "{{.Label}}"
+  type         = "audit_logs"
+  destinations = [linode_monitor_logs_destination.foobar.id]
+}
+
+data "linode_monitor_logs_stream" "by_id" {
+  id = linode_monitor_logs_stream.foobar.id
+}
+
+data "linode_monitor_logs_streams" "filtered" {
+  filter {
+    name   = "label"
+    values = [linode_monitor_logs_stream.foobar.label]
+  }
+}
+
+data "linode_monitor_logs_stream_history" "hist" {
+  stream_id = tonumber(linode_monitor_logs_stream.foobar.id)
+}
+
+{{ end }}

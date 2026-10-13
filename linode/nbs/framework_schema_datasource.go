@@ -2,14 +2,19 @@ package nbs
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
-	"github.com/linode/terraform-provider-linode/v3/linode/nb"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v4/linode/nb"
 )
 
 var filterConfig = frameworkfilter.Config{
 	"label":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"ipv4":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"region": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"type":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"backend_connectivity": {
+		APIFilterable: false,
+		TypeFunc:      frameworkfilter.FilterTypeString,
+	},
 
 	// temporarily use client-side filter while API filter for tags is not working properly
 	"tags": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},

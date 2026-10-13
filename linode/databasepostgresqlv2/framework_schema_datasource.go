@@ -4,7 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/databaseshared"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/databaseshared"
 )
 
 var frameworkDatasourceSchema = schema.Schema{

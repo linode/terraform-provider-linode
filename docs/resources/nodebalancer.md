@@ -41,6 +41,39 @@ resource "linode_nodebalancer" "foobar" {
 }
 ```
 
+The following example shows how to create a NodeBalancer with a pre-reserved IPv4 address.
+
+```hcl
+resource "linode_networking_ip" "my_reserved_ip" {
+    region   = "us-east"
+    type     = "ipv4"
+    public   = true
+    reserved = true
+}
+
+resource "linode_nodebalancer" "foobar" {
+    label  = "mynodebalancer"
+    region = "us-east"
+    ipv4   = linode_networking_ip.my_reserved_ip.address
+}
+```
+
+The following example requests a premium NodeBalancer that communicates with IPv6 backends.
+Backend connectivity requires the `v4beta` API version and may not be available to all accounts.
+
+```hcl
+provider "linode" {
+    api_version = "v4beta"
+}
+
+resource "linode_nodebalancer" "ipv6" {
+    label                = "ipv6-backends"
+    region               = "us-east"
+    type                 = "premium"
+    backend_connectivity = "ipv6"
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -51,6 +84,10 @@ The following arguments are supported:
 
 * `label` - (Optional) The label of the Linode NodeBalancer
 
+* `type` - (Optional) NodeBalancer plan type: `common` (the API default), `premium`, or `enterprise`. Availability depends on the account and region. Changing this value replaces the NodeBalancer.
+
+* `backend_connectivity` - (Optional) Backend communication mode: `legacy` (private IPv4), `ipv6`, or `vpc`. Requires `api_version = "v4beta"` and may not be available to all users. Changing this value replaces the NodeBalancer. When omitted, the API chooses the mode; it may report `undefined` if no mode, nodes, or VPCs were specified. `undefined` is read-only and cannot be configured.
+
 * `client_conn_throttle` - (Optional) Throttle connections per second (0-20). Set to 0 (default) to disable throttling.
 
 * `client_udp_sess_throttle` - Throttle UDP sessions per second (0-20). Set to 0 (default) to disable throttling.
@@ -59,9 +96,17 @@ The following arguments are supported:
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
+* `ipv4` - (Optional) The Public IPv4 address to assign to this NodeBalancer. When provided, the address must be a reserved IPv4 address that is unassigned and owned by the account. *Changing `ipv4` forces the creation of a new Linode NodeBalancer.*
+
 ## Attributes Reference
 
 This resource exports the following attributes:
+
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* `type` - The NodeBalancer plan type.
+
+* `backend_connectivity` - The backend communication mode, possibly `undefined` if not specified.
 
 * `hostname` - This NodeBalancer's hostname, ending with .nodebalancer.linode.com
 
@@ -69,15 +114,19 @@ This resource exports the following attributes:
 
 * `ipv6` - The Public IPv6 Address of this NodeBalancer
 
+* `backend_ipv6_prefix` - The /96 IPv6 source range used when this NodeBalancer connects to backends. Null if no backend IPv6 prefix is assigned.
+
 * `created` - When this NodeBalancer was created
 
 * `updated` - When this NodeBalancer was last updated.
 
-* [`transfer`](#transfer) - The network transfer stats for the current month
+* [`transfer`](#transfer) - (Read-Only Object List) The network transfer stats for the current month. Referenced with an index (e.g. `transfer.0.in`).
 
-* [`firewalls`](#firewalls) - A list of Firewalls assigned to this NodeBalancer.
+* [`firewalls`](#firewalls) - (Read-Only Object List) A list of Firewalls assigned to this NodeBalancer. Referenced with an index (e.g. `firewalls.0.id`).
 
-* [`vpcs`](#vpcs) - A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+* [`vpcs`](#vpcs) - (Nested Attribute List) A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
+
+* [`lke_cluster`](#lke_cluster) - (Nested Attribute List) The LKE cluster that manages this NodeBalancer, if any. The list will be empty if this NodeBalancer isn't related to an LKE cluster.
 
 ### transfer
 
@@ -99,11 +148,11 @@ The following attributes are available on firewalls:
 
 * `tags` - The tags applied to the firewall. Tags are case-insensitive and are for organizational purposes only.
 
-* [`inbound`](#inbound-and-outbound) - A firewall rule that specifies what inbound network traffic is allowed.
+* [`inbound`](#inbound-and-outbound) - (Read-Only Object List) A firewall rule that specifies what inbound network traffic is allowed. Referenced with an index (e.g. `firewalls.0.inbound.0.action`).
 
 * `inbound_policy` - The default behavior for inbound traffic. (`ACCEPT`, `DROP`)
 
-* [`outbound`](#inbound-and-outbound) - A firewall rule that specifies what outbound network traffic is allowed.
+* [`outbound`](#inbound-and-outbound) - (Read-Only Object List) A firewall rule that specifies what outbound network traffic is allowed. Referenced with an index (e.g. `firewalls.0.outbound.0.action`).
 
 * `outbound_policy` - The default behavior for outbound traffic. (`ACCEPT`, `DROP`)
 
@@ -142,6 +191,18 @@ The following arguments are supported under each entry of the `vpcs` attribute:
 * `ipv6_range` - (Optional) A CIDR range for the VPC's IPv6 addresses. The NodeBalancer sources IP addresses from this range when routing traffic to the backend VPC nodes.
 
 * `ipv4_range_auto_assign` - (Optional, Write-Only) Enables the use of a larger ipv4_range subnet for multiple NodeBalancers within the same VPC by allocating smaller /30 subnets for each NodeBalancer's backends.
+
+### lke_cluster
+
+The following attributes are available on `lke_cluster`:
+
+* `id` - The ID of the related LKE cluster.
+
+* `label` - The label of the related LKE cluster.
+
+* `type` - The type of the related LKE cluster.
+
+* `url` - The URL where you can access the related LKE cluster.
 
 ## Import
 

@@ -1,0 +1,10 @@
+{{ define "alert_definition_data_basic" }}
+
+{{ template "alert_definition_basic" . }}
+
+data "linode_monitor_alert_definition" "foobar" {
+    id = "${linode_monitor_alert_definition.test.id}"
+    service_type = "${linode_monitor_alert_definition.test.service_type}"
+}
+
+{{ end }}

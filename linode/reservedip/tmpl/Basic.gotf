@@ -1,0 +1,7 @@
+{{ define "reserved_ip_basic" }}
+
+resource "linode_reserved_ip" "test" {
+  region = "{{ .Region }}"
+}
+
+{{ end }}

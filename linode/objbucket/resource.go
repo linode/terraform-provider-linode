@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/obj"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/obj"
 )
 
 func resourceLifecycleExpiration() *schema.Resource {
@@ -57,12 +57,12 @@ func readResource(
 	client := meta.(*helper.ProviderMeta).Client
 	config := meta.(*helper.ProviderMeta).Config
 
-	regionOrCluster, label, err := DecodeBucketID(ctx, d.Id(), d)
+	region, label, err := DecodeBucketID(ctx, d.Id(), d)
 	if err != nil {
 		return diag.Errorf("failed to parse Linode ObjectStorageBucket id %s: %s", d.Id(), err.Error())
 	}
 
-	bucket, err := client.GetObjectStorageBucket(ctx, regionOrCluster, label)
+	bucket, err := client.GetObjectStorageBucket(ctx, region, label)
 	if err != nil {
 		if linodego.IsNotFound(err) {
 			tflog.Warn(
@@ -79,7 +79,7 @@ func readResource(
 	}
 
 	tflog.Debug(ctx, "getting bucket access info")
-	access, err := client.GetObjectStorageBucketAccessV2(ctx, regionOrCluster, label)
+	access, err := client.GetObjectStorageBucketAccess(ctx, region, label)
 	if err != nil {
 		return diag.Errorf("failed to find the access config for the specified Linode ObjectStorageBucket: %s", err)
 	}
@@ -93,40 +93,43 @@ func readResource(
 			"lifecyclePresent":  lifecyclePresent,
 		})
 
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket.Label, regionOrCluster, "read_only", &bucket.EndpointType)
-		if diags != nil {
-			return diags
-		}
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket.Label, region, "read_only", &bucket.EndpointType)
+		if diags.HasError() {
+			return diag.Diagnostics{
+				{
+					Severity: diag.Warning,
+					Summary:  "Skipped refresh of lifecycle_rule and versioning",
+					Detail: "No S3 keys are available for this bucket, so its lifecycle and versioning " +
+						"configuration could not be read and drift in these attributes will not be detected. " +
+						"Set access_key and secret_key on the resource or provider, or enable obj_use_temp_keys.",
+				},
+			}
+		} else {
+			if teardownKeysCleanUp != nil {
+				defer teardownKeysCleanUp()
+			}
 
-		if teardownKeysCleanUp != nil {
-			defer teardownKeysCleanUp()
-		}
+			endpoint := getS3Endpoint(ctx, *bucket)
+			s3Client, err := helper.S3Connection(ctx, endpoint, objKeys.AccessKey, objKeys.SecretKey)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 
-		endpoint := getS3Endpoint(ctx, *bucket)
-		s3Client, err := helper.S3Connection(ctx, endpoint, objKeys.AccessKey, objKeys.SecretKey)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+			tflog.Trace(ctx, "getting bucket lifecycle")
+			if err := readBucketLifecycle(ctx, d, s3Client); err != nil {
+				return diag.Errorf("failed to find get object storage bucket lifecycle: %s", err)
+			}
 
-		tflog.Trace(ctx, "getting bucket lifecycle")
-		if err := readBucketLifecycle(ctx, d, s3Client); err != nil {
-			return diag.Errorf("failed to find get object storage bucket lifecycle: %s", err)
-		}
-
-		tflog.Trace(ctx, "getting bucket versioning")
-		if err := readBucketVersioning(ctx, d, s3Client); err != nil {
-			return diag.Errorf("failed to find get object storage bucket versioning: %s", err)
+			tflog.Trace(ctx, "getting bucket versioning")
+			if err := readBucketVersioning(ctx, d, s3Client); err != nil {
+				return diag.Errorf("failed to find get object storage bucket versioning: %s", err)
+			}
 		}
 	}
-	if bucket.Region != "" {
-		d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
-	} else {
-		d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
-	}
+	d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
 
 	endpoint := getS3Endpoint(ctx, *bucket)
 
-	d.Set("cluster", bucket.Cluster)
 	d.Set("region", bucket.Region)
 	d.Set("label", bucket.Label)
 	d.Set("hostname", bucket.Hostname)
@@ -146,7 +149,7 @@ func createResource(
 	tflog.Debug(ctx, "Create linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
-	if diags := validateRegionIfPresent(ctx, d, &client); diags != nil {
+	if diags := validateRegionIfPresent(ctx, d, &client); diags.HasError() {
 		return diags
 	}
 
@@ -175,10 +178,6 @@ func createResource(
 		createOpts.Region = region.(string)
 	}
 
-	if cluster, ok := d.GetOk("cluster"); ok {
-		createOpts.Cluster = cluster.(string)
-	}
-
 	tflog.Debug(ctx, "client.CreateObjectStorageBucket(...)", map[string]any{"options": createOpts})
 	bucket, err := client.CreateObjectStorageBucket(ctx, createOpts)
 	if err != nil {
@@ -190,13 +189,25 @@ func createResource(
 	d.Set("endpoint", endpoint)
 	d.Set("s3_endpoint", endpoint)
 
-	if bucket.Region != "" {
-		d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
-	} else {
-		d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
-	}
+	d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
 
 	return updateResource(ctx, d, meta)
+}
+
+// revertS3ManagedFields reverts lifecycle_rule and versioning to their
+// previous state values when an S3 operation fails. This prevents planned
+// but never-applied values from being persisted in state.
+func revertS3ManagedFields(d *schema.ResourceData, diags diag.Diagnostics) diag.Diagnostics {
+	oldLifecycle, _ := d.GetChange("lifecycle_rule")
+	oldVersioning, _ := d.GetChange("versioning")
+
+	if err := d.Set("lifecycle_rule", oldLifecycle); err != nil {
+		diags = append(diags, diag.FromErr(err)...)
+	}
+	if err := d.Set("versioning", oldVersioning); err != nil {
+		diags = append(diags, diag.FromErr(err)...)
+	}
+	return diags
 }
 
 func updateResource(
@@ -207,7 +218,7 @@ func updateResource(
 	client := meta.(*helper.ProviderMeta).Client
 
 	if d.HasChange("region") {
-		if diags := validateRegionIfPresent(ctx, d, &client); diags != nil {
+		if diags := validateRegionIfPresent(ctx, d, &client); diags.HasError() {
 			return diags
 		}
 	}
@@ -236,7 +247,7 @@ func updateResource(
 		})
 
 		config := meta.(*helper.ProviderMeta).Config
-		regionOrCluster := helper.GetRegionOrCluster(ctx, d)
+		region := d.Get("region").(string)
 
 		bucketLabel := d.Get("label").(string)
 
@@ -246,9 +257,9 @@ func updateResource(
 			endpointType = linodego.Pointer(linodego.ObjectStorageEndpointType(et.(string)))
 		}
 
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucketLabel, regionOrCluster, "read_write", endpointType)
-		if diags != nil {
-			return diags
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucketLabel, region, "read_write", endpointType)
+		if diags.HasError() {
+			return revertS3ManagedFields(d, diags)
 		}
 
 		if teardownKeysCleanUp != nil {
@@ -287,7 +298,7 @@ func deleteResource(
 
 	config := meta.(*helper.ProviderMeta).Config
 	client := meta.(*helper.ProviderMeta).Client
-	regionOrCluster, label, err := DecodeBucketID(ctx, d.Id(), d)
+	region, label, err := DecodeBucketID(ctx, d.Id(), d)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
 	}
@@ -299,8 +310,8 @@ func deleteResource(
 			endpointType = linodego.Pointer(linodego.ObjectStorageEndpointType(et.(string)))
 		}
 
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, label, regionOrCluster, "read_write", endpointType)
-		if diags != nil {
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, label, region, "read_write", endpointType)
+		if diags.HasError() {
 			return diags
 		}
 
@@ -321,7 +332,7 @@ func deleteResource(
 	}
 
 	tflog.Debug(ctx, "client.DeleteObjectStorageBucket(...)")
-	err = client.DeleteObjectStorageBucket(ctx, regionOrCluster, label)
+	err = client.DeleteObjectStorageBucket(ctx, region, label)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode ObjectStorageBucket %s: %s", d.Id(), err)
 	}
@@ -452,7 +463,7 @@ func updateBucketAccess(
 	ctx context.Context, d *schema.ResourceData, client linodego.Client,
 ) error {
 	tflog.Debug(ctx, "entering updateBucketAccess")
-	regionOrCluster := helper.GetRegionOrCluster(ctx, d)
+	region := d.Get("region").(string)
 	label := d.Get("label").(string)
 
 	updateOpts := linodego.ObjectStorageBucketUpdateAccessOptions{}
@@ -465,7 +476,7 @@ func updateBucketAccess(
 		updateOpts.CorsEnabled = &newCorsBool
 	}
 	tflog.Debug(ctx, "client.UpdateObjectStorageBucketAccess(...)", map[string]any{"options": updateOpts})
-	if err := client.UpdateObjectStorageBucketAccess(ctx, regionOrCluster, label, updateOpts); err != nil {
+	if err := client.UpdateObjectStorageBucketAccess(ctx, region, label, updateOpts); err != nil {
 		return fmt.Errorf("failed to update bucket access: %s", err)
 	}
 
@@ -476,7 +487,7 @@ func updateBucketCert(
 	ctx context.Context, d *schema.ResourceData, client linodego.Client,
 ) error {
 	tflog.Debug(ctx, "entering updateBucketCert")
-	regionOrCluster := helper.GetRegionOrCluster(ctx, d)
+	region := d.Get("region").(string)
 	label := d.Get("label").(string)
 	oldCert, newCert := d.GetChange("cert")
 	hasOldCert := len(oldCert.([]any)) != 0
@@ -484,7 +495,7 @@ func updateBucketCert(
 	if hasOldCert {
 		tflog.Debug(ctx, "client.DeleteObjectStorageBucketCert(...)")
 
-		if err := client.DeleteObjectStorageBucketCert(ctx, regionOrCluster, label); err != nil {
+		if err := client.DeleteObjectStorageBucketCert(ctx, region, label); err != nil {
 			return fmt.Errorf("failed to delete old bucket cert: %s", err)
 		}
 	}
@@ -495,7 +506,7 @@ func updateBucketCert(
 	}
 
 	uploadOptions := expandBucketCert(certSpec[0])
-	if _, err := client.UploadObjectStorageBucketCertV2(ctx, regionOrCluster, label, uploadOptions); err != nil {
+	if _, err := client.UploadObjectStorageBucketCert(ctx, region, label, uploadOptions); err != nil {
 		return fmt.Errorf("failed to upload new bucket cert: %s", err)
 	}
 	return nil
@@ -509,37 +520,37 @@ func expandBucketCert(v any) linodego.ObjectStorageBucketCertUploadOptions {
 	}
 }
 
-func DecodeBucketID(ctx context.Context, id string, d *schema.ResourceData) (regionOrCluster, label string, err error) {
+func DecodeBucketID(ctx context.Context, id string, d *schema.ResourceData) (region, label string, err error) {
 	tflog.Debug(ctx, "decoding bucket ID")
 	parts := strings.Split(id, ":")
 	if len(parts) == 2 && parts[0] != "" && parts[1] != "" {
-		regionOrCluster = parts[0]
+		region = parts[0]
 		label = parts[1]
-		return regionOrCluster, label, err
+		return region, label, err
 	}
-	tflog.Warn(ctx, "Corrupted bucket ID detected, trying to recover it from cluster and label attributes.")
+	tflog.Warn(ctx, "Corrupted bucket ID detected, trying to recover it from region and label attributes.")
 
-	recoveredCluster, clusterOk := d.GetOk("cluster")
+	recoveredRegion, regionOk := d.GetOk("region")
 	recoveredLabel, labelOk := d.GetOk("label")
 
-	if clusterOk {
-		regionOrCluster = recoveredCluster.(string)
+	if regionOk {
+		region = recoveredRegion.(string)
 	}
 	if labelOk {
 		label = recoveredLabel.(string)
 	}
 
-	if clusterOk && labelOk {
-		d.SetId(fmt.Sprintf("%s:%s", regionOrCluster, label))
+	if regionOk && labelOk {
+		d.SetId(fmt.Sprintf("%s:%s", region, label))
 	} else {
 		err = fmt.Errorf(
-			"Linode Object Storage Bucket ID must be of the form <ClusterOrRegion>:<Label>, "+
-				"but a corrupted ID %q, is in the state. Attempt to recover them from `cluster` "+
+			"Linode Object Storage Bucket ID must be of the form <Region>:<Label>, "+
+				"but a corrupted ID %q, is in the state. Attempt to recover them from `region` "+
 				"and `label` attributes was also failed.", id,
 		)
 	}
 
-	return regionOrCluster, label, err
+	return region, label, err
 }
 
 func flattenLifecycleRules(ctx context.Context, rules []s3types.LifecycleRule) []map[string]any {

@@ -1,0 +1,7 @@
+{{ define "monitor_logs_stream_data_not_found" }}
+
+data "linode_monitor_logs_stream" "foobar" {
+  id = "999999999"
+}
+
+{{ end }}

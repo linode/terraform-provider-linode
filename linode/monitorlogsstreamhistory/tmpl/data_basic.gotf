@@ -1,0 +1,7 @@
+{{ define "monitor_logs_stream_history_data_basic" }}
+
+data "linode_monitor_logs_stream_history" "foobar" {
+  stream_id = {{.StreamID}}
+}
+
+{{ end }}

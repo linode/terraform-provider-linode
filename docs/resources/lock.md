@@ -6,13 +6,11 @@ description: |-
 
 # linode\_lock
 
-~> **Early Access** Locks are in Early Access and may not be available to all users.
-
 ~> **Important** Only unrestricted users can create and delete locks. Restricted users cannot manage locks even if they have read/write permissions for the resource.
 
 Manages a Linode Lock which prevents accidental deletion and modification of resources. Locks protect against deletion, rebuild operations, and service transfers. The `cannot_delete_with_subresources` lock type also protects subresources such as disks, configs, interfaces, and IP addresses.
 
-For more information, see the Linode APIv4 docs (TBD).
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-resource-lock).
 
 -> **Note** Only one lock can exist per resource at a time. You cannot have both `cannot_delete` and `cannot_delete_with_subresources` locks on the same resource simultaneously.
 
@@ -61,6 +59,8 @@ The following arguments are supported:
 * `lock_type` - (Required) The type of lock to apply. Only one lock type can exist per resource at a time. Valid values are:
   * `cannot_delete` - Prevents the resource from being deleted, rebuilt, or transferred to another account.
   * `cannot_delete_with_subresources` - Prevents the resource from being deleted, rebuilt, or transferred, and also prevents deletion of subresources (disks, configs, interfaces, and IP addresses).
+
+-> **Note** The cannot_delete_with_subresources form of lock_type that's available with other resources does not apply to an entity_type of lkecluster or lkenodepool
 
 ## Attributes Reference
 

@@ -2,8 +2,8 @@ package images
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
-	"github.com/linode/terraform-provider-linode/v3/linode/image"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v4/linode/image"
 )
 
 var filterConfig = frameworkfilter.Config{
@@ -11,11 +11,12 @@ var filterConfig = frameworkfilter.Config{
 	"is_public":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
 	"label":      {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"size":       {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
-	"type":       {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"vendor":     {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 
-	// TODO: check if tags become API filterable
-	"tags":        {TypeFunc: frameworkfilter.FilterTypeString},
+	// TODO: change to API filterable when API fixes it
+	"type": {TypeFunc: frameworkfilter.FilterTypeString},
+	"tags": {TypeFunc: frameworkfilter.FilterTypeString},
+
 	"created_by":  {TypeFunc: frameworkfilter.FilterTypeString},
 	"id":          {TypeFunc: frameworkfilter.FilterTypeString},
 	"status":      {TypeFunc: frameworkfilter.FilterTypeString},

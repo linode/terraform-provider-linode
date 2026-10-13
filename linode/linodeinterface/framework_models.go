@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 type LinodeInterfaceModel struct {
@@ -22,6 +22,7 @@ type LinodeInterfaceModel struct {
 	Public       types.Object `tfsdk:"public"`
 	VLAN         types.Object `tfsdk:"vlan"`
 	VPC          types.Object `tfsdk:"vpc"`
+	RDMAVPC      types.Object `tfsdk:"rdma_vpc"`
 }
 
 func (state *LinodeInterfaceModel) GetIDs(ctx context.Context, diags *diag.Diagnostics) (linodeID int, id int) {
@@ -33,7 +34,7 @@ func (state *LinodeInterfaceModel) GetIDs(ctx context.Context, diags *diag.Diagn
 			"Failed to Convert ID Type",
 			fmt.Sprintf(
 				"This is always an error in the provider. Please report the following to the provider developer:\n\n"+
-					"Failed to convert string ID %q to an integer.\n", id,
+					"Failed to convert string ID %q to an integer.\n", state.ID.ValueString(),
 			),
 		)
 	}
@@ -47,7 +48,10 @@ func (plan *LinodeInterfaceModel) GetCreateOptions(ctx context.Context, diags *d
 	if !plan.DefaultRoute.IsUnknown() && !plan.DefaultRoute.IsNull() {
 		var planDefaultRoute DefaultRouteAttrModel
 		plan.DefaultRoute.As(ctx, &planDefaultRoute, basetypes.ObjectAsOptions{})
-		defaultRouteOpts, _ := planDefaultRoute.GetCreateOrUpdateOptions(ctx, nil)
+		defaultRoute, _ := planDefaultRoute.GetCreateOrUpdateOptions(ctx, nil)
+
+		defaultRouteOpts := linodego.InterfaceDefaultRouteCreateOptions(defaultRoute)
+
 		opts.DefaultRoute = linodego.Pointer(defaultRouteOpts)
 	}
 
@@ -66,7 +70,11 @@ func (plan *LinodeInterfaceModel) GetCreateOptions(ctx context.Context, diags *d
 	} else if !plan.VLAN.IsUnknown() && !plan.VLAN.IsNull() {
 		var planVLANInterface VLANAttrModel
 		plan.VLAN.As(ctx, &planVLANInterface, basetypes.ObjectAsOptions{})
-		opts.VLAN = linodego.Pointer(planVLANInterface.GetCreateOptions(ctx))
+
+		VLANInterface := planVLANInterface.GetCreateOptions(ctx)
+		VLANInterfaceCreateOpts := linodego.VLANInterfaceCreateOptions(VLANInterface)
+
+		opts.VLAN = linodego.Pointer(VLANInterfaceCreateOpts)
 	} else if !plan.VPC.IsUnknown() && !plan.VPC.IsNull() {
 		var planVPCInterface VPCAttrModel
 		plan.VPC.As(ctx, &planVPCInterface, basetypes.ObjectAsOptions{})
@@ -96,7 +104,10 @@ func (plan *LinodeInterfaceModel) GetUpdateOptions(
 		}
 
 		if updatedDefaultRoute, ok := planDefaultRoute.GetCreateOrUpdateOptions(ctx, stateDefaultRoute); ok {
-			opts.DefaultRoute = linodego.Pointer(updatedDefaultRoute)
+
+			updatedDefaultRouteOpts := linodego.InterfaceDefaultRouteUpdateOptions(updatedDefaultRoute)
+
+			opts.DefaultRoute = linodego.Pointer(updatedDefaultRouteOpts)
 		}
 	}
 
@@ -127,6 +138,20 @@ func (plan *LinodeInterfaceModel) GetUpdateOptions(
 
 		if updatedVPCInterface, ok := planVPCInterface.GetUpdateOptions(ctx, stateVPCInterface, diags); ok {
 			opts.VPC = linodego.Pointer(updatedVPCInterface)
+		}
+	}
+
+	if !plan.RDMAVPC.IsUnknown() && !plan.RDMAVPC.IsNull() {
+		var planRDMAVPC RDMAVPCAttrModel
+		var stateRDMAVPC *RDMAVPCAttrModel
+		plan.RDMAVPC.As(ctx, &planRDMAVPC, basetypes.ObjectAsOptions{})
+
+		if !state.RDMAVPC.IsNull() {
+			state.RDMAVPC.As(ctx, &stateRDMAVPC, basetypes.ObjectAsOptions{})
+		}
+
+		if updatedRDMAVPC, ok := planRDMAVPC.GetUpdateOptions(ctx, stateRDMAVPC, diags); ok {
+			opts.RDMAVPC = linodego.Pointer(updatedRDMAVPC)
 		}
 	}
 
@@ -217,4 +242,26 @@ func (data *LinodeInterfaceModel) FlattenInterface(
 	}
 
 	data.VPC = *flattenedVPC
+
+	// Flatten RDMA VPC interface
+	flattenedRDMAVPC := helper.KeepOrUpdateSingleNestedAttributesWithTypes(
+		ctx, data.RDMAVPC, rdmaVPCInterfaceSchema.GetType().(types.ObjectType).AttrTypes, preserveKnown, diags,
+		func(rdma *RDMAVPCAttrModel, isNull *bool, pk bool, d *diag.Diagnostics) {
+			if i.RDMAVPC == nil {
+				*isNull = true
+				rdma.VPCID = helper.KeepOrUpdateValue(rdma.VPCID, types.Int64Null(), pk)
+				rdma.SubnetID = helper.KeepOrUpdateValue(rdma.SubnetID, types.Int64Null(), pk)
+				rdma.IPv4 = helper.KeepOrUpdateValue(
+					rdma.IPv4, types.ObjectNull(resourceRDMAVPCIPv4Attribute.GetType().(types.ObjectType).AttrTypes), pk,
+				)
+				return
+			}
+			rdma.FlattenRDMAVPCInterface(ctx, *i.RDMAVPC, pk, d)
+		},
+	)
+	if diags.HasError() {
+		return
+	}
+
+	data.RDMAVPC = *flattenedRDMAVPC
 }

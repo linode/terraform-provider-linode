@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v3/linode/firewalls"
+	"github.com/linode/terraform-provider-linode/v4/linode/firewalls"
 )
 
 var TransferObjectType = types.ObjectType{
@@ -39,6 +39,14 @@ var DataSourceAttributes = map[string]schema.Attribute{
 		Description: "The region where this NodeBalancer will be deployed.",
 		Computed:    true,
 	},
+	"type": schema.StringAttribute{
+		Description: "The NodeBalancer plan type.",
+		Computed:    true,
+	},
+	"backend_connectivity": schema.StringAttribute{
+		Description: "How this NodeBalancer communicates with backends. May be `undefined` if not configured.",
+		Computed:    true,
+	},
 	"client_conn_throttle": schema.Int64Attribute{
 		Description: "Throttle connections per second (0-20). Set to 0 (zero) to disable throttling.",
 		Computed:    true,
@@ -59,6 +67,11 @@ var DataSourceAttributes = map[string]schema.Attribute{
 		Description: "The Public IPv6 Address of this NodeBalancer",
 		Computed:    true,
 	},
+	"backend_ipv6_prefix": schema.StringAttribute{
+		Description: "The /96 IPv6 source range used when this NodeBalancer connects to backends. " +
+			"Null if no backend IPv6 prefix is assigned.",
+		Computed: true,
+	},
 	"created": schema.StringAttribute{
 		Description: "When this NodeBalancer was created.",
 		Computed:    true,
@@ -78,6 +91,30 @@ var DataSourceAttributes = map[string]schema.Attribute{
 		ElementType: types.StringType,
 		Computed:    true,
 		Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
+	},
+	"lke_cluster": schema.ListNestedAttribute{
+		Description: "The related LKE cluster for this NodeBalancer, if any.",
+		Computed:    true,
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"id": schema.Int64Attribute{
+					Description: "The ID of the related LKE cluster.",
+					Computed:    true,
+				},
+				"label": schema.StringAttribute{
+					Description: "The label of the related LKE cluster.",
+					Computed:    true,
+				},
+				"type": schema.StringAttribute{
+					Description: "The type of the related LKE cluster.",
+					Computed:    true,
+				},
+				"url": schema.StringAttribute{
+					Description: "The URL where you can access the related LKE cluster.",
+					Computed:    true,
+				},
+			},
+		},
 	},
 }
 

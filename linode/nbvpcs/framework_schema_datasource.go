@@ -2,8 +2,8 @@ package nbvpcs
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
-	"github.com/linode/terraform-provider-linode/v3/linode/nbvpc"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v4/linode/nbvpc"
 )
 
 var filterConfig = frameworkfilter.Config{

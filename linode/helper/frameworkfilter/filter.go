@@ -2,6 +2,7 @@ package frameworkfilter
 
 import (
 	"context"
+	"crypto/sha3"
 	"encoding/base64"
 	"encoding/json"
 	"strconv"
@@ -12,8 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"golang.org/x/crypto/sha3"
+	"github.com/linode/linodego/v2"
 )
 
 // ListFunc is a wrapper for functions that will list and return values from the API.
@@ -117,7 +117,7 @@ func (f Config) OrderBySchema() schema.StringAttribute {
 func (f Config) GenerateID(filters []FilterModel) (types.String, diag.Diagnostic) {
 	jsonMap := make([]map[string]any, len(filters))
 
-	// Terraform types cannot be marshalled directly into JSON,
+	// Terraform types cannot be marshaled directly into JSON,
 	// so we should convert them into their underlying primitives.
 	for i, filter := range filters {
 		values := make([]string, len(filter.Values))
@@ -140,7 +140,7 @@ func (f Config) GenerateID(filters []FilterModel) (types.String, diag.Diagnostic
 		)
 	}
 
-	hash := sha3.Sum512(filterJSON)
+	hash := sha3.Sum512(filterJSON) //nolint:govet
 	return types.StringValue(base64.StdEncoding.EncodeToString(hash[:])), nil
 }
 

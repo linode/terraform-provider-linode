@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 func TestExpandInstanceConfigDeviceMap(t *testing.T) {

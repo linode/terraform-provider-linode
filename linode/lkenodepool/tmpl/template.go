@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
 )
 
 type TaintData struct {
@@ -28,6 +28,7 @@ type TemplateData struct {
 	Label             string
 	FirewallID        *int
 	UpdateStrategy    string
+	DiskEncryption    string
 }
 
 func Generate(t testing.TB, data *TemplateData) string {

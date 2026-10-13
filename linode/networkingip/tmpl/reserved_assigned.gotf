@@ -2,6 +2,8 @@
 
 {{ template "e2e_test_firewall" . }}
 
+{{ template "provider_no_poll" . }}
+
 resource "linode_instance" "test" {
     count = 2
 

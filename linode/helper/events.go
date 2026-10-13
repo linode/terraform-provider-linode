@@ -3,7 +3,7 @@ package helper
 import (
 	"context"
 
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 // GetLatestEvent returns the latest Linode event with the given arguments.

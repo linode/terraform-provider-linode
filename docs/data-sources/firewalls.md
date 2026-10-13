@@ -45,11 +45,13 @@ output "firewall_ids" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode Cloud Firewalls that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode Cloud Firewalls that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
-* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `asc`)
+* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `desc`)
 
 ### Filter
 
@@ -63,6 +65,8 @@ The following arguments are supported:
 
 Each Linode firewall will be stored in the `firewalls` attribute and will export the following attributes:
 
+* `firewalls` - (Nested Attribute List) The list of Linode Cloud Firewalls.
+
 * `id` - The unique ID assigned to this Firewall.
 
 * `label` - The label for the Firewall. For display purposes only. If no label is provided, a default will be assigned.
@@ -71,15 +75,19 @@ Each Linode firewall will be stored in the `firewalls` attribute and will export
 
 * `disabled` - If true, the Firewall is inactive.
 
-* [`devices`](#firewall-device) - The devices associated with this firewall.
+* [`devices`](#firewall-device) - (Nested Attribute List) The devices associated with this firewall.
 
-* [`inbound`](#firewall-rule) - A set of firewall rules that specify what inbound network traffic is allowed.
+* [`inbound`](#firewall-rule) - (Nested Attribute List) A set of firewall rules that specify what inbound network traffic is allowed.
 
 * `inbound_policy` - The default behavior for inbound traffic.
 
-* [`outbound`](#firewall-rule) - A set of firewall rules that specify what outbound network traffic is allowed.
+* [`outbound`](#firewall-rule) - (Nested Attribute List) A set of firewall rules that specify what outbound network traffic is allowed.
 
 * `outbound_policy` - The default behavior for outbound traffic.
+
+* `version` - The current version of the Firewall rules.
+
+* `fingerprint` - The fingerprint of the current Firewall rules.
 
 * `linodes` - The IDs of Linodes this firewall is applied to.
 
@@ -99,7 +107,7 @@ Each Linode firewall will be stored in the `firewalls` attribute and will export
 
 * `action` - Controls whether traffic is accepted or dropped by this rule (ACCEPT, DROP).
 
-* `protocol` - The network protocol this rule controls. (TCP, UDP, ICMP)
+* `protocol` - The network protocol this rule controls. Possible values include `ALL`, `TCP`, `UDP`, `ICMP`, `IPENCAP`, or a protocol number from `0` to `255`.
 
 * `ports` - A string representation of ports and/or port ranges (i.e. "443" or "80-90, 91").
 

@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
 type VLANModel struct {
@@ -34,7 +34,7 @@ func (data *VLANsFilterModel) parseVLANs(
 
 	id, err := json.Marshal(vlans)
 	if err != nil {
-		diags.AddError("Error marshalling json", err.Error())
+		diags.AddError("Error marshaling json", err.Error())
 		return diags
 	}
 

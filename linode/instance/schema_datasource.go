@@ -2,7 +2,7 @@ package instance
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 var instanceDataSourceSchema = map[string]*schema.Schema{
@@ -22,11 +22,6 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 		Description: "The Linode's label is for display purposes only. If no label is provided for a Linode, " +
 			"a default will be assigned",
 		Computed: true,
-	},
-	"group": {
-		Type:        schema.TypeString,
-		Description: "The display group of the Linode instance.",
-		Computed:    true,
 	},
 	"tags": {
 		Type:        schema.TypeSet,
@@ -73,10 +68,9 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 	},
 	"interface_generation": {
-		Type: schema.TypeString,
-		Description: "The interface type for the Linode. " +
-			"NOTE: Linode Interfaces may not currently be available to all users.",
-		Computed: true,
+		Type:        schema.TypeString,
+		Description: "The interface type for the Linode. ",
+		Computed:    true,
 	},
 	"ip_address": {
 		Type: schema.TypeString,

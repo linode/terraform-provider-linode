@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 type PublicAttrModel struct {
@@ -96,7 +96,8 @@ func (plan *PublicIPv4AttrModel) GetCreateOptions(ctx context.Context) (opts lin
 		for _, v := range addresses {
 			addressesOpts = append(addressesOpts, v.GetCreateOptions(ctx))
 		}
-		opts.Addresses = linodego.Pointer(addressesOpts)
+
+		opts.Addresses = addressesOpts
 	}
 
 	return opts
@@ -227,7 +228,7 @@ func (plan *PublicIPv6AttrModel) GetCreateOptions(ctx context.Context) (opts lin
 		for _, v := range ranges {
 			rangesOpts = append(rangesOpts, v.GetCreateOptions(ctx))
 		}
-		opts.Ranges = linodego.Pointer(rangesOpts)
+		opts.Ranges = rangesOpts
 	}
 
 	return opts

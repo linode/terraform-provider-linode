@@ -27,11 +27,13 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* [`automatic`](#backup) - A list of backups or snapshots for a Linode.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
 
-* [`current`](#backup) - The current Backup for a Linode.
+* [`automatic`](#backup) - (Read-Only Object List) A list of backups or snapshots for a Linode. Referenced with an index (e.g. `automatic.0.id`).
 
-* [`in_progress`](#backup) - The in-progress Backup for a Linode.
+* [`current`](#backup) - (Read-Only Object List) The current Backup for a Linode. Referenced with an index (e.g. `current.0.id`).
+
+* [`in_progress`](#backup) - (Read-Only Object List) The in-progress Backup for a Linode. Referenced with an index (e.g. `in_progress.0.id`).
 
 ### Backup
 
@@ -53,7 +55,7 @@ The following attributes are available for each Backup:
 
 * `configs` - A list of the labels of the Configuration profiles that are part of the Backup.
 
-* [`disks`](#disk) - A list of the disks that are part of the Backup.
+* [`disks`](#disk) - (Read-Only Object List) A list of the disks that are part of the Backup. Referenced with an index (e.g. `disks.0.label`).
 
 ### Disk
 

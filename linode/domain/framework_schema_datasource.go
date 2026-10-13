@@ -28,10 +28,6 @@ var DomainAttributes = map[string]schema.Attribute{
 			"describes, or if it is a read-only copy of a master (also called a slave).",
 		Computed: true,
 	},
-	"group": schema.StringAttribute{
-		Description: "The group this Domain belongs to. This is for display purposes only.",
-		Computed:    true,
-	},
 	"status": schema.StringAttribute{
 		Description: "Used to control whether this Domain is currently being rendered.",
 		Computed:    true,

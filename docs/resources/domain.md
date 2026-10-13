@@ -49,8 +49,6 @@ The following arguments are supported:
 
 * `description` - (Optional) A description for this Domain. This is for display purposes only.
 
-* `group` - (Optional) The group this Domain belongs to. This is for display purposes only.
-
 * `ttl_sec` - (Optional) 'Time to Live' - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 0, 30, 120, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.
 
 * `retry_sec` - (Optional) The interval, in seconds, at which a failed refresh should be retried. Valid values are 0, 30, 120, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.

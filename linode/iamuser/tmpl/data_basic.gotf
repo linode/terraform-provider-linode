@@ -1,0 +1,13 @@
+{{ define "iam_user_data_basic" }}
+
+resource "linode_user" "test_user" {
+    username = "{{.Username}}"
+    email = "{{.Email}}"
+    restricted = {{.Restricted}}
+}
+
+data "linode_iam_user" "test_iam_user" {
+    username = "${linode_user.test_user.username}"
+}
+
+{{ end }}

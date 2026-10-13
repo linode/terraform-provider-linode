@@ -4,10 +4,11 @@
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
-    group = "tf_test"
+
     type = "{{.Type}}"
     region = "{{ .Region }}"
     image = "{{.Image}}"
+    root_pass = "{{ .RootPass }}"
     resize_disk = true
     firewall_id = linode_firewall.e2e_test_firewall.id
 }

@@ -24,6 +24,11 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The id of the parent VPC for this VPC Subnet",
 			Required:    true,
 		},
+		"vpc_type": schema.StringAttribute{
+			Description: "The type of the parent VPC ('regular' or 'rdma'). " +
+				"Omitted if the requesting account does not have access to the GPUDirect RDMA functionality.",
+			Computed: true,
+		},
 		"label": schema.StringAttribute{
 			Description: "The label of the VPC Subnet.",
 			Computed:    true,

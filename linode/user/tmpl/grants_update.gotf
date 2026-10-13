@@ -3,7 +3,7 @@
 # TODO: reuse no image instance template defined in instance
 resource "linode_instance" "foobar" {
     label = "{{.InstLabel}}"
-    group = "tf_test"
+
     type = "g6-nanode-1"
     region = "us-east"
     booted = false

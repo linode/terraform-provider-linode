@@ -9,13 +9,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/ipv6range/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/ipv6range/tmpl"
 )
 
 // TODO: don't hardcode this once IPv6 sharing has a proper capability string
@@ -256,18 +257,18 @@ func checkIPv6RangeDestroy(s *terraform.State) error {
 }
 
 func checkIPv6RangeNoDuplicates(s *terraform.State) error {
-	existingRanges := make(map[string]bool)
+	existingRanges := set.New[string](len(s.RootModule().Resources))
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_ipv6_range" {
 			continue
 		}
 
-		if _, ok := existingRanges[rs.Primary.ID]; ok {
+		if existingRanges.Contains(rs.Primary.ID) {
 			return fmt.Errorf("duplicate range found: %s", rs.Primary.ID)
 		}
 
-		existingRanges[rs.Primary.ID] = true
+		existingRanges.Insert(rs.Primary.ID)
 	}
 
 	return nil

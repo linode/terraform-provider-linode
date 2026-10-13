@@ -2,9 +2,7 @@ package objkey
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -81,33 +79,9 @@ var frameworkResourceSchema = schema.Schema{
 						Description: "The unique label of the bucket to which the key will grant limited access.",
 						Required:    true,
 					},
-					"cluster": schema.StringAttribute{
-						Description: "The Object Storage cluster where the bucket resides. " +
-							"Deprecated in favor of `region`",
-						Optional: true,
-						Computed: true,
-						DeprecationMessage: "The `cluster` attribute in a `bucket_access` block has " +
-							"been deprecated in favor of `region` attribute. A cluster value can be " +
-							"converted to a region value by removing -x at the end, for example, a " +
-							"cluster value `us-mia-1` can be converted to region value `us-mia`",
-						Validators: []validator.String{
-							stringvalidator.ExactlyOneOf(
-								path.MatchRelative().AtParent().AtName("region"),
-							),
-						},
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
-					},
 					"region": schema.StringAttribute{
 						Description: "The region where the bucket resides.",
-						Optional:    true,
-						Computed:    true,
-						Validators: []validator.String{
-							stringvalidator.ExactlyOneOf(
-								path.MatchRelative().AtParent().AtName("cluster"),
-							),
-						},
+						Required:    true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},

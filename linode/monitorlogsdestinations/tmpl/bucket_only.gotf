@@ -1,0 +1,29 @@
+{{ define "monitor_logs_destinations_bucket_only" }}
+
+provider "linode" {
+  obj_use_temp_keys       = true
+  obj_bucket_force_delete = true
+}
+
+resource "linode_object_storage_key" "test" {
+  label = "{{.Label}}-key"
+  {{if .Region }}
+  regions = ["{{.Region}}"]
+  {{else}}
+  regions = ["{{.Cluster}}"]
+  {{end}}
+}
+
+resource "linode_object_storage_bucket" "test" {
+  {{if .Region }}
+  region = "{{.Region}}"
+  {{else}}
+  cluster = "{{.Cluster}}"
+  {{end}}
+  label      = "{{.Label}}-bucket"
+  access_key = linode_object_storage_key.test.access_key
+  secret_key = linode_object_storage_key.test.secret_key
+}
+
+{{ end }}
+

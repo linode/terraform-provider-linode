@@ -88,10 +88,9 @@ resource "linode_object_storage_bucket" "mybucket" {
 
 The following arguments are supported:
 
-* `region` - (Required) The region of the Linode Object Storage Bucket. Exactly one of `region` and `cluster` is required for creating a bucket.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
 
-* `cluster` - (Deprecated) The cluster of the Linode Object Storage Bucket. This is deprecated in favor of `region` attribute.
-For example, `us-mia-1` cluster can be translated into `us-mia` region. Exactly one of `region` and `cluster` is required for creating a bucket.
+* `region` - (Required) The region of the Linode Object Storage Bucket.
 
 * `label` - (Required) The label of the Linode Object Storage Bucket.
 
@@ -113,9 +112,9 @@ For example, `us-mia-1` cluster can be translated into `us-mia` region. Exactly 
 
 * `versioning` - (Optional) Whether to enable versioning. Once you version-enable a bucket, it can never return to an unversioned state. You can, however, suspend versioning on that bucket. (Requires `access_key` and `secret_key`)
 
-* [`lifecycle_rule`](#lifecycle_rule) - (Optional) Lifecycle rules to be applied to the bucket. (Requires `access_key` and `secret_key`)
+* [`lifecycle_rule`](#lifecycle_rule) - (Optional, Block List) Lifecycle rules to be applied to the bucket. (Requires `access_key` and `secret_key`)
 
-* [`cert`](#cert) - (Optional) The bucket's TLS/SSL certificate.
+* [`cert`](#cert) - (Optional, Block) The bucket's TLS/SSL certificate. Referenced with an index (e.g. `cert.0.certificate`).
 
 ### cert
 
@@ -137,9 +136,9 @@ The following arguments are supported in the lifecycle_rule specification block:
 
 * `abort_incomplete_multipart_upload_days` - (Optional) Specifies the number of days after initiating a multipart upload when the multipart upload must be completed.
 
-* [`expiration`](#expiration) - (Optional) Specifies a period in the object's expire.
+* [`expiration`](#expiration) - (Optional, Block) Specifies a period in the object's expire. Referenced with an index (e.g. `lifecycle_rule.0.expiration.0.date`).
 
-* [`noncurrent_version_expiration`](#noncurrent_version_expiration) - (Optional) Specifies when non-current object versions expire.
+* [`noncurrent_version_expiration`](#noncurrent_version_expiration) - (Optional, Block) Specifies when non-current object versions expire. Referenced with an index (e.g. `lifecycle_rule.0.noncurrent_version_expiration.0.days`).
 
 ### expiration
 
@@ -159,7 +158,7 @@ The following arguments are supported in the noncurrent_version_expiration speci
 
 ## Import
 
-Linodes Object Storage Buckets can be imported using the resource `id` which is made of `cluster:label`, e.g.
+Linodes Object Storage Buckets can be imported using the resource `id` which is made of `region:label`, e.g.
 
 ```sh
 terraform import linode_object_storage_bucket.mybucket us-east-1:foobar

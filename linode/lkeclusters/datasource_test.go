@@ -10,9 +10,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/lkeclusters/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/lkeclusters/tmpl"
 )
 
 var (
@@ -45,7 +45,7 @@ func init() {
 
 	k8sVersionLatest = k8sVersions[len(k8sVersions)-1]
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLKE}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLKE}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,22 +57,25 @@ func TestAccDataSourceLKEClusters_basic(t *testing.T) {
 	t.Parallel()
 
 	dataSourceName := "data.linode_lke_clusters.test"
+	tagsDataSourceName := "data.linode_lke_clusters.test_tags"
 
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
+		tag1Name := acctest.RandomWithPrefix("test_1")
+		tag2Name := acctest.RandomWithPrefix("test_2")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.DataBasic(t, clusterName, k8sVersionLatest, testRegion),
+					Config: tmpl.DataBasic(t, clusterName, k8sVersionLatest, testRegion, tag1Name, tag2Name),
 					Check: resource.ComposeTestCheckFunc(
 						acceptance.CheckResourceAttrGreaterThan(dataSourceName, "lke_clusters.#", 1),
 					),
 				},
 				{
-					Config: tmpl.DataFilter(t, clusterName, k8sVersionLatest, testRegion),
+					Config: tmpl.DataFilter(t, clusterName, k8sVersionLatest, testRegion, tag1Name, tag2Name),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.#", "1"),
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.label", clusterName),
@@ -82,6 +85,11 @@ func TestAccDataSourceLKEClusters_basic(t *testing.T) {
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.tags.#", "1"),
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.tier", "standard"),
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.control_plane.high_availability", "false"),
+
+						resource.TestCheckResourceAttr(tagsDataSourceName, "lke_clusters.#", "1"),
+						resource.TestCheckResourceAttr(tagsDataSourceName, "lke_clusters.0.label", clusterName+"-2"),
+						resource.TestCheckResourceAttr(tagsDataSourceName, "lke_clusters.0.tags.#", "1"),
+						resource.TestCheckResourceAttr(tagsDataSourceName, "lke_clusters.0.tags.0", tag2Name),
 					),
 				},
 			},

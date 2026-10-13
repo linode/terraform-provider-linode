@@ -1,0 +1,9 @@
+{{ define "monitor_logs_stream_invalid_type" }}
+
+resource "linode_monitor_logs_stream" "foobar" {
+  label        = "{{.Label}}"
+  type         = "invalid_type"
+  destinations = [1]
+}
+
+{{ end }}

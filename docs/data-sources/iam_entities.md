@@ -1,0 +1,49 @@
+---
+page_title: "Linode: linode_iam_entities"
+description: |-
+  Lists all entities on the account.
+---
+
+# linode\_iam\_entities
+
+Provides a list of all Entities on this Account.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-entities).
+
+```hcl
+data "linode_iam_entities" "entities" {
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+*While the filtering system is in place currently this endpoint does not have filter support for any field.*
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode users that meet certain requirements.
+
+* `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
+
+* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `desc`)
+
+### Filter
+
+*While the filtering system is in place currently this endpoint does not have filter support for any field.*
+
+## Attributes Reference
+
+Each Linode entity will be stored in the `entities` attribute and will export the following attributes:
+
+* `entities` - (Nested Attribute List) The returned list of entities. Referenced by index (e.g. `entities[0].id`).
+
+* `id` - A unique identifier for each entity.
+
+* `label` - A unique label for each entity.
+
+* `type` - The type for each entity. (eg. Volume)
+
+## Filterable Fields
+
+*While the filtering system is in place currently this endpoint does not have filter support for any field.*

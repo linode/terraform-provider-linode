@@ -1,5 +1,5 @@
 ---
-page_title: "Linode: linode_kernel"
+page_title: "Linode: linode_kernels"
 description: |-
   Provides details about Linode Kernels that match a set of filters.
 ---
@@ -31,11 +31,13 @@ data "linode_kernels" "filtered_kernels" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode Kernels that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode Kernels that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
-* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `asc`)
+* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `desc`)
 
 ### Filter
 
@@ -48,6 +50,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode Kernel will be stored in the `kernel` attribute and will export the following attributes:
+
+* `kernels` - (Nested Attribute List) The returned list of Kernels. Referenced by index (e.g. `kernels[0].id`).
 
 * `id` - The unique ID of this Kernel.
 
@@ -62,8 +66,6 @@ Each Linode Kernel will be stored in the `kernel` attribute and will export the 
 * `pvops` - If this Kernel is suitable for paravirtualized operations.
 
 * `version` - Linux Kernel version
-
-* `xen` - (Deprecated) If this Kernel is suitable for Xen Linodes.
 
 ## Filterable Fields
 
@@ -80,5 +82,3 @@ Each Linode Kernel will be stored in the `kernel` attribute and will export the 
 * `pvops`
 
 * `version`
-
-* `xen` (Deprecated)

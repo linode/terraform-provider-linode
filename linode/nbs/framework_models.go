@@ -6,10 +6,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
-	"github.com/linode/terraform-provider-linode/v3/linode/nb"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v4/linode/nb"
 )
 
 // NodeBalancerFilterModel describes the Terraform resource data model to match the
@@ -26,15 +26,19 @@ type NodeBalancerModel struct {
 	ID                    types.Int64       `tfsdk:"id"`
 	Label                 types.String      `tfsdk:"label"`
 	Region                types.String      `tfsdk:"region"`
+	Type                  types.String      `tfsdk:"type"`
+	BackendConnectivity   types.String      `tfsdk:"backend_connectivity"`
 	ClientConnThrottle    types.Int64       `tfsdk:"client_conn_throttle"`
 	ClientUDPSessThrottle types.Int64       `tfsdk:"client_udp_sess_throttle"`
 	Hostname              types.String      `tfsdk:"hostname"`
 	Ipv4                  types.String      `tfsdk:"ipv4"`
 	Ipv6                  types.String      `tfsdk:"ipv6"`
+	BackendIPv6Prefix     types.String      `tfsdk:"backend_ipv6_prefix"`
 	Created               timetypes.RFC3339 `tfsdk:"created"`
 	Updated               timetypes.RFC3339 `tfsdk:"updated"`
 	Transfer              types.List        `tfsdk:"transfer"`
 	Tags                  types.Set         `tfsdk:"tags"`
+	LKECluster            types.List        `tfsdk:"lke_cluster"`
 }
 
 func (data *NodeBalancerFilterModel) parseNodeBalancers(
@@ -57,13 +61,15 @@ func (data *NodeBalancerModel) flattenNodeBalancer(
 ) diag.Diagnostics {
 	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Label = types.StringPointerValue(nodebalancer.Label)
-	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Region = types.StringValue(nodebalancer.Region)
+	data.Type = types.StringValue(string(nodebalancer.Type))
+	data.BackendConnectivity = types.StringPointerValue(helper.StringPtr(nodebalancer.BackendConnectivity))
 	data.ClientConnThrottle = types.Int64Value(int64(nodebalancer.ClientConnThrottle))
 	data.ClientUDPSessThrottle = types.Int64Value(int64(nodebalancer.ClientUDPSessThrottle))
 	data.Hostname = types.StringPointerValue(nodebalancer.Hostname)
 	data.Ipv4 = types.StringPointerValue(nodebalancer.IPv4)
 	data.Ipv6 = types.StringPointerValue(nodebalancer.IPv6)
+	data.BackendIPv6Prefix = types.StringPointerValue(nodebalancer.BackendIPv6Prefix)
 	data.Created = timetypes.NewRFC3339TimePointerValue(nodebalancer.Created)
 	data.Updated = timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated)
 
@@ -82,6 +88,12 @@ func (data *NodeBalancerModel) flattenNodeBalancer(
 		return diags
 	}
 	data.Tags = tags
+
+	lkeCluster, diags := nb.FlattenLKECluster(ctx, nodebalancer.LKECluster)
+	if diags.HasError() {
+		return diags
+	}
+	data.LKECluster = *lkeCluster
 
 	return nil
 }

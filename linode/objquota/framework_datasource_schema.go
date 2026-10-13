@@ -36,6 +36,14 @@ var FrameworkDatasourceSchema = schema.Schema{
 			Description: "The specific Object Storage resource for the quota.",
 			Computed:    true,
 		},
+		"quota_type": schema.StringAttribute{
+			Description: "The type of the Object Storage quota.",
+			Computed:    true,
+		},
+		"has_usage": schema.BoolAttribute{
+			Description: "Whether usage data is available for this Object Storage quota.",
+			Computed:    true,
+		},
 		"quota_usage": schema.ObjectAttribute{
 			Description:    "The usage data for a specific Object Storage related quota on your account.",
 			Computed:       true,

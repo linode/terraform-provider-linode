@@ -6,7 +6,7 @@ resource "linode_instance" "foobar" {
     label = "{{.Label}}_r"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
-    group = "tf_test_r"
+
 
     config {
         label = "config"

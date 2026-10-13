@@ -30,7 +30,9 @@ output "regions-without-linodes" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode account availabilities that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode account availabilities that meet certain requirements.
 
 ### Filter
 
@@ -43,6 +45,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode account availability will be stored in the `availabilities` attribute and will export the following attributes:
+
+* `availabilities` - (Nested Attribute List) The account availabilities returned by this data source.
 
 * `region` - The region this availability entry refers to.
 

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/stateupgrade"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/stateupgrade"
 )
 
 func TestStackScriptUpgradeTimeFormat(t *testing.T) {

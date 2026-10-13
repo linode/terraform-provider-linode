@@ -6,28 +6,24 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"maps"
-	"slices"
 	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/objkey/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/objkey/tmpl"
 )
 
-var (
-	testCluster string
-	testRegion  string
-)
+var testRegion string
 
 func init() {
 	resource.AddTestSweepers("linode_object_storage_key", &resource.Sweeper{
@@ -36,11 +32,6 @@ func init() {
 	})
 
 	endpoint, err := acceptance.GetRandomObjectStorageEndpoint()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	testCluster, err = acceptance.GetEndpointCluster(*endpoint)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -110,12 +101,12 @@ func TestAccResourceObjectKey_all_regions(t *testing.T) {
 	}
 
 	// Extract unique regions from endpoints
-	regionSet := make(helper.StringSet)
+	regionSet := set.New[string](len(endpoints))
 	for _, endpoint := range endpoints {
-		regionSet[endpoint.Region] = helper.ExistsInSet
+		regionSet.Insert(endpoint.Region)
 	}
 
-	regions := slices.Collect(maps.Keys(regionSet))
+	regions := regionSet.Slice()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -146,43 +137,6 @@ func TestAccResourceObjectKey_all_regions(t *testing.T) {
 	})
 }
 
-func TestAccResourceObjectKey_limited_cluster(t *testing.T) {
-	t.Parallel()
-
-	resName := "linode_object_storage_key.foobar"
-	objectStorageKeyLabel := acctest.RandomWithPrefix("tf-test")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkObjectKeyDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.ClusterLimited(t, objectStorageKeyLabel, testCluster),
-				Check: resource.ComposeTestCheckFunc(
-					checkObjectKeyExists,
-					checkObjectKeySecretAccessible,
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_key", objectStorageKeyLabel)),
-					resource.TestCheckResourceAttrSet(resName, "access_key"),
-					resource.TestCheckResourceAttrSet(resName, "secret_key"),
-					resource.TestCheckResourceAttr(resName, "limited", "true"),
-					resource.TestCheckResourceAttr(resName, "bucket_access.#", "2"),
-					resource.TestCheckResourceAttrSet(resName, "bucket_access.0.bucket_name"),
-					resource.TestCheckResourceAttrSet(resName, "bucket_access.1.bucket_name"),
-					resource.TestCheckResourceAttr(resName, "bucket_access.0.cluster", testCluster),
-					resource.TestCheckResourceAttr(resName, "bucket_access.1.cluster", testCluster),
-					resource.TestCheckResourceAttr(resName, "bucket_access.0.region", testRegion),
-					resource.TestCheckResourceAttr(resName, "bucket_access.1.region", testRegion),
-					resource.TestCheckResourceAttr(resName, "bucket_access.0.permissions", "read_only"),
-					resource.TestCheckResourceAttr(resName, "bucket_access.1.permissions", "read_write"),
-					resource.TestCheckResourceAttr(resName, "regions.#", "1"),
-					resource.TestCheckResourceAttr(resName, "regions.0", testRegion),
-				),
-			},
-		},
-	})
-}
-
 func TestAccResourceObjectKey_limited(t *testing.T) {
 	t.Parallel()
 
@@ -206,8 +160,6 @@ func TestAccResourceObjectKey_limited(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "bucket_access.#", "2"),
 					resource.TestCheckResourceAttrSet(resName, "bucket_access.0.bucket_name"),
 					resource.TestCheckResourceAttrSet(resName, "bucket_access.1.bucket_name"),
-					resource.TestCheckResourceAttr(resName, "bucket_access.0.cluster", testCluster),
-					resource.TestCheckResourceAttr(resName, "bucket_access.1.cluster", testCluster),
 					resource.TestCheckResourceAttr(resName, "bucket_access.0.region", testRegion),
 					resource.TestCheckResourceAttr(resName, "bucket_access.1.region", testRegion),
 					resource.TestCheckResourceAttr(resName, "bucket_access.0.permissions", "read_only"),

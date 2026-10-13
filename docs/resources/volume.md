@@ -99,6 +99,8 @@ This resource exports the following attributes:
 
 * `filesystem_path` - The full filesystem path for the Volume based on the Volume's label. The path is "/dev/disk/by-id/scsi-0Linode_Volume_" + the Volume label
 
+* `io_ready` - Indicates whether the volume is successfully attached to a Linode and ready for read and write operations.
+
 ## Import
 
 Linodes Volumes can be imported using the Linode Volume `id`, e.g.

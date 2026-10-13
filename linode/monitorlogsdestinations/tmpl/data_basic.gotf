@@ -1,0 +1,47 @@
+{{ define "monitor_logs_destinations_data_basic" }}
+
+provider "linode" {
+  obj_use_temp_keys      = true
+  obj_bucket_force_delete = true
+}
+
+resource "linode_object_storage_key" "test" {
+  label = "{{.Label}}-key"
+  {{if .Region }}
+  regions = ["{{.Region}}"]
+  {{else}}
+  regions = ["{{.Cluster}}"]
+  {{end}}
+}
+
+resource "linode_object_storage_bucket" "test" {
+  {{if .Region }}
+  region = "{{.Region}}"
+  {{else}}
+  cluster = "{{.Cluster}}"
+  {{end}}
+  label  = "{{.Label}}-bucket"
+  access_key = linode_object_storage_key.test.access_key
+  secret_key = linode_object_storage_key.test.secret_key
+}
+
+resource "linode_monitor_logs_destination" "foobar" {
+  label = "{{.Label}}"
+  type  = "akamai_object_storage"
+
+  akamai_object_storage_details = {
+    access_key_id     = linode_object_storage_key.test.access_key
+    access_key_secret = linode_object_storage_key.test.secret_key
+    bucket_name       = linode_object_storage_bucket.test.label
+    host              = linode_object_storage_bucket.test.hostname
+  }
+}
+
+data "linode_monitor_logs_destinations" "foobar" {
+  filter {
+    name   = "label"
+    values = [linode_monitor_logs_destination.foobar.label]
+  }
+}
+
+{{ end }}

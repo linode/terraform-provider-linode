@@ -1,0 +1,5 @@
+{{ define "vpc_default_ranges_data_basic" }}
+
+data "linode_vpc_default_ranges" "foo" {}
+
+{{ end }}

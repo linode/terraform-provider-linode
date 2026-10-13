@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper/stringplanmodifiers"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper/stringplanmodifiers"
 )
 
 func TestUseStateForUnknownIf(t *testing.T) {

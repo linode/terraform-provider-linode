@@ -6,12 +6,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 var filterConfig = helper.FilterConfig{
-	"group":          {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"id":             {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
 	"image":          {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"label":          {APIFilterable: true, TypeFunc: helper.FilterTypeString},

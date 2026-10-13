@@ -5,8 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 type DataSource struct {
@@ -69,12 +69,12 @@ func listFunc(
 		"filter": filter,
 	})
 
-	images, err := client.ListIPAddresses(ctx, &linodego.ListOptions{
+	ips, err := client.ListIPAddresses(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return helper.TypedSliceToAny(images), nil
+	return helper.TypedSliceToAny(ips), nil
 }

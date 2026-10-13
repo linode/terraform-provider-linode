@@ -30,6 +30,25 @@ resource "linode_instance" "my-instance" {
 }
 ```
 
+Creating a bootable Instance Disk with only SSH keys (no root password):
+
+```hcl
+resource "linode_instance_disk" "boot" {
+  label     = "boot"
+  linode_id = linode_instance.my-instance.id
+  size      = linode_instance.my-instance.specs.0.disk
+
+  image           = "linode/ubuntu22.04"
+  authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
+}
+
+resource "linode_instance" "my-instance" {
+  label  = "my-instance"
+  type   = "g6-standard-1"
+  region = "us-southeast"
+}
+```
+
 Creating a complex bootable Instance Disk:
 
 ```hcl
@@ -68,15 +87,15 @@ The following arguments are supported:
 
 - - -
 
-* `authorized_keys` - (Optional) A list of public SSH keys that will be automatically appended to the root user’s ~/.ssh/authorized_keys file when deploying from an Image. (Requires `image`)
+* `authorized_keys` - (Optional) A list of public SSH keys that will be automatically appended to the root user's ~/.ssh/authorized_keys file when deploying from an Image. When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified. (Requires `image`)
 
-* `authorized_users` - (Optional) A list of usernames. If the usernames have associated SSH keys, the keys will be appended to the root user's ~/.ssh/authorized_keys file. (Requires `image`)
+* `authorized_users` - (Optional) A list of usernames. If the usernames have associated SSH keys, the keys will be appended to the root user's ~/.ssh/authorized_keys file. When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified. (Requires `image`)
 
 * `filesystem` - (Optional) The filesystem of this disk. (`raw`, `swap`, `ext3`, `ext4`, `initrd`)
 
 * `image` - (Optional) An Image ID to deploy the Linode Disk from.
 
-* `root_pass` - (Optional) The root user’s password on a newly-created Linode Disk when deploying from an Image. (Requires `image`)
+* `root_pass` - (Optional) The root user's password on a newly-created Linode Disk when deploying from an Image. When `image` is provided, at least one of `root_pass`, `authorized_keys`, or `authorized_users` must be specified. (Requires `image`)
 
 * `stackscript_data` - (Optional) An object containing responses to any User Defined Fields present in the StackScript being deployed to this Disk. Only accepted if `stackscript_id` is given. (Requires `image`)
 

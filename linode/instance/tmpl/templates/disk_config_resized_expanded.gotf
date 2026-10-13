@@ -6,7 +6,6 @@ resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     type = "g6-standard-1"
     region = "{{ .Region }}"
-    group = "tf_test"
 
     disk {
         label = "disk"

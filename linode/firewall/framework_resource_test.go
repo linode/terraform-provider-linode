@@ -6,15 +6,19 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	acceptanceTmpl "github.com/linode/terraform-provider-linode/v3/linode/acceptance/tmpl"
-	"github.com/linode/terraform-provider-linode/v3/linode/firewall/tmpl"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	acceptanceTmpl "github.com/linode/terraform-provider-linode/v4/linode/acceptance/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/firewall/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 const testFirewallResName = "linode_firewall.test"
@@ -27,7 +31,7 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityCloudFirewall, linodego.CapabilityNodeBalancers}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityCloudFirewall, linodego.CapabilityNodeBalancers}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -84,43 +88,165 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Basic(t, name, devicePrefix, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
-					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound_policy", "DROP"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.action", "ACCEPT"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.protocol", "TCP"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", "80"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.0", "::/0"),
-					resource.TestCheckResourceAttr(testFirewallResName, "outbound_policy", "DROP"),
-					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.protocol", "TCP"),
-					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ports", "80"),
-					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.0", "0.0.0.0/0"),
-					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.0", "2001:db8::/32"),
-					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "2"),
-					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.type"),
-					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "nodebalancers.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
-					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.url"),
-					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.id"),
-					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.entity_id"),
-					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.label"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("label"), knownvalue.StringExact(name)),
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("disabled"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("inbound_policy"), knownvalue.StringExact("DROP")),
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("inbound"), knownvalue.ListSizeExact(1)),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("action"),
+						knownvalue.StringExact("ACCEPT"),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("protocol"),
+						knownvalue.StringExact("TCP"),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("ports"),
+						knownvalue.StringExact("80"),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("ipv4"),
+						knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("0.0.0.0/0")}),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("ipv6"),
+						knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("::/0")}),
+					),
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("outbound_policy"), knownvalue.StringExact("DROP")),
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("outbound"), knownvalue.ListSizeExact(1)),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("outbound").AtSliceIndex(0).AtMapKey("protocol"),
+						knownvalue.StringExact("TCP"),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("outbound").AtSliceIndex(0).AtMapKey("ports"),
+						knownvalue.StringExact("80"),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("outbound").AtSliceIndex(0).AtMapKey("ipv4"),
+						knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("0.0.0.0/0")}),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("outbound").AtSliceIndex(0).AtMapKey("ipv6"),
+						knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("2001:db8::/32")}),
+					),
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("devices"), knownvalue.ListSizeExact(2)),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("devices").AtSliceIndex(0).AtMapKey("type"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("linodes"), knownvalue.SetSizeExact(1)),
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("nodebalancers"), knownvalue.SetSizeExact(1)),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("tags"),
+						knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("test")}),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("devices").AtSliceIndex(0).AtMapKey("url"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("devices").AtSliceIndex(0).AtMapKey("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("devices").AtSliceIndex(0).AtMapKey("entity_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("devices").AtSliceIndex(0).AtMapKey("label"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("version"), knownvalue.Int64Exact(1)),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("fingerprint"),
+						knownvalue.StringRegexp(regexp.MustCompile(".+")),
+					),
+				},
 			},
 			{
 				ResourceName:            testFirewallResName,
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"created", "updated"},
+			},
+		},
+	})
+}
+
+func TestAccLinodeFirewall_protocolAllNumeric(t *testing.T) {
+	t.Parallel()
+
+	name := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Protocol(t, name, "ALL", ""),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("label"), knownvalue.StringExact(name)),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("protocol"),
+						knownvalue.StringExact("ALL"),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("ports"),
+						knownvalue.Null(),
+					),
+				},
+			},
+			{
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Protocol(t, name, "50", ""),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("label"), knownvalue.StringExact(name)),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("protocol"),
+						knownvalue.StringExact("50"),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("ports"),
+						knownvalue.Null(),
+					),
+				},
+			},
+			{
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Protocol(t, name, "6", "443"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testFirewallResName, tfjsonpath.New("label"), knownvalue.StringExact(name)),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("protocol"),
+						knownvalue.StringExact("6"),
+					),
+					statecheck.ExpectKnownValue(
+						testFirewallResName,
+						tfjsonpath.New("inbound").AtSliceIndex(0).AtMapKey("ports"),
+						knownvalue.StringExact("443"),
+					),
+				},
 			},
 		},
 	})

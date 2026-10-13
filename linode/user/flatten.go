@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 func flattenGrantsEntities(entities []linodego.GrantedEntity) []any {

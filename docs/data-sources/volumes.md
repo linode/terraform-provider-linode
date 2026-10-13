@@ -26,11 +26,13 @@ output "volumes" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode volumes that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode volumes that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
-* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `asc`)
+* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `desc`)
 
 ### Filter
 
@@ -43,6 +45,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode volume will be stored in the `volumes` attribute and will export the following attributes:
+
+* `volumes` - (Nested Attribute List) The Volumes returned by this data source.
 
 * `id` - The unique ID of this Volume.
 
@@ -63,6 +67,8 @@ Each Linode volume will be stored in the `volumes` attribute and will export the
 * `linode_id` - If a Volume is attached to a specific Linode, the ID of that Linode will be displayed here. If the Volume is unattached, this value will be null.
 
 * `filesystem_path` - The full filesystem path for the Volume based on the Volume's label. Path is /dev/disk/by-id/scsi-0LinodeVolume + Volume label.
+
+* `io_ready` - Indicates whether the volume is successfully attached to a Linode and ready for read and write operations.
 
 ## Filterable Fields
 

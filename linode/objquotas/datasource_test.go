@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/objquotas/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/objquotas/tmpl"
 )
 
 func TestAccDataSourceObjQuotas_basic(t *testing.T) {
@@ -67,6 +67,16 @@ func TestAccDataSourceObjQuotas_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						dsAll,
 						tfjsonpath.New("quotas").AtSliceIndex(0).AtMapKey("resource_metric"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dsAll,
+						tfjsonpath.New("quotas").AtSliceIndex(0).AtMapKey("quota_type"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dsAll,
+						tfjsonpath.New("quotas").AtSliceIndex(0).AtMapKey("has_usage"),
 						knownvalue.NotNull(),
 					),
 

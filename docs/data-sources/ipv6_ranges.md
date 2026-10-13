@@ -30,7 +30,9 @@ output "ranges" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode IPv6 ranges that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode IPv6 ranges that meet certain requirements.
 
 ### Filter
 
@@ -43,6 +45,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 Each Linode IPv6 range will be stored in the `ranges` attribute and will export the following attributes:
+
+* `ranges` - (Nested Attribute List) A list of Linode IPv6 ranges.
 
 * `range` - The IPv6 address of this range.
 

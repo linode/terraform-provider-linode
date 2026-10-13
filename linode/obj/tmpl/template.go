@@ -3,30 +3,18 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	objectbucket "github.com/linode/terraform-provider-linode/v3/linode/objbucket/tmpl"
-	objectkey "github.com/linode/terraform-provider-linode/v3/linode/objkey/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	objectbucket "github.com/linode/terraform-provider-linode/v4/linode/objbucket/tmpl"
+	objectkey "github.com/linode/terraform-provider-linode/v4/linode/objkey/tmpl"
 )
 
 type TemplateData struct {
-	Bucket  objectbucket.TemplateData
-	Key     objectkey.TemplateData
-	Cluster string
-	Region  string
+	Bucket objectbucket.TemplateData
+	Key    objectkey.TemplateData
+	Region string
 
 	Content string
 	Source  string
-}
-
-func BasicWithCluster(t testing.TB, name, cluster, keyName, content, source string) string {
-	return acceptance.ExecuteTemplate(t,
-		"object_object_basic", TemplateData{
-			Bucket:  objectbucket.TemplateData{Label: name, Cluster: cluster},
-			Key:     objectkey.TemplateData{Label: keyName},
-			Content: content,
-			Source:  source,
-			Cluster: cluster,
-		})
 }
 
 func Basic(t testing.TB, name, region, keyName, content, source string) string {

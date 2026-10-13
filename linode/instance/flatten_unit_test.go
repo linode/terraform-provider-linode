@@ -3,12 +3,14 @@
 package instance
 
 import (
+	"net"
 	"reflect"
 	"testing"
 	"time"
 
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/hashicorp/go-set/v3"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -100,8 +102,8 @@ func TestFlattenInstanceBackups(t *testing.T) {
 			Available: true,
 			Enabled:   true,
 			Schedule: struct {
-				Day    string `json:"day,omitempty"`
-				Window string `json:"window,omitempty"`
+				Day    string `json:"day,omitzero"`
+				Window string `json:"window,omitzero"`
 			}{
 				Day:    "Saturday",
 				Window: "W22",
@@ -263,13 +265,11 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 
 	// Build expected devices map with all 64 device slots
 	expectedDevices := make(map[string]interface{})
-	populatedDevices := map[string]bool{
-		"sda": true, "sdb": true, "sdc": true, "sdd": true,
-		"sde": true, "sdf": true, "sdg": true, "sdh": true,
-		"sdz": true, "sdaa": true, "sdbl": true,
-	}
+	populatedDevices := set.From([]string{
+		"sda", "sdb", "sdc", "sdd", "sde", "sdf", "sdg", "sdh", "sdz", "sdaa", "sdbl",
+	})
 	for _, key := range helper.GetConfigDeviceKeys() {
-		if populatedDevices[key] {
+		if populatedDevices.Contains(key) {
 			expectedDevices[key] = []map[string]any{
 				{
 					"disk_id":    124458,
@@ -358,5 +358,50 @@ func TestFlattenInstanceSpecs(t *testing.T) {
 				t.Errorf("Mismatch for key %s: Expected %d, but got %d", key, expectedValue, resultValue)
 			}
 		}
+	}
+}
+
+func TestFlattenInstanceIPv4(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    []net.IP
+		expected []string
+	}{
+		{
+			name:     "nil input",
+			input:    nil,
+			expected: []string{},
+		},
+		{
+			name:     "empty input",
+			input:    []net.IP{},
+			expected: []string{},
+		},
+		{
+			name: "single public IPv4",
+			input: func() []net.IP {
+				ip := net.ParseIP("192.0.2.1")
+				return []net.IP{ip}
+			}(),
+			expected: []string{"192.0.2.1"},
+		},
+		{
+			name: "multiple IPs including reserved",
+			input: func() []net.IP {
+				ip1 := net.ParseIP("203.0.113.5")
+				ip2 := net.ParseIP("192.168.128.10")
+				return []net.IP{ip1, ip2}
+			}(),
+			expected: []string{"203.0.113.5", "192.168.128.10"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := flattenInstanceIPv4(tt.input)
+			if !reflect.DeepEqual(result, tt.expected) {
+				t.Errorf("flattenInstanceIPv4(%v) = %v, want %v", tt.input, result, tt.expected)
+			}
+		})
 	}
 }

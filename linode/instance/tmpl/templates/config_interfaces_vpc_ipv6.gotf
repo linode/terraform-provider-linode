@@ -4,7 +4,6 @@
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
-    group = "tf_test"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
 
@@ -40,7 +39,8 @@ resource "linode_instance" "foobar" {
     disk {
         label = "primary"
         size = 8192
-        image = "linode/alpine3.21"
+        image = "linode/arch"
+        root_pass = "{{ .RootPass }}"
     }
 
 

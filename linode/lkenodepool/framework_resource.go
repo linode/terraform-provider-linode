@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 func NewResource() resource.Resource {
@@ -112,6 +112,16 @@ func (r *Resource) Create(
 		return
 	}
 
+	var config NodePoolModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	config.validateEnterpriseOnlyAttributes(cluster.Tier, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	var createOpts linodego.LKENodePoolCreateOptions
 
 	plan.SetNodePoolCreateOptions(ctx, &createOpts, &resp.Diagnostics, cluster.Tier)
@@ -185,6 +195,16 @@ func (r *Resource) Update(
 	cluster, err := client.GetLKECluster(ctx, clusterID)
 	if err != nil {
 		resp.Diagnostics.AddError("error getting cluster", err.Error())
+		return
+	}
+
+	var config NodePoolModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	config.validateEnterpriseOnlyAttributes(cluster.Tier, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 

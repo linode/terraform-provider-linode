@@ -7,6 +7,7 @@ resource "linode_instance" "fooinst" {
     type = "g6-nanode-1"
     image = "linode/debian12"
     region = "{{ .Region }}"
+    root_pass = "{{ .RootPass }}"
 
     interface {
         label = "{{.VLANLabel}}"

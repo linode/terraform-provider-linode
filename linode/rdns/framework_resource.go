@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 const (
@@ -228,7 +228,7 @@ func (r *Resource) Delete(
 	client := r.Meta.Client
 
 	updateOpts := linodego.IPAddressUpdateOptions{
-		RDNS: nil,
+		RDNS: linodego.Pointer((*string)(nil)),
 	}
 
 	tflog.Debug(ctx, "client.UpdateIPAddress(...)", map[string]any{

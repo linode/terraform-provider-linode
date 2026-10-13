@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 // StatusIsSuspended returns whether the given status is a "suspended" state.
@@ -63,7 +63,6 @@ func ReconcileSuspensionSync(
 		databaseID,
 		databaseEngine,
 		desiredStatus,
-		int(timeout.Seconds()),
 	); err != nil {
 		return fmt.Errorf("failed to wait for database status %s: %w", desiredStatus, err)
 	}

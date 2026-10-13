@@ -15,16 +15,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/instanceconfig/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/instanceconfig/tmpl"
 )
 
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs,
 	}, "core")
 	if err != nil {
@@ -492,7 +492,7 @@ func TestAccResourceInstanceConfig_rescueBooted(t *testing.T) {
 						t.Fatalf("failed to boot instance into rescue mode: %v", err)
 					}
 
-					if _, err := poller.WaitForFinished(context.Background(), 240); err != nil {
+					if _, err := poller.WaitForFinished(context.Background()); err != nil {
 						t.Fatalf("failed to wait for instance to boot into rescue mode: %v", err)
 					}
 				},
@@ -535,7 +535,7 @@ func TestAccResourceInstanceConfig_vpcInterfaceIPv6(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityLinodes,
 		linodego.CapabilityVPCs,
 		linodego.CapabilityVPCDualStack,

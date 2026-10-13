@@ -1,0 +1,37 @@
+    {{ define "data_linode_firewalls_protocol_all_numeric" }}
+
+resource "linode_firewall" "foobar" {
+  label = "{{ .Label }}"
+  tags  = ["test"]
+
+  inbound {
+    label    = "allow-all"
+    action   = "ACCEPT"
+    protocol = "ALL"
+    ipv4     = ["0.0.0.0/0"]
+    ipv6     = ["::/0"]
+  }
+
+  inbound_policy = "DROP"
+
+  outbound {
+    label    = "drop-numeric"
+    action   = "DROP"
+    protocol = "50"
+    ipv4     = ["0.0.0.0/0"]
+    ipv6     = ["::/0"]
+  }
+
+  outbound_policy = "ACCEPT"
+}
+
+data "linode_firewalls" "test" {
+  depends_on = [linode_firewall.foobar]
+
+  filter {
+    name = "label"
+    values = ["{{ .Label }}"]
+  }
+}
+
+{{ end }}

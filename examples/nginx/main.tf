@@ -133,7 +133,6 @@ resource "linode_instance" "nginx" {
   count = var.nginx_count
   label = "${random_pet.project.id}-nginx-${count.index + 1}"
 
-  group             = "foo"
   region            = linode_nodebalancer.foo-nb.region
   type              = data.linode_instance_type.default.id
   private_ip        = true
@@ -249,7 +248,6 @@ resource "linode_instance" "simple" {
   image = "linode/ubuntu22.04"
   label = "${random_pet.project.id}-simple"
 
-  group            = "foo"
   tags             = ["terraform"]
   region           = var.region
   type             = "g6-nanode-1"

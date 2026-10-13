@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 func NewDataSource() datasource.DataSource {
@@ -38,7 +38,7 @@ func (data *DataSourceModel) parseDomainZoneFile(
 
 	id, err := json.Marshal(zone)
 	if err != nil {
-		diags.AddError("Error marshalling json: %s", err.Error())
+		diags.AddError("Error marshaling json: %s", err.Error())
 		return diags
 	}
 

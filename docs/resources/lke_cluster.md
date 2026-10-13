@@ -165,9 +165,34 @@ resource "linode_lke_cluster" "my-cluster" {
 }
 ```
 
+Creating an LKE cluster with disk encryption:
+
+```terraform
+resource "linode_lke_cluster" "my-cluster" {
+    label       = "my-cluster"
+    k8s_version = "1.32"
+    region      = "us-central"
+    tags        = ["prod"]
+
+    pool {
+        type            = "g6-standard-2"
+        count           = 2
+        disk_encryption = "enabled"
+    }
+
+    pool {
+        type            = "g6-standard-1"
+        count           = 1
+        disk_encryption = "disabled"
+    }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
+
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
 
 * `label` - (Required) This Kubernetes cluster's unique label.
 
@@ -175,9 +200,9 @@ The following arguments are supported:
 
 * `region` - (Required) This Kubernetes cluster's location.
 
-* [`pool`](#pool) - (Required) The Node Pool specifications for the Kubernetes cluster. At least one Node Pool is required.
+* [`pool`](#pool) - (Required, Block List) The Node Pool specifications for the Kubernetes cluster. At least one Node Pool is required.
 
-* [`control_plane`](#control_plane) (Optional) Defines settings for the Kubernetes Control Plane.
+* [`control_plane`](#control_plane) - (Optional, Block) Defines settings for the Kubernetes Control Plane. Referenced with an index (e.g. `control_plane.0.high_availability`).
 
 * `tags` - (Optional) An array of tags applied to the Kubernetes cluster. Tags are case-insensitive and are for organizational purposes only.
 
@@ -211,7 +236,7 @@ The following arguments are supported in the `pool` specification block:
 
 * `tags` - (Optional) A set of tags applied to this node pool. Tags can be used to flag node pools as externally managed. See [Externally Managed Node Pools](#externally-managed-node-pools) for more details.
 
-* `taint` - (Optional) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. See [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools).
+* `taint` - (Optional, Block Set) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. See [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools). Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
   * `effect` - (Required) The Kubernetes taint effect. Accepted values are `NoSchedule`, `PreferNoSchedule`, and `NoExecute`. For the descriptions of these values, see [Kubernetes Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/).
 
@@ -219,7 +244,9 @@ The following arguments are supported in the `pool` specification block:
 
   * `value` - (Required) The Kubernetes taint value.
 
-* [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
+* [`autoscaler`](#autoscaler) - (Optional, Block) If defined, an autoscaler will be enabled with the given configuration. Referenced with an index (e.g. `autoscaler.0.min`).
+
+* `disk_encryption` - (Optional) The disk encryption policy for nodes in this pool. Must be `enabled` or `disabled`. If omitted, the account default encryption policy is applied. Changing this value will cause the pool to be replaced (deleted and recreated).
 
 * `k8s_version` - (Optional) The k8s version of the nodes in this Node Pool. For LKE enterprise only and may not currently available to all users even under v4beta.
 
@@ -241,7 +268,7 @@ The following arguments are supported in the `control_plane` specification block
 
 * `audit_logs_enabled` - (Optional) Enables audit logs on the cluster's control plane.
 
-* [`acl`](#acl) - (Optional) Defines the ACL configuration for an LKE cluster's control plane.
+* [`acl`](#acl) - (Optional, Block) Defines the ACL configuration for an LKE cluster's control plane. Referenced with an index (e.g. `acl.0.enabled`).
 
 ### acl
 
@@ -249,7 +276,7 @@ The following arguments are supported in the `acl` specification block:
 
 * `enabled` - (Optional) Defines default policy. A value of true results in a default policy of DENY. A value of false results in default policy of ALLOW, and has the same effect as delete the ACL configuration.
 
-* [`addresses`](#addresses) - (Optional) A list of ip addresses to allow.
+* [`addresses`](#addresses) - (Optional, Block List) A list of ip addresses to allow.
 
 ### addresses
 
@@ -271,17 +298,13 @@ In addition to all arguments above, the following attributes are exported:
 
 * `kubeconfig` - The base64 encoded kubeconfig for the Kubernetes cluster.
 
-* `dashboard_url` - The Kubernetes Dashboard access URL for this cluster. LKE Enterprise does not have a dashboard URL.
-
 * `apl_enabled` - Enables the App Platform Layer
 
-* `pool` - Additional nested attributes:
+* `pool` - (Block List) Additional nested attributes:
 
   * `id` - The ID of the Node Pool.
 
-  * `disk_encryption` - The disk encryption policy for nodes in this pool.
-
-  * [`nodes`](#nodes) - The nodes in the Node Pool.
+  * [`nodes`](#nodes) - (Read-Only Object List) The nodes in the Node Pool. Referenced with an index (e.g. `nodes.0.id`).
 
 ### nodes
 

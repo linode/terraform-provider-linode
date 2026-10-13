@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,7 +15,7 @@ func TestParseBackups(t *testing.T) {
 	ctx := context.Background()
 
 	// Create mock data for InstanceSnapshot
-	mockSnapshot := &linodego.InstanceSnapshot{
+	mockSnapshot := linodego.InstanceSnapshot{
 		ID:        1,
 		Label:     "Linode Snapshot Label",
 		Status:    "successful",
@@ -24,17 +24,17 @@ func TestParseBackups(t *testing.T) {
 		Updated:   nil,
 		Finished:  nil,
 		Configs:   []string{"config1", "config2"},
-		Disks:     []*linodego.InstanceSnapshotDisk{}, // You can populate this with mock disk data
+		Disks:     []linodego.InstanceSnapshotDisk{}, // You can populate this with mock disk data
 		Available: true,
 	}
 
 	mockBackupSnapshotResponse := &linodego.InstanceBackupSnapshotResponse{
-		Current:    mockSnapshot,
-		InProgress: mockSnapshot,
+		Current:    &mockSnapshot,
+		InProgress: &mockSnapshot,
 	}
 
 	mockBackups := &linodego.InstanceBackupsResponse{
-		Automatic: []*linodego.InstanceSnapshot{mockSnapshot},
+		Automatic: []linodego.InstanceSnapshot{mockSnapshot},
 		Snapshot:  mockBackupSnapshotResponse,
 	}
 

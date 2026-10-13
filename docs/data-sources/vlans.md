@@ -45,11 +45,13 @@ output "vlan_linodes" {
 
 The following arguments are supported
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode VLANs that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Block Set) A set of filters used to select Linode VLANs that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
-* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `asc`)
+* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `desc`)
 
 ### Filter
 
@@ -62,6 +64,8 @@ The following arguments are supported
 ## Attributes Reference
 
 Each Linode VLAN will be stored in the `vlans` attribute and will export the following attributes:
+
+* `vlans` - (Nested Attribute List) The returned list of VLANs. Referenced by index (e.g. `vlans[0].label`).
 
 * `label` - The unique label of the VLAN.
 

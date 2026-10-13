@@ -3,7 +3,7 @@ package domain
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 const domainSecondsDescription = "Valid values are 0, 30, 120, 300, 3600, 7200, 14400, 28800, " +
@@ -25,12 +25,6 @@ var resourceSchema = map[string]*schema.Schema{
 		ValidateFunc: validation.StringInSlice([]string{"master", "slave"}, false),
 		Required:     true,
 		ForceNew:     true,
-	},
-	"group": {
-		Type:         schema.TypeString,
-		Description:  "The group this Domain belongs to. This is for display purposes only.",
-		ValidateFunc: validation.StringLenBetween(0, 50),
-		Optional:     true,
 	},
 	"status": {
 		Type:         schema.TypeString,

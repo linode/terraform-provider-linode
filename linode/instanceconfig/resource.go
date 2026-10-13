@@ -9,9 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	instancehelpers "github.com/linode/terraform-provider-linode/v3/linode/instance"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	instancehelpers "github.com/linode/terraform-provider-linode/v4/linode/instance"
 )
 
 func Resource() *schema.Resource {
@@ -154,10 +154,17 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	var devices *linodego.InstanceConfigDeviceMap
+	var err error
 	if devicesBlock, ok := d.GetOk("device"); ok {
-		devices = expandDevicesBlock(devicesBlock)
+		devices, err = expandDevicesBlock(devicesBlock)
+		if err != nil {
+			return diag.Errorf("failed to expand devices block: %s", err)
+		}
 	} else if devicesBlock, ok := d.GetOk("devices"); ok {
-		devices = expandDevicesNamedBlock(devicesBlock)
+		devices, err = expandDevicesNamedBlock(devicesBlock)
+		if err != nil {
+			return diag.Errorf("failed to expand devices named block: %s", err)
+		}
 	}
 	if devices != nil {
 		createOpts.Devices = *devices
@@ -177,7 +184,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	d.SetId(strconv.Itoa(cfg.ID))
 
 	if !d.GetRawConfig().GetAttr("booted").IsNull() {
-		if err := applyBootStatus(ctx, &client, linodeID, cfg.ID, helper.GetDeadlineSeconds(ctx, d),
+		if err := applyBootStatus(ctx, &client, linodeID, cfg.ID,
 			d.Get("booted").(bool), false); err != nil {
 			return diag.Errorf("failed to update boot status: %s", err)
 		}
@@ -213,14 +220,20 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if d.HasChange("device") {
 		if devices, ok := d.GetOk("device"); ok {
-			putRequest.Devices = expandDevicesBlock(devices)
+			putRequest.Devices, err = expandDevicesBlock(devices)
+			if err != nil {
+				return diag.Errorf("failed to expand devices block: %s", err)
+			}
 		}
 		shouldUpdate = true
 	}
 
 	if d.HasChange("devices") {
 		if devices, ok := d.GetOk("devices"); ok {
-			putRequest.Devices = expandDevicesNamedBlock(devices)
+			putRequest.Devices, err = expandDevicesNamedBlock(devices)
+			if err != nil {
+				return diag.Errorf("failed to expand devices named block: %s", err)
+			}
 		}
 		shouldUpdate = true
 	}
@@ -294,7 +307,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if shouldUpdate {
 		if powerOffRequired {
 			if err := instancehelpers.ShutdownInstanceForOfflineOperation(
-				ctx, &client, meta.(*helper.ProviderMeta).Config.SkipImplicitReboots, linodeID, helper.GetDeadlineSeconds(ctx, d),
+				ctx, &client, meta.(*helper.ProviderMeta).Config.SkipImplicitReboots, linodeID,
 				"VPC interface update",
 			); err != nil {
 				return diag.Errorf("failed to shutdown linode instance for VPC interface update: %s", err)
@@ -310,7 +323,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 		if shouldPowerBackOn {
 			instancehelpers.BootInstanceAfterOfflineOperation(
-				ctx, meta.(*helper.ProviderMeta), linodeID, id, helper.GetDeadlineSeconds(ctx, d),
+				ctx, meta.(*helper.ProviderMeta), linodeID, id,
 				"VPC interface update",
 			)
 		}
@@ -319,7 +332,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	shouldReboot := isBootedConfig && shouldUpdate && !powerOffRequired && !meta.(*helper.ProviderMeta).Config.SkipImplicitReboots
 	if managedBoot {
 		if err := applyBootStatus(ctx, &client, linodeID, id,
-			helper.GetDeadlineSeconds(ctx, d),
 			d.Get("booted").(bool),
 			shouldReboot); err != nil {
 			return diag.Errorf("failed to update boot status: %s", err)
@@ -378,7 +390,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 		tflog.Trace(ctx, "Waiting for instance shutdown to finish")
 
-		if _, err := p.WaitForFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
+		if _, err := p.WaitForFinished(ctx); err != nil {
 			return diag.Errorf("failed to wait for instance shutdown: %s", err)
 		}
 		tflog.Debug(ctx, "Instance shutdown complete")

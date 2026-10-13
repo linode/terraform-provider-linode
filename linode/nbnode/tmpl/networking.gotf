@@ -9,7 +9,7 @@ resource "linode_instance" "foobar" {
     swap_size = 256
     private_ip = true
     authorized_keys = ["{{.PubKey}}"]
-    group = "tf_test"
+
 }
 
 {{ end }}

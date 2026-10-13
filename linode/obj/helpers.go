@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"hash/crc32"
 	"io"
-	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -22,8 +21,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sdkv2diag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 type ObjectKeys struct {
@@ -40,7 +39,7 @@ func getS3ClientFromModel(
 	endpointType *linodego.ObjectStorageEndpointType,
 	diags *diag.Diagnostics,
 ) (*s3.Client, func()) {
-	keys, teardownKeys := data.GetObjectStorageKeys(ctx, client, config, permission, endpointType, diags)
+	keys, teardownKeys := GetObjectStorageKeys(ctx, data, client, config, permission, endpointType, diags)
 	if diags.HasError() {
 		return nil, teardownKeys
 	}
@@ -71,43 +70,27 @@ func getObjKeysFromProvider(
 	return keys, keys.Ok()
 }
 
-// isCluster function can't guarantee the correctness of the cluster or region determination,
-// because there are new regions with names ending with a number, such as 'jp-tyo-3'.
-// However, it should work well because API tolerates using regions as clusters.
-// We will be able to retire all these region vs cluster handling after removing cluster support
-// in the next version of this provider.
-func isCluster(regionOrCluster string) bool {
-	pattern := `^[a-z]{2}-[a-z]+-[0-9]+$`
-	re := regexp.MustCompile(pattern)
-	return re.MatchString(regionOrCluster)
-}
-
 // fwCreateTempKeys creates temporary Object Storage Keys to use.
 // The temporary keys are scoped only to the target cluster and bucket with limited permissions.
 // Keys only exist for the duration of the apply time.
 func fwCreateTempKeys(
 	ctx context.Context,
 	client *linodego.Client,
-	bucketLabel, regionOrCluster, permissions string,
+	bucketLabel, region, permissions string,
 	endpointType *linodego.ObjectStorageEndpointType,
 	diags *diag.Diagnostics,
 ) *linodego.ObjectStorageKey {
 	tflog.Debug(ctx, "Create temporary object storage access keys implicitly.")
 
-	tempBucketAccess := linodego.ObjectStorageKeyBucketAccess{
+	bucketAccessCreateOptions := linodego.ObjectStorageKeyBucketAccessCreateOptions{
 		BucketName:  bucketLabel,
 		Permissions: permissions,
-	}
-
-	if isCluster(regionOrCluster) {
-		tempBucketAccess.Cluster = regionOrCluster
-	} else {
-		tempBucketAccess.Region = regionOrCluster
+		Region:      region,
 	}
 
 	createOpts := linodego.ObjectStorageKeyCreateOptions{
 		Label:        fmt.Sprintf("temp_%s_%v", bucketLabel, time.Now().Unix()),
-		BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{tempBucketAccess},
+		BucketAccess: []linodego.ObjectStorageKeyBucketAccessCreateOptions{bucketAccessCreateOptions},
 	}
 
 	tflog.Debug(ctx, "client.CreateObjectStorageKey(...)", map[string]any{
@@ -121,7 +104,7 @@ func fwCreateTempKeys(
 	}
 
 	if endpointType == nil {
-		et, err := getBucketEndpointType(ctx, client, regionOrCluster, bucketLabel)
+		et, err := getBucketEndpointType(ctx, client, region, bucketLabel)
 		if err != nil {
 			diags.AddWarning(
 				"Can't determine the type of the object storage endpoint. If the it's an E2/E3 OBJ clusters, "+
@@ -142,9 +125,9 @@ func fwCreateTempKeys(
 }
 
 func getBucketEndpointType(
-	ctx context.Context, client *linodego.Client, cluster, label string,
+	ctx context.Context, client *linodego.Client, region, label string,
 ) (linodego.ObjectStorageEndpointType, error) {
-	bucket, err := client.GetObjectStorageBucket(ctx, cluster, label)
+	bucket, err := client.GetObjectStorageBucket(ctx, region, label)
 	if err != nil {
 		return "", err
 	}
@@ -158,20 +141,15 @@ func getBucketEndpointType(
 func createTempKeys(
 	ctx context.Context,
 	client *linodego.Client,
-	bucketLabel, regionOrCluster, permissions string,
+	bucketLabel, region, permissions string,
 	endpointType *linodego.ObjectStorageEndpointType,
 ) (*linodego.ObjectStorageKey, sdkv2diag.Diagnostics) {
 	tflog.Debug(ctx, "Create temporary object storage access keys implicitly.")
 
-	tempBucketAccess := linodego.ObjectStorageKeyBucketAccess{
+	bucketAccessCreateOptions := linodego.ObjectStorageKeyBucketAccessCreateOptions{
 		BucketName:  bucketLabel,
 		Permissions: permissions,
-	}
-
-	if isCluster(regionOrCluster) {
-		tempBucketAccess.Cluster = regionOrCluster
-	} else {
-		tempBucketAccess.Region = regionOrCluster
+		Region:      region,
 	}
 
 	// Bucket key labels are a maximum of 50 characters - if the bucket name is
@@ -183,7 +161,7 @@ func createTempKeys(
 	}
 	createOpts := linodego.ObjectStorageKeyCreateOptions{
 		Label:        fmt.Sprintf("temp_%s_%v", bucketLabel, time.Now().Unix()),
-		BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{tempBucketAccess},
+		BucketAccess: []linodego.ObjectStorageKeyBucketAccessCreateOptions{bucketAccessCreateOptions},
 	}
 
 	tflog.Debug(ctx, "client.CreateObjectStorageKey(...)", map[string]any{
@@ -195,7 +173,7 @@ func createTempKeys(
 		return nil, sdkv2diag.FromErr(err)
 	}
 	if endpointType == nil {
-		et, err := getBucketEndpointType(ctx, client, regionOrCluster, bucketLabel)
+		et, err := getBucketEndpointType(ctx, client, region, bucketLabel)
 		if err != nil {
 			tflog.Warn(ctx, fmt.Sprintf("Can't determine the type of the object storage endpoint: %s", err.Error()))
 		} else {
@@ -243,7 +221,7 @@ func GetObjKeys(
 	d *schema.ResourceData,
 	config *helper.Config,
 	client linodego.Client,
-	bucket, regionOrCluster, permission string,
+	bucket, region, permission string,
 	endpointType *linodego.ObjectStorageEndpointType,
 ) (ObjectKeys, sdkv2diag.Diagnostics, func()) {
 	var teardownTempKeysCleanUp func() = nil
@@ -259,7 +237,7 @@ func GetObjKeys(
 			objKeys = providerKeys
 		} else if config.ObjUseTempKeys {
 			// Implicitly create temporary object storage keys
-			keys, diag := createTempKeys(ctx, &client, bucket, regionOrCluster, permission, endpointType)
+			keys, diag := createTempKeys(ctx, &client, bucket, region, permission, endpointType)
 			if diag != nil {
 				return objKeys, diag, nil
 			}
@@ -374,7 +352,6 @@ func AddObjectResource(
 	plan.GenerateObjectStorageObjectID(true, true)
 	resp.State.SetAttribute(ctx, path.Root("bucket"), plan.Bucket)
 	resp.State.SetAttribute(ctx, path.Root("key"), plan.Key)
-	resp.State.SetAttribute(ctx, path.Root("cluster"), plan.Cluster)
 	resp.State.SetAttribute(ctx, path.Root("region"), plan.Region)
 }
 

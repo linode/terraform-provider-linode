@@ -6,9 +6,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/lkenodepool"
 )
 
 // LKEDataModel describes the Terraform resource data model to match the
@@ -38,9 +38,6 @@ type LKEDataModel struct {
 
 	// LKE Cluster API endpoints
 	APIEndpoints types.List `tfsdk:"api_endpoints"`
-
-	// LKE Cluster Dashboard
-	DashboardURL types.String `tfsdk:"dashboard_url"`
 }
 
 type LKEControlPlane struct {
@@ -99,7 +96,6 @@ func (data *LKEDataModel) parseLKEAttributes(
 	pools []linodego.LKENodePool,
 	kubeconfig *linodego.LKEClusterKubeconfig,
 	endpoints []linodego.LKEClusterAPIEndpoint,
-	dashboard *linodego.LKEClusterDashboard,
 	acl *linodego.LKEClusterControlPlaneACLResponse,
 ) diag.Diagnostics {
 	data.Created = types.StringValue(cluster.Created.Format(helper.TIME_FORMAT))
@@ -115,7 +111,7 @@ func (data *LKEDataModel) parseLKEAttributes(
 	data.StackType = types.StringValue(string(cluster.StackType))
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, cluster.Tags)
-	if diags != nil {
+	if diags.HasError() {
 		return diags
 	}
 	data.Tags = tags
@@ -154,13 +150,13 @@ func (data *LKEDataModel) parseLKEAttributes(
 			}
 
 			tags, diags := types.ListValueFrom(ctx, types.StringType, p.Tags)
-			if diags != nil {
+			if diags.HasError() {
 				return nil, diags
 			}
 			pool.Tags = tags
 
 			labels, diags := types.MapValueFrom(ctx, types.StringType, p.Labels)
-			if diags != nil {
+			if diags.HasError() {
 				return nil, diags
 			}
 			pool.Labels = labels
@@ -203,7 +199,7 @@ func (data *LKEDataModel) parseLKEAttributes(
 	}
 
 	lkePools, diags := parseLKEPools()
-	if diags != nil {
+	if diags.HasError() {
 		return diags
 	}
 	data.Pools = lkePools
@@ -220,16 +216,10 @@ func (data *LKEDataModel) parseLKEAttributes(
 	}
 
 	apiEndpoints, diags := types.ListValueFrom(ctx, types.StringType, urls)
-	if diags != nil {
+	if diags.HasError() {
 		return diags
 	}
 	data.APIEndpoints = apiEndpoints
-
-	if dashboard != nil {
-		data.DashboardURL = types.StringValue(dashboard.URL)
-	} else {
-		data.DashboardURL = types.StringNull()
-	}
 
 	return nil
 }

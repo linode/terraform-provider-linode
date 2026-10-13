@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/kernels/tmpl"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/kernels/tmpl"
 )
 
 func TestAccDataSourceKernels_basic(t *testing.T) {
@@ -31,7 +31,6 @@ func TestAccDataSourceKernels_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.label"),
 					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.pvops"),
 					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.version"),
-					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.xen"),
 				),
 			},
 			{

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 type DataSourceModel struct {
@@ -75,11 +75,11 @@ func (data *DataSourceModel) parseBackups(
 
 func flattenAutoSnapshots(
 	ctx context.Context,
-	snapshots []*linodego.InstanceSnapshot,
+	snapshots []linodego.InstanceSnapshot,
 ) (*basetypes.ListValue, diag.Diagnostics) {
 	resultList := make([]attr.Value, len(snapshots))
 	for i, snapshot := range snapshots {
-		result, diag := flattenInstanceSnapshot(ctx, snapshot)
+		result, diag := flattenInstanceSnapshot(ctx, &snapshot)
 		if diag.HasError() {
 			return nil, diag
 		}
@@ -145,7 +145,7 @@ func flattenInstanceSnapshot(ctx context.Context,
 }
 
 func flattenSnapshotDisk(
-	disks []*linodego.InstanceSnapshotDisk,
+	disks []linodego.InstanceSnapshotDisk,
 ) (*basetypes.ListValue, diag.Diagnostics) {
 	resultList := make([]attr.Value, len(disks))
 

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net"
 	"os"
 	"path/filepath"
 	"slices"
@@ -18,6 +19,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/hashicorp/go-set/v3"
 	fwDiag "github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -25,10 +27,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/version"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/version"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/ssh"
 )
@@ -39,7 +41,7 @@ const (
 
 	runLongTestsEnvVar  = "RUN_LONG_TESTS"
 	skipLongTestMessage = "This test has been marked as a long-running test and is skipped by default. " +
-		"If you would like to run this test, please set the RUN_LONG_TEST environment variable to true."
+		"If you would like to run this test, please set the " + runLongTestsEnvVar + " environment variable to true."
 )
 
 type (
@@ -49,7 +51,7 @@ type (
 )
 
 var (
-	optInTests               map[string]struct{}
+	optInTests               *set.Set[string]
 	privateKeyMaterial       string
 	PublicKeyMaterial        string
 	TestAccSDKv2Providers    map[string]*schema.Provider
@@ -61,7 +63,7 @@ var (
 )
 
 func initOptInTests() {
-	optInTests = make(map[string]struct{})
+	optInTests = set.New[string](0)
 
 	optInTestsValue, ok := os.LookupEnv(optInTestsEnvVar)
 	if !ok {
@@ -69,7 +71,7 @@ func initOptInTests() {
 	}
 
 	for testName := range strings.SplitSeq(optInTestsValue, ",") {
-		optInTests[testName] = struct{}{}
+		optInTests.Insert(testName)
 	}
 }
 
@@ -164,7 +166,7 @@ func PreCheck(t testing.TB) {
 func OptInTest(t testing.TB) {
 	t.Helper()
 
-	if _, ok := optInTests[t.Name()]; !ok {
+	if !optInTests.Contains(t.Name()) {
 		t.Skipf("skipping opt-in test; specify test in environment variable %q to run", optInTestsEnvVar)
 	}
 }
@@ -206,7 +208,7 @@ func GetSSHClient(t testing.TB, user, addr string) (client *ssh.Client) {
 	attempts := 3
 
 	for attempts != 0 {
-		client, err = ssh.Dial("tcp", addr+":22", config)
+		client, err = ssh.Dial("tcp", net.JoinHostPort(addr, "22"), config)
 		if err == nil {
 			break
 		}
@@ -644,6 +646,7 @@ func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
 		return nil, err
 	}
 
+	// #nosec G404 -- Test data, doesn't need to be cryptographically secure
 	rand.Shuffle(len(endpoints), func(i, j int) {
 		endpoints[i], endpoints[j] = endpoints[j], endpoints[i]
 	})
@@ -666,19 +669,19 @@ func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
 }
 
 // accountAvailabilityCaps are capabilities that must be verified both at the region level and at the account availability level.
-var accountAvailabilityCaps = map[string]bool{
-	"Linodes":       true,
-	"NodeBalancers": true,
-	"Block Storage": true,
-	"Kubernetes":    true,
-}
+var accountAvailabilityCaps = set.From([]linodego.RegionCapability{
+	linodego.CapabilityLinodes,
+	linodego.CapabilityNodeBalancers,
+	linodego.CapabilityBlockStorage,
+	linodego.CapabilityLKE,
+})
 
 // GetRegionsWithCaps returns a list of region IDs that support the given capabilities
 // Parameters:
 // - capabilities: Required capabilities that the regions must support.
 // - siteType: The site type to filter by ("core" or "distributed" or "any").
 // - filters: Optional custom filters for additional criteria.
-func GetRegionsWithCaps(capabilities []string, regionType string, filters ...RegionFilterFunc) ([]string, error) {
+func GetRegionsWithCaps(capabilities []linodego.RegionCapability, regionType string, filters ...RegionFilterFunc) ([]string, error) {
 	client, err := GetTestClient()
 	if err != nil {
 		return nil, err
@@ -690,7 +693,7 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 	}
 
 	// Fetch per-region account availabilities. On failure, log a warning and proceed without account-level filtering.
-	accountAvail := make(map[string]map[string]bool)
+	accountAvail := make(map[string]*set.Set[string])
 	acctAvailabilities, err := client.ListAccountAvailabilities(context.Background(), nil)
 	if err != nil {
 		log.Printf("[WARN] Failed to retrieve account availabilities for regions. "+
@@ -698,18 +701,18 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 			"Tests may fail if the account lacks access to necessary capabilities in the selected region. err=%v", err)
 	} else {
 		for _, aa := range acctAvailabilities {
-			avail := make(map[string]bool, len(aa.Available))
+			avail := set.New[string](len(aa.Available))
 			for _, a := range aa.Available {
-				avail[a] = true
+				avail.Insert(a)
 			}
 			accountAvail[aa.Region] = avail
 		}
 	}
 
 	// Determine which of the requested capabilities also require account-level checks.
-	var requiredAccountCaps []string
+	var requiredAccountCaps []linodego.RegionCapability
 	for _, c := range capabilities {
-		if accountAvailabilityCaps[c] {
+		if accountAvailabilityCaps.Contains(c) {
 			requiredAccountCaps = append(requiredAccountCaps, c)
 		}
 	}
@@ -722,14 +725,14 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 			return true
 		}
 
-		capsMap := make(map[string]bool)
+		capsMap := set.New[linodego.RegionCapability](len(region.Capabilities))
 
 		for _, c := range region.Capabilities {
-			capsMap[strings.ToUpper(c)] = true
+			capsMap.Insert(linodego.RegionCapability(strings.ToUpper(c)))
 		}
 
 		for _, c := range capabilities {
-			if _, ok := capsMap[strings.ToUpper(c)]; !ok {
+			if !capsMap.Contains(linodego.RegionCapability(strings.ToUpper(string(c)))) {
 				return true
 			}
 		}
@@ -743,7 +746,7 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 				return true
 			}
 			for _, c := range requiredAccountCaps {
-				if !regionAvail[c] {
+				if !regionAvail.Contains(string(c)) {
 					return true
 				}
 			}
@@ -769,7 +772,7 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 }
 
 // GetRandomRegionWithCaps gets a random region given a list of region capabilities.
-func GetRandomRegionWithCaps(capabilities []string, regionType string, filters ...RegionFilterFunc) (string, error) {
+func GetRandomRegionWithCaps(capabilities []linodego.RegionCapability, regionType string, filters ...RegionFilterFunc) (string, error) {
 	regions, err := GetRegionsWithCaps(capabilities, regionType, filters...)
 	if err != nil {
 		return "", err
@@ -779,29 +782,8 @@ func GetRandomRegionWithCaps(capabilities []string, regionType string, filters .
 		return "", fmt.Errorf("no region found with the provided caps")
 	}
 
-	// #nosec G404 -- Test data, doesn't need to be cryptography
+	// #nosec G404 -- Test data, doesn't need to be cryptographically secure
 	return regions[rand.Intn(len(regions))], nil
-}
-
-// Deprecated: Cluster is now deprecated in favor of Region.
-// GetRandomOBJCluster gets a random Object Storage cluster.
-func GetRandomOBJCluster() (string, error) {
-	client, err := GetTestClient()
-	if err != nil {
-		return "", err
-	}
-
-	clusters, err := client.ListObjectStorageClusters(context.Background(), nil)
-	if err != nil {
-		return "", err
-	}
-
-	if len(clusters) < 1 {
-		return "", fmt.Errorf("no clusters found")
-	}
-
-	// #nosec G404 -- Test data, doesn't need to be cryptography
-	return clusters[rand.Intn(len(clusters))].ID, nil
 }
 
 func GetTestClient() (*linodego.Client, error) {

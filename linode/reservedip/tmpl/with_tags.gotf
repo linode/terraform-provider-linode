@@ -1,0 +1,8 @@
+{{ define "reserved_ip_with_tags" }}
+
+resource "linode_reserved_ip" "test" {
+  region = "{{ .Region }}"
+  tags   = [{{ range $i, $t := .Tags }}{{ if $i }}, {{ end }}"{{ $t }}"{{ end }}]
+}
+
+{{ end }}

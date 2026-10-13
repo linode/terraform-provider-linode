@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 )
 
 // HTTPClientModifier is the signature for functions used to modify an HTTP client before use.

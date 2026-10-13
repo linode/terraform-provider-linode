@@ -4,7 +4,7 @@
 
 resource "linode_instance" "primary" {
     label = "{{.Label}}"
-    group = "tf_test"
+
     type = "g6-nanode-1"
     region = "{{ .Region }}"
     firewall_id = linode_firewall.e2e_test_firewall.id
@@ -12,7 +12,7 @@ resource "linode_instance" "primary" {
 
 resource "linode_instance" "failover" {
     label = "{{.Label}}-failover"
-    group = "tf_test"
+
     type = "g6-nanode-1"
     region = "{{ .Region }}"
 

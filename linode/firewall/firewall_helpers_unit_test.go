@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -52,7 +52,7 @@ func TestExpandFirewallRules(t *testing.T) {
 	testCases := []struct {
 		name      string
 		ruleSpecs []RuleModel
-		expected  []linodego.FirewallRule
+		expected  []linodego.FirewallRuleInbound
 	}{
 		{
 			"Expand Firewall Rule Test 1",
@@ -74,7 +74,7 @@ func TestExpandFirewallRules(t *testing.T) {
 					),
 				},
 			},
-			[]linodego.FirewallRule{
+			[]linodego.FirewallRuleInbound{
 				{
 					Action:      "allow",
 					Label:       "Rule 1",
@@ -82,8 +82,8 @@ func TestExpandFirewallRules(t *testing.T) {
 					Ports:       "22",
 					Protocol:    "SSH",
 					Addresses: linodego.NetworkAddresses{
-						IPv4: &[]string{"192.168.1.1/24"},
-						IPv6: &[]string{},
+						IPv4: []string{"192.168.1.1/24"},
+						IPv6: []string{},
 					},
 				},
 			},
@@ -93,7 +93,7 @@ func TestExpandFirewallRules(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var diags diag.Diagnostics
-			result := ExpandFirewallRules(context.Background(), tc.ruleSpecs, &diags)
+			result := ExpandFirewallRules[linodego.FirewallRuleInbound](context.Background(), tc.ruleSpecs, &diags)
 			assert.False(t, diags.HasError())
 
 			if len(result) != len(tc.expected) {
@@ -110,36 +110,36 @@ func TestExpandFirewallRules(t *testing.T) {
 }
 
 func TestFlattenFirewallRules(t *testing.T) {
-	rule1 := linodego.FirewallRule{
+	rule1 := linodego.FirewallRuleInbound{
 		Action:      "allow",
 		Label:       "SSH",
 		Description: "Allow SSH connections",
 		Ports:       "22",
 		Protocol:    "TCP",
 		Addresses: linodego.NetworkAddresses{
-			IPv4: &[]string{"192.168.0.2"},
-			IPv6: &[]string{},
+			IPv4: []string{"192.168.0.2"},
+			IPv6: []string{},
 		},
 	}
 
-	rule2 := linodego.FirewallRule{
+	rule2 := linodego.FirewallRuleInbound{
 		Action:      "deny",
 		Label:       "Block ICMP",
 		Description: "Block ICMP traffic",
 		Ports:       "",
 		Protocol:    "ICMP",
 		Addresses: linodego.NetworkAddresses{
-			IPv4: &[]string{"192.168.0.0/24"},
-			IPv6: &[]string{"2001:db8::/64"},
+			IPv4: []string{"192.168.0.0/24"},
+			IPv6: []string{"2001:db8::/64"},
 		},
 	}
 
 	cases := []struct {
-		rules    []linodego.FirewallRule
+		rules    []linodego.FirewallRuleInbound
 		expected []RuleModel
 	}{
 		{
-			rules: []linodego.FirewallRule{
+			rules: []linodego.FirewallRuleInbound{
 				rule1, rule2,
 			},
 
@@ -205,21 +205,21 @@ func TestFlattenFirewallDevices(t *testing.T) {
 	deviceEntity1 := linodego.FirewallDeviceEntity{
 		ID:    1111,
 		Type:  linodego.FirewallDeviceLinode,
-		Label: "device_entity_1",
+		Label: linodego.Pointer("device_entity_1"),
 		URL:   "test-firewall.example.com",
 	}
 
 	deviceEntity2 := linodego.FirewallDeviceEntity{
 		ID:    2222,
 		Type:  linodego.FirewallDeviceLinode,
-		Label: "device_entity_2",
+		Label: linodego.Pointer("device_entity_2"),
 		URL:   "test-firewall.example-2.com",
 	}
 
 	deviceEntity3 := linodego.FirewallDeviceEntity{
 		ID:    3333,
 		Type:  linodego.FirewallDeviceNodeBalancer,
-		Label: "device_entity_3",
+		Label: linodego.Pointer("device_entity_3"),
 		URL:   "test-firewall.example-3.com",
 	}
 

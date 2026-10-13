@@ -19,7 +19,10 @@ func TestExpandDevicesNamedBlock(t *testing.T) {
 		},
 	}
 
-	result := expandDevicesNamedBlock(inputValue)
+	result, err := expandDevicesNamedBlock(inputValue)
+	if err != nil {
+		t.Fatalf("failed to expand devices named block: %s", err)
+	}
 
 	if result.SDA.DiskID != 12345 {
 		t.Fatal("disk id != 12345")
@@ -46,7 +49,10 @@ func TestExpandDevicesBlock(t *testing.T) {
 		return schema.HashString(i.(map[string]any)["device_name"])
 	}, inputValue)
 
-	result := expandDevicesBlock(setValue)
+	result, err := expandDevicesBlock(setValue)
+	if err != nil {
+		t.Fatalf("failed to expand devices block: %s", err)
+	}
 
 	if result.SDA.DiskID != 12345 {
 		t.Fatal("disk id != 12345")

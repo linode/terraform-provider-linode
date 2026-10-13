@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"strconv"
 	"sync"
@@ -20,10 +21,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/instance/tmpl"
+	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+	"github.com/linode/terraform-provider-linode/v4/linode/instance/tmpl"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,8 +36,8 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{
-		linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityDiskEncryption,
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
+		linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityDiskEncryption, linodego.CapabilityBlockStorage,
 	}, "core")
 	if err != nil {
 		log.Fatal(err)
@@ -104,7 +105,6 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
 					resource.TestCheckResourceAttrSet(resName, "host_uuid"),
 					resource.TestMatchResourceAttr(resName, "ipv6", regexp.MustCompile(`/128$`)),
@@ -121,8 +121,112 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_imageAuthKeysOnly(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ImageAuthKeysOnly(t, instanceName, acceptance.PublicKeyMaterial, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_imageAuthUsersOnly(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ImageAuthUsersOnly(t, instanceName, acceptance.PublicKeyMaterial, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_imageNoAuth(t *testing.T) {
+	t.Parallel()
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.ImageNoAuth(t, instanceName, testRegion),
+				ExpectError: regexp.MustCompile("at least one of 'authorized_keys', 'authorized_users', or 'root_pass' must be specified"),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_kernelBootSize(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(64)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.KernelBootSize(t, instanceName, rootPass, testRegion, "linode/latest-64bit", 9000),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("label"), knownvalue.StringExact(instanceName)),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("image"), knownvalue.StringExact(acceptance.TestImageLatest)),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("region"), knownvalue.StringExact(testRegion)),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("status"), knownvalue.StringExact("running")),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("kernel"), knownvalue.StringExact("linode/latest-64bit")),
+					statecheck.ExpectKnownValue(resName, tfjsonpath.New("boot_size"), knownvalue.Int64Exact(9000)),
+				},
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+				),
+			},
+		},
+	})
+}
+
 func TestAccResourceInstance_vpu(t *testing.T) {
 	t.Parallel()
+	t.Skip("Skipping test: no regions currently available with accelerated instance types.")
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
@@ -136,14 +240,13 @@ func TestAccResourceInstance_vpu(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.VPU(t, instanceName, acceptance.PublicKeyMaterial, "us-lax", rootPass),
+				Config: tmpl.VPU(t, instanceName, acceptance.PublicKeyMaterial, "in-maa", rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g1-accelerated-netint-vpu-t1u1-s"),
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
-					resource.TestCheckResourceAttr(resName, "region", "us-lax"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "region", "in-maa"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
 					resource.TestCheckResourceAttrSet(resName, "host_uuid"),
 					resource.TestCheckResourceAttrSet(resName, "specs.0.accelerated_devices"),
@@ -208,7 +311,6 @@ func TestAccResourceInstance_authorizedUsers(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
 				),
 			},
@@ -255,6 +357,7 @@ func TestAccResourceInstance_interfaces(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -263,13 +366,12 @@ func TestAccResourceInstance_interfaces(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Interfaces(t, instanceName, testRegion),
+				Config: tmpl.Interfaces(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
@@ -279,7 +381,7 @@ func TestAccResourceInstance_interfaces(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.InterfacesUpdate(t, instanceName, testRegion),
+				Config: tmpl.InterfacesUpdate(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "2"),
 
@@ -290,7 +392,7 @@ func TestAccResourceInstance_interfaces(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.InterfacesUpdateEmpty(t, instanceName, testRegion),
+				Config: tmpl.InterfacesUpdateEmpty(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
 				),
@@ -299,7 +401,7 @@ func TestAccResourceInstance_interfaces(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type", "firewall_id"},
+				ImportStateVerifyIgnore: []string{"root_pass", "image", "interface", "resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -326,7 +428,6 @@ func TestAccResourceInstance_config(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "60"),
 
@@ -370,7 +471,7 @@ func TestAccResourceInstance_configPair(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					checkComputeInstanceConfigs(&instance, testConfig("configa", testConfigKernel("linode/latest-64bit"))),
 					checkComputeInstanceConfigs(&instance, testConfig("configb", testConfigKernel("linode/latest-32bit"))),
@@ -408,7 +509,6 @@ func TestAccResourceInstance_configInterfaces(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 
 					resource.TestCheckResourceAttr(resName, "config.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
@@ -478,8 +578,6 @@ func TestAccResourceInstance_configInterfacesNoReboot(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
-
 					resource.TestCheckResourceAttr(resName, "config.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vlan"),
@@ -552,7 +650,7 @@ func TestAccResourceInstance_disk(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "status", "offline"),
 					resource.TestCheckResourceAttr(resName, "config.#", "0"),
@@ -594,7 +692,7 @@ func TestAccResourceInstance_diskImage(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
 					checkComputeInstanceDisk(&instance, "disk", 3000),
@@ -634,7 +732,7 @@ func TestAccResourceInstance_diskPair(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "512"),
 					checkInstanceDisks(&instance,
 						testDisk("diska", testDiskSize(3000), testDiskExists(&instanceDisk)),
@@ -675,7 +773,7 @@ func TestAccResourceInstance_diskAndConfig(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					checkComputeInstanceConfigs(&instance,
 						testConfig("config", testConfigKernel("linode/latest-64bit")),
@@ -722,7 +820,7 @@ func TestAccResourceInstance_disksAndConfigs(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "512"),
 					checkInstanceDiskExists(&instance, "diska", &instanceDisk),
 					// TODO(displague) create checkInstanceDisks helper (like Configs)
@@ -814,7 +912,7 @@ func TestAccResourceInstance_volumeAndConfig(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "boot_config_label", "config"),
 					checkInstanceDiskExists(&instance, "disk", &instanceDisk),
 					// TODO(displague) create checkInstanceDisks helper (like Configs)
@@ -841,6 +939,7 @@ func TestAccResourceInstance_privateImage(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -849,17 +948,17 @@ func TestAccResourceInstance_privateImage(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.PrivateImage(t, instanceName, testRegion),
+				Config: tmpl.PrivateImage(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					checkInstanceDisks(&instance,
-						testDisk("boot", testDiskSize(1000)),
-						testDisk("swap", testDiskSize(800)),
-						testDisk("logs", testDiskSize(600)),
+						testDisk("boot", testDiskSize(2200)),
+						testDisk("swap", testDiskSize(512)),
+						testDisk("logs", testDiskSize(512)),
 					),
 				),
 			},
@@ -894,7 +993,6 @@ func TestAccResourceInstance_noImage(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 				),
 			},
 
@@ -926,7 +1024,6 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 				),
 			},
 			{
@@ -934,7 +1031,6 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
 				),
 			},
 		},
@@ -1011,7 +1107,7 @@ func TestAccResourceInstance_updateMaintenancePolicy(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityLinodes, linodego.CapabilityMaintenancePolicy}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityMaintenancePolicy}, "core")
 	require.NoError(t, err)
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
@@ -1065,7 +1161,7 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						acceptance.CheckInstanceExists(resName, &instance),
 						resource.TestCheckResourceAttr(resName, "label", instanceName),
-						resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 						resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
 						resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/sda"),
 						resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "true"),
@@ -1077,7 +1173,7 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						acceptance.CheckInstanceExists(resName, &instance),
 						resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
-						resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
+
 						// changed kernel, not label
 						resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
 						resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-32bit"),
@@ -1192,7 +1288,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "config.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
 					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
@@ -1214,7 +1310,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "config.1.label", "configb"),
 					resource.TestCheckResourceAttr(resName, "config.1.kernel", "linode/latest-32bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					checkComputeInstanceConfigs(&instance,
 						testConfig("configa", testConfigExists(&configA), testConfigKernel("linode/latest-64bit")),
@@ -1233,7 +1329,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "config.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
 					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
@@ -1256,7 +1352,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					checkComputeInstanceConfigs(&instance,
 						testConfig("configb", testConfigKernel("linode/latest-64bit")),
@@ -1883,6 +1979,7 @@ func TestAccResourceInstance_stackScriptInstance(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1891,14 +1988,13 @@ func TestAccResourceInstance_stackScriptInstance(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.StackScript(t, instanceName, testRegion),
+				Config: tmpl.StackScript(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 				),
 			},
 
@@ -1918,6 +2014,7 @@ func TestAccResourceInstance_diskImageUpdate(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1926,13 +2023,13 @@ func TestAccResourceInstance_diskImageUpdate(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DiskBootImage(t, instanceName, acceptance.TestImagePrevious, testRegion),
+				Config: tmpl.DiskBootImage(t, instanceName, acceptance.TestImagePrevious, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName)),
 			},
 			{
-				Config: tmpl.DiskBootImage(t, instanceName, acceptance.TestImageLatest, testRegion),
+				Config: tmpl.DiskBootImage(t, instanceName, acceptance.TestImageLatest, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -1986,6 +2083,7 @@ func TestAccResourceInstance_typeChangeDiskImplicit(t *testing.T) {
 	// oldDiskSize := 0
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1995,7 +2093,7 @@ func TestAccResourceInstance_typeChangeDiskImplicit(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create an initial instance
 			{
-				Config: tmpl.TypeChangeDisk(t, instanceName, "g6-nanode-1", testRegion, true),
+				Config: tmpl.TypeChangeDisk(t, instanceName, "g6-nanode-1", testRegion, true, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2004,7 +2102,7 @@ func TestAccResourceInstance_typeChangeDiskImplicit(t *testing.T) {
 			},
 			// Upsize the instance and disk
 			{
-				Config: tmpl.TypeChangeDisk(t, instanceName, "g6-standard-1", testRegion, true),
+				Config: tmpl.TypeChangeDisk(t, instanceName, "g6-standard-1", testRegion, true, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2013,7 +2111,7 @@ func TestAccResourceInstance_typeChangeDiskImplicit(t *testing.T) {
 			},
 			// Attempt a downsize
 			{
-				Config:      tmpl.TypeChangeDisk(t, instanceName, "g6-nanode-1", testRegion, true),
+				Config:      tmpl.TypeChangeDisk(t, instanceName, "g6-nanode-1", testRegion, true, rootPass),
 				ExpectError: regexp.MustCompile("Did you try to resize a linode with implicit"),
 			},
 		},
@@ -2110,6 +2208,7 @@ func TestAccResourceInstance_powerStateUpdates(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -2118,7 +2217,7 @@ func TestAccResourceInstance_powerStateUpdates(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.BootState(t, instanceName, testRegion, false),
+				Config: tmpl.BootState(t, instanceName, testRegion, false, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2126,7 +2225,7 @@ func TestAccResourceInstance_powerStateUpdates(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.BootState(t, instanceName, testRegion, true),
+				Config: tmpl.BootState(t, instanceName, testRegion, true, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2134,7 +2233,7 @@ func TestAccResourceInstance_powerStateUpdates(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.BootState(t, instanceName, testRegion, false),
+				Config: tmpl.BootState(t, instanceName, testRegion, false, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2143,7 +2242,7 @@ func TestAccResourceInstance_powerStateUpdates(t *testing.T) {
 			},
 			// Ensure an implicit reboot isn't triggered when booted == false
 			{
-				Config: tmpl.BootStateInterface(t, instanceName, testRegion, false),
+				Config: tmpl.BootStateInterface(t, instanceName, testRegion, false, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2172,7 +2271,7 @@ func TestAccResourceInstance_powerStateUpdates(t *testing.T) {
 						t.Fatal("found reboot event when no reboot was expected")
 					}
 				},
-				Config: tmpl.BootStateInterface(t, instanceName, testRegion, false),
+				Config: tmpl.BootStateInterface(t, instanceName, testRegion, false, rootPass),
 			},
 		},
 	})
@@ -2252,6 +2351,7 @@ func TestAccResourceInstance_powerStateBooted(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -2260,7 +2360,7 @@ func TestAccResourceInstance_powerStateBooted(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.BootState(t, instanceName, testRegion, true),
+				Config: tmpl.BootState(t, instanceName, testRegion, true, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2346,7 +2446,7 @@ func TestAccResourceInstance_userData(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityMetadata}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityMetadata}, "core")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2449,7 +2549,7 @@ func TestAccResourceInstance_firewallOnCreation(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{linodego.CapabilityCloudFirewall}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityCloudFirewall}, "core")
 	rootPass := acctest.RandString(64)
 	if err != nil {
 		t.Fatal(err)
@@ -2493,6 +2593,7 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
@@ -2502,7 +2603,7 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.VPCInterface(t, instanceName, testRegion),
+					Config: tmpl.VPCInterface(t, instanceName, testRegion, rootPass),
 					Check: resource.ComposeTestCheckFunc(
 						acceptance.CheckInstanceExists(resName, &instance),
 						resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2521,6 +2622,7 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 					ImportState:       true,
 					ImportStateVerify: true,
 					ImportStateVerifyIgnore: []string{
+						"root_pass",
 						"image",
 						"interface",
 						"resize_disk",
@@ -2542,6 +2644,7 @@ func TestAccResourceInstance_VPCPublicInterfacesAddRemoveSwap(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -2550,7 +2653,7 @@ func TestAccResourceInstance_VPCPublicInterfacesAddRemoveSwap(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.PublicInterface(t, instanceName, testRegion),
+				Config: tmpl.PublicInterface(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2561,7 +2664,7 @@ func TestAccResourceInstance_VPCPublicInterfacesAddRemoveSwap(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.PublicAndVPCInterfaces(t, instanceName, testRegion),
+				Config: tmpl.PublicAndVPCInterfaces(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2576,10 +2679,10 @@ func TestAccResourceInstance_VPCPublicInterfacesAddRemoveSwap(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type", "firewall_id"},
+				ImportStateVerifyIgnore: []string{"root_pass", "image", "interface", "resize_disk", "migration_type", "firewall_id"},
 			},
 			{
-				Config: tmpl.VPCAndPublicInterfaces(t, instanceName, testRegion),
+				Config: tmpl.VPCAndPublicInterfaces(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2591,7 +2694,7 @@ func TestAccResourceInstance_VPCPublicInterfacesAddRemoveSwap(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.PublicInterface(t, instanceName, testRegion),
+				Config: tmpl.PublicInterface(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2605,7 +2708,7 @@ func TestAccResourceInstance_VPCPublicInterfacesAddRemoveSwap(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type", "firewall_id"},
+				ImportStateVerifyIgnore: []string{"root_pass", "image", "interface", "resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -2624,7 +2727,7 @@ func TestAccResourceInstance_migration(t *testing.T) {
 
 	// Resolve a region to migrate to
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityLinodes}, "core",
+		[]linodego.RegionCapability{linodego.CapabilityLinodes}, "core",
 		func(v linodego.Region) bool {
 			return v.ID != testRegion
 		},
@@ -2681,7 +2784,7 @@ func TestAccResourceInstance_withPG(t *testing.T) {
 
 	// Resolve a region with support for PGs
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup}, "core",
+		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup}, "core",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -2728,7 +2831,7 @@ func TestAccResourceInstance_pgAssignment(t *testing.T) {
 
 	// Resolve a region with support for PGs
 	testRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup}, "core",
+		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup}, "core",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -2818,7 +2921,7 @@ func TestAccResourceInstance_diskEncryption(t *testing.T) {
 
 	// Resolve a region that supports disk encryption
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.CapabilityLinodes, linodego.CapabilityDiskEncryption}, "core",
+		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityDiskEncryption}, "core",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -2902,6 +3005,7 @@ func TestAccResourceInstance_interfaceGenerationLegacy(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -2916,6 +3020,7 @@ func TestAccResourceInstance_interfaceGenerationLegacy(t *testing.T) {
 					true,
 					linodego.GenerationLegacyConfig,
 					nil,
+					rootPass,
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
@@ -2961,6 +3066,7 @@ func TestAccResourceInstance_interfaceGenerationLinode(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16) + "!A1a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -2975,6 +3081,7 @@ func TestAccResourceInstance_interfaceGenerationLinode(t *testing.T) {
 					true,
 					linodego.GenerationLinode,
 					linodego.Pointer(true),
+					rootPass,
 				),
 				ExpectError: regexp.MustCompile(
 					"The Linode must have at least 1 interface defined to boot",
@@ -2988,6 +3095,7 @@ func TestAccResourceInstance_interfaceGenerationLinode(t *testing.T) {
 					false,
 					linodego.GenerationLinode,
 					linodego.Pointer(true),
+					rootPass,
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
@@ -3035,7 +3143,7 @@ func TestAccResourceInstance_interfaceVPCIPv6(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityLinodes,
 		linodego.CapabilityVPCs,
 		linodego.CapabilityVPCDualStack,
@@ -3229,7 +3337,7 @@ func TestAccResourceInstance_configInterfaceVPCIPv6(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]string{
+	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityLinodes,
 		linodego.CapabilityVPCs,
 	}, "core")
@@ -3616,7 +3724,7 @@ func TestAccResourceInstance_withReservedIP(t *testing.T) {
 	rootPass := acctest.RandString(16)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t); acceptance.OptInTest(t) },
+		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -3648,7 +3756,7 @@ func TestAccResourceInstance_deleteWithReservedIP(t *testing.T) {
 	ipResourceName := "linode_networking_ip.test"
 	rootPass := acctest.RandString(16)
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t); acceptance.OptInTest(t) },
+		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -3725,4 +3833,199 @@ func TestAccResourceInstance_withLock(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccResourceInstance_linodeInterfacesRDMAVPC(t *testing.T) {
+	t.Parallel()
+
+	// The RDMA plan reports as unavailable in every region. To reduce race conditions,
+	// we require to set a region that supports RDMA via an environment variable.
+	rdmaRegion := os.Getenv("LINODE_RDMA_REGION")
+	if rdmaRegion == "" {
+		t.Skip("LINODE_RDMA_REGION must be set to run this test")
+	}
+
+	resName := "linode_instance.foobar"
+	ifaceResName := "linode_interface.foobar_iface"
+	instanceName := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(64)
+	updatedIPv4 := "10.0.1.5"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.LinodeInterfacesRDMAVPC(t, instanceName, rdmaRegion, rootPass),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(instanceName),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("region"),
+						knownvalue.StringExact(rdmaRegion),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("interface_generation"),
+						knownvalue.StringExact("linode"),
+					),
+					// Eight RDMA VPC interfaces plus one regular VPC interface.
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces"),
+						knownvalue.ListSizeExact(9),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces").
+							AtSliceIndex(0).
+							AtMapKey("rdma_vpc").
+							AtSliceIndex(0).
+							AtMapKey("ipv4").
+							AtSliceIndex(0).
+							AtMapKey("addresses").
+							AtSliceIndex(0).
+							AtMapKey("address"),
+						knownvalue.StringExact("auto"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces").
+							AtSliceIndex(0).
+							AtMapKey("rdma_vpc").
+							AtSliceIndex(0).
+							AtMapKey("ipv4").
+							AtSliceIndex(0).
+							AtMapKey("addresses").
+							AtSliceIndex(0).
+							AtMapKey("primary"),
+						knownvalue.Bool(true),
+					),
+					// All eight RDMA interfaces share the same RDMA subnet.
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces").
+							AtSliceIndex(7).
+							AtMapKey("rdma_vpc").
+							AtSliceIndex(0).
+							AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+					// The trailing interface is a regular VPC interface.
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_interfaces").
+							AtSliceIndex(8).
+							AtMapKey("vpc").
+							AtSliceIndex(0).
+							AtMapKey("subnet_id"),
+						knownvalue.NotNull(),
+					),
+				},
+			},
+			// Import one of the instance's existing RDMA VPC interfaces into a
+			// linode_interface resource. RDMA VPC interfaces cannot be created via
+			// the linode_interface resource, so it is imported (and persisted) rather
+			// than applied.
+			{
+				Config:             tmpl.LinodeInterfacesRDMAVPCManage(t, instanceName, rdmaRegion, rootPass),
+				ResourceName:       ifaceResName,
+				ImportState:        true,
+				ImportStatePersist: true,
+				ImportStateIdFunc:  rdmaVPCImportStateID,
+			},
+			// Update the managed RDMA VPC interface: move it to a second RDMA subnet
+			// and assign a specific primary IPv4 address.
+			{
+				Config: tmpl.LinodeInterfacesRDMAVPCManageUpdated(t, instanceName, rdmaRegion, rootPass, updatedIPv4),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(ifaceResName, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(ifaceResName, tfjsonpath.New("linode_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(ifaceResName, tfjsonpath.New("rdma_vpc").AtMapKey("vpc_id"), knownvalue.NotNull()),
+					// The interface now points at the second RDMA subnet.
+					statecheck.CompareValuePairs(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("subnet_id"),
+						"linode_vpc_subnet.rdma2",
+						tfjsonpath.New("id"),
+						helper.TypeAgnosticComparer(),
+					),
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("address"),
+						knownvalue.StringExact(updatedIPv4),
+					),
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("primary"),
+						knownvalue.Bool(true),
+					),
+				},
+			},
+			// Update the managed RDMA VPC interface's IPv4 address to "auto".
+			// The API-resolved IP is written to state (not the literal "auto"),
+			// and the "auto" custom type's semantic equality keeps the plan empty
+			// on the following refresh (no perpetual diff).
+			{
+				Config: tmpl.LinodeInterfacesRDMAVPCManageUpdated(t, instanceName, rdmaRegion, rootPass, "auto"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("address"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						ifaceResName,
+						tfjsonpath.New("rdma_vpc").AtMapKey("ipv4").AtMapKey("addresses").AtSliceIndex(0).AtMapKey("primary"),
+						knownvalue.Bool(true),
+					),
+				},
+			},
+		},
+	})
+}
+
+func rdmaVPCImportStateID(s *terraform.State) (string, error) {
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_instance" {
+			continue
+		}
+
+		linodeID, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return "", fmt.Errorf("Error parsing Linode ID %v to int: %s", rs.Primary.ID, err)
+		}
+
+		interfaces, err := client.ListInterfaces(context.Background(), linodeID, nil)
+		if err != nil {
+			return "", fmt.Errorf("Error listing interfaces for instance %d: %s", linodeID, err)
+		}
+
+		for _, iface := range interfaces {
+			if iface.RDMAVPC != nil {
+				return fmt.Sprintf("%d,%d", linodeID, iface.ID), nil
+			}
+		}
+		return "", fmt.Errorf("no RDMA VPC interface found for instance %d", linodeID)
+	}
+
+	return "", fmt.Errorf("no linode_instance found in state")
 }
