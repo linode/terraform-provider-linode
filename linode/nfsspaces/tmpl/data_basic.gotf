@@ -1,0 +1,14 @@
+{{ define "nfs_spaces_data_basic" }}
+
+resource "linode_nfs_space" "foobar" {
+    label = "{{.Label}}"
+}
+
+data "linode_nfs_spaces" "foobar" {
+    filter {
+        name = "id"
+        values = [linode_nfs_space.foobar.id]
+    }
+}
+
+{{ end }}

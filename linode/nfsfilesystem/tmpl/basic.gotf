@@ -1,0 +1,14 @@
+{{ define "nfs_filesystem_basic" }}
+
+resource "linode_nfs_space" "foobar" {
+    label = "{{.Label}}-space"
+}
+
+resource "linode_nfs_filesystem" "foobar" {
+    space_id           = linode_nfs_space.foobar.id
+    label              = "{{.Label}}"
+    region             = "pl-labkrk-88"
+    max_capacity_bytes = {{.MaxCapacityBytes}}
+}
+
+{{ end }}
