@@ -12,15 +12,6 @@ build: format
 clean:
 	rm -f terraform-provider-linode
 
-.PHONY: tflint
-tflint:
-	export GOTOOLCHAIN=go1.25.14; \
-	"$$(cd tools && go tool -n tfproviderlint)" \
-		-AT001=false \
-		-AT004=false \
-		-R018=false \
-		./...
-
 .PHONY: lint
 lint:
 	# remove two disabled linters when their errors are addressed
