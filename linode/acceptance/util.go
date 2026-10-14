@@ -696,19 +696,19 @@ func NewRegionSelector(ctx context.Context, client *linodego.Client) *RegionSele
 func (selector *RegionSelector) WithCapabilities(
 	capabilities ...linodego.RegionCapability,
 ) *RegionSelector {
-	required := make(map[string]bool, len(capabilities))
+	required := set.New[string](len(capabilities))
 	for _, capability := range capabilities {
-		required[strings.ToUpper(string(capability))] = true
+		required.Insert(strings.ToUpper(string(capability)))
 	}
 
 	return selector.filteredCopy(func(region linodego.Region) bool {
-		available := make(map[string]bool, len(region.Capabilities))
+		available := set.New[string](len(region.Capabilities))
 		for _, capability := range region.Capabilities {
-			available[strings.ToUpper(capability)] = true
+			available.Insert(strings.ToUpper(capability))
 		}
 
-		for capability := range required {
-			if !available[capability] {
+		for _, capability := range required.Slice() {
+			if !available.Contains(capability) {
 				return false
 			}
 		}
@@ -760,11 +760,11 @@ func (selector *RegionSelector) AvailableForAccount(
 		return selector.withError(fmt.Errorf("list account availabilities: %w", err))
 	}
 
-	availableByRegion := make(map[string]map[string]bool, len(availabilities))
+	availableByRegion := make(map[string]*set.Set[string], len(availabilities))
 	for _, availability := range availabilities {
-		availableCapabilities := make(map[string]bool, len(availability.Available))
+		availableCapabilities := set.New[string](len(availability.Available))
 		for _, capability := range availability.Available {
-			availableCapabilities[strings.ToUpper(capability)] = true
+			availableCapabilities.Insert(strings.ToUpper(capability))
 		}
 		availableByRegion[availability.Region] = availableCapabilities
 	}
@@ -776,7 +776,7 @@ func (selector *RegionSelector) AvailableForAccount(
 		}
 
 		for _, capability := range capabilities {
-			if !availableCapabilities[strings.ToUpper(string(capability))] {
+			if !availableCapabilities.Contains(strings.ToUpper(string(capability))) {
 				return false
 			}
 		}
@@ -807,22 +807,26 @@ func (selector *RegionSelector) WithLinodePlans(
 		return selector.withError(fmt.Errorf("list region availability: %w", err))
 	}
 
-	availableByRegion := make(map[string]map[string]bool)
+	availableByRegion := make(map[string]*set.Set[string])
 	for _, availability := range availabilities {
 		if !availability.Available {
 			continue
 		}
 
 		if availableByRegion[availability.Region] == nil {
-			availableByRegion[availability.Region] = make(map[string]bool)
+			availableByRegion[availability.Region] = set.New[string](0)
 		}
-		availableByRegion[availability.Region][availability.Plan] = true
+		availableByRegion[availability.Region].Insert(availability.Plan)
 	}
 
 	return selector.filteredCopy(func(region linodego.Region) bool {
-		availablePlans := availableByRegion[region.ID]
+		availablePlans, ok := availableByRegion[region.ID]
+		if !ok {
+			return false
+		}
+
 		for _, plan := range plans {
-			if !availablePlans[plan] {
+			if !availablePlans.Contains(plan) {
 				return false
 			}
 		}
