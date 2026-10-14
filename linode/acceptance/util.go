@@ -739,7 +739,7 @@ func (selector *RegionSelector) AvailableForAccount(
 	}
 
 	for _, capability := range capabilities {
-		if !accountAvailabilityCaps[capability] {
+		if !accountAvailabilityCaps.Contains(capability) {
 			return selector.withError(fmt.Errorf(
 				"capability %q is not supported by the account availability API",
 				capability,
