@@ -676,6 +676,235 @@ var accountAvailabilityCaps = set.From([]linodego.RegionCapability{
 	linodego.CapabilityLKE,
 })
 
+type RegionSelector struct {
+	client  *linodego.Client
+	regions []linodego.Region
+	err     error
+}
+
+// NewRegionSelector creates a selector containing every region returned by the API.
+func NewRegionSelector(ctx context.Context, client *linodego.Client) *RegionSelector {
+	regions, err := client.ListRegions(ctx, nil)
+	if err != nil {
+		return &RegionSelector{client: client, err: fmt.Errorf("list regions: %w", err)}
+	}
+
+	return &RegionSelector{client: client, regions: regions}
+}
+
+// WithCapabilities keeps regions that support every requested capability.
+func (selector *RegionSelector) WithCapabilities(
+	capabilities ...linodego.RegionCapability,
+) *RegionSelector {
+	required := set.New[string](len(capabilities))
+	for _, capability := range capabilities {
+		required.Insert(strings.ToUpper(string(capability)))
+	}
+
+	return selector.filteredCopy(func(region linodego.Region) bool {
+		available := set.New[string](len(region.Capabilities))
+		for _, capability := range region.Capabilities {
+			available.Insert(strings.ToUpper(capability))
+		}
+
+		for _, capability := range required.Slice() {
+			if !available.Contains(capability) {
+				return false
+			}
+		}
+
+		return true
+	})
+}
+
+// WithSiteType keeps regions matching the requested site type.
+func (selector *RegionSelector) WithSiteType(siteType string) *RegionSelector {
+	if strings.EqualFold(siteType, "any") {
+		return selector.filteredCopy(func(linodego.Region) bool { return true })
+	}
+
+	return selector.filteredCopy(func(region linodego.Region) bool {
+		return strings.EqualFold(region.SiteType, siteType)
+	})
+}
+
+// AvailableForAccount keeps regions where every requested capability is
+// available to the configured account.
+func (selector *RegionSelector) AvailableForAccount(
+	ctx context.Context,
+	capabilities ...linodego.RegionCapability,
+) *RegionSelector {
+	if selector.err != nil {
+		return selector
+	}
+
+	for _, capability := range capabilities {
+		if !accountAvailabilityCaps.Contains(capability) {
+			return selector.withError(fmt.Errorf(
+				"capability %q is not supported by the account availability API",
+				capability,
+			))
+		}
+	}
+
+	if len(capabilities) == 0 {
+		return selector.filteredCopy(func(linodego.Region) bool { return true })
+	}
+
+	if selector.client == nil {
+		return selector.withError(errors.New("region selector has no API client"))
+	}
+
+	availabilities, err := selector.client.ListAccountAvailabilities(ctx, nil)
+	if err != nil {
+		return selector.withError(fmt.Errorf("list account availabilities: %w", err))
+	}
+
+	availableByRegion := make(map[string]*set.Set[string], len(availabilities))
+	for _, availability := range availabilities {
+		availableCapabilities := set.New[string](len(availability.Available))
+		for _, capability := range availability.Available {
+			availableCapabilities.Insert(strings.ToUpper(capability))
+		}
+		availableByRegion[availability.Region] = availableCapabilities
+	}
+
+	return selector.filteredCopy(func(region linodego.Region) bool {
+		availableCapabilities, ok := availableByRegion[region.ID]
+		if !ok {
+			return false
+		}
+
+		for _, capability := range capabilities {
+			if !availableCapabilities.Contains(strings.ToUpper(string(capability))) {
+				return false
+			}
+		}
+
+		return true
+	})
+}
+
+// WithLinodePlans keeps regions where every requested plan is available.
+func (selector *RegionSelector) WithLinodePlans(
+	ctx context.Context,
+	plans ...string,
+) *RegionSelector {
+	if selector.err != nil {
+		return selector
+	}
+
+	if len(plans) == 0 {
+		return selector.filteredCopy(func(linodego.Region) bool { return true })
+	}
+
+	if selector.client == nil {
+		return selector.withError(errors.New("region selector has no API client"))
+	}
+
+	availabilities, err := selector.client.ListRegionsAvailability(ctx, nil)
+	if err != nil {
+		return selector.withError(fmt.Errorf("list region availability: %w", err))
+	}
+
+	availableByRegion := make(map[string]*set.Set[string])
+	for _, availability := range availabilities {
+		if !availability.Available {
+			continue
+		}
+
+		if availableByRegion[availability.Region] == nil {
+			availableByRegion[availability.Region] = set.New[string](0)
+		}
+		availableByRegion[availability.Region].Insert(availability.Plan)
+	}
+
+	return selector.filteredCopy(func(region linodego.Region) bool {
+		availablePlans, ok := availableByRegion[region.ID]
+		if !ok {
+			return false
+		}
+
+		for _, plan := range plans {
+			if !availablePlans.Contains(plan) {
+				return false
+			}
+		}
+
+		return true
+	})
+}
+
+// FilteredBy keeps regions accepted by every supplied filter.
+func (selector *RegionSelector) FilteredBy(filters ...RegionFilterFunc) *RegionSelector {
+	return selector.filteredCopy(func(region linodego.Region) bool {
+		for _, filter := range filters {
+			if !filter(region) {
+				return false
+			}
+		}
+
+		return true
+	})
+}
+
+// IDs returns the IDs of all selected regions.
+func (selector *RegionSelector) IDs() ([]string, error) {
+	if selector.err != nil {
+		return nil, selector.err
+	}
+
+	return helper.MapSlice(selector.regions, func(region linodego.Region) string {
+		return region.ID
+	}), nil
+}
+
+// First returns the first selected region ID.
+func (selector *RegionSelector) First() (string, error) {
+	if selector.err != nil {
+		return "", selector.err
+	}
+
+	if len(selector.regions) == 0 {
+		return "", errors.New("no region matches the requested criteria")
+	}
+
+	return selector.regions[0].ID, nil
+}
+
+// Random returns a random selected region ID.
+func (selector *RegionSelector) Random() (string, error) {
+	if selector.err != nil {
+		return "", selector.err
+	}
+
+	if len(selector.regions) == 0 {
+		return "", errors.New("no region matches the requested criteria")
+	}
+
+	// #nosec G404 -- Test data, doesn't need to be cryptography
+	return selector.regions[rand.Intn(len(selector.regions))].ID, nil
+}
+
+func (selector *RegionSelector) filteredCopy(keep func(linodego.Region) bool) *RegionSelector {
+	if selector.err != nil {
+		return selector
+	}
+
+	regions := make([]linodego.Region, 0, len(selector.regions))
+	for _, region := range selector.regions {
+		if keep(region) {
+			regions = append(regions, region)
+		}
+	}
+
+	return &RegionSelector{client: selector.client, regions: regions}
+}
+
+func (selector *RegionSelector) withError(err error) *RegionSelector {
+	return &RegionSelector{client: selector.client, regions: selector.regions, err: err}
+}
+
 // GetRegionsWithCaps returns a list of region IDs that support the given capabilities
 // Parameters:
 // - capabilities: Required capabilities that the regions must support.
