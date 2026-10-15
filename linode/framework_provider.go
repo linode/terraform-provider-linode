@@ -21,6 +21,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/consumerimagesharegroupimageshares"
 	"github.com/linode/terraform-provider-linode/v4/linode/consumerimagesharegrouptoken"
 	"github.com/linode/terraform-provider-linode/v4/linode/consumerimagesharegrouptokens"
+	"github.com/linode/terraform-provider-linode/v4/linode/databaseaccesscontrols"
 	"github.com/linode/terraform-provider-linode/v4/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/v4/linode/databasemysqlconfig"
 	"github.com/linode/terraform-provider-linode/v4/linode/databasemysqlv2"
@@ -299,6 +300,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		monitorlogsdestination.NewResource,
 		monitorlogsstream.NewResource,
 		monitoralertdefinition.NewResource,
+		databaseaccesscontrols.NewResource,
 	}
 }
 
