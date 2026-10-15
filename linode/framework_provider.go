@@ -42,6 +42,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/iamuser"
 	"github.com/linode/terraform-provider-linode/v4/linode/image"
 	"github.com/linode/terraform-provider-linode/v4/linode/images"
+	"github.com/linode/terraform-provider-linode/v4/linode/instance"
 	"github.com/linode/terraform-provider-linode/v4/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/v4/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/v4/linode/instancenetworking"
@@ -333,6 +334,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nbconfig.NewDataSource,
 		nbtypes.NewDataSource,
 		instancetype.NewDataSource,
+		instance.NewDataSource,
 		instancetypes.NewDataSource,
 		iamentities.NewDataSource,
 		iamuser.NewDataSource,

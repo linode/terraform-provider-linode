@@ -4,8 +4,8 @@
 
 This is a Terraform provider that uses **both** SDKv2 and Plugin Framework patterns (muxed together). Resources and data sources generally live under `linode/<resource-name>/` and use shared code from `linode/helper/` and, where needed, other resource packages.
 
-- **SDKv2 resources** (legacy): for example, `linode/instance/` uses `resource.go` and `datasource.go`
-- **Mixed packages**: `linode/domain/` and `linode/lke/` use an SDKv2 `resource.go` with a Framework data source
+- **SDKv2 resources** (legacy): for example, `linode/instanceconfig/` uses `resource.go` and `schema_resource.go`
+- **Mixed packages**: `linode/instance/`, `linode/domain/`, `linode/lke/`, `linode/domainrecord/`, `linode/objbucket/` and `linode/user/` use an SDKv2 `resource.go` with a Framework data source. All SDKv2-owned data sources have been migrated; `linode/provider.go` now registers resources only.
 - **Plugin Framework resources** (preferred for new work): `linode/vpc/`, `linode/volume/`, `linode/vpcsubnet/` - use `framework_resource.go`, `framework_datasource.go`, `framework_models.go`
 - **Provider registration**: SDKv2 in `linode/provider.go`, Framework in `linode/framework_provider.go`
 - **Shared utilities**: `linode/helper/` - conversion functions, base resource/datasource, plan modifiers

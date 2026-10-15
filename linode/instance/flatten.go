@@ -1,89 +1,11 @@
 package instance
 
 import (
-	"context"
-	"fmt"
 	"net"
 
 	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
-
-func flattenInstance(
-	ctx context.Context, client *linodego.Client, instance *linodego.Instance,
-) (map[string]any, error) {
-	result := make(map[string]any)
-
-	id := instance.ID
-
-	instanceNetwork, err := client.GetInstanceIPAddresses(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get ips for linode instance %d: %s", id, err)
-	}
-
-	result["ipv4"] = flattenInstanceIPv4(instance.IPv4)
-	result["ipv6"] = instance.IPv6
-
-	public, private := instanceNetwork.IPv4.Public, instanceNetwork.IPv4.Private
-
-	if len(public) > 0 {
-		result["ip_address"] = public[0].Address
-	}
-
-	if len(private) > 0 {
-		result["private_ip_address"] = private[0].Address
-	}
-
-	result["id"] = instance.ID
-	result["label"] = instance.Label
-	result["status"] = instance.Status
-	result["type"] = instance.Type
-	result["region"] = instance.Region
-	result["maintenance_policy"] = instance.MaintenancePolicy
-	result["watchdog_enabled"] = instance.WatchdogEnabled
-	result["tags"] = instance.Tags
-	result["capabilities"] = instance.Capabilities
-	result["locks"] = instance.Locks
-	result["image"] = instance.Image
-	result["interface_generation"] = instance.InterfaceGeneration
-	result["host_uuid"] = instance.HostUUID
-	result["has_user_data"] = instance.HasUserData
-	result["disk_encryption"] = instance.DiskEncryption
-	result["lke_cluster_id"] = instance.LKEClusterID
-
-	result["backups"] = flattenInstanceBackups(*instance)
-	result["specs"] = flattenInstanceSpecs(*instance)
-	result["alerts"] = flattenInstanceAlerts(*instance)
-	result["placement_group"] = flattenInstancePlacementGroup(*instance)
-
-	instanceDisks, err := client.ListInstanceDisks(ctx, id, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get the disks for the Linode instance %d: %s", id, err)
-	}
-
-	disks, swapSize := flattenInstanceDisks(instanceDisks)
-	result["disk"] = disks
-	result["swap_size"] = swapSize
-
-	instanceConfigs, err := client.ListInstanceConfigs(ctx, id, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get the config for Linode instance %d (%s): %s", id, instance.Label, err)
-	}
-
-	diskLabelIDMap := make(map[int]string, len(instanceDisks))
-	for _, disk := range instanceDisks {
-		diskLabelIDMap[disk.ID] = disk.Label
-	}
-
-	configs := flattenInstanceConfigs(instanceConfigs, diskLabelIDMap)
-
-	result["config"] = configs
-	if len(instanceConfigs) == 1 {
-		result["boot_config_label"] = instanceConfigs[0].Label
-	}
-
-	return result, nil
-}
 
 // flattenInstanceIPv4 converts a slice of IPs to a slice of IP address strings.
 func flattenInstanceIPv4(ips []net.IP) []string {
@@ -261,35 +183,6 @@ func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {
 		"accelerated_devices": instance.Specs.AcceleratedDevices,
 		"gpus":                instance.Specs.GPUs,
 	}}
-}
-
-func flattenInstanceSimple(instance *linodego.Instance) (map[string]any, error) {
-	result := make(map[string]any)
-
-	var ips []string
-	for _, ip := range instance.IPv4 {
-		ips = append(ips, ip.String())
-	}
-
-	result["id"] = instance.ID
-	result["ipv4"] = ips
-	result["ipv6"] = instance.IPv6
-	result["label"] = instance.Label
-	result["status"] = instance.Status
-	result["type"] = instance.Type
-	result["region"] = instance.Region
-	result["maintenance_policy"] = instance.MaintenancePolicy
-	result["watchdog_enabled"] = instance.WatchdogEnabled
-	result["tags"] = instance.Tags
-	result["capabilities"] = instance.Capabilities
-	result["image"] = instance.Image
-	result["interface_generation"] = instance.InterfaceGeneration
-	result["host_uuid"] = instance.HostUUID
-	result["backups"] = flattenInstanceBackups(*instance)
-	result["specs"] = flattenInstanceSpecs(*instance)
-	result["alerts"] = flattenInstanceAlerts(*instance)
-
-	return result, nil
 }
 
 func flattenInstancePlacementGroup(instance linodego.Instance) []map[string]any {
