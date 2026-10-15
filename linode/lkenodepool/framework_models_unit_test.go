@@ -182,7 +182,7 @@ func TestSetNodePoolCreateOptions_IsolationPartiallyKnown(t *testing.T) {
 	assert.False(t, *createOpts.Isolation.PublicIPv6)
 }
 
-func TestValidateEnterpriseOnlyAttributes_IsolationAllowedForEnterprise(t *testing.T) {
+func TestValidateEnterpriseOnlyAttributes_AllowedForEnterprise(t *testing.T) {
 	nodePoolModel := createNodePoolModel()
 	var diags diag.Diagnostics
 
@@ -191,8 +191,23 @@ func TestValidateEnterpriseOnlyAttributes_IsolationAllowedForEnterprise(t *testi
 	assert.False(t, diags.HasError())
 }
 
+func TestValidateEnterpriseOnlyAttributes_RejectedForNonEnterprise(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	var diags diag.Diagnostics
+
+	nodePoolModel.validateEnterpriseOnlyAttributes("standard", &diags)
+
+	assert.True(t, diags.HasError())
+	assert.Len(t, diags.Errors(), 3)
+	assert.Contains(t, diags.Errors()[0].Summary(), "isolation")
+	assert.Contains(t, diags.Errors()[1].Summary(), "k8s_version")
+	assert.Contains(t, diags.Errors()[2].Summary(), "update_strategy")
+}
+
 func TestValidateEnterpriseOnlyAttributes_IsolationRejectedForNonEnterprise(t *testing.T) {
 	nodePoolModel := createNodePoolModel()
+	nodePoolModel.K8sVersion = types.StringNull()
+	nodePoolModel.UpdateStrategy = types.StringNull()
 	var diags diag.Diagnostics
 
 	nodePoolModel.validateEnterpriseOnlyAttributes("standard", &diags)
@@ -202,10 +217,40 @@ func TestValidateEnterpriseOnlyAttributes_IsolationRejectedForNonEnterprise(t *t
 	assert.Contains(t, diags.Errors()[0].Summary(), "isolation")
 }
 
-func TestValidateEnterpriseOnlyAttributes_IsolationUnsetForNonEnterprise(t *testing.T) {
+func TestValidateEnterpriseOnlyAttributes_K8sVersionRejectedForNonEnterprise(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	nodePoolModel.IsolationIPv4 = types.BoolNull()
+	nodePoolModel.IsolationIPv6 = types.BoolNull()
+	nodePoolModel.UpdateStrategy = types.StringNull()
+	var diags diag.Diagnostics
+
+	nodePoolModel.validateEnterpriseOnlyAttributes("standard", &diags)
+
+	assert.True(t, diags.HasError())
+	assert.Len(t, diags.Errors(), 1)
+	assert.Contains(t, diags.Errors()[0].Summary(), "k8s_version")
+}
+
+func TestValidateEnterpriseOnlyAttributes_UpdateStrategyRejectedForNonEnterprise(t *testing.T) {
+	nodePoolModel := createNodePoolModel()
+	nodePoolModel.IsolationIPv4 = types.BoolNull()
+	nodePoolModel.IsolationIPv6 = types.BoolNull()
+	nodePoolModel.K8sVersion = types.StringNull()
+	var diags diag.Diagnostics
+
+	nodePoolModel.validateEnterpriseOnlyAttributes("standard", &diags)
+
+	assert.True(t, diags.HasError())
+	assert.Len(t, diags.Errors(), 1)
+	assert.Contains(t, diags.Errors()[0].Summary(), "update_strategy")
+}
+
+func TestValidateEnterpriseOnlyAttributes_UnsetForNonEnterprise(t *testing.T) {
 	nodePoolModel := createNodePoolModel()
 	nodePoolModel.IsolationIPv4 = types.BoolUnknown()
 	nodePoolModel.IsolationIPv6 = types.BoolUnknown()
+	nodePoolModel.K8sVersion = types.StringUnknown()
+	nodePoolModel.UpdateStrategy = types.StringUnknown()
 	var diags diag.Diagnostics
 
 	nodePoolModel.validateEnterpriseOnlyAttributes("standard", &diags)
@@ -213,12 +258,14 @@ func TestValidateEnterpriseOnlyAttributes_IsolationUnsetForNonEnterprise(t *test
 	assert.False(t, diags.HasError())
 }
 
-func TestValidateEnterpriseOnlyAttributes_IsolationNullForNonEnterprise(t *testing.T) {
+func TestValidateEnterpriseOnlyAttributes_NullForNonEnterprise(t *testing.T) {
 	// Config representation of unconfigured Optional+Computed attributes is
 	// null even when plan/state hold known API values after a refresh.
 	nodePoolModel := createNodePoolModel()
 	nodePoolModel.IsolationIPv4 = types.BoolNull()
 	nodePoolModel.IsolationIPv6 = types.BoolNull()
+	nodePoolModel.K8sVersion = types.StringNull()
+	nodePoolModel.UpdateStrategy = types.StringNull()
 	var diags diag.Diagnostics
 
 	nodePoolModel.validateEnterpriseOnlyAttributes("standard", &diags)
