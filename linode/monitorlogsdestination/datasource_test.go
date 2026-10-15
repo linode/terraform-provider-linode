@@ -36,6 +36,7 @@ func TestAccDataSourceLogsDestination_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkLogsDestinationDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, label, endpoint.Region, testCluster),
@@ -63,6 +64,95 @@ func TestAccDataSourceLogsDestination_basic(t *testing.T) {
 				Check: func(_ *terraform.State) error {
 					time.Sleep(60 * time.Second)
 					return nil
+				},
+			},
+		},
+	})
+}
+
+// TestAccDataSourceLogsDestination_trafficPeak verifies the data source flattens a
+// traffic_peak destination. Both steps reuse the same label so only one
+// destination is ever created.
+func TestAccDataSourceLogsDestination_trafficPeak(t *testing.T) {
+	t.Parallel()
+
+	dataName := "data.linode_monitor_logs_destination.foobar"
+	label := acctest.RandomWithPrefix("tf-test")
+	endpointURL := trafficPeakEndpointURL()
+	username := acctest.RandomWithPrefix("tf-user")
+	password := acctest.RandString(24)
+
+	trafficPeakChecks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(dataName, tfjsonpath.New("label"), knownvalue.StringExact(label)),
+		statecheck.ExpectKnownValue(dataName, tfjsonpath.New("type"), knownvalue.StringExact("traffic_peak")),
+		statecheck.ExpectKnownValue(dataName, tfjsonpath.New("status"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(dataName, tfjsonpath.New("created"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(dataName, tfjsonpath.New("updated"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(dataName, tfjsonpath.New("created_by"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(dataName,
+			tfjsonpath.New("details").AtMapKey("endpoint_url"), knownvalue.StringExact(endpointURL)),
+		statecheck.ExpectKnownValue(dataName,
+			tfjsonpath.New("details").AtMapKey("content_type"), knownvalue.StringExact("application/json")),
+		statecheck.ExpectKnownValue(dataName,
+			tfjsonpath.New("details").AtMapKey("data_compression"), knownvalue.StringExact("gzip")),
+		// The API always defaults authentication.type to "basic".
+		statecheck.ExpectKnownValue(dataName,
+			tfjsonpath.New("details").AtMapKey("authentication_type"), knownvalue.StringExact("basic")),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkLogsDestinationDestroy,
+		Steps: []resource.TestStep{
+			{
+				// authentication.type explicitly set to the only accepted value.
+				Config:            tmpl.TrafficPeakDataBasic(t, label, endpointURL, username, password),
+				ConfigStateChecks: trafficPeakChecks,
+			},
+			{
+				// authentication.type omitted: the API still returns "basic".
+				Config:            tmpl.TrafficPeakDataNoAuthType(t, label, endpointURL, username, password),
+				ConfigStateChecks: trafficPeakChecks,
+			},
+		},
+	})
+}
+
+// TestAccDataSourceLogsDestination_customHTTPS verifies the data source flattens a
+// custom_https destination.
+func TestAccDataSourceLogsDestination_customHTTPS(t *testing.T) {
+	t.Parallel()
+
+	username, password := customHttpsBasicAuthCredentials(t)
+
+	dataName := "data.linode_monitor_logs_destination.foobar"
+	label := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkLogsDestinationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.CustomHTTPSDataBasic(
+					t, label, customHttpsBasicAuthEndpointURL, username, password),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("label"), knownvalue.StringExact(label)),
+					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("type"), knownvalue.StringExact("custom_https")),
+					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("status"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("created"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("created_by"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataName,
+						tfjsonpath.New("details").AtMapKey("endpoint_url"),
+						knownvalue.StringExact(customHttpsBasicAuthEndpointURL)),
+					statecheck.ExpectKnownValue(dataName,
+						tfjsonpath.New("details").AtMapKey("content_type"),
+						knownvalue.StringExact("application/json")),
+					statecheck.ExpectKnownValue(dataName,
+						tfjsonpath.New("details").AtMapKey("data_compression"), knownvalue.StringExact("gzip")),
+					statecheck.ExpectKnownValue(dataName,
+						tfjsonpath.New("details").AtMapKey("authentication_type"), knownvalue.StringExact("basic")),
 				},
 			},
 		},

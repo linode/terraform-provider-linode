@@ -67,19 +67,19 @@ var DataSourceSchema = schema.Schema{
 					Computed:    true,
 				},
 				"endpoint_url": schema.StringAttribute{
-					Description: "The HTTPS endpoint URL (custom_https type).",
+					Description: "The HTTPS endpoint URL (custom_https and traffic_peak types).",
 					Computed:    true,
 				},
 				"content_type": schema.StringAttribute{
-					Description: "The content type of log data (custom_https type).",
+					Description: "The content type of log data (custom_https and traffic_peak types).",
 					Computed:    true,
 				},
 				"data_compression": schema.StringAttribute{
-					Description: "The compression format (custom_https type).",
+					Description: "The compression format (custom_https and traffic_peak types).",
 					Computed:    true,
 				},
 				"authentication_type": schema.StringAttribute{
-					Description: "The authentication type (custom_https type).",
+					Description: "The authentication type (custom_https and traffic_peak types).",
 					Computed:    true,
 				},
 				"tls_hostname": schema.StringAttribute{

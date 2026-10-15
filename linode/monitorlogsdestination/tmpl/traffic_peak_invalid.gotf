@@ -1,0 +1,56 @@
+{{ define "monitor_logs_destination_traffic_peak_invalid_auth_type" }}
+
+resource "linode_monitor_logs_destination" "foobar" {
+  label = "{{.Label}}"
+  type  = "traffic_peak"
+
+  traffic_peak_details = {
+    endpoint_url     = "https://example.com"
+    content_type     = "application/json"
+    data_compression = "gzip"
+
+    authentication = {
+      type     = "none"
+      username = "user"
+      password = "pass"
+    }
+  }
+}
+
+{{ end }}
+
+{{ define "monitor_logs_destination_traffic_peak_missing_auth" }}
+
+resource "linode_monitor_logs_destination" "foobar" {
+  label = "{{.Label}}"
+  type  = "traffic_peak"
+
+  traffic_peak_details = {
+    endpoint_url     = "https://example.com"
+    content_type     = "application/json"
+    data_compression = "gzip"
+  }
+}
+
+{{ end }}
+
+{{ define "monitor_logs_destination_traffic_peak_missing_content_type" }}
+
+resource "linode_monitor_logs_destination" "foobar" {
+  label = "{{.Label}}"
+  type  = "traffic_peak"
+
+  traffic_peak_details = {
+    endpoint_url     = "https://example.com"
+    data_compression = "gzip"
+
+    authentication = {
+      username = "user"
+      password = "pass"
+    }
+  }
+}
+
+{{ end }}
+
+

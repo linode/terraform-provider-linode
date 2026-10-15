@@ -1,0 +1,19 @@
+{{ define "monitor_logs_destination_traffic_peak_updates" }}
+
+resource "linode_monitor_logs_destination" "foobar" {
+  label = "{{.Label}}-updated"
+  type  = "traffic_peak"
+
+  traffic_peak_details = {
+    endpoint_url     = "{{.EndpointURL}}"
+    content_type     = "application/json; charset=utf-8"
+    data_compression = "gzip"
+
+    authentication = {
+      username = "{{.Username}}"
+      password = "{{.Password}}-updated"
+    }
+  }
+}
+
+{{ end }}

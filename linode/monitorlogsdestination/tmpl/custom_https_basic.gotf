@@ -1,0 +1,114 @@
+{{ define "monitor_logs_destination_custom_https_basic" }}
+
+resource "linode_monitor_logs_destination" "foobar" {
+  label = "{{.Label}}"
+  type  = "custom_https"
+
+  custom_https_details = {
+    endpoint_url     = "{{.EndpointURL}}"
+    content_type     = "application/json"
+    data_compression = "gzip"
+
+    authentication = {
+      type     = "basic"
+      username = "{{.Username}}"
+      password = "{{.Password}}"
+    }
+
+    custom_headers = [
+      {
+        name  = "X-Logs-Custom-Path"
+        value = "tr-test"
+      }
+    ]
+  }
+}
+
+{{ end }}
+
+{{ define "monitor_logs_destination_custom_https_auth_none" }}
+
+resource "linode_monitor_logs_destination" "foobar" {
+  label = "{{.Label}}"
+  type  = "custom_https"
+
+  custom_https_details = {
+    endpoint_url     = "{{.EndpointURL}}"
+    data_compression = "gzip"
+
+    authentication = {
+      type = "none"
+    }
+
+    custom_headers = [
+      {
+        name  = "X-Logs-Custom-Path"
+        value = "tr-test"
+      }
+    ]
+  }
+}
+
+{{ end }}
+
+{{ define "monitor_logs_destination_custom_https_full" }}
+
+resource "linode_monitor_logs_destination" "foobar" {
+  label = "{{.Label}}"
+  type  = "custom_https"
+
+  custom_https_details = {
+    endpoint_url     = "{{.EndpointURL}}"
+    content_type     = "application/json; charset=utf-8"
+    data_compression = "gzip"
+
+    authentication = {
+      type = "none"
+    }
+
+    custom_headers = [
+      {
+        name  = "X-Logs-Custom-Path"
+        value = "tr-test"
+      },
+      {
+        name  = "X-Second-Header"
+        value = "second-value"
+      }
+    ]
+  }
+}
+
+{{ end }}
+
+{{ define "monitor_logs_destination_custom_https_data_basic" }}
+
+resource "linode_monitor_logs_destination" "foobar" {
+  label = "{{.Label}}"
+  type  = "custom_https"
+
+  custom_https_details = {
+    endpoint_url     = "{{.EndpointURL}}"
+    content_type     = "application/json"
+    data_compression = "gzip"
+
+    authentication = {
+      type     = "basic"
+      username = "{{.Username}}"
+      password = "{{.Password}}"
+    }
+
+    custom_headers = [
+      {
+        name  = "X-Logs-Custom-Path"
+        value = "tr-test"
+      }
+    ]
+  }
+}
+
+data "linode_monitor_logs_destination" "foobar" {
+  id = linode_monitor_logs_destination.foobar.id
+}
+
+{{ end }}
