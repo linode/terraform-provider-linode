@@ -26,7 +26,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.1
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 	github.com/linode/linodego/k8s v1.26.1
-	github.com/linode/linodego/v2 v2.8.0
+	github.com/linode/linodego/v2 v2.9.0
 	github.com/stretchr/testify v1.12.1
 	golang.org/x/crypto v0.57.0
 	golang.org/x/sync v0.23.0
