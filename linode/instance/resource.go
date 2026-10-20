@@ -381,6 +381,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		updateOpts.WatchdogEnabled = &watchdogEnabled
 	}
 
+	// The create endpoint only accepts ACLP system/user alerts, so the
+	// individual alert thresholds (cpu, io, network, transfer) must be
+	// applied via a subsequent update call.
+	if alertsRaw, ok := d.GetOk("alerts.0"); ok {
+		doUpdate = true
+		updateOpts.Alerts = expandInstanceAlertsUpdateOpts(alertsRaw.(map[string]any))
+	}
+
 	if doUpdate {
 		ctx = populateLogAttributes(ctx, d)
 		tflog.Debug(ctx, "client.UpdateInstance(...)", map[string]any{
