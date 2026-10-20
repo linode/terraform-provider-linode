@@ -1187,6 +1187,85 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_withACLPAlerts(t *testing.T) {
+	t.Parallel()
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Errorf("Error getting client: %s", err)
+	}
+
+	alerts, err := client.ListMonitorAlertDefinitions(context.Background(), "linode", nil)
+	if err != nil {
+		t.Errorf("Error listing monitor alert definitions: %s", err)
+	}
+
+	if len(alerts) == 0 {
+		t.Skip("No ACLP alerts found, skipping test")
+	}
+
+	systemAlert := alerts[0].ID
+
+	// This test can occasionally fail while running the entire test suite in parallel
+	acceptance.RunTestWithRetries(t, 1, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.WithAlerts(t, instanceName, testRegion, systemAlert),
+					Check:  acceptance.CheckInstanceExists(resName, &instance),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("label"),
+							knownvalue.StringExact(instanceName),
+						),
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("tags").AtSliceIndex(0),
+							knownvalue.StringExact("tf_test"),
+						),
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("alerts").AtSliceIndex(0).AtMapKey("system_alerts"),
+							knownvalue.SetSizeExact(1),
+						),
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("alerts").AtSliceIndex(0).AtMapKey("system_alerts"),
+							knownvalue.SetExact([]knownvalue.Check{
+								knownvalue.Int64Exact(int64(systemAlert)),
+							}),
+						),
+					},
+				},
+				{
+					Config: tmpl.AlertsUpdates(t, instanceName, testRegion),
+					Check:  acceptance.CheckInstanceExists(resName, &instance),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("label"),
+							knownvalue.StringExact(fmt.Sprintf("%s_r", instanceName)),
+						),
+						statecheck.ExpectKnownValue(
+							resName,
+							tfjsonpath.New("alerts").AtSliceIndex(0).AtMapKey("system_alerts"),
+							knownvalue.SetSizeExact(0),
+						),
+					},
+				},
+			},
+		})
+	})
+}
+
 func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 	t.Parallel()
 
@@ -2549,9 +2628,7 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 						"resize_disk",
 						"migration_type",
 						"firewall_id",
-						"capabilities.#",
-						"capabilities.0",
-						"capabilities.1",
+						"capabilities",
 					},
 				},
 			},
@@ -2976,7 +3053,7 @@ func TestAccResourceInstance_interfaceGenerationLegacy(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "firewall_id"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "firewall_id", "capabilities"},
 			},
 		},
 	})
