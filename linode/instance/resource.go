@@ -386,7 +386,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	// applied via a subsequent update call.
 	if alertsRaw, ok := d.GetOk("alerts.0"); ok {
 		doUpdate = true
-		updateOpts.Alerts = expandInstanceAlertsUpdateOpts(alertsRaw.(map[string]any))
+		alerts := alertsRaw.(map[string]any)
+		createdAlerts := flattenInstanceAlerts(*instance)[0]
+		for _, name := range []string{"cpu", "io", "network_in", "network_out", "transfer_quota"} {
+			if helper.SDKv2UnwrapOptionalConfigAttr[int](ctx, d, "alerts.0."+name) == nil {
+				alerts[name] = createdAlerts[name]
+			}
+		}
+		updateOpts.Alerts = expandInstanceAlertsUpdateOpts(alerts)
 	}
 
 	if doUpdate {
