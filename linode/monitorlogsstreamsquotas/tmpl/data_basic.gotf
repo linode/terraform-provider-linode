@@ -1,0 +1,3 @@
+{{ define "monitor_logs_stream_quotas_data_basic" }}
+data "linode_monitor_logs_stream_quotas" "all" {}
+{{ end }}
