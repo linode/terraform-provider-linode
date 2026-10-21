@@ -682,14 +682,16 @@ type RegionSelector struct {
 	err     error
 }
 
-// NewRegionSelector creates a selector containing every region returned by the API.
+// NewRegionSelector creates a selector containing only operational regions returned by the API.
 func NewRegionSelector(ctx context.Context, client *linodego.Client) *RegionSelector {
 	regions, err := client.ListRegions(ctx, nil)
 	if err != nil {
 		return &RegionSelector{client: client, err: fmt.Errorf("list regions: %w", err)}
 	}
 
-	return &RegionSelector{client: client, regions: regions}
+	return (&RegionSelector{client: client, regions: regions}).filteredCopy(func(region linodego.Region) bool {
+		return region.Status == "ok"
+	})
 }
 
 // WithCapabilities keeps regions that support every requested capability.
