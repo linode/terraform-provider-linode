@@ -5,6 +5,7 @@ package nbnode
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
@@ -45,4 +46,19 @@ func TestParseNodeBalancerNode(t *testing.T) {
 	assert.Equal(t, types.StringValue("UP"), data.Status)
 	assert.Equal(t, types.Int64Value(789), data.SubnetID)
 	assert.Equal(t, types.Int64Value(123), data.VPCConfigID)
+}
+
+func TestNodeBalancerNodeCreateOptionsIPv6(t *testing.T) {
+	const address = "[2001:db8:abcd:12::1]:80"
+	model := &ResourceModel{
+		BaseModel: BaseModel{
+			Address: types.StringValue(address),
+			Label:   types.StringValue("ipv6-node"),
+		},
+	}
+
+	var diags diag.Diagnostics
+	opts := model.GetCreateOptions(&diags)
+	assert.False(t, diags.HasError())
+	assert.Equal(t, address, opts.Address)
 }

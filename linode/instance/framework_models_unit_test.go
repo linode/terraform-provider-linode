@@ -98,7 +98,7 @@ func testInstance() *linodego.Instance {
 		IPv4:                []net.IP{net.ParseIP("192.0.2.1")},
 		IPv6:                "2600:3c03::/64",
 		Specs:               &linodego.InstanceSpec{Disk: 25600, Memory: 1024, VCPUs: 1, Transfer: 1000},
-		Alerts:              &linodego.InstanceAlert{CPU: 90, IO: 10000, NetworkIn: 10},
+		Alerts:              &linodego.InstanceAlert{CPU: 90, IO: 10000, NetworkIn: 10, SystemAlerts: []int{7, 8}, UserAlerts: []int{100}},
 		Backups:             &linodego.InstanceBackup{Available: true, Enabled: true},
 		PlacementGroup: &linodego.InstancePlacementGroup{
 			ID:                   1,
@@ -226,6 +226,14 @@ func TestBuildInstanceObject_populated(t *testing.T) {
 	backups := listElem(t, objectAttr(t, object, "backups"), 0)
 	assert.Equal(t, 1, listLen(t, objectAttr(t, backups, "schedule")))
 
+	alerts := listElem(t, objectAttr(t, object, "alerts"), 0)
+	systemAlerts, ok := objectAttr(t, alerts, "system_alerts").(types.Set)
+	require.True(t, ok)
+	assert.ElementsMatch(t, []attr.Value{types.Int64Value(7), types.Int64Value(8)}, systemAlerts.Elements())
+	userAlerts, ok := objectAttr(t, alerts, "user_alerts").(types.Set)
+	require.True(t, ok)
+	assert.Equal(t, []attr.Value{types.Int64Value(100)}, userAlerts.Elements())
+
 	config := listElem(t, objectAttr(t, object, "config"), 0)
 	assert.Equal(t, types.Int64Value(2000), objectAttr(t, config, "id"))
 	assert.Equal(t, 1, listLen(t, objectAttr(t, config, "helpers")))
@@ -323,6 +331,11 @@ func TestBuildInstanceObject_empty(t *testing.T) {
 	// SDKv2 always emitted exactly one specs/alerts/backups element.
 	assert.Equal(t, 1, listLen(t, objectAttr(t, object, "specs")))
 	assert.Equal(t, 1, listLen(t, objectAttr(t, object, "alerts")))
+
+	// ...and empty, not null, alert ID sets when none are configured.
+	emptyAlerts := listElem(t, objectAttr(t, object, "alerts"), 0)
+	assert.Empty(t, objectAttr(t, emptyAlerts, "system_alerts").(types.Set).Elements())
+	assert.Empty(t, objectAttr(t, emptyAlerts, "user_alerts").(types.Set).Elements())
 	assert.Equal(t, 1, listLen(t, objectAttr(t, object, "backups")))
 
 	// ...and an empty list when the instance has no placement group.

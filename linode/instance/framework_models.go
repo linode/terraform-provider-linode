@@ -226,6 +226,8 @@ func flattenInstanceAlertsFramework(alerts *linodego.InstanceAlert, diags *diag.
 		"network_in":     types.Int64Value(int64(alerts.NetworkIn)),
 		"network_out":    types.Int64Value(int64(alerts.NetworkOut)),
 		"transfer_quota": types.Int64Value(int64(alerts.TransferQuota)),
+		"system_alerts":  int64SetValue(alerts.SystemAlerts, diags),
+		"user_alerts":    int64SetValue(alerts.UserAlerts, diags),
 	}, diags), diags)
 }
 
@@ -517,6 +519,13 @@ func singletonList(elemType attr.Type, elem attr.Value, diags *diag.Diagnostics)
 
 func stringSetValue(values []string, diags *diag.Diagnostics) types.Set {
 	result, d := types.SetValue(types.StringType, helper.StringSliceToFrameworkValueSlice(values))
+	diags.Append(d...)
+
+	return result
+}
+
+func int64SetValue(values []int, diags *diag.Diagnostics) types.Set {
+	result, d := types.SetValue(types.Int64Type, helper.IntSliceToFrameworkValueSlice(values))
 	diags.Append(d...)
 
 	return result

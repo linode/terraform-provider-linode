@@ -94,6 +94,16 @@ var instanceAlertsAttribute = schema.ListNestedAttribute{
 					"If the average disk IO over two hours exceeds this value, we'll send you an alert. " +
 					"If set to 0, this alert is disabled.",
 			},
+			"system_alerts": schema.SetAttribute{
+				ElementType: types.Int64Type,
+				Computed:    true,
+				Description: "A list of system alerts associated with current instance.",
+			},
+			"user_alerts": schema.SetAttribute{
+				ElementType: types.Int64Type,
+				Computed:    true,
+				Description: "A list of user alerts associated with current instance.",
+			},
 		},
 	},
 }
