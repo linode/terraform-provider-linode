@@ -57,6 +57,19 @@ func (r *Resource) Create(
 		return
 	}
 
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	plan.ID = types.StringValue(formatID(dbID, dbType))
+
+	// Save the state before mutating the allow list so that a failure after
+	// the update has been submitted (e.g. while waiting for the database
+	// update event) leaves a tainted resource behind rather than an untracked
+	// allow list, matching the SDKv2 implementation.
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	if err := updateDBAllowListByEngine(ctx, client, dbType, dbID, allowList); err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to update allow_list for database %d", dbID),
@@ -69,10 +82,6 @@ func (r *Resource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	// IDs should always be overridden during creation (see #1085)
-	// TODO: Remove when Crossplane empty string ID issue is resolved
-	plan.ID = types.StringValue(formatID(dbID, dbType))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
