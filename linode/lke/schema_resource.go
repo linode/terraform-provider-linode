@@ -83,7 +83,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeInt,
 		Optional:    true,
 		Computed:    true,
-		Description: "The ID of the VPC to use for the Kubernetes cluster.",
+		Description: "The ID of the VPC to use for the Kubernetes cluster. When set without `subnet_id`, the VPC's IPv4 ranges must include `10.0.0.0/8`, because the workload subnet is allocated from that range.",
 	},
 	"stack_type": {
 		Type:        schema.TypeString,

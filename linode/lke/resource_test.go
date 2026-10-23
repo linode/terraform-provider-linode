@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/netip"
 	"regexp"
 	"sort"
 	"strconv"
@@ -147,6 +148,45 @@ func checkLKEExists(cluster *linodego.LKECluster) resource.TestCheckFunc {
 		}
 
 		*cluster = *found
+		return nil
+	}
+}
+
+// checkLKEClusterSubnetPrefixLength checks that the VPC subnet used by the LKE cluster
+// has an IPv4 range with the given prefix length.
+func checkLKEClusterSubnetPrefixLength(prefixLength int) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
+
+		rs, ok := s.RootModule().Resources[resourceClusterName]
+		if !ok {
+			return fmt.Errorf("could not find resource %s", resourceClusterName)
+		}
+
+		vpcID, err := strconv.Atoi(rs.Primary.Attributes["vpc_id"])
+		if err != nil {
+			return fmt.Errorf("failed to parse vpc_id %q: %w", rs.Primary.Attributes["vpc_id"], err)
+		}
+
+		subnetID, err := strconv.Atoi(rs.Primary.Attributes["subnet_id"])
+		if err != nil {
+			return fmt.Errorf("failed to parse subnet_id %q: %w", rs.Primary.Attributes["subnet_id"], err)
+		}
+
+		subnet, err := client.GetVPCSubnet(context.Background(), vpcID, subnetID)
+		if err != nil {
+			return fmt.Errorf("failed to get VPC subnet %d: %w", subnetID, err)
+		}
+
+		prefix, err := netip.ParsePrefix(subnet.IPv4)
+		if err != nil {
+			return fmt.Errorf("failed to parse VPC subnet IPv4 range %q: %w", subnet.IPv4, err)
+		}
+
+		if prefix.Bits() != prefixLength {
+			return fmt.Errorf("expected VPC subnet IPv4 range %s to have prefix length /%d", subnet.IPv4, prefixLength)
+		}
+
 		return nil
 	}
 }
@@ -940,6 +980,94 @@ func TestAccResourceLKECluster_enterpriseVXLAN(t *testing.T) {
 				},
 			},
 		})
+	})
+}
+
+func TestAccResourceLKECluster_enterpriseVPCOnly(t *testing.T) {
+	acceptance.OptInTest(t)
+	t.Parallel()
+
+	if k8sVersionEnterprise == "" {
+		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
+	}
+
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf-test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.EnterpriseVPCOnly(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "10.0.0.0/8"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
+						resource.TestCheckResourceAttrPair(resourceClusterName, "vpc_id", "linode_vpc.foobar", "id"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "subnet_id"),
+						checkLKEClusterSubnetPrefixLength(13),
+					),
+				},
+			},
+		})
+	})
+}
+
+func TestAccResourceLKECluster_enterpriseVPCOnlyVXLAN(t *testing.T) {
+	acceptance.OptInTest(t)
+	t.Parallel()
+
+	if k8sVersionEnterprise == "" {
+		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
+	}
+
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf-test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.EnterpriseVPCOnlyVXLAN(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "10.0.0.0/8"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
+						resource.TestCheckResourceAttrPair(resourceClusterName, "vpc_id", "linode_vpc.foobar", "id"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "subnet_id"),
+						resource.TestCheckResourceAttr(resourceClusterName, "networking.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "networking.0.routing_mode", "vxlan"),
+						checkLKEClusterSubnetPrefixLength(19),
+					),
+				},
+			},
+		})
+	})
+}
+
+func TestAccResourceLKECluster_enterpriseVPCOnlyMissingRequiredRange(t *testing.T) {
+	acceptance.OptInTest(t)
+	t.Parallel()
+
+	if k8sVersionEnterprise == "" {
+		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
+	}
+
+	// The VPC is created, but the API rejects the cluster before creating it,
+	// so there is no cluster in state for CheckDestroy to look up.
+	clusterName := acctest.RandomWithPrefix("tf-test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.EnterpriseVPCOnly(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "172.16.0.0/12"),
+				ExpectError: regexp.MustCompile(`does not include the required IPv4 range 10\.0\.0\.0/8`),
+			},
+		},
 	})
 }
 
