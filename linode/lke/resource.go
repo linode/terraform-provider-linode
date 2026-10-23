@@ -43,11 +43,13 @@ func Resource() *schema.Resource {
 			customDiffValidateOptionalCount,
 			customDiffValidatePoolForStandardTier,
 			customDiffValidateUpdateStrategyWithTier,
+			customDiffValidateNetworking,
 			linodediffs.ComputedWithDefault("tags", []string{}),
 			linodediffs.CaseInsensitiveSet("tags"),
 			helper.SDKv2ValidateFieldRequiresAPIVersion(
 				helper.APIVersionV4Beta,
 				"tier",
+				"networking.0.routing_mode",
 			),
 		),
 		Timeouts: &schema.ResourceTimeout{
@@ -118,6 +120,17 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane, acl)
 
+	var networking *linodego.LKEClusterNetworking
+	if cluster.Tier == TierEnterprise {
+		tflog.Trace(ctx, "client.GetLKEClusterNetworking(...)")
+		networking, err = client.GetLKEClusterNetworking(ctx, id)
+		if err != nil && !linodego.IsNotFound(err) {
+			return diag.Errorf("failed to get networking configuration for LKE cluster %d: %s", id, err)
+		}
+		// A 404 means the networking endpoint isn't available to this account
+		// or API version. Nothing to do here.
+	}
+
 	d.Set("label", cluster.Label)
 	d.Set("k8s_version", cluster.K8sVersion)
 	d.Set("region", cluster.Region)
@@ -130,6 +143,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	d.Set("subnet_id", cluster.SubnetID)
 	d.Set("vpc_id", cluster.VpcID)
 	d.Set("stack_type", cluster.StackType)
+	d.Set("networking", flattenLKEClusterNetworking(networking))
 
 	matchedPools, err := matchPoolsWithSchema(ctx, pools, declaredPools)
 	if err != nil {
@@ -176,6 +190,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if stack_type, ok := d.GetOk("stack_type"); ok {
 		createOpts.StackType = linodego.Pointer(linodego.LKEClusterStackType(stack_type.(string)))
+	}
+
+	if networking := d.Get("networking").([]any); len(networking) > 0 {
+		networkingSpec, _ := networking[0].(map[string]any)
+		createOpts.Networking = expandLKEClusterNetworkingCreateOptions(networkingSpec)
 	}
 
 	if len(controlPlane) > 0 {
@@ -661,6 +680,57 @@ func customDiffValidateUpdateStrategyWithTier(ctx context.Context, diff *schema.
 		return fmt.Errorf(
 			"%s: `update_strategy` can only be configured when tier is set to \"enterprise\"",
 			strings.Join(invalidPools, ", "),
+		)
+	}
+
+	return nil
+}
+
+// customDiffValidateNetworking ensures that the networking block can only
+// be configured when tier is explicitly set to "enterprise", and that the
+// configurable network fields can only be configured when routing_mode is
+// set to "vxlan".
+//
+// This validation is implemented as a custom diff using cty to only
+// validate the user's config rather than the computed values in state.
+func customDiffValidateNetworking(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	networking := diff.GetRawConfig().GetAttr("networking")
+	if !networking.IsKnown() || networking.IsNull() || networking.LengthInt() == 0 {
+		return nil
+	}
+
+	tier := diff.GetRawConfig().GetAttr("tier")
+	if !tier.IsKnown() {
+		return nil
+	}
+
+	if tier.IsNull() || tier.AsString() != TierEnterprise {
+		return fmt.Errorf("`networking` can only be configured when tier is set to \"enterprise\"")
+	}
+
+	networkingBlock := networking.Index(cty.NumberIntVal(0))
+	if !networkingBlock.IsKnown() || networkingBlock.IsNull() {
+		return nil
+	}
+
+	routingMode := networkingBlock.GetAttr("routing_mode")
+	if !routingMode.IsKnown() ||
+		(!routingMode.IsNull() && routingMode.AsString() == string(linodego.LKEClusterRoutingModeVXLAN)) {
+		return nil
+	}
+
+	invalidFields := make([]string, 0)
+
+	for _, field := range vxlanNetworkingFields {
+		if !networkingBlock.GetAttr(field).IsNull() {
+			invalidFields = append(invalidFields, "networking.0."+field)
+		}
+	}
+
+	if len(invalidFields) > 0 {
+		return fmt.Errorf(
+			"%s: can only be configured when `networking.0.routing_mode` is set to \"vxlan\"",
+			strings.Join(invalidFields, ", "),
 		)
 	}
 

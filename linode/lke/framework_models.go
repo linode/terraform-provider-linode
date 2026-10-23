@@ -28,6 +28,7 @@ type LKEDataModel struct {
 	SubnetID     types.Int64       `tfsdk:"subnet_id"`
 	VpcID        types.Int64       `tfsdk:"vpc_id"`
 	StackType    types.String      `tfsdk:"stack_type"`
+	Networking   []LKENetworking   `tfsdk:"networking"`
 	ControlPlane []LKEControlPlane `tfsdk:"control_plane"`
 
 	// LKE Node Pools
@@ -38,6 +39,18 @@ type LKEDataModel struct {
 
 	// LKE Cluster API endpoints
 	APIEndpoints types.List `tfsdk:"api_endpoints"`
+}
+
+type LKENetworking struct {
+	RoutingMode                     types.String `tfsdk:"routing_mode"`
+	ClusterCIDRIPv4                 types.String `tfsdk:"cluster_cidr_ipv4"`
+	NodeCIDRMaskSizeIPv4            types.Int64  `tfsdk:"node_cidr_mask_size_ipv4"`
+	ServiceClusterIPRangeIPv4       types.String `tfsdk:"service_cluster_ip_range_ipv4"`
+	MaxPods                         types.Int64  `tfsdk:"max_pods"`
+	NodeBalancerBackendPrefixLength types.Int64  `tfsdk:"nodebalancer_backend_prefix_length"`
+	ClusterCIDRIPv6                 types.String `tfsdk:"cluster_cidr_ipv6"`
+	NodeCIDRMaskSizeIPv6            types.Int64  `tfsdk:"node_cidr_mask_size_ipv6"`
+	ServiceClusterIPRangeIPv6       types.String `tfsdk:"service_cluster_ip_range_ipv6"`
 }
 
 type LKEControlPlane struct {
@@ -97,6 +110,7 @@ func (data *LKEDataModel) parseLKEAttributes(
 	kubeconfig *linodego.LKEClusterKubeconfig,
 	endpoints []linodego.LKEClusterAPIEndpoint,
 	acl *linodego.LKEClusterControlPlaneACLResponse,
+	networking *linodego.LKEClusterNetworking,
 ) diag.Diagnostics {
 	data.Created = types.StringValue(cluster.Created.Format(helper.TIME_FORMAT))
 	data.Updated = types.StringValue(cluster.Updated.Format(helper.TIME_FORMAT))
@@ -109,6 +123,7 @@ func (data *LKEDataModel) parseLKEAttributes(
 	data.SubnetID = types.Int64Value(int64(cluster.SubnetID))
 	data.VpcID = types.Int64Value(int64(cluster.VpcID))
 	data.StackType = types.StringValue(string(cluster.StackType))
+	data.Networking = parseNetworking(networking)
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, cluster.Tags)
 	if diags.HasError() {
@@ -262,4 +277,28 @@ func parseControlPlane(
 	cp.AuditLogsEnabled = types.BoolValue(controlPlane.AuditLogsEnabled)
 
 	return cp, nil
+}
+
+func parseNetworking(networking *linodego.LKEClusterNetworking) []LKENetworking {
+	if networking == nil {
+		return []LKENetworking{}
+	}
+
+	result := LKENetworking{
+		RoutingMode:                     types.StringValue(string(networking.RoutingMode)),
+		ClusterCIDRIPv4:                 types.StringValue(networking.ClusterCIDRIPv4),
+		NodeCIDRMaskSizeIPv4:            types.Int64Value(int64(networking.NodeCIDRMaskSizeIPv4)),
+		ServiceClusterIPRangeIPv4:       types.StringValue(networking.ServiceClusterIPRangeIPv4),
+		MaxPods:                         types.Int64Value(int64(networking.MaxPods)),
+		NodeBalancerBackendPrefixLength: types.Int64Value(int64(networking.NodeBalancerBackendPrefixLength)),
+		ClusterCIDRIPv6:                 types.StringPointerValue(networking.ClusterCIDRIPv6),
+		NodeCIDRMaskSizeIPv6:            types.Int64Null(),
+		ServiceClusterIPRangeIPv6:       types.StringPointerValue(networking.ServiceClusterIPRangeIPv6),
+	}
+
+	if networking.NodeCIDRMaskSizeIPv6 != nil {
+		result.NodeCIDRMaskSizeIPv6 = types.Int64Value(int64(*networking.NodeCIDRMaskSizeIPv6))
+	}
+
+	return []LKENetworking{result}
 }

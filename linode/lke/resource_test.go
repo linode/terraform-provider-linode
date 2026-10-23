@@ -899,6 +899,75 @@ func TestAccResourceLKECluster_enterpriseWithPoolSkipDeletePoll(t *testing.T) {
 	})
 }
 
+func TestAccResourceLKECluster_enterpriseVXLAN(t *testing.T) {
+	t.Parallel()
+
+	if k8sVersionEnterprise == "" {
+		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
+	}
+
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf-test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.EnterpriseVXLAN(t, clusterName, k8sVersionEnterprise, enterpriseRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
+						resource.TestCheckResourceAttrPair(resourceClusterName, "subnet_id", "linode_vpc_subnet.foobar", "id"),
+						resource.TestCheckResourceAttr(resourceClusterName, "networking.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "networking.0.routing_mode", "vxlan"),
+						resource.TestCheckResourceAttr(resourceClusterName, "networking.0.cluster_cidr_ipv4", "100.64.0.0/12"),
+						resource.TestCheckResourceAttr(resourceClusterName, "networking.0.node_cidr_mask_size_ipv4", "25"),
+						resource.TestCheckResourceAttr(resourceClusterName, "networking.0.service_cluster_ip_range_ipv4", "100.96.0.0/22"),
+						resource.TestCheckResourceAttr(resourceClusterName, "networking.0.max_pods", "64"),
+						resource.TestCheckResourceAttr(resourceClusterName, "networking.0.nodebalancer_backend_prefix_length", "22"),
+						resource.TestCheckResourceAttr(resourceClusterName, "networking.0.cluster_cidr_ipv6", ""),
+						resource.TestCheckResourceAttr(resourceClusterName, "networking.0.node_cidr_mask_size_ipv6", "0"),
+						resource.TestCheckResourceAttr(resourceClusterName, "networking.0.service_cluster_ip_range_ipv6", ""),
+					),
+				},
+				{
+					ResourceName:            resourceClusterName,
+					ImportState:             true,
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"pool.0.nodes.0.status"},
+				},
+			},
+		})
+	})
+}
+
+func TestAccResourceLKECluster_networkingValidation(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf-test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.NetworkingValidation(t, clusterName, k8sVersionLatest, testRegion, "standard", "vxlan"),
+				ExpectError: regexp.MustCompile(
+					"`networking` can only be configured when tier is set to \\\"enterprise\\\"",
+				),
+			},
+			{
+				Config: tmpl.NetworkingValidation(t, clusterName, k8sVersionLatest, testRegion, "enterprise", "native"),
+				ExpectError: regexp.MustCompile(
+					"networking.0.max_pods: can only be configured when `networking.0.routing_mode` is set to \\\"vxlan\\\"",
+				),
+			},
+		},
+	})
+}
+
 func TestAccResourceLKECluster_standardNoPools(t *testing.T) {
 	t.Parallel()
 
