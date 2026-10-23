@@ -28,6 +28,7 @@ type TemplateData struct {
 	Tier             string
 	FirewallID       int
 	RoutingMode      string
+	VPCIPv4Range     string
 }
 
 func Basic(t testing.TB, name, version, region string) string {
@@ -118,6 +119,20 @@ func EnterpriseFirewall(t testing.TB, name, version, region string, firewall_id 
 func EnterpriseVXLAN(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_enterprise_vxlan", TemplateData{Label: name, K8sVersion: version, Region: region})
+}
+
+func EnterpriseVPCOnly(t testing.TB, name, version, region, vpcIPv4Range string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_enterprise_vpc_only",
+		TemplateData{Label: name, K8sVersion: version, Region: region, VPCIPv4Range: vpcIPv4Range},
+	)
+}
+
+func EnterpriseVPCOnlyVXLAN(t testing.TB, name, version, region, vpcIPv4Range string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_enterprise_vpc_only",
+		TemplateData{Label: name, K8sVersion: version, Region: region, VPCIPv4Range: vpcIPv4Range, RoutingMode: "vxlan"},
+	)
 }
 
 func NetworkingValidation(t testing.TB, name, version, region, tier, routingMode string) string {
