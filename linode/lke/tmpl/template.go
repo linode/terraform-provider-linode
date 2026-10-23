@@ -27,6 +27,7 @@ type TemplateData struct {
 	AuditLogsEnabled bool
 	Tier             string
 	FirewallID       int
+	RoutingMode      string
 }
 
 func Basic(t testing.TB, name, version, region string) string {
@@ -114,6 +115,18 @@ func EnterpriseFirewall(t testing.TB, name, version, region string, firewall_id 
 		"lke_cluster_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, FirewallID: firewall_id})
 }
 
+func EnterpriseVXLAN(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_enterprise_vxlan", TemplateData{Label: name, K8sVersion: version, Region: region})
+}
+
+func NetworkingValidation(t testing.TB, name, version, region, tier, routingMode string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_networking_validation",
+		TemplateData{Label: name, K8sVersion: version, Region: region, Tier: tier, RoutingMode: routingMode},
+	)
+}
+
 func EnterpriseNoPools(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_no_pools", TemplateData{Label: name, K8sVersion: version, Region: region, Tier: "enterprise"})
@@ -137,6 +150,11 @@ func DataBasic(t testing.TB, name, version, region string) string {
 func DataEnterprise(t testing.TB, name, version, region, updateStrategy string, firewall_id int) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, UpdateStrategy: updateStrategy, FirewallID: firewall_id})
+}
+
+func DataEnterpriseVXLAN(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_data_enterprise_vxlan", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
 func DataAutoscaler(t testing.TB, name, version, region string) string {

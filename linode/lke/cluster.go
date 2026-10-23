@@ -721,6 +721,75 @@ func expandACLAddressOptions(addressOptions map[string]any) *linodego.LKECluster
 	return &result
 }
 
+// vxlanNetworkingFields are the networking fields that can only be
+// configured when routing_mode is "vxlan".
+var vxlanNetworkingFields = []string{
+	"cluster_cidr_ipv4",
+	"node_cidr_mask_size_ipv4",
+	"service_cluster_ip_range_ipv4",
+	"max_pods",
+	"nodebalancer_backend_prefix_length",
+}
+
+func flattenLKEClusterNetworking(networking *linodego.LKEClusterNetworking) []map[string]any {
+	if networking == nil {
+		return []map[string]any{}
+	}
+
+	flattened := map[string]any{
+		"routing_mode":                       string(networking.RoutingMode),
+		"cluster_cidr_ipv4":                  networking.ClusterCIDRIPv4,
+		"node_cidr_mask_size_ipv4":           networking.NodeCIDRMaskSizeIPv4,
+		"service_cluster_ip_range_ipv4":      networking.ServiceClusterIPRangeIPv4,
+		"max_pods":                           networking.MaxPods,
+		"nodebalancer_backend_prefix_length": networking.NodeBalancerBackendPrefixLength,
+	}
+
+	if networking.ClusterCIDRIPv6 != nil {
+		flattened["cluster_cidr_ipv6"] = *networking.ClusterCIDRIPv6
+	}
+
+	if networking.NodeCIDRMaskSizeIPv6 != nil {
+		flattened["node_cidr_mask_size_ipv6"] = *networking.NodeCIDRMaskSizeIPv6
+	}
+
+	if networking.ServiceClusterIPRangeIPv6 != nil {
+		flattened["service_cluster_ip_range_ipv6"] = *networking.ServiceClusterIPRangeIPv6
+	}
+
+	return []map[string]any{flattened}
+}
+
+func expandLKEClusterNetworkingCreateOptions(networking map[string]any) *linodego.LKEClusterNetworkingCreateOptions {
+	var result linodego.LKEClusterNetworkingCreateOptions
+
+	if value, ok := networking["routing_mode"].(string); ok && value != "" {
+		result.RoutingMode = linodego.Pointer(linodego.LKEClusterRoutingMode(value))
+	}
+
+	if value, ok := networking["cluster_cidr_ipv4"].(string); ok && value != "" {
+		result.ClusterCIDRIPv4 = &value
+	}
+
+	if value, ok := networking["node_cidr_mask_size_ipv4"].(int); ok && value != 0 {
+		result.NodeCIDRMaskSizeIPv4 = &value
+	}
+
+	if value, ok := networking["service_cluster_ip_range_ipv4"].(string); ok && value != "" {
+		result.ServiceClusterIPRangeIPv4 = &value
+	}
+
+	if value, ok := networking["max_pods"].(int); ok && value != 0 {
+		result.MaxPods = &value
+	}
+
+	if value, ok := networking["nodebalancer_backend_prefix_length"].(int); ok && value != 0 {
+		result.NodeBalancerBackendPrefixLength = &value
+	}
+
+	return &result
+}
+
 func filterExternalPools(ctx context.Context, externalPoolTags []string, pools []linodego.LKENodePool) []linodego.LKENodePool {
 	var filteredPools []linodego.LKENodePool
 	if len(externalPoolTags) == 0 {
