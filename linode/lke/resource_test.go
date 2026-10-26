@@ -1064,7 +1064,7 @@ func TestAccResourceLKECluster_enterpriseVPCOnlyMissingRequiredRange(t *testing.
 		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      tmpl.EnterpriseVPCOnly(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "172.16.0.0/12"),
+				Config:      tmpl.EnterpriseVPCOnly(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "192.168.0.0/17"),
 				ExpectError: regexp.MustCompile(`does not include the required IPv4 range 10\.0\.0\.0/8`),
 			},
 		},
