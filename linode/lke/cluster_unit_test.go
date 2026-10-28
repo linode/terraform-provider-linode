@@ -3,10 +3,17 @@
 package lke
 
 import (
+	"context"
+	"encoding/json"
 	"testing"
 
+	"github.com/hashicorp/go-cty/cty"
+	ctyjson "github.com/hashicorp/go-cty/cty/json"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestExpandLKEClusterNetworkingCreateOptions(t *testing.T) {
@@ -23,14 +30,33 @@ func TestExpandLKEClusterNetworkingCreateOptions(t *testing.T) {
 		{
 			name: "unset fields are omitted",
 			input: map[string]any{
-				"routing_mode":                       "",
+				"routing_mode":                       nil,
+				"cluster_cidr_ipv4":                  nil,
+				"node_cidr_mask_size_ipv4":           nil,
+				"service_cluster_ip_range_ipv4":      nil,
+				"max_pods":                           nil,
+				"nodebalancer_backend_prefix_length": nil,
+			},
+			expected: &linodego.LKEClusterNetworkingCreateOptions{},
+		},
+		{
+			name: "explicit zero and empty values reach the API",
+			input: map[string]any{
+				"routing_mode":                       "vxlan",
 				"cluster_cidr_ipv4":                  "",
 				"node_cidr_mask_size_ipv4":           0,
 				"service_cluster_ip_range_ipv4":      "",
 				"max_pods":                           0,
 				"nodebalancer_backend_prefix_length": 0,
 			},
-			expected: &linodego.LKEClusterNetworkingCreateOptions{},
+			expected: &linodego.LKEClusterNetworkingCreateOptions{
+				RoutingMode:                     linodego.Pointer(linodego.LKEClusterRoutingModeVXLAN),
+				ClusterCIDRIPv4:                 linodego.Pointer(""),
+				NodeCIDRMaskSizeIPv4:            linodego.Pointer(0),
+				ServiceClusterIPRangeIPv4:       linodego.Pointer(""),
+				MaxPods:                         linodego.Pointer(0),
+				NodeBalancerBackendPrefixLength: linodego.Pointer(0),
+			},
 		},
 		{
 			name: "vxlan with defaults",
@@ -66,9 +92,118 @@ func TestExpandLKEClusterNetworkingCreateOptions(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, tc.expected, expandLKEClusterNetworkingCreateOptions(tc.input))
+			r := Resource()
+			config := map[string]any{}
+			if tc.input != nil {
+				config["networking"] = []any{tc.input}
+			}
+			data := schema.TestResourceDataRaw(t, r.Schema, config)
+			data.SetId("123")
+			state := data.State()
+			state.RawConfig = networkingTestConfig(t, r, config)
+			data = r.Data(state)
+
+			options := expandLKEClusterNetworkingCreateOptions(context.Background(), data)
+			assert.Equal(t, tc.expected, options)
+			expectedJSON, err := json.Marshal(tc.expected)
+			require.NoError(t, err)
+			actualJSON, err := json.Marshal(options)
+			require.NoError(t, err)
+			assert.JSONEq(t, string(expectedJSON), string(actualJSON))
 		})
 	}
+}
+
+func TestCustomDiffValidateNetworking(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		priorMode   string
+		networking  map[string]any
+		expectError bool
+	}{
+		{
+			name:       "existing vxlan retains max pods when routing mode is omitted",
+			priorMode:  "vxlan",
+			networking: map[string]any{"max_pods": 64},
+		},
+		{
+			name:       "existing vxlan accepts explicit null routing mode",
+			priorMode:  "vxlan",
+			networking: map[string]any{"routing_mode": nil, "max_pods": 64},
+		},
+		{
+			name:        "new cluster with omitted routing mode defaults to native",
+			networking:  map[string]any{"max_pods": 64},
+			expectError: true,
+		},
+		{
+			name:        "existing native cluster rejects custom fields",
+			priorMode:   "native",
+			networking:  map[string]any{"max_pods": 64},
+			expectError: true,
+		},
+		{
+			name:        "explicit native overrides prior vxlan",
+			priorMode:   "vxlan",
+			networking:  map[string]any{"routing_mode": "native", "max_pods": 64},
+			expectError: true,
+		},
+		{
+			name:       "new vxlan cluster accepts custom fields",
+			networking: map[string]any{"routing_mode": "vxlan", "max_pods": 64},
+		},
+		{
+			name:       "computed native fields are not treated as configured",
+			priorMode:  "native",
+			networking: map[string]any{},
+		},
+		{
+			name:      "omitted networking block is allowed",
+			priorMode: "vxlan",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"tier":       resourceSchema["tier"],
+					"networking": resourceSchema["networking"],
+				},
+				CustomizeDiff: customDiffValidateNetworking,
+			}
+			config := map[string]any{"tier": TierEnterprise}
+			if tc.networking != nil {
+				config["networking"] = []any{tc.networking}
+			}
+			state := &terraform.InstanceState{RawConfig: networkingTestConfig(t, r, config)}
+			if tc.priorMode != "" {
+				state.ID = "123"
+				state.Attributes = map[string]string{
+					"tier":                      TierEnterprise,
+					"networking.#":              "1",
+					"networking.0.routing_mode": tc.priorMode,
+					"networking.0.max_pods":     "64",
+				}
+			}
+			diff, err := r.Diff(context.Background(), state, terraform.NewResourceConfigRaw(config), nil)
+			if tc.expectError {
+				require.ErrorContains(t, err, "networking.0.max_pods: can only be configured")
+				return
+			}
+			require.NoError(t, err)
+			if tc.priorMode != "" && diff != nil {
+				assert.False(t, diff.RequiresNew(), "omitting computed networking fields must not replace the cluster")
+			}
+		})
+	}
+}
+
+func networkingTestConfig(t *testing.T, r *schema.Resource, config map[string]any) cty.Value {
+	t.Helper()
+	raw, err := json.Marshal(config)
+	require.NoError(t, err)
+	value, err := ctyjson.Unmarshal(raw, r.CoreConfigSchema().ImpliedType())
+	require.NoError(t, err)
+	return value
 }
 
 func TestFlattenLKEClusterNetworking(t *testing.T) {

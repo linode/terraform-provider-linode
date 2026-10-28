@@ -193,8 +193,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	if networking := d.Get("networking").([]any); len(networking) > 0 {
-		networkingSpec, _ := networking[0].(map[string]any)
-		createOpts.Networking = expandLKEClusterNetworkingCreateOptions(networkingSpec)
+		createOpts.Networking = expandLKEClusterNetworkingCreateOptions(ctx, d)
 	}
 
 	if len(controlPlane) > 0 {
@@ -714,6 +713,10 @@ func customDiffValidateNetworking(ctx context.Context, diff *schema.ResourceDiff
 	}
 
 	routingMode := networkingBlock.GetAttr("routing_mode")
+	if routingMode.IsNull() {
+		// Optional+Computed retains the existing routing mode when omitted.
+		routingMode = cty.StringVal(diff.Get("networking.0.routing_mode").(string))
+	}
 	if !routingMode.IsKnown() ||
 		(!routingMode.IsNull() && routingMode.AsString() == string(linodego.LKEClusterRoutingModeVXLAN)) {
 		return nil

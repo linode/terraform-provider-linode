@@ -760,31 +760,17 @@ func flattenLKEClusterNetworking(networking *linodego.LKEClusterNetworking) []ma
 	return []map[string]any{flattened}
 }
 
-func expandLKEClusterNetworkingCreateOptions(networking map[string]any) *linodego.LKEClusterNetworkingCreateOptions {
-	var result linodego.LKEClusterNetworkingCreateOptions
-
-	if value, ok := networking["routing_mode"].(string); ok && value != "" {
-		result.RoutingMode = linodego.Pointer(linodego.LKEClusterRoutingMode(value))
+func expandLKEClusterNetworkingCreateOptions(ctx context.Context, d *schema.ResourceData) *linodego.LKEClusterNetworkingCreateOptions {
+	result := linodego.LKEClusterNetworkingCreateOptions{
+		ClusterCIDRIPv4:                 helper.SDKv2UnwrapOptionalConfigAttr[string](ctx, d, "networking.0.cluster_cidr_ipv4"),
+		NodeCIDRMaskSizeIPv4:            helper.SDKv2UnwrapOptionalConfigAttr[int](ctx, d, "networking.0.node_cidr_mask_size_ipv4"),
+		ServiceClusterIPRangeIPv4:       helper.SDKv2UnwrapOptionalConfigAttr[string](ctx, d, "networking.0.service_cluster_ip_range_ipv4"),
+		MaxPods:                         helper.SDKv2UnwrapOptionalConfigAttr[int](ctx, d, "networking.0.max_pods"),
+		NodeBalancerBackendPrefixLength: helper.SDKv2UnwrapOptionalConfigAttr[int](ctx, d, "networking.0.nodebalancer_backend_prefix_length"),
 	}
 
-	if value, ok := networking["cluster_cidr_ipv4"].(string); ok && value != "" {
-		result.ClusterCIDRIPv4 = &value
-	}
-
-	if value, ok := networking["node_cidr_mask_size_ipv4"].(int); ok && value != 0 {
-		result.NodeCIDRMaskSizeIPv4 = &value
-	}
-
-	if value, ok := networking["service_cluster_ip_range_ipv4"].(string); ok && value != "" {
-		result.ServiceClusterIPRangeIPv4 = &value
-	}
-
-	if value, ok := networking["max_pods"].(int); ok && value != 0 {
-		result.MaxPods = &value
-	}
-
-	if value, ok := networking["nodebalancer_backend_prefix_length"].(int); ok && value != 0 {
-		result.NodeBalancerBackendPrefixLength = &value
+	if value := helper.SDKv2UnwrapOptionalConfigAttr[string](ctx, d, "networking.0.routing_mode"); value != nil {
+		result.RoutingMode = linodego.Pointer(linodego.LKEClusterRoutingMode(*value))
 	}
 
 	return &result

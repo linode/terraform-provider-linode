@@ -51,12 +51,24 @@ Creating an enterprise LKE cluster with VXLAN overlay networking in a bring-your
 resource "linode_vpc" "my-vpc" {
     label  = "lke-e-vpc"
     region = "us-lax"
+
+    ipv6 = [
+      {
+        range = "/52"
+      }
+    ]
 }
 
 resource "linode_vpc_subnet" "my-subnet" {
     vpc_id = linode_vpc.my-vpc.id
     label  = "lke-e-subnet"
     ipv4   = "10.0.0.0/20"
+
+    ipv6 = [
+      {
+        range = "/52"
+      }
+    ]
 }
 
 resource "linode_lke_cluster" "my-cluster" {
