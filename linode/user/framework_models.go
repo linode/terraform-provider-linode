@@ -59,7 +59,7 @@ func (data *DataSourceModel) ParseUser(
 
 	id, err := json.Marshal(user)
 	if err != nil {
-		diags.AddError("Error marshalling json: %s", err.Error())
+		diags.AddError("Error marshaling json: %s", err.Error())
 		return diags
 	}
 

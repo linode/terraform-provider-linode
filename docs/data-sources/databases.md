@@ -48,7 +48,7 @@ The following arguments are supported:
 
 * `order_by` - (Optional) The attribute to order the results by. (`version`)
 
-* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `asc`)
+* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `desc`)
 
 ### Filter
 
@@ -81,6 +81,8 @@ Each engine will be stored in the `databases` attribute and will export the foll
 * `id` - The ID of the Managed Database.
 
 * `label` - A unique, user-defined string referring to the Managed Database.
+
+* `platform` - The back-end platform for relational databases used by the service.
 
 * [`private_network`](#private_network) - (Nested Attribute) Restricts access to this database using a virtual private cloud (VPC). Referenced directly (e.g. `private_network.vpc_id`).
 

@@ -31,6 +31,10 @@ In addition to all arguments above, the following attributes are exported:
 
 * `label` - The label of the Linode NodeBalancer
 
+* `type` - The NodeBalancer plan type (`common`, `premium`, or `enterprise`).
+
+* `backend_connectivity` - The backend communication mode (`legacy`, `ipv6`, `vpc`, or `undefined` if not specified).
+
 * `client_conn_throttle` - Throttle connections per second (0-20).
 
 * `client_udp_sess_throttle` - Throttle UDP sessions per second (0-20).
@@ -48,6 +52,8 @@ In addition to all arguments above, the following attributes are exported:
 * `ipv4` - The Public IPv4 Address of this NodeBalancer
 
 * `ipv6` - The Public IPv6 Address of this NodeBalancer
+
+* `backend_ipv6_prefix` - The /96 IPv6 source range used when this NodeBalancer connects to backends. Null if no backend IPv6 prefix is assigned.
 
 * `region` - The Region where this Linode NodeBalancer is located. NodeBalancers only support backends in the same Region.
 

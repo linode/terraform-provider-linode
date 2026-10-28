@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -42,13 +43,7 @@ var (
 	//
 	// In the future, we should remove this if the API exposes a custom images capability or
 	//	if all Object Storage regions support custom images.
-	disallowedImageRegions = map[string]bool{
-		"gb-lon":   true,
-		"au-mel":   true,
-		"sg-sin-2": true,
-		"jp-tyo-3": true,
-		"no-osl-1": true,
-	}
+	disallowedImageRegions = set.From([]string{"gb-lon", "au-mel", "sg-sin-2", "jp-tyo-3", "no-osl-1"})
 
 	testRegion  string
 	testRegions []string
@@ -66,8 +61,7 @@ func init() {
 	}
 
 	testRegions = helper.FilterSlice(regions, func(region string) bool {
-		isDisallowed, ok := disallowedImageRegions[region]
-		return !ok || !isDisallowed
+		return !disallowedImageRegions.Contains(region)
 	})
 
 	testRegion = testRegions[1]

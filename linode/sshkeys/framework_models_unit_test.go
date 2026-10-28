@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
-	"github.com/linode/terraform-provider-linode/v4/linode/sshkey"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,19 +28,11 @@ func TestParseSSHKeys(t *testing.T) {
 	filterModel := &SSHKeyFilterModel{}
 	filterModel.parseSSHKeys(context.Background(), sshKeys)
 
-	expectedSSHKey := []sshkey.DataSourceModel{
-		{
-			ID:     types.StringValue("1"),
-			Label:  types.StringValue("Test Key"),
-			SSHKey: types.StringValue("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC..."),
-		},
-		{
-			ID:     types.StringValue("2"),
-			Label:  types.StringValue("Test Key 2"),
-			SSHKey: types.StringValue("ssh-rsa DIFFERENTKEY_EAAAADAQABAAABAQC..."),
-		},
-	}
+	assert.Equal(t, types.StringValue("1"), filterModel.SSHKeys[0].ID)
+	assert.Equal(t, types.StringValue("Test Key"), filterModel.SSHKeys[0].Label)
+	assert.Equal(t, types.StringValue("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC..."), filterModel.SSHKeys[0].SSHKey)
 
-	assert.Equal(t, filterModel.SSHKeys[0].SSHKey, expectedSSHKey[0].SSHKey)
-	assert.Equal(t, filterModel.SSHKeys[1].SSHKey, expectedSSHKey[1].SSHKey)
+	assert.Equal(t, types.StringValue("2"), filterModel.SSHKeys[1].ID)
+	assert.Equal(t, types.StringValue("Test Key 2"), filterModel.SSHKeys[1].Label)
+	assert.Equal(t, types.StringValue("ssh-rsa DIFFERENTKEY_EAAAADAQABAAABAQC..."), filterModel.SSHKeys[1].SSHKey)
 }

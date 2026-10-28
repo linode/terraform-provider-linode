@@ -36,6 +36,9 @@ type TemplateData struct {
 	NetworkHelper       *bool
 	MaintenancePolicy   string
 	LockType            string
+
+	SystemAlert int
+	IPv4Address string
 }
 
 func Basic(t testing.TB, label, pubKey, region string, rootPass string) string {
@@ -119,6 +122,25 @@ func FullDisk(t testing.TB, label, pubKey, stackScriptName, region string, swapS
 func WithConfig(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_with_config", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}
+
+func WithAlerts(t testing.TB, label, region string, systemAlert int) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_with_alerts", TemplateData{
+			Label:       label,
+			Image:       acceptance.TestImageLatest,
+			Region:      region,
+			SystemAlert: systemAlert,
+		})
+}
+
+func AlertsUpdates(t testing.TB, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_alerts_updates", TemplateData{
 			Label:  label,
 			Image:  acceptance.TestImageLatest,
 			Region: region,
@@ -954,6 +976,16 @@ func DataWithLock(t testing.TB, label, region, lockType string) string {
 		})
 }
 
+func DataWithAlerts(t testing.TB, label, region string, systemAlert int) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_with_alerts", TemplateData{
+			Label:       label,
+			Image:       acceptance.TestImageLatest,
+			Region:      region,
+			SystemAlert: systemAlert,
+		})
+}
+
 func ImageAuthKeysOnly(t testing.TB, label, pubKey, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_image_auth_keys_only", TemplateData{
@@ -993,4 +1025,38 @@ func KernelBootSize(t testing.TB, label, rootPass, region, kernel string, bootSi
 			Kernel:   kernel,
 			BootSize: bootSize,
 		})
+}
+
+func LinodeInterfacesRDMAVPC(t *testing.T, label, region, rootPass string) string {
+	return acceptance.ExecuteTemplate(t,
+		"interfaces_rdma_vpc_base", TemplateData{
+			Label:    label,
+			Region:   region,
+			Image:    acceptance.TestImageLatest,
+			RootPass: rootPass,
+		},
+	)
+}
+
+func LinodeInterfacesRDMAVPCManage(t *testing.T, label, region, rootPass string) string {
+	return acceptance.ExecuteTemplate(t,
+		"interfaces_rdma_vpc_manage", TemplateData{
+			Label:    label,
+			Region:   region,
+			Image:    acceptance.TestImageLatest,
+			RootPass: rootPass,
+		},
+	)
+}
+
+func LinodeInterfacesRDMAVPCManageUpdated(t *testing.T, label, region, rootPass, ipv4Address string) string {
+	return acceptance.ExecuteTemplate(t,
+		"interfaces_rdma_vpc_manage_updated", TemplateData{
+			Label:       label,
+			Region:      region,
+			Image:       acceptance.TestImageLatest,
+			RootPass:    rootPass,
+			IPv4Address: ipv4Address,
+		},
+	)
 }

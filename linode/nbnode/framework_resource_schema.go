@@ -38,8 +38,8 @@ var frameworkResourceSchema = schema.Schema{
 			Required:    true,
 		},
 		"address": schema.StringAttribute{
-			Description: "The private IP Address and port (IP:PORT) where this backend can be reached. " +
-				"This must be a private IP address.",
+			Description: "The IP address and port where this backend can be reached (IPv4:PORT or [IPv6]:PORT). " +
+				"IPv4 backends use private addresses; IPv6 backends require IPv6 backend connectivity.",
 			Required: true,
 		},
 		"subnet_id": schema.Int64Attribute{

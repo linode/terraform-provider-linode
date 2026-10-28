@@ -25,6 +25,7 @@ var filterConfig = frameworkfilter.Config{
 	"host_standby":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"id":             {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 	"instance_uri":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"platform":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"updated":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
@@ -100,6 +101,10 @@ var frameworkDataSourceSchema = schema.Schema{
 					},
 					"label": schema.StringAttribute{
 						Description: "A unique, user-defined string referring to the Managed Database.",
+						Computed:    true,
+					},
+					"platform": schema.StringAttribute{
+						Description: "The back-end platform for relational databases used by the service.",
 						Computed:    true,
 					},
 					"private_network": databaseshared.DataSourceAttributePrivateNetwork,

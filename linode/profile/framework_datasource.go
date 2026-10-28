@@ -56,7 +56,7 @@ func (data *DataSourceModel) parseProfile(ctx context.Context, profile *linodego
 
 	id, err := json.Marshal(profile)
 	if err != nil {
-		diags.AddError("Error marshalling json: %s", err.Error())
+		diags.AddError("Error marshaling json: %s", err.Error())
 		return diags
 	}
 

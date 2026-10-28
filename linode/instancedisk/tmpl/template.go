@@ -67,3 +67,13 @@ func ImageNoAuth(t testing.TB, label, region string, size int) string {
 			Region: region,
 		})
 }
+
+func Swap(t testing.TB, label, region string, size int, rootPass string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_disk_swap", TemplateData{
+			Label:    label,
+			Size:     size,
+			Region:   region,
+			RootPass: rootPass,
+		})
+}
