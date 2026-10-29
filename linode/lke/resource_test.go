@@ -940,6 +940,7 @@ func TestAccResourceLKECluster_enterpriseWithPoolSkipDeletePoll(t *testing.T) {
 }
 
 func TestAccResourceLKECluster_enterpriseVXLAN(t *testing.T) {
+	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	if k8sVersionEnterprise == "" {
