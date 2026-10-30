@@ -41,7 +41,7 @@ The following arguments are supported:
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
-* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `asc`)
+* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `desc`)
 
 ### Filter
 
@@ -58,6 +58,10 @@ Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and wil
 * `nodebalancers` - (Nested Attribute List) The returned list of NodeBalancers. Referenced by index (e.g. `nodebalancers[0].id`).
 
 * `label` - The label of the Linode NodeBalancer
+
+* `type` - The NodeBalancer plan type (`common`, `premium`, or `enterprise`).
+
+* `backend_connectivity` - The backend communication mode (`legacy`, `ipv6`, `vpc`, or `undefined` if not specified).
 
 * `client_conn_throttle` - Throttle connections per second (0-20)
 
@@ -78,6 +82,8 @@ Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and wil
 * `ipv4` - The Public IPv4 Address of this NodeBalancer
 
 * `ipv6` - The Public IPv6 Address of this NodeBalancer
+
+* `backend_ipv6_prefix` - The /96 IPv6 source range used when this NodeBalancer connects to backends. Null if no backend IPv6 prefix is assigned.
 
 * `region` - The Region where this Linode NodeBalancer is located. NodeBalancers only support backends in the same Region.
 
@@ -124,3 +130,7 @@ The following attributes are available on `lke_cluster`:
 * `region`
 
 * `client_conn_throttle`
+
+* `type` (client-side)
+
+* `backend_connectivity` (client-side)

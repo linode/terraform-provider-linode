@@ -34,7 +34,7 @@ func (model *regionsVPCAvailabilityModel) parseRegionsVPCAvailability(
 
 	id, err := json.Marshal(regionsVPCAvailability)
 	if err != nil {
-		diags.AddError("Error marshalling json", err.Error())
+		diags.AddError("Error marshaling json", err.Error())
 		return diags
 	}
 	model.ID = types.StringValue(string(id))

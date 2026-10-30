@@ -1,6 +1,6 @@
 module github.com/linode/terraform-provider-linode/tools
 
-go 1.25.0
+go 1.25.14
 
 tool github.com/bflad/tfproviderlint/cmd/tfproviderlint
 

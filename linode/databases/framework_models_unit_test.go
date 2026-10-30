@@ -25,6 +25,7 @@ func TestParseDatabases(t *testing.T) {
 		Type:        "g6-standard-1",
 		Engine:      "mysql",
 		Version:     "8.0",
+		Platform:    linodego.DatabasePlatformRDBMSDefault,
 		Encrypted:   false,
 		AllowList:   []string{"203.0.113.1/32", "192.0.1.0/24"},
 		Hosts:       linodego.DatabaseHost{Primary: "primary.example.com", Standby: "secondary.example.com"},
@@ -47,6 +48,7 @@ func TestParseDatabases(t *testing.T) {
 		Type:        "g6-standard-2",
 		Engine:      "postgresql",
 		Version:     "13",
+		Platform:    linodego.DatabasePlatformRDBMSLegacy,
 		Encrypted:   true,
 		AllowList:   []string{"10.0.0.1/32"},
 		Hosts:       linodego.DatabaseHost{Primary: "primary-pg.example.com", Standby: "secondary-pg.example.com"},
@@ -93,6 +95,7 @@ func TestParseDatabases(t *testing.T) {
 	assert.Equal(t, types.Int64Value(123), model.Databases[0].ID)
 	assert.Equal(t, types.StringValue("active"), model.Databases[0].Status)
 	assert.Equal(t, types.StringValue("example-db-1"), model.Databases[0].Label)
+	assert.Equal(t, types.StringValue("rdbms-default"), model.Databases[0].Platform)
 	assert.Equal(t, currentTimeFWValue, model.Databases[0].ForkRestoreTime)
 	assert.Equal(t, currentTimeFWValue, model.Databases[0].OldestRestoreTime)
 	assert.Equal(t, []types.String{types.StringValue(restoreTime.Format(time.RFC3339))}, model.Databases[0].AvailableRestoreTimes)
@@ -102,6 +105,7 @@ func TestParseDatabases(t *testing.T) {
 	assert.Equal(t, types.Int64Value(456), model.Databases[1].ID)
 	assert.Equal(t, types.StringValue("provisioning"), model.Databases[1].Status)
 	assert.Equal(t, types.StringValue("example-db-2"), model.Databases[1].Label)
+	assert.Equal(t, types.StringValue("rdbms-legacy"), model.Databases[1].Platform)
 	assert.Equal(t, currentTimeFWValue, model.Databases[1].ForkRestoreTime)
 	assert.Equal(t, currentTimeFWValue, model.Databases[1].OldestRestoreTime)
 	assert.Nil(t, model.Databases[1].AvailableRestoreTimes)

@@ -73,6 +73,7 @@ func (model *DatabaseFilterModel) parseDatabases(
 		m.HostStandby = types.StringValue(db.Hosts.Standby)
 		m.InstanceURI = types.StringValue(db.InstanceURI)
 		m.Label = types.StringValue(db.Label)
+		m.Platform = types.StringValue(string(db.Platform))
 		m.Region = types.StringValue(db.Region)
 		m.Status = types.StringValue(string(db.Status))
 		m.Type = types.StringValue(db.Type)

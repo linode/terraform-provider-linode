@@ -1,4 +1,4 @@
-{{ define "lke_cluster_labelled_pools" }}
+{{ define "lke_cluster_labeled_pools" }}
 
 resource "linode_lke_cluster" "test" {
     label       = "{{.Label}}"

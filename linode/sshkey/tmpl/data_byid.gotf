@@ -1,0 +1,9 @@
+{{ define "sshkey_data_byid" }}
+
+{{ template "sshkey_basic" . }}
+
+data "linode_sshkey" "foobar" {
+    id = linode_sshkey.foobar.id
+}
+
+{{ end }}
