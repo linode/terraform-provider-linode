@@ -2,7 +2,7 @@
 
 resource "linode_networking_ip" "test" {
     type = "ipv4"
-    region = "us-mia"
+    region = "{{.Region}}"
     reserved = true
     public = true
 }

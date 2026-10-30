@@ -3,6 +3,8 @@
 package lock_test
 
 import (
+	"context"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -19,7 +21,15 @@ const (
 func TestAccDataSourceLock_basic(t *testing.T) {
 	t.Parallel()
 
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	testRegion, err := acceptance.NewRegionSelector(context.Background(), client).
+		WithCapabilities(linodego.CapabilityLinodes).
+		WithSiteType("core").
+		AvailableForAccount(context.Background(), linodego.CapabilityLinodes).
+		Random()
 	if err != nil {
 		t.Fatal(err)
 	}

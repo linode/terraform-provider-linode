@@ -3,6 +3,7 @@
 package producerimagesharegroup_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -47,7 +48,16 @@ func TestAccResourceImageShareGroup_updates(t *testing.T) {
 
 	resourceName := "linode_producer_image_share_group.foobar"
 	label := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatalf("failed to get API client: %s", err)
+	}
+	testRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		Random()
 	if err != nil {
 		t.Fatalf("failed to get test region: %s", err)
 	}

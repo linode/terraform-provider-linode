@@ -3,6 +3,7 @@
 package networkingip_test
 
 import (
+	"context"
 	"log"
 	"regexp"
 	"testing"
@@ -19,7 +20,16 @@ import (
 )
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes).
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

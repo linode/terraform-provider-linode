@@ -3,6 +3,7 @@
 package consumerimagesharegroupimageshares_test
 
 import (
+	"context"
 	"log"
 	"os"
 	"testing"
@@ -51,7 +52,12 @@ func TestAccDataSourceImageShareGroupImageShares_basic(t *testing.T) {
 	fwLabel := acctest.RandomWithPrefix("tf_test")
 	instanceLabel := acctest.RandomWithPrefix("tf_test")
 
-	instanceRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
+	ctx := context.Background()
+	instanceRegion, err := acceptance.NewRegionSelector(ctx, consumerClient).
+		WithCapabilities(linodego.CapabilityLinodes).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

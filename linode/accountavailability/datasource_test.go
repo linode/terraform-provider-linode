@@ -3,6 +3,7 @@
 package accountavailability_test
 
 import (
+	"context"
 	"log"
 	"testing"
 
@@ -17,7 +18,15 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 
 	resourceName := "data.linode_account_availability.foobar"
 
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	region, err := acceptance.NewRegionSelector(context.Background(), client).
+		WithCapabilities(linodego.CapabilityLinodes).
+		WithSiteType("core").
+		AvailableForAccount(context.Background(), linodego.CapabilityLinodes).
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

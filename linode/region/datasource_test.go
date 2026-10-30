@@ -19,17 +19,20 @@ var (
 )
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	region, err := acceptance.NewRegionSelector(context.Background(), client).
+		WithCapabilities(linodego.CapabilityLinodes).
+		WithSiteType("core").
+		AvailableForAccount(context.Background(), linodego.CapabilityLinodes).
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	testRegion = region
-
-	client, err := acceptance.GetTestClient()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	r, err := client.GetRegion(context.Background(), testRegion)
 	if err != nil {

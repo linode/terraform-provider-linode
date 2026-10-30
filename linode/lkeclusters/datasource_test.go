@@ -45,7 +45,12 @@ func init() {
 
 	k8sVersionLatest = k8sVersions[len(k8sVersions)-1]
 
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLKE}, "core")
+	ctx := context.Background()
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLKE).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLKE).
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

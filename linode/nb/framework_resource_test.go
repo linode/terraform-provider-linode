@@ -37,25 +37,30 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
-		linodego.CapabilityNodeBalancers,
-		linodego.CapabilityPremiumNodeBalancer,
-	}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatalf("failed to get client: %s", err)
+	}
+	ctx := context.Background()
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityNodeBalancers, linodego.CapabilityPremiumNodeBalancer).
+		AvailableForAccount(ctx, linodego.CapabilityNodeBalancers).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
 	testRegion = region
 
-	lkeReg, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLKE}, "core")
+	lkeReg, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLKE).
+		AvailableForAccount(ctx, linodego.CapabilityLKE).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Printf("WARNING: no LKE region found, lkeCluster datasource test will be skipped: %s", err)
 	} else {
 		lkeRegion = lkeReg
-	}
-
-	client, err := acceptance.GetTestClient()
-	if err != nil {
-		log.Fatalf("failed to get client: %s", err)
 	}
 
 	versions, err := client.ListLKEVersions(context.Background(), nil)
@@ -138,7 +143,6 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "lke_cluster.#", "0"),
 				),
 			},
-
 			{
 				ResourceName:            resName,
 				ImportState:             true,
@@ -327,10 +331,16 @@ func TestAccResourceNodeBalancer_vpc(t *testing.T) {
 	resName := "linode_nodebalancer.test"
 	nodebalancerName := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]linodego.RegionCapability{linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs, linodego.CapabilityVPCDualStack},
-		"core",
-	)
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs, linodego.CapabilityVPCDualStack).
+		AvailableForAccount(ctx, linodego.CapabilityNodeBalancers).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
