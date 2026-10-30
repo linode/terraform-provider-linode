@@ -40,6 +40,7 @@ type DatabaseModel struct {
 	Updated           types.String      `tfsdk:"updated"`
 	Version           types.String      `tfsdk:"version"`
 	OldestRestoreTime timetypes.RFC3339 `tfsdk:"oldest_restore_time"`
+	AvailableRestoreTimes []types.String `tfsdk:"available_restore_times"`
 
 	// Fork-specific fields
 	ForkSource      types.Int64       `tfsdk:"fork_source"`
@@ -91,6 +92,13 @@ func (model *DatabaseFilterModel) parseDatabases(
 			m.OldestRestoreTime = timetypes.NewRFC3339TimePointerValue(db.OldestRestoreTime)
 		} else {
 			m.OldestRestoreTime = timetypes.NewRFC3339Null()
+		}
+
+		if db.AvailableRestoreTimes != nil {
+			m.AvailableRestoreTimes = make([]types.String, len(db.AvailableRestoreTimes))
+			for i, restoreTime := range db.AvailableRestoreTimes {
+				m.AvailableRestoreTimes[i] = types.StringValue(restoreTime.Format(time.RFC3339))
+			}
 		}
 
 		if db.Created != nil {

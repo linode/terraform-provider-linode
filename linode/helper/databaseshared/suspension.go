@@ -35,6 +35,8 @@ func ReconcileSuspensionSync(
 		suspend, resume = client.SuspendMySQLDatabase, client.ResumeMySQLDatabase
 	case linodego.DatabaseEngineTypePostgres:
 		suspend, resume = client.SuspendPostgresDatabase, client.ResumePostgresDatabase
+	case linodego.DatabaseEngineTypeValkey:
+		suspend, resume = client.SuspendValkeyDatabase, client.ResumeValkeyDatabase
 	}
 
 	if databaseSuspended && !desiredSuspensionStatus {

@@ -15,6 +15,7 @@ import (
 func TestParseDatabases(t *testing.T) {
 	currentTime := time.Now()
 	currentTimeFWValue := timetypes.NewRFC3339TimePointerValue(&currentTime)
+	restoreTime := currentTime.Add(-time.Hour)
 
 	mockDB1 := linodego.Database{
 		ID:          123,
@@ -35,7 +36,8 @@ func TestParseDatabases(t *testing.T) {
 			Source:      12345,
 			RestoreTime: &currentTime,
 		},
-		OldestRestoreTime: &currentTime,
+		OldestRestoreTime:     &currentTime,
+		AvailableRestoreTimes: []time.Time{restoreTime},
 	}
 
 	mockDB2 := linodego.Database{
@@ -60,12 +62,34 @@ func TestParseDatabases(t *testing.T) {
 		OldestRestoreTime: &currentTime,
 	}
 
-	mockDatabases := []linodego.Database{mockDB1, mockDB2}
+	mockDB3 := linodego.Database{
+		ID:                    789,
+		Status:                linodego.DatabaseStatusActive,
+		Label:                 "example-valkey-empty",
+		Region:                "us-mia",
+		Type:                  "g7-dedicated-4-2",
+		Engine:                "valkey",
+		Version:               "8.1.0",
+		AvailableRestoreTimes: []time.Time{},
+	}
+
+	mockDB4 := linodego.Database{
+		ID:                    987,
+		Status:                linodego.DatabaseStatusActive,
+		Label:                 "example-valkey",
+		Region:                "us-mia",
+		Type:                  "g7-dedicated-4-2",
+		Engine:                "valkey",
+		Version:               "8.1.0",
+		AvailableRestoreTimes: []time.Time{restoreTime, currentTime},
+	}
+
+	mockDatabases := []linodego.Database{mockDB1, mockDB2, mockDB3, mockDB4}
 
 	model := &DatabaseFilterModel{}
 	model.parseDatabases(t.Context(), mockDatabases)
 
-	assert.Len(t, model.Databases, 2)
+	assert.Len(t, model.Databases, 4)
 
 	// Database 1 Assertions
 	assert.Equal(t, types.Int64Value(123), model.Databases[0].ID)
@@ -74,6 +98,7 @@ func TestParseDatabases(t *testing.T) {
 	assert.Equal(t, types.StringValue("rdbms-default"), model.Databases[0].Platform)
 	assert.Equal(t, currentTimeFWValue, model.Databases[0].ForkRestoreTime)
 	assert.Equal(t, currentTimeFWValue, model.Databases[0].OldestRestoreTime)
+	assert.Equal(t, []types.String{types.StringValue(restoreTime.Format(time.RFC3339))}, model.Databases[0].AvailableRestoreTimes)
 	assert.Equal(t, int64(12345), model.Databases[0].ForkSource.ValueInt64())
 
 	// Database 2 Assertions
@@ -83,5 +108,16 @@ func TestParseDatabases(t *testing.T) {
 	assert.Equal(t, types.StringValue("rdbms-legacy"), model.Databases[1].Platform)
 	assert.Equal(t, currentTimeFWValue, model.Databases[1].ForkRestoreTime)
 	assert.Equal(t, currentTimeFWValue, model.Databases[1].OldestRestoreTime)
+	assert.Nil(t, model.Databases[1].AvailableRestoreTimes)
 	assert.Equal(t, int64(54321), model.Databases[1].ForkSource.ValueInt64())
+
+	// Valkey preserves the distinction between an explicitly empty and a nil list.
+	assert.Equal(t, types.StringValue("valkey"), model.Databases[2].Engine)
+	assert.NotNil(t, model.Databases[2].AvailableRestoreTimes)
+	assert.Empty(t, model.Databases[2].AvailableRestoreTimes)
+	assert.Equal(t, types.StringValue("valkey"), model.Databases[3].Engine)
+	assert.Equal(t, []types.String{
+		types.StringValue(restoreTime.Format(time.RFC3339)),
+		types.StringValue(currentTime.Format(time.RFC3339)),
+	}, model.Databases[3].AvailableRestoreTimes)
 }

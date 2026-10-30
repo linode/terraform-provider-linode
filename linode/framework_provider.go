@@ -26,6 +26,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/databasemysqlv2"
 	"github.com/linode/terraform-provider-linode/v4/linode/databasepostgresqlconfig"
 	"github.com/linode/terraform-provider-linode/v4/linode/databasepostgresqlv2"
+	"github.com/linode/terraform-provider-linode/v4/linode/databasevalkeyv2"
 	"github.com/linode/terraform-provider-linode/v4/linode/databases"
 	"github.com/linode/terraform-provider-linode/v4/linode/domain"
 	"github.com/linode/terraform-provider-linode/v4/linode/domainrecord"
@@ -287,6 +288,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		vpc.NewResource,
 		vpcsubnet.NewResource,
 		databasepostgresqlv2.NewResource,
+		databasevalkeyv2.NewResource,
 		networkingip.NewResource,
 		networkingipassignment.NewResource,
 		obj.NewResource,
@@ -376,6 +378,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		networkingips.NewDataSource,
 		databasemysqlv2.NewDataSource,
 		databasepostgresqlv2.NewDataSource,
+		databasevalkeyv2.NewDataSource,
 		databasemysqlconfig.NewDataSource,
 		databasepostgresqlconfig.NewDataSource,
 		objendpoints.NewDataSource,

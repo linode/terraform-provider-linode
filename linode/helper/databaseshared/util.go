@@ -8,7 +8,7 @@ import (
 	"github.com/linode/linodego/v2"
 )
 
-var ValidDatabaseTypes = []string{"postgresql", "mysql"}
+var ValidDatabaseTypes = []string{"postgresql", "mysql", "valkey"}
 
 func WaitForUpdated(ctx context.Context, client linodego.Client, dbID int,
 	dbType linodego.DatabaseEngineType, minStart *time.Time,

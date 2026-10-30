@@ -1,0 +1,25 @@
+{{ define "database_valkey_v2_fork" }}
+resource "linode_database_valkey_v2" "foobar" {
+  label     = "{{ .Label }}"
+  region    = "{{ .Region }}"
+  type      = "{{ .Type }}"
+  engine_id = "{{ .EngineID }}"
+}
+
+resource "linode_database_valkey_v2" "fork" {
+  label              = "{{ .Label }}-fork"
+  region             = "{{ .Region }}"
+  type               = "{{ .Type }}"
+  engine_id          = "{{ .EngineID }}"
+  fork_source        = linode_database_valkey_v2.foobar.id
+  fork_restore_time  = linode_database_valkey_v2.foobar.available_restore_times[0]
+}
+
+resource "linode_database_valkey_v2" "fork_latest" {
+  label       = "{{ .Label }}-fork-latest"
+  region      = "{{ .Region }}"
+  type        = "{{ .Type }}"
+  engine_id   = "{{ .EngineID }}"
+  fork_source = linode_database_valkey_v2.foobar.id
+}
+{{ end }}

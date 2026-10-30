@@ -157,6 +157,13 @@ func updateDBAllowListByEngine(
 			return err
 		}
 
+	case "valkey":
+		if _, err := client.UpdateValkeyDatabase(ctx, id, linodego.ValkeyUpdateOptions{
+			AllowList: allowListSlice,
+		}); err != nil {
+			return err
+		}
+
 	default:
 		return fmt.Errorf("invalid database engine: %s", engine)
 	}
@@ -179,6 +186,13 @@ func getDBAllowListByEngine(ctx context.Context, client linodego.Client, engine 
 		return schema.NewSet(schema.HashString, helper.FlattenToInterfaceSlice(db.AllowList)), nil
 	case "postgresql":
 		db, err := client.GetPostgresDatabase(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+
+		return schema.NewSet(schema.HashString, helper.FlattenToInterfaceSlice(db.AllowList)), nil
+	case "valkey":
+		db, err := client.GetValkeyDatabase(ctx, id)
 		if err != nil {
 			return nil, err
 		}
