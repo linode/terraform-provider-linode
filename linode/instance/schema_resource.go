@@ -299,7 +299,8 @@ var resourceSchema = map[string]*schema.Schema{
 	"stackscript_id": {
 		Type: schema.TypeInt,
 		Description: "The StackScript to deploy to the newly created Linode. If provided, 'image' must also be " +
-			"provided, and must be an Image that is compatible with this StackScript.",
+			"provided, and must be an Image that is compatible with this StackScript. Only valid with the top-level " +
+			"image attribute (implicit disks), not with explicit disks; set this on the disk instead.",
 		Optional:      true,
 		ForceNew:      true,
 		RequiredWith:  []string{"image"},
@@ -307,9 +308,11 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 	"stackscript_data": {
 		Type: schema.TypeMap,
+		Elem: &schema.Schema{Type: schema.TypeString},
 		Description: "An object containing responses to any User Defined Fields present in the StackScript " +
 			"being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend " +
-			"on the StackScript being deployed.",
+			"on the StackScript being deployed. Only valid with the top-level image attribute (implicit disks), " +
+			"not with explicit disks; set this on the disk instead.",
 		Optional:      true,
 		ForceNew:      true,
 		Sensitive:     true,
@@ -705,6 +708,20 @@ var resourceSchema = map[string]*schema.Schema{
 						"If the average disk IO over two hours exceeds this value, we'll send you an alert. " +
 						"If set to 0, this alert is disabled.",
 				},
+				"system_alerts": {
+					Type:        schema.TypeSet,
+					Elem:        &schema.Schema{Type: schema.TypeInt},
+					Computed:    true,
+					Optional:    true,
+					Description: "A list of system alerts associated with current instance.",
+				},
+				"user_alerts": {
+					Type:        schema.TypeSet,
+					Elem:        &schema.Schema{Type: schema.TypeInt},
+					Computed:    true,
+					Optional:    true,
+					Description: "A list of user alerts associated with current instance.",
+				},
 			},
 		},
 	},
@@ -986,6 +1003,7 @@ var resourceSchema = map[string]*schema.Schema{
 				},
 				"stackscript_data": {
 					Type: schema.TypeMap,
+					Elem: &schema.Schema{Type: schema.TypeString},
 					Description: "An object containing responses to any User Defined Fields present in the " +
 						"StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. " +
 						"The required values depend on the StackScript being deployed.",

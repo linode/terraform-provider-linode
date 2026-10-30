@@ -8,13 +8,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/stretchr/testify/assert"
 )
 
 // Test helper functions
-func isEqual(a, b []map[string]interface{}) bool {
+func isEqual(a, b []map[string]any) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -30,7 +31,7 @@ func isEqual(a, b []map[string]interface{}) bool {
 	return true
 }
 
-func areMapsEqual(a, b map[string]interface{}) bool {
+func areMapsEqual(a, b map[string]any) bool {
 	return reflect.DeepEqual(a, b)
 }
 
@@ -47,6 +48,8 @@ func TestFlattenInstanceAlerts(t *testing.T) {
 			NetworkIn:     10,
 			NetworkOut:    10,
 			TransferQuota: 80,
+			SystemAlerts:  []int{7, 8},
+			UserAlerts:    []int{100},
 		},
 		Backups: &linodego.InstanceBackup{
 			Available: true,
@@ -74,13 +77,15 @@ func TestFlattenInstanceAlerts(t *testing.T) {
 	}
 	alerts := flattenInstanceAlerts(instance)
 
-	expectedAlerts := []map[string]int{
+	expectedAlerts := []map[string]any{
 		{
 			"cpu":            180,
 			"io":             10000,
 			"network_in":     10,
 			"network_out":    10,
 			"transfer_quota": 80,
+			"system_alerts":  []int{7, 8},
+			"user_alerts":    []int{100},
 		},
 	}
 
@@ -108,11 +113,11 @@ func TestFlattenInstanceBackups(t *testing.T) {
 
 	backups := flattenInstanceBackups(instance)
 
-	expectedBackups := []map[string]interface{}{
+	expectedBackups := []map[string]any{
 		{
 			"available": true,
 			"enabled":   true,
-			"schedule": []map[string]interface{}{
+			"schedule": []map[string]any{
 				{
 					"day":    "Saturday",
 					"window": "W22",
@@ -139,7 +144,7 @@ func TestFlattenInstanceDisks(t *testing.T) {
 
 	disks, swapSize := flattenInstanceDisks(instanceDisks)
 
-	expectedDisks := []map[string]interface{}{
+	expectedDisks := []map[string]any{
 		{
 			"id":         25674,
 			"size":       48640,
@@ -162,7 +167,7 @@ func TestFlattenInstanceConfigDevice(t *testing.T) {
 		DiskID: 1,
 	}
 	resultDisk := flattenInstanceConfigDevice(deviceWithDisk, diskLabelIDMap)
-	expectedResultDisk := []map[string]interface{}{
+	expectedResultDisk := []map[string]any{
 		{
 			"disk_id":    1,
 			"disk_label": "DiskLabel1",
@@ -176,7 +181,7 @@ func TestFlattenInstanceConfigDevice(t *testing.T) {
 		VolumeID: 3,
 	}
 	resultVolume := flattenInstanceConfigDevice(deviceWithVolume, diskLabelIDMap)
-	expectedResultVolume := []map[string]interface{}{
+	expectedResultVolume := []map[string]any{
 		{
 			"volume_id": 3,
 		},
@@ -260,13 +265,11 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 
 	// Build expected devices map with all 64 device slots
 	expectedDevices := make(map[string]interface{})
-	populatedDevices := map[string]bool{
-		"sda": true, "sdb": true, "sdc": true, "sdd": true,
-		"sde": true, "sdf": true, "sdg": true, "sdh": true,
-		"sdz": true, "sdaa": true, "sdbl": true,
-	}
+	populatedDevices := set.From([]string{
+		"sda", "sdb", "sdc", "sdd", "sde", "sdf", "sdg", "sdh", "sdz", "sdaa", "sdbl",
+	})
 	for _, key := range helper.GetConfigDeviceKeys() {
-		if populatedDevices[key] {
+		if populatedDevices.Contains(key) {
 			expectedDevices[key] = []map[string]any{
 				{
 					"disk_id":    124458,

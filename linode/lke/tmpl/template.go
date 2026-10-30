@@ -27,6 +27,8 @@ type TemplateData struct {
 	AuditLogsEnabled bool
 	Tier             string
 	FirewallID       int
+	RoutingMode      string
+	VPCIPv4Range     string
 }
 
 func Basic(t testing.TB, name, version, region string) string {
@@ -55,7 +57,7 @@ func ComplexPools(t testing.TB, name, version, region string) string {
 
 func LabelledPools(t testing.TB, name, version, region, poolLabel string) string {
 	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_labelled_pools", TemplateData{Label: name, K8sVersion: version, Region: region, PoolLabel: poolLabel})
+		"lke_cluster_labeled_pools", TemplateData{Label: name, K8sVersion: version, Region: region, PoolLabel: poolLabel})
 }
 
 func Autoscaler(t testing.TB, name, version, region string) string {
@@ -114,6 +116,32 @@ func EnterpriseFirewall(t testing.TB, name, version, region string, firewall_id 
 		"lke_cluster_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, FirewallID: firewall_id})
 }
 
+func EnterpriseVXLAN(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_enterprise_vxlan", TemplateData{Label: name, K8sVersion: version, Region: region})
+}
+
+func EnterpriseVPCOnly(t testing.TB, name, version, region, vpcIPv4Range string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_enterprise_vpc_only",
+		TemplateData{Label: name, K8sVersion: version, Region: region, VPCIPv4Range: vpcIPv4Range},
+	)
+}
+
+func EnterpriseVPCOnlyVXLAN(t testing.TB, name, version, region, vpcIPv4Range string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_enterprise_vpc_only",
+		TemplateData{Label: name, K8sVersion: version, Region: region, VPCIPv4Range: vpcIPv4Range, RoutingMode: "vxlan"},
+	)
+}
+
+func NetworkingValidation(t testing.TB, name, version, region, tier, routingMode string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_networking_validation",
+		TemplateData{Label: name, K8sVersion: version, Region: region, Tier: tier, RoutingMode: routingMode},
+	)
+}
+
 func EnterpriseNoPools(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_no_pools", TemplateData{Label: name, K8sVersion: version, Region: region, Tier: "enterprise"})
@@ -137,6 +165,11 @@ func DataBasic(t testing.TB, name, version, region string) string {
 func DataEnterprise(t testing.TB, name, version, region, updateStrategy string, firewall_id int) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, UpdateStrategy: updateStrategy, FirewallID: firewall_id})
+}
+
+func DataEnterpriseVXLAN(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_data_enterprise_vxlan", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
 func DataAutoscaler(t testing.TB, name, version, region string) string {

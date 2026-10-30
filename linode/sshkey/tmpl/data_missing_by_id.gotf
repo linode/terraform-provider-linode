@@ -1,0 +1,7 @@
+{{ define "sshkey_data_missing_by_id" }}
+
+data "linode_sshkey" "foobar" {
+    id = "{{.ID}}"
+}
+
+{{ end }}

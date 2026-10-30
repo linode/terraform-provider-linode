@@ -1,0 +1,11 @@
+{{ define "vpc_data_with_subnet" }}
+
+{{ template "vpc_with_subnet" . }}
+
+data "linode_vpc" "foo" {
+    id = linode_vpc.foobar.id
+
+    depends_on = [linode_vpc_subnet.foobar]
+}
+
+{{ end }}
