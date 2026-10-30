@@ -25,7 +25,17 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityBlockStorage}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ctx := context.Background()
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityBlockStorage).
+		AvailableForAccount(ctx, linodego.CapabilityBlockStorage).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -390,7 +400,16 @@ func TestAccResourceVolume_encryptionExplicitEnabled(t *testing.T) {
 	volumeName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_volume.foobar"
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes).
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -419,7 +438,16 @@ func TestAccResourceVolume_encryptionExplicitDisabled(t *testing.T) {
 	volumeName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_volume.foobar"
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes).
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -448,7 +476,16 @@ func TestAccResourceVolume_encryptionChangeForcesReplace(t *testing.T) {
 	volumeName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_volume.foobar"
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes).
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -3,6 +3,7 @@
 package networkingips_test
 
 import (
+	"context"
 	"log"
 	"regexp"
 	"testing"
@@ -19,7 +20,16 @@ import (
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes).
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -80,7 +90,7 @@ func TestAccDataSourceNetworkingIP_filterReserved(t *testing.T) {
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataFilterReserved(t),
+				Config: tmpl.DataFilterReserved(t, testRegion),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("reserved"), knownvalue.Bool(true)),

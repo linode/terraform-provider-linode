@@ -3,6 +3,7 @@
 package firewalldevice_test
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
@@ -20,7 +21,15 @@ import (
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityCloudFirewall, linodego.CapabilityNodeBalancers}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	region, err := acceptance.NewRegionSelector(context.Background(), client).
+		WithCapabilities(linodego.CapabilityCloudFirewall, linodego.CapabilityNodeBalancers).
+		WithSiteType("core").
+		AvailableForAccount(context.Background(), linodego.CapabilityNodeBalancers).
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

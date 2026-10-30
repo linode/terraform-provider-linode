@@ -91,13 +91,15 @@ func TestAccDataSourceTag_reservedIP(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					region, err := acceptance.GetRandomRegionWithCaps(nil, "core")
-					if err != nil {
-						t.Fatalf("Error finding region: %s", err)
-					}
 					client, err := acceptance.GetTestClient()
 					if err != nil {
 						t.Fatalf("Error getting client: %s", err)
+					}
+					region, err := acceptance.NewRegionSelector(context.Background(), client).
+						WithSiteType("core").
+						Random()
+					if err != nil {
+						t.Fatalf("Error finding region: %s", err)
 					}
 					ip, err := client.AllocateReserveIP(context.Background(), linodego.AllocateReserveIPOptions{
 						Type:     "ipv4",
