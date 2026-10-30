@@ -140,7 +140,7 @@ func (m *Model) Flatten(
 	}
 
 	if db.AvailableRestoreTimes == nil {
-		m.AvailableRestoreTimes = helper.KeepOrUpdateValue(m.AvailableRestoreTimes, types.ListNull(types.StringType), preserveKnown)
+		m.AvailableRestoreTimes = types.ListNull(types.StringType)
 	} else {
 		restoreTimes := make([]string, len(db.AvailableRestoreTimes))
 		for i, restoreTime := range db.AvailableRestoreTimes {
@@ -148,7 +148,7 @@ func (m *Model) Flatten(
 		}
 		restoreTimesValue, rd := types.ListValueFrom(ctx, types.StringType, restoreTimes)
 		d.Append(rd...)
-		m.AvailableRestoreTimes = helper.KeepOrUpdateValue(m.AvailableRestoreTimes, restoreTimesValue, preserveKnown)
+		m.AvailableRestoreTimes = restoreTimesValue
 	}
 
 	if ssl != nil {
@@ -188,8 +188,15 @@ func (m *Model) Flatten(
 	m.PendingUpdates = helper.KeepOrUpdateValue(m.PendingUpdates, pendingUpdates, preserveKnown)
 
 	config := db.EngineConfig
-	m.EngineConfigBackupHour = helper.KeepOrUpdateIntPointer(m.EngineConfigBackupHour, config.BackupHour, preserveKnown)
-	m.EngineConfigBackupMinute = helper.KeepOrUpdateIntPointer(m.EngineConfigBackupMinute, config.BackupMinute, preserveKnown)
+	var backupHour, backupMinute *int
+	if config.BackupHour != nil {
+		backupHour = *config.BackupHour
+	}
+	if config.BackupMinute != nil {
+		backupMinute = *config.BackupMinute
+	}
+	m.EngineConfigBackupHour = helper.KeepOrUpdateIntPointer(m.EngineConfigBackupHour, backupHour, preserveKnown)
+	m.EngineConfigBackupMinute = helper.KeepOrUpdateIntPointer(m.EngineConfigBackupMinute, backupMinute, preserveKnown)
 	m.EngineConfigFrequentSnapshots = helper.KeepOrUpdateBoolPointer(m.EngineConfigFrequentSnapshots, config.FrequentSnapshots, preserveKnown)
 	m.EngineConfigValkeyACLChannelsDefault = helper.KeepOrUpdateStringPointer(
 		m.EngineConfigValkeyACLChannelsDefault,
@@ -335,11 +342,17 @@ func (m *Model) GetPrivateNetwork(ctx context.Context, d *diag.Diagnostics) *dat
 
 func (m *Model) GetEngineConfig(d *diag.Diagnostics) *linodego.ValkeyDatabaseEngineConfig {
 	var config linodego.ValkeyDatabaseEngineConfig
-	if !m.EngineConfigBackupHour.IsUnknown() {
-		config.BackupHour = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigBackupHour.ValueInt64Pointer(), d)
+	if !m.EngineConfigBackupHour.IsUnknown() && !m.EngineConfigBackupHour.IsNull() {
+		value := helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigBackupHour.ValueInt64Pointer(), d)
+		if value != nil {
+			config.BackupHour = linodego.Pointer(value)
+		}
 	}
-	if !m.EngineConfigBackupMinute.IsUnknown() {
-		config.BackupMinute = helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigBackupMinute.ValueInt64Pointer(), d)
+	if !m.EngineConfigBackupMinute.IsUnknown() && !m.EngineConfigBackupMinute.IsNull() {
+		value := helper.FrameworkSafeInt64PointerToIntPointer(m.EngineConfigBackupMinute.ValueInt64Pointer(), d)
+		if value != nil {
+			config.BackupMinute = linodego.Pointer(value)
+		}
 	}
 	if !m.EngineConfigFrequentSnapshots.IsUnknown() {
 		config.FrequentSnapshots = m.EngineConfigFrequentSnapshots.ValueBoolPointer()

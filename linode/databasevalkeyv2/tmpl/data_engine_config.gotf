@@ -1,0 +1,7 @@
+{{ define "database_valkey_v2_data_engine_config" }}
+{{ template "database_valkey_v2_engine_config" . }}
+
+data "linode_database_valkey_v2" "foobar" {
+  id = linode_database_valkey_v2.foobar.id
+}
+{{ end }}

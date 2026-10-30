@@ -123,6 +123,45 @@ func TestAccResourceDatabaseAccessControls_PostgreSQL(t *testing.T) {
 	})
 }
 
+func TestAccResourceDatabaseAccessControls_Valkey(t *testing.T) {
+	t.Parallel()
+	acceptance.PreCheck(t)
+
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	engine, err := databaseshared.ResolveValidDBEngine(context.Background(), *client, string(linodego.DatabaseEngineTypeValkey))
+	if err != nil {
+		t.Skipf("Valkey is not available in this test account: %v", err)
+	}
+
+	const resourceName = "linode_database_access_controls.foobar"
+	databaseLabel := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkValkeyDatabaseDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Valkey(t, databaseLabel, engine.ID, "192.0.2.10/32", testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "database_type", "valkey"),
+					resource.TestCheckResourceAttr(resourceName, "allow_list.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "allow_list.0", "192.0.2.10/32"),
+				),
+			},
+			{
+				Config: tmpl.Valkey(t, databaseLabel, engine.ID, "", testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "database_type", "valkey"),
+					resource.TestCheckResourceAttr(resourceName, "allow_list.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func checkMySQLDatabaseExists(s *terraform.State) error {
 	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
@@ -168,6 +207,27 @@ func checkDestroy(s *terraform.State) error {
 
 		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
 			return fmt.Errorf("error requesting mysql database with id %d", id)
+		}
+	}
+
+	return nil
+}
+
+func checkValkeyDatabaseDestroy(s *terraform.State) error {
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_database_valkey_v2" {
+			continue
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("error parsing Valkey database ID %q: %w", rs.Primary.ID, err)
+		}
+
+		_, err = client.GetValkeyDatabase(context.Background(), id)
+		if err == nil || !linodego.IsNotFound(err) {
+			return fmt.Errorf("Valkey database with ID %d still exists or returned an unexpected error: %v", id, err)
 		}
 	}
 

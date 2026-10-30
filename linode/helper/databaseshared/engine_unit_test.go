@@ -26,3 +26,32 @@ func TestCreateDatabaseEngineSlug(t *testing.T) {
 		})
 	}
 }
+
+func TestDatabaseEngineSlugRoundTrip(t *testing.T) {
+	tests := []struct {
+		engine  string
+		version string
+		want    string
+	}{
+		{engine: "mysql", version: "8.0.36", want: "mysql/8"},
+		{engine: "postgresql", version: "16.4", want: "postgresql/16"},
+		{engine: "valkey", version: "8.1.0", want: "valkey/8.1"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.want, func(t *testing.T) {
+			engineID := CreateDatabaseEngineSlug(test.engine, test.version)
+			if engineID != test.want {
+				t.Fatalf("CreateDatabaseEngineSlug() = %q, want %q", engineID, test.want)
+			}
+
+			engine, version, err := ParseDatabaseEngineSlug(engineID)
+			if err != nil {
+				t.Fatalf("ParseDatabaseEngineSlug() error = %v", err)
+			}
+			if engine != test.engine || version != test.want[len(test.engine)+1:] {
+				t.Fatalf("ParseDatabaseEngineSlug() = (%q, %q), want (%q, %q)", engine, version, test.engine, test.want[len(test.engine)+1:])
+			}
+		})
+	}
+}

@@ -1,0 +1,30 @@
+{{ define "database_valkey_v2_vpc_detach" }}
+resource "linode_database_valkey_v2" "foobar" {
+  label     = "{{ .Label }}"
+  region    = "{{ .Region }}"
+  type      = "{{ .Type }}"
+  engine_id = "{{ .EngineID }}"
+}
+
+resource "linode_vpc" "foobar" {
+  label  = "{{ .Label }}"
+  region = "{{ .Region }}"
+}
+
+resource "linode_vpc_subnet" "foobar" {
+  vpc_id = linode_vpc.foobar.id
+  label  = "{{ .Label }}"
+  ipv4   = "10.0.0.0/24"
+}
+
+resource "linode_vpc" "foobar2" {
+  label  = "{{ .Label }}-2"
+  region = "{{ .Region }}"
+}
+
+resource "linode_vpc_subnet" "foobar2" {
+  vpc_id = linode_vpc.foobar2.id
+  label  = "{{ .Label }}-2"
+  ipv4   = "10.0.1.0/24"
+}
+{{ end }}
