@@ -188,7 +188,7 @@ func updateInstanceConfigs(
 			configUpdateOpts.MemoryLimit = tfc["memory_limit"].(int)
 
 			tfcHelpersRaw, helpersFound := tfc["helpers"]
-			if tfcHelpers, ok := tfcHelpersRaw.([]any); helpersFound && ok {
+			if tfcHelpers, ok := tfcHelpersRaw.([]any); helpersFound && ok && len(tfcHelpers) > 0 {
 				helpersMap := tfcHelpers[0].(map[string]any)
 				configUpdateOpts.Helpers = &linodego.InstanceConfigHelpers{
 					UpdateDBDisabled:  helpersMap["updatedb_disabled"].(bool),
@@ -197,7 +197,14 @@ func updateInstanceConfigs(
 					Network:           helpersMap["network"].(bool),
 					DevTmpFsAutomount: helpersMap["devtmpfs_automount"].(bool),
 				}
+			}
 
+			// Only send helpers when they change. The API rejects any helpers.network
+			// value on Linodes that use Linode interfaces, so echoing the unchanged
+			// helpers back made every update of such an instance fail.
+			if existingConfig.Helpers != nil && configUpdateOpts.Helpers != nil &&
+				*configUpdateOpts.Helpers == *existingConfig.Helpers {
+				configUpdateOpts.Helpers = nil
 			}
 
 			configUpdateOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, 0)
