@@ -32,7 +32,9 @@ func AddRootCAToTransport(cert string, transport *http.Transport) error {
 		tlsConfig.RootCAs = x509.NewCertPool()
 	}
 
-	tlsConfig.RootCAs.AppendCertsFromPEM(certData)
+	if !tlsConfig.RootCAs.AppendCertsFromPEM(certData) {
+		return fmt.Errorf("failed to parse any PEM certificates from cert file %s", cert)
+	}
 
 	return nil
 }
