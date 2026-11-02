@@ -204,6 +204,7 @@ func TestAccResourceDatabaseValkeyV2_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("label"), knownvalue.StringExact(label)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_id"), knownvalue.StringExact(testEngine)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("status"), knownvalue.StringExact("active")),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("version"), knownvalue.NotNull()),
 				},
 			},
 			{
@@ -214,7 +215,7 @@ func TestAccResourceDatabaseValkeyV2_basic(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "members", "available_restore_times"},
+				ImportStateVerifyIgnore: []string{"updated", "members", "available_restore_times", "version"},
 			},
 		},
 	})
@@ -318,7 +319,7 @@ func TestAccResourceDatabaseValkeyV2_complex(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "members", "available_restore_times"},
+				ImportStateVerifyIgnore: []string{"updated", "members", "available_restore_times", "version"},
 			},
 		},
 	})
@@ -525,7 +526,7 @@ func TestAccResourceDatabaseValkeyV2_fork(t *testing.T) {
 				ResourceName:            forkName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "members", "available_restore_times"},
+				ImportStateVerifyIgnore: []string{"updated", "members", "available_restore_times", "version"},
 			},
 		},
 	})
@@ -570,7 +571,7 @@ func TestAccResourceDatabaseValkeyV2_suspension(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "members", "available_restore_times", "ca_cert", "root_password", "root_username"},
+				ImportStateVerifyIgnore: []string{"updated", "members", "available_restore_times", "version", "ca_cert", "root_password", "root_username"},
 			},
 		},
 	})
@@ -663,7 +664,7 @@ func TestAccResourceDatabaseValkeyV2_engineConfig(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "members", "available_restore_times"},
+				ImportStateVerifyIgnore: []string{"updated", "members", "available_restore_times", "version"},
 			},
 		},
 	})
@@ -704,7 +705,7 @@ func TestAccResourceDatabaseValkeyV2_vpc(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "members", "available_restore_times"},
+				ImportStateVerifyIgnore: []string{"updated", "members", "available_restore_times", "version"},
 			},
 		},
 	})
@@ -742,7 +743,7 @@ func TestAccResourceDatabaseValkeyV2_noPendingUpdatesRegression(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "members", "available_restore_times"},
+				ImportStateVerifyIgnore: []string{"updated", "members", "available_restore_times", "version"},
 			},
 		},
 	})
