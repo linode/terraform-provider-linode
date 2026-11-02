@@ -42,6 +42,12 @@ func DataBasic(t testing.TB, label, region, engineID, nodeType string) string {
 	})
 }
 
+func DataListing(t testing.TB, label, region, engineID, nodeType string) string {
+	return acceptance.ExecuteTemplate(t, "database_valkey_v2_data_listing", TemplateData{
+		Label: label, Region: region, EngineID: engineID, Type: nodeType,
+	})
+}
+
 func Complex(t testing.TB, data TemplateData) string {
 	return acceptance.ExecuteTemplate(t, "database_valkey_v2_complex", data)
 }

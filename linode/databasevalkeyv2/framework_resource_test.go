@@ -6,10 +6,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"slices"
 	"strconv"
 	"testing"
 	"time"
 
+	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -23,9 +25,11 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/databaseshared"
 )
 
-var testRegion, testVPCRegion, testEngine string
-var valkeyAvailabilityError error
-var valkeyVPCAvailabilityError error
+var (
+	testRegion, testVPCRegion, testEngine string
+	valkeyAvailabilityError               error
+	valkeyVPCAvailabilityError            error
+)
 
 func init() {
 	resource.AddTestSweepers("linode_database_valkey_v2", &resource.Sweeper{
@@ -276,7 +280,11 @@ func TestAccResourceDatabaseValkeyV2_complex(t *testing.T) {
 			{
 				Config: tmpl.Complex(t, updates),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("allow_list"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("10.0.0.3/32")})),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("allow_list"),
+						knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("10.0.0.3/32")}),
+					),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_size"), knownvalue.Int64Exact(1)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("status"), knownvalue.StringExact("active")),
 				},
@@ -284,7 +292,11 @@ func TestAccResourceDatabaseValkeyV2_complex(t *testing.T) {
 			{
 				Config: tmpl.Complex(t, resized),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("allow_list"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("10.0.0.4/32")})),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("allow_list"),
+						knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("10.0.0.4/32")}),
+					),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_size"), knownvalue.Int64Exact(3)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("status"), knownvalue.StringExact("active")),
 				},
@@ -315,9 +327,39 @@ func TestAccResourceDatabaseValkeyV2_complex(t *testing.T) {
 
 func TestAccResourceDatabaseValkeyV2_resize(t *testing.T) {
 	t.Parallel()
+	valkeyPreCheck(t)
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
+	defer cancel()
+	sourceType, err := client.GetDatabaseType(ctx, nil, "g7-dedicated-4-2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	planTypes, err := client.ListDatabaseTypes(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var targetType *linodego.DatabaseType
+	for _, planType := range planTypes {
+		if planType.Deprecated || planType.Class != sourceType.Class || planType.Memory <= sourceType.Memory {
+			continue
+		}
+		for _, cluster := range planType.Engines.Valkey {
+			if cluster.Quantity == 3 && (targetType == nil || planType.Memory < targetType.Memory) {
+				targetType = &planType
+			}
+		}
+	}
+	if targetType == nil {
+		t.Skip("the catalog does not offer a larger same-class plan for a three-node Valkey cluster")
+	}
 
 	const resourceName = "linode_database_valkey_v2.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
+	var databaseID string
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
@@ -326,15 +368,123 @@ func TestAccResourceDatabaseValkeyV2_resize(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine, "g7-dedicated-4-2"),
+				Check: func(state *terraform.State) error {
+					databaseID = state.RootModule().Resources[resourceName].Primary.ID
+					return nil
+				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_size"), knownvalue.Int64Exact(1)),
 				},
 			},
 			{
 				Config: tmpl.Resize(t, label, testRegion, testEngine, "g7-dedicated-4-2", 3),
+				Check: func(state *terraform.State) error {
+					if state.RootModule().Resources[resourceName].Primary.ID != databaseID {
+						return fmt.Errorf("cluster-size resize replaced the database")
+					}
+					return nil
+				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_size"), knownvalue.Int64Exact(3)),
 				},
+			},
+			{
+				Config: tmpl.Resize(t, label, testRegion, testEngine, targetType.ID, 3),
+				Check: func(state *terraform.State) error {
+					if state.RootModule().Resources[resourceName].Primary.ID != databaseID {
+						return fmt.Errorf("plan-type resize replaced the database")
+					}
+					return nil
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact(targetType.ID)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_size"), knownvalue.Int64Exact(3)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("status"), knownvalue.StringExact("active")),
+				},
+			},
+		},
+	})
+}
+
+func TestAccResourceDatabaseValkeyV2_engineVersion(t *testing.T) {
+	t.Parallel()
+	valkeyPreCheck(t)
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
+	defer cancel()
+	engines, err := client.ListDatabaseEngines(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var candidates []linodego.DatabaseEngine
+	versions := make(map[string]*version.Version)
+	for _, engine := range engines {
+		if engine.Engine != "valkey" {
+			continue
+		}
+		_, catalogVersion, err := databaseshared.ParseDatabaseEngineSlug(engine.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		parsed, err := version.NewVersion(catalogVersion)
+		if err != nil {
+			t.Fatal(err)
+		}
+		versions[engine.ID] = parsed
+		candidates = append(candidates, engine)
+	}
+	slices.SortFunc(candidates, func(first, second linodego.DatabaseEngine) int {
+		return versions[first.ID].Compare(versions[second.ID])
+	})
+	var sourceEngine, targetEngine string
+	for index := 1; index < len(candidates); index++ {
+		previous, current := candidates[index-1], candidates[index]
+		previousVersion, currentVersion := versions[previous.ID], versions[current.ID]
+		if previousVersion.Segments()[0] == currentVersion.Segments()[0] && previousVersion.LessThan(currentVersion) {
+			sourceEngine, targetEngine = previous.ID, current.ID
+			break
+		}
+	}
+	if targetEngine == "" {
+		t.Skip("the catalog does not offer two Valkey versions within the same major release")
+	}
+	const resourceName = "linode_database_valkey_v2.foobar"
+	label := acctest.RandomWithPrefix("tf_test")
+	var databaseID string
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { valkeyPreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkValkeyDatabaseDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Basic(t, label, testRegion, sourceEngine, "g7-dedicated-4-2"),
+				Check: func(state *terraform.State) error {
+					databaseID = state.RootModule().Resources[resourceName].Primary.ID
+					return nil
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_id"), knownvalue.StringExact(sourceEngine)),
+				},
+			},
+			{
+				Config: tmpl.Basic(t, label, testRegion, targetEngine, "g7-dedicated-4-2"),
+				Check: func(state *terraform.State) error {
+					if state.RootModule().Resources[resourceName].Primary.ID != databaseID {
+						return fmt.Errorf("engine version upgrade replaced the database")
+					}
+					return nil
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_id"), knownvalue.StringExact(targetEngine)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("status"), knownvalue.StringExact("active")),
+				},
+			},
+			{
+				Config:   tmpl.Basic(t, label, testRegion, targetEngine, "g7-dedicated-4-2"),
+				PlanOnly: true,
 			},
 		},
 	})
@@ -464,7 +614,11 @@ func TestAccResourceDatabaseValkeyV2_engineConfig(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_backup_hour"), knownvalue.Int64Exact(1)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_backup_minute"), knownvalue.Int64Exact(15)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_frequent_snapshots"), knownvalue.Bool(true)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_acl_channels_default"), knownvalue.StringExact("allchannels")),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("engine_config_valkey_acl_channels_default"),
+						knownvalue.StringExact("allchannels"),
+					),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_active_expire_effort"), knownvalue.Int64Exact(2)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_activedefrag"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_lfu_decay_time"), knownvalue.Int64Exact(1)),
@@ -473,7 +627,11 @@ func TestAccResourceDatabaseValkeyV2_engineConfig(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_maxmemory_policy"), knownvalue.StringExact("allkeys-lru")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_number_of_databases"), knownvalue.Int64Exact(16)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_persistence"), knownvalue.StringExact("rdb")),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_pubsub_client_output_buffer_limit"), knownvalue.Int64Exact(32768)),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("engine_config_valkey_pubsub_client_output_buffer_limit"),
+						knownvalue.Int64Exact(32768),
+					),
 				},
 			},
 			{
@@ -482,7 +640,11 @@ func TestAccResourceDatabaseValkeyV2_engineConfig(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_backup_hour"), knownvalue.Int64Exact(2)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_backup_minute"), knownvalue.Int64Exact(30)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_frequent_snapshots"), knownvalue.Bool(false)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_acl_channels_default"), knownvalue.StringExact("resetchannels")),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("engine_config_valkey_acl_channels_default"),
+						knownvalue.StringExact("resetchannels"),
+					),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_active_expire_effort"), knownvalue.Int64Exact(4)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_activedefrag"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_lfu_decay_time"), knownvalue.Int64Exact(2)),
@@ -491,7 +653,11 @@ func TestAccResourceDatabaseValkeyV2_engineConfig(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_maxmemory_policy"), knownvalue.StringExact("volatile-lru")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_number_of_databases"), knownvalue.Int64Exact(32)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_persistence"), knownvalue.StringExact("rdb")),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("engine_config_valkey_pubsub_client_output_buffer_limit"), knownvalue.Int64Exact(65536)),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("engine_config_valkey_pubsub_client_output_buffer_limit"),
+						knownvalue.Int64Exact(65536),
+					),
 				},
 			},
 			{

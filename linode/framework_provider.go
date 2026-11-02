@@ -27,6 +27,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/databasepostgresqlconfig"
 	"github.com/linode/terraform-provider-linode/v4/linode/databasepostgresqlv2"
 	"github.com/linode/terraform-provider-linode/v4/linode/databases"
+	"github.com/linode/terraform-provider-linode/v4/linode/databasevalkeyconfig"
 	"github.com/linode/terraform-provider-linode/v4/linode/databasevalkeyv2"
 	"github.com/linode/terraform-provider-linode/v4/linode/domain"
 	"github.com/linode/terraform-provider-linode/v4/linode/domainrecord"
@@ -379,6 +380,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		databasemysqlv2.NewDataSource,
 		databasepostgresqlv2.NewDataSource,
 		databasevalkeyv2.NewDataSource,
+		databasevalkeyconfig.NewDataSource,
 		databasemysqlconfig.NewDataSource,
 		databasepostgresqlconfig.NewDataSource,
 		objendpoints.NewDataSource,

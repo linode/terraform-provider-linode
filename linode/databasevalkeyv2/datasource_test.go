@@ -37,6 +37,34 @@ func TestAccDataSourceDatabaseValkeyV2_basic(t *testing.T) {
 	})
 }
 
+func TestAccDataSourceDatabaseValkeyV2_listing(t *testing.T) {
+	t.Parallel()
+	const databaseName = "data.linode_databases.foobar"
+	const enginesName = "data.linode_database_engines.foobar"
+	label := acctest.RandomWithPrefix("tf_test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { valkeyPreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkValkeyDatabaseDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataListing(t, label, testRegion, testEngine, "g7-dedicated-4-2"),
+				Check:  resource.TestCheckResourceAttrPair(databaseName, "databases.0.id", "linode_database_valkey_v2.foobar", "id"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(databaseName, tfjsonpath.New("databases"), knownvalue.ListSizeExact(1)),
+					statecheck.ExpectKnownValue(databaseName, tfjsonpath.New("databases").AtSliceIndex(0).AtMapKey("engine"), knownvalue.StringExact("valkey")),
+					statecheck.ExpectKnownValue(databaseName, tfjsonpath.New("databases").AtSliceIndex(0).AtMapKey("label"), knownvalue.StringExact(label)),
+					statecheck.ExpectKnownValue(databaseName, tfjsonpath.New("databases").AtSliceIndex(0).AtMapKey("oldest_restore_time"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(enginesName, tfjsonpath.New("engines"), knownvalue.ListSizeExact(1)),
+					statecheck.ExpectKnownValue(enginesName, tfjsonpath.New("engines").AtSliceIndex(0).AtMapKey("engine"), knownvalue.StringExact("valkey")),
+					statecheck.ExpectKnownValue(enginesName, tfjsonpath.New("engines").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact(testEngine)),
+					statecheck.ExpectKnownValue(enginesName, tfjsonpath.New("engines").AtSliceIndex(0).AtMapKey("version"), knownvalue.NotNull()),
+				},
+			},
+		},
+	})
+}
+
 func TestAccDataSourceDatabaseValkeyV2_engineConfig(t *testing.T) {
 	t.Parallel()
 
@@ -61,7 +89,11 @@ func TestAccDataSourceDatabaseValkeyV2_engineConfig(t *testing.T) {
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("engine_config_backup_hour"), knownvalue.Int64Exact(1)),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("engine_config_backup_minute"), knownvalue.Int64Exact(15)),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("engine_config_frequent_snapshots"), knownvalue.Bool(true)),
-					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("engine_config_valkey_acl_channels_default"), knownvalue.StringExact("allchannels")),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						tfjsonpath.New("engine_config_valkey_acl_channels_default"),
+						knownvalue.StringExact("allchannels"),
+					),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("engine_config_valkey_active_expire_effort"), knownvalue.Int64Exact(2)),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("engine_config_valkey_activedefrag"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("engine_config_valkey_lfu_decay_time"), knownvalue.Int64Exact(1)),
@@ -69,7 +101,11 @@ func TestAccDataSourceDatabaseValkeyV2_engineConfig(t *testing.T) {
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("engine_config_valkey_maxmemory_policy"), knownvalue.StringExact("allkeys-lru")),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("engine_config_valkey_number_of_databases"), knownvalue.Int64Exact(16)),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("engine_config_valkey_persistence"), knownvalue.StringExact("rdb")),
-					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("engine_config_valkey_pubsub_client_output_buffer_limit"), knownvalue.Int64Exact(32768)),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						tfjsonpath.New("engine_config_valkey_pubsub_client_output_buffer_limit"),
+						knownvalue.Int64Exact(32768),
+					),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("engine_config_valkey_timeout"), knownvalue.Int64Exact(300)),
 				},
 			},
