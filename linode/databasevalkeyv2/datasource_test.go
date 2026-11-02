@@ -127,9 +127,9 @@ func TestAccDataSourceDatabaseValkeyV2_vpc(t *testing.T) {
 			{
 				Config: tmpl.DataVPC(t, label, testVPCRegion, testEngine, "g7-dedicated-4-2"),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("private_network.public_access"), knownvalue.Bool(false)),
-					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("private_network.vpc_id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("private_network.subnet_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("private_network").AtMapKey("public_access"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("private_network").AtMapKey("vpc_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("private_network").AtMapKey("subnet_id"), knownvalue.NotNull()),
 				},
 			},
 		},

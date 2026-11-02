@@ -207,9 +207,8 @@ func TestAccResourceDatabaseValkeyV2_basic(t *testing.T) {
 				},
 			},
 			{
-				Config:       tmpl.Basic(t, label, testRegion, testEngine, "g7-dedicated-4-2"),
-				RefreshState: true,
-				PlanOnly:     true,
+				Config:   tmpl.Basic(t, label, testRegion, testEngine, "g7-dedicated-4-2"),
+				PlanOnly: true,
 			},
 			{
 				ResourceName:            resourceName,
@@ -312,7 +311,7 @@ func TestAccResourceDatabaseValkeyV2_complex(t *testing.T) {
 				Config: tmpl.Complex(t, maintenanceOnly),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("allow_list"), knownvalue.SetExact([]knownvalue.Check{})),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("updates.hour_of_day"), knownvalue.Int64Exact(4)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("updates").AtMapKey("hour_of_day"), knownvalue.Int64Exact(4)),
 				},
 			},
 			{
@@ -684,15 +683,15 @@ func TestAccResourceDatabaseValkeyV2_vpc(t *testing.T) {
 			{
 				Config: tmpl.VPC0(t, label, testVPCRegion, testEngine, "g7-dedicated-4-2"),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("private_network.public_access"), knownvalue.Bool(false)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("private_network.vpc_id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("private_network.subnet_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("private_network").AtMapKey("public_access"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("private_network").AtMapKey("vpc_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("private_network").AtMapKey("subnet_id"), knownvalue.NotNull()),
 				},
 			},
 			{
 				Config: tmpl.VPC1(t, label, testVPCRegion, testEngine, "g7-dedicated-4-2"),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("private_network.public_access"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("private_network").AtMapKey("public_access"), knownvalue.Bool(true)),
 				},
 			},
 			{
