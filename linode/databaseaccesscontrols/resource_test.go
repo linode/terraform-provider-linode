@@ -158,6 +158,11 @@ func TestAccResourceDatabaseAccessControls_Valkey(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "allow_list.#", "0"),
 				),
 			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
