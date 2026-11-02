@@ -1,13 +1,61 @@
 package natgateway
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
+
+// updatedPlanModifier keeps the prior `updated` value unless a user-settable attribute changes.
+// `updated` also changes when another resource (e.g. linode_vpc_subnet) modifies the NAT Gateway,
+// which would otherwise show as a change in every plan.
+type updatedPlanModifier struct{}
+
+func (updatedPlanModifier) Description(_ context.Context) string {
+	return "Keeps the prior value unless a user-settable attribute changes."
+}
+
+func (m updatedPlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (updatedPlanModifier) PlanModifyString(
+	ctx context.Context,
+	req planmodifier.StringRequest,
+	resp *planmodifier.StringResponse,
+) {
+	// Keep the framework's unknown value on create and destroy.
+	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() || req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+		return
+	}
+
+	var plan, state NATGatewayModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// An unknown planned addresses value means the user did not set it, so it is unchanged.
+	// The set's UseStateForUnknown has not run yet when this modifier reads req.Plan.
+	addressesUnchanged := plan.Addresses.IsUnknown() || plan.Addresses.Equal(state.Addresses)
+
+	if plan.Region.Equal(state.Region) &&
+		plan.Label.Equal(state.Label) &&
+		plan.DefaultPortsPerInterface.Equal(state.DefaultPortsPerInterface) &&
+		plan.UseAutoscaling.Equal(state.UseAutoscaling) &&
+		plan.VPCSubnetID.Equal(state.VPCSubnetID) &&
+		addressesUnchanged {
+		resp.PlanValue = req.StateValue
+	}
+}
 
 var vpcSubnet = schema.NestedAttributeObject{
 	Attributes: map[string]schema.Attribute{
@@ -86,34 +134,55 @@ var frameworkResourceSchema = schema.Schema{
 		"address_autoscale_max": schema.Int64Attribute{
 			Computed:    true,
 			Description: "The maximum number of auto-allocated IP addresses allowed for this NAT Gateway instance. Reflects the state of use_autoscaling.",
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
 		},
 		"portset_assignments": schema.Int64Attribute{
 			Computed:    true,
 			Description: "The number of portsets currently assigned to interfaces behind this NAT Gateway, excluding system-reserved ports.",
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
 		},
 		"portset_capacity": schema.Int64Attribute{
 			Computed:    true,
 			Description: "The total number of portsets available to allocate across all current and potential autoscaled public IP addresses assigned to this NAT Gateway, excluding system-reserved ports.",
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
 		},
 		"vpc_subnet": schema.SingleNestedAttribute{
 			Computed:    true,
 			Attributes:  vpcSubnet.Attributes,
 			Description: "Information about the VPC subnet attached to this NAT Gateway, if there is one attached.",
+			PlanModifiers: []planmodifier.Object{
+				objectplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"created": schema.StringAttribute{
 			Description: "When this NAT Gateway was created.",
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"updated": schema.StringAttribute{
 			Description: "When this NAT Gateway was last updated.",
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
+			PlanModifiers: []planmodifier.String{
+				updatedPlanModifier{},
+			},
 		},
 		"addresses": schema.SetNestedAttribute{
 			Optional:    true,
 			Computed:    true,
 			Description: "The public IP addresses assigned to this NAT Gateway. Must be empty when use_autoscaling is true.",
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.UseStateForUnknown(),
+			},
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"address": schema.StringAttribute{

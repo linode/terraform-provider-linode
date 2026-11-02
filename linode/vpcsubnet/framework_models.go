@@ -472,9 +472,12 @@ func (m *ResourceModel) FlattenSubnet(
 		return natGatewayDiags
 	}
 
-	// Both an omitted block and { id = null } mean "no NAT Gateway". Keep a configured
-	// { id = null } so Read does not return a value that conflicts with the config.
+	// The natgateway block is config-owned. Keep it null when the subnet has no block in state, even if the
+	// NAT Gateway was attached from the NAT Gateway side (vpc_subnet_id). The attachment is still reported in
+	// natgateway_details. Also keep a configured { id = null }, since both forms mean "no NAT Gateway".
 	if subnet.NATGateway == nil && isNATGatewayIDNull(m.NATGateway) {
+		natGateway = m.NATGateway
+	} else if subnet.NATGateway != nil && m.NATGateway.IsNull() {
 		natGateway = m.NATGateway
 	}
 	m.NATGateway = natGateway
