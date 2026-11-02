@@ -434,6 +434,147 @@ func TestAccResourceVPCSubnet_vpcTypeRDMA(t *testing.T) {
 	})
 }
 
+func TestAccResourceVPCSubnet_natgatewayAddThenRemoveOmitted(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc_subnet.foobar"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				// No natgateway block
+				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, ""),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway"),
+						knownvalue.Null(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_details"),
+						knownvalue.Null(),
+					),
+				},
+			},
+			{
+				// Add a natgateway
+				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, "first"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway").AtMapKey("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_details").AtMapKey("label"),
+						knownvalue.StringExact(subnetLabel+"-first"),
+					),
+				},
+			},
+			{
+				// Remove the natgateway by omitting the block
+				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, ""),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway"),
+						knownvalue.Null(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_details"),
+						knownvalue.Null(),
+					),
+				},
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       resourceImportStateID,
+				ImportStateVerifyIgnore: []string{"updated"},
+			},
+		},
+	})
+}
+
+func TestAccResourceVPCSubnet_natgatewayReplaceThenRemoveNull(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc_subnet.foobar"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Assign the first natgateway
+				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, "first"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway").AtMapKey("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_details").AtMapKey("label"),
+						knownvalue.StringExact(subnetLabel+"-first"),
+					),
+				},
+			},
+			{
+				// Replace with the second natgateway
+				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, "second"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway").AtMapKey("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_details").AtMapKey("label"),
+						knownvalue.StringExact(subnetLabel+"-second"),
+					),
+				},
+			},
+			{
+				// Remove the natgateway with { id = null }
+				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, "null"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway").AtMapKey("id"),
+						knownvalue.Null(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_details"),
+						knownvalue.Null(),
+					),
+				},
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+				// Import reads an omitted block, so the { id = null } form is not reproduced
+				ImportStateVerifyIgnore: []string{"updated", "natgateway"},
+			},
+		},
+	})
+}
+
 func checkVPCSubnetExists(s *terraform.State) error {
 	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 

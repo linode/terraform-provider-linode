@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -72,6 +73,11 @@ func (r *Resource) Create(
 	createOpts := linodego.VPCSubnetCreateOptions{
 		Label: data.Label.ValueString(),
 		IPv4:  data.IPv4.ValueString(),
+	}
+
+	// An omitted block or { id = null } creates the subnet without a NAT Gateway.
+	if natGatewayID := natGatewayIDFromModel(data.NATGateway, &resp.Diagnostics); natGatewayID != nil {
+		createOpts.NATGateway = &linodego.VPCSubnetCreateOptionsNATGateway{ID: &natGatewayID}
 	}
 
 	if !data.IPv6.IsNull() {
@@ -211,11 +217,18 @@ func (r *Resource) Update(
 	shouldUpdate := false
 
 	if !state.Label.Equal(plan.Label) {
-		updateOpts.Label = plan.Label.ValueString()
+		shouldUpdate = true
+	}
+
+	if !state.NATGateway.Equal(plan.NATGateway) {
+		// An omitted block or { id = null } unassigns the NAT Gateway.
+		updateOpts.NATGateway = natGatewayUpdateOptions(plan.NATGateway, &resp.Diagnostics)
 		shouldUpdate = true
 	}
 
 	if shouldUpdate {
+		updateOpts.Label = plan.Label.ValueString()
+
 		vpcId := helper.FrameworkSafeInt64ToInt(
 			plan.VPCId.ValueInt64(),
 			&resp.Diagnostics,
@@ -325,6 +338,32 @@ func (r *Resource) Delete(
 		)
 		return
 	}
+}
+
+// natGatewayIDFromModel returns the NAT Gateway ID from a natgateway block,
+// or nil if the block is omitted or its id is null.
+func natGatewayIDFromModel(obj types.Object, diags *diag.Diagnostics) *int {
+	if obj.IsNull() || obj.IsUnknown() {
+		return nil
+	}
+
+	idValue, ok := obj.Attributes()["id"].(types.Int64)
+	if !ok || idValue.IsNull() || idValue.IsUnknown() {
+		return nil
+	}
+
+	id := helper.FrameworkSafeInt64ToInt(idValue.ValueInt64(), diags)
+	return &id
+}
+
+// natGatewayUpdateOptions builds the update payload for the natgateway block.
+// A nil ID is sent as null, which unassigns the NAT Gateway.
+func natGatewayUpdateOptions(
+	obj types.Object,
+	diags *diag.Diagnostics,
+) *linodego.VPCSubnetUpdateOptionsNATGateway {
+	id := natGatewayIDFromModel(obj, diags)
+	return &linodego.VPCSubnetUpdateOptionsNATGateway{ID: &id}
 }
 
 func resourcePopulateLogAttributes(ctx context.Context, data ResourceModel) context.Context {

@@ -49,6 +49,27 @@ resource "linode_vpc" "test" {
 }
 ```
 
+Assign a NAT Gateway to a VPC subnet:
+
+```terraform
+resource "linode_natgateway" "test" {
+    label = "test-natgateway"
+    region = "us-mia"
+    default_ports_per_interface = 4096
+    use_autoscaling = true
+}
+
+resource "linode_vpc_subnet" "test" {
+    vpc_id = linode_vpc.test.id
+    label = "test-subnet"
+    ipv4 = "10.0.0.0/24"
+
+    natgateway = {
+      id = linode_natgateway.test.id
+    }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -63,6 +84,8 @@ The following arguments are supported:
 
 * [`ipv6`](#ipv6) - (Optional, Nested Attribute List) A list of IPv6 ranges under this VPC subnet. NOTE: IPv6 VPCs may not currently be available to all users.
 
+* [`natgateway`](#nat-gateway) - (Optional, Nested Attribute) The NAT Gateway assigned to this VPC subnet. Omitting this field unassigns any NAT Gateway from the subnet.
+
 ## IPv6
 
 -> **Limited Availability** IPv6 VPCs may not currently be available to all users.
@@ -72,6 +95,14 @@ The following arguments can be configured for each entry under the `ipv6` field:
 * `range` - (Optional) An existing IPv6 prefix owned by the current account or a forward slash (/) followed by a valid prefix length. If `auto`, a range with the default prefix will be allocated for this VPC.
 
 * `allocated_range` - (Read-Only) The value of range computed by the API. This is necessary when needing to access the range for an implicit allocation.
+
+## NAT Gateway
+
+The `natgateway` field assigns a NAT Gateway to the subnet. It has one argument:
+
+* `id` - (Optional) The ID of the NAT Gateway to assign. Set to `null` (`natgateway = { id = null }`) to unassign the NAT Gateway.
+
+Omitting the `natgateway` field also unassigns the NAT Gateway.
 
 ## Attributes Reference
 
@@ -103,6 +134,18 @@ In addition to all the arguments above, the following attributes are exported.
 * `created` - The date and time when the VPC was created.
 
 * `updated` - The date and time when the VPC was last updated.
+
+* `natgateway_details` - (Read-Only Object) The details of the NAT Gateway currently assigned to this subnet.
+  * `id` - The ID of the assigned NAT Gateway.
+  * `label` - The label of the assigned NAT Gateway.
+  * `addresses` - (Read-Only List) The addresses of the assigned NAT Gateway.
+  * `portset_assignments` - The number of portset assignments on the assigned NAT Gateway.
+  * `portset_capacity` - The total portset capacity of the assigned NAT Gateway.
+  * `portsets` - (Read-Only Object List) The portsets assigned to the NAT Gateway. Referenced with an index (e.g. `natgateway_details.portsets.0.address`).
+    * `address` - The address of the portset.
+    * `ports` - (Read-Only Object List) The port ranges assigned to the portset. Referenced with an index (e.g. `ports.0.start`).
+      * `start` - The first port in the range.
+      * `end` - The last port in the range.
 
 ## Import
 

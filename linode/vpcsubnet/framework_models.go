@@ -228,6 +228,131 @@ func FlattenSubnetNodebalancers(
 	return &nbsList, diags
 }
 
+var NATGatewayObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"id": types.Int64Type,
+	},
+}
+
+var NATGatewayPortsetPortObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"start": types.Int64Type,
+		"end":   types.Int64Type,
+	},
+}
+
+var NATGatewayPortsetObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"address": types.StringType,
+		"ports": types.ListType{
+			ElemType: NATGatewayPortsetPortObjectType,
+		},
+	},
+}
+
+var NATGatewayDetailsObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"id":                  types.Int64Type,
+		"label":               types.StringType,
+		"addresses":           types.ListType{ElemType: types.StringType},
+		"portset_assignments": types.Int64Type,
+		"portset_capacity":    types.Int64Type,
+		"portsets": types.ListType{
+			ElemType: NATGatewayPortsetObjectType,
+		},
+	},
+}
+
+// flattenNATGatewaySetting converts a subnet's NAT Gateway into the settable natgateway block.
+func flattenNATGatewaySetting(gw *linodego.VPCSubnetNATGateway) (types.Object, diag.Diagnostics) {
+	if gw == nil {
+		return types.ObjectNull(NATGatewayObjectType.AttrTypes), nil
+	}
+
+	return types.ObjectValue(NATGatewayObjectType.AttrTypes, map[string]attr.Value{
+		"id": types.Int64Value(int64(gw.ID)),
+	})
+}
+
+// flattenNATGatewayDetails converts a subnet's NAT Gateway into the read-only natgateway details block.
+func flattenNATGatewayDetails(
+	ctx context.Context,
+	gw *linodego.VPCSubnetNATGateway,
+) (types.Object, diag.Diagnostics) {
+	if gw == nil {
+		return types.ObjectNull(NATGatewayDetailsObjectType.AttrTypes), nil
+	}
+
+	addresses, diags := types.ListValueFrom(ctx, types.StringType, gw.Addresses)
+	if diags.HasError() {
+		return types.ObjectNull(NATGatewayDetailsObjectType.AttrTypes), diags
+	}
+
+	portsets := types.ListNull(NATGatewayPortsetObjectType)
+	if gw.Portsets != nil {
+		portsetObjs := make([]types.Object, len(gw.Portsets))
+		for i, ps := range gw.Portsets {
+			portObjs := make([]types.Object, len(ps.Ports))
+			for j, p := range ps.Ports {
+				portObj, d := types.ObjectValue(NATGatewayPortsetPortObjectType.AttrTypes, map[string]attr.Value{
+					"start": types.Int64Value(int64(p.Start)),
+					"end":   types.Int64Value(int64(p.End)),
+				})
+				if d.HasError() {
+					return types.ObjectNull(NATGatewayDetailsObjectType.AttrTypes), d
+				}
+				portObjs[j] = portObj
+			}
+
+			portsList, d := types.ListValueFrom(ctx, NATGatewayPortsetPortObjectType, portObjs)
+			if d.HasError() {
+				return types.ObjectNull(NATGatewayDetailsObjectType.AttrTypes), d
+			}
+
+			portsetObj, d := types.ObjectValue(NATGatewayPortsetObjectType.AttrTypes, map[string]attr.Value{
+				"address": types.StringValue(ps.Address),
+				"ports":   portsList,
+			})
+			if d.HasError() {
+				return types.ObjectNull(NATGatewayDetailsObjectType.AttrTypes), d
+			}
+			portsetObjs[i] = portsetObj
+		}
+
+		portsets, diags = types.ListValueFrom(ctx, NATGatewayPortsetObjectType, portsetObjs)
+		if diags.HasError() {
+			return types.ObjectNull(NATGatewayDetailsObjectType.AttrTypes), diags
+		}
+	}
+
+	return types.ObjectValue(NATGatewayDetailsObjectType.AttrTypes, map[string]attr.Value{
+		"id":                  types.Int64Value(int64(gw.ID)),
+		"label":               types.StringValue(gw.Label),
+		"addresses":           addresses,
+		"portset_assignments": types.Int64Value(int64(gw.PortsetAssignments)),
+		"portset_capacity":    types.Int64Value(int64(gw.PortsetCapacity)),
+		"portsets":            portsets,
+	})
+}
+
+// FlattenNATGatewayDetails exposes the read-only NAT Gateway details block for use by other packages.
+func FlattenNATGatewayDetails(
+	ctx context.Context,
+	gw *linodego.VPCSubnetNATGateway,
+) (types.Object, diag.Diagnostics) {
+	return flattenNATGatewayDetails(ctx, gw)
+}
+
+// isNATGatewayIDNull reports whether a natgateway block is set but its id is null ({ id = null }).
+func isNATGatewayIDNull(obj types.Object) bool {
+	if obj.IsNull() || obj.IsUnknown() {
+		return false
+	}
+
+	id, ok := obj.Attributes()["id"]
+	return ok && id.IsNull()
+}
+
 func (m *BaseModel) CopyFrom(other BaseModel, preserveKnown bool) {
 	m.ID = helper.KeepOrUpdateValue(m.ID, other.ID, preserveKnown)
 	m.VPCId = helper.KeepOrUpdateValue(m.VPCId, other.VPCId, preserveKnown)
@@ -291,7 +416,9 @@ Resource-specific Implementation
 
 type ResourceModel struct {
 	BaseModel
-	IPv6 types.List `tfsdk:"ipv6"`
+	IPv6              types.List   `tfsdk:"ipv6"`
+	NATGateway        types.Object `tfsdk:"natgateway"`
+	NATGatewayDetails types.Object `tfsdk:"natgateway_details"`
 }
 
 type ResourceModelIPv6 struct {
@@ -302,6 +429,8 @@ type ResourceModelIPv6 struct {
 func (m *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	m.BaseModel.CopyFrom(other.BaseModel, preserveKnown)
 	m.IPv6 = helper.KeepOrUpdateValue(m.IPv6, other.IPv6, preserveKnown)
+	m.NATGateway = helper.KeepOrUpdateValue(m.NATGateway, other.NATGateway, preserveKnown)
+	m.NATGatewayDetails = helper.KeepOrUpdateValue(m.NATGatewayDetails, other.NATGatewayDetails, preserveKnown)
 }
 
 func (m *ResourceModel) FlattenSubnet(
@@ -332,6 +461,24 @@ func (m *ResourceModel) FlattenSubnet(
 		false,
 	)
 
+	natGatewayDetails, natGatewayDiags := flattenNATGatewayDetails(ctx, subnet.NATGateway)
+	if natGatewayDiags.HasError() {
+		return natGatewayDiags
+	}
+	m.NATGatewayDetails = helper.KeepOrUpdateValue(m.NATGatewayDetails, natGatewayDetails, preserveKnown)
+
+	natGateway, natGatewayDiags := flattenNATGatewaySetting(subnet.NATGateway)
+	if natGatewayDiags.HasError() {
+		return natGatewayDiags
+	}
+
+	// Both an omitted block and { id = null } mean "no NAT Gateway". Keep a configured
+	// { id = null } so Read does not return a value that conflicts with the config.
+	if subnet.NATGateway == nil && isNATGatewayIDNull(m.NATGateway) {
+		natGateway = m.NATGateway
+	}
+	m.NATGateway = natGateway
+
 	return diags
 }
 
@@ -341,7 +488,8 @@ Data Source-specific Implementation
 
 type DataSourceModel struct {
 	BaseModel
-	IPv6 types.List `tfsdk:"ipv6"`
+	IPv6              types.List   `tfsdk:"ipv6"`
+	NATGatewayDetails types.Object `tfsdk:"natgateway"`
 }
 
 type DataSourceModelIPv6 struct {
@@ -351,6 +499,7 @@ type DataSourceModelIPv6 struct {
 func (m *DataSourceModel) CopyFrom(other DataSourceModel, preserveKnown bool) {
 	m.BaseModel.CopyFrom(other.BaseModel, preserveKnown)
 	m.IPv6 = helper.KeepOrUpdateValue(m.IPv6, other.IPv6, preserveKnown)
+	m.NATGatewayDetails = helper.KeepOrUpdateValue(m.NATGatewayDetails, other.NATGatewayDetails, preserveKnown)
 }
 
 func (m *DataSourceModel) FlattenSubnet(
@@ -379,6 +528,12 @@ func (m *DataSourceModel) FlattenSubnet(
 		ipv6AddressesList,
 		preserveKnown,
 	)
+
+	natGatewayDetails, natGatewayDiags := flattenNATGatewayDetails(ctx, subnet.NATGateway)
+	if natGatewayDiags.HasError() {
+		return natGatewayDiags
+	}
+	m.NATGatewayDetails = helper.KeepOrUpdateValue(m.NATGatewayDetails, natGatewayDetails, preserveKnown)
 
 	return diags
 }

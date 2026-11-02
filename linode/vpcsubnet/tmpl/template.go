@@ -7,10 +7,11 @@ import (
 )
 
 type TemplateData struct {
-	Label   string
-	IPv4    string
-	Region  string
-	VPCType string
+	Label         string
+	IPv4          string
+	Region        string
+	VPCType       string
+	NATGatewayRef string
 }
 
 func Basic(t testing.TB, label, ipv4, region string) string {
@@ -101,5 +102,27 @@ func VPCType(t testing.TB, label, ipv4, region, vpcType string) string {
 			IPv4:    ipv4,
 			Region:  region,
 			VPCType: vpcType,
+		})
+}
+
+// NATGateway renders a subnet with the given natgateway ref: "first", "second",
+// "null" ({ id = null }), or "" (block omitted).
+func NATGateway(t testing.TB, label, ipv4, region, natGatewayRef string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_subnet_natgateway", TemplateData{
+			Label:         label,
+			IPv4:          ipv4,
+			Region:        region,
+			NATGatewayRef: natGatewayRef,
+		})
+}
+
+func DataNATGateway(t testing.TB, label, ipv4, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_subnet_data_natgateway", TemplateData{
+			Label:         label,
+			IPv4:          ipv4,
+			Region:        region,
+			NATGatewayRef: "first",
 		})
 }

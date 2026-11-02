@@ -1,0 +1,36 @@
+{{ define "vpc_subnet_natgateway" }}
+
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+}
+
+resource "linode_natgateway" "first" {
+    label = "{{.Label}}-first"
+    region = "{{.Region}}"
+    default_ports_per_interface = 4096
+    use_autoscaling = true
+}
+
+resource "linode_natgateway" "second" {
+    label = "{{.Label}}-second"
+    region = "{{.Region}}"
+    default_ports_per_interface = 4096
+    use_autoscaling = true
+}
+
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = linode_vpc.foobar.id
+    label = "{{.Label}}"
+    ipv4 = "{{.IPv4}}"
+{{- if eq .NATGatewayRef "first" }}
+    natgateway = { id = linode_natgateway.first.id }
+{{- else if eq .NATGatewayRef "second" }}
+    natgateway = { id = linode_natgateway.second.id }
+{{- else if eq .NATGatewayRef "null" }}
+    natgateway = { id = null }
+{{- end }}
+}
+
+{{ end }}
+
