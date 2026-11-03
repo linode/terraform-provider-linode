@@ -26,8 +26,14 @@ func init() {
 		F:    sweep,
 	})
 
-	var err error
-	testRegion, err = acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityPlacementGroup}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	testRegion, err = acceptance.NewRegionSelector(context.Background(), client).
+		WithCapabilities(linodego.CapabilityPlacementGroup).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}

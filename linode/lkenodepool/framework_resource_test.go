@@ -61,7 +61,12 @@ func init() {
 
 		k8sVersion = k8sVersions[len(k8sVersions)-1]
 
-		region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLKE}, "core")
+		ctx := context.Background()
+		region, err := acceptance.NewRegionSelector(ctx, client).
+			WithCapabilities(linodego.CapabilityLKE).
+			WithSiteType("core").
+			AvailableForAccount(ctx, linodego.CapabilityLKE).
+			Random()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -115,9 +120,16 @@ func TestAccResourceNodePool_basic(t *testing.T) {
 	poolTag := acctest.RandomWithPrefix("tf_test_")
 
 	// This test validates disk_encryption, so we need a region that supports both LKE and Disk Encryption
-	diskEncRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]linodego.RegionCapability{linodego.CapabilityLKE, linodego.CapabilityDiskEncryption}, "core",
-	)
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Skipf("No region with LKE + Disk Encryption capabilities: %v", err)
+	}
+	diskEncRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLKE, linodego.CapabilityDiskEncryption).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLKE).
+		Random()
 	if err != nil {
 		t.Skipf("No region with LKE + Disk Encryption capabilities: %v", err)
 	}
@@ -441,7 +453,11 @@ func TestAccResourceNodePool_enterprise_basic(t *testing.T) {
 
 	enterpriseK8sVersion := versions[0].ID
 
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityKubernetesEnterprise}, "core")
+	ctx := context.Background()
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityKubernetesEnterprise).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -513,7 +529,11 @@ func TestAccResourceNodePool_enterprise_withFirewall(t *testing.T) {
 
 	enterpriseK8sVersion := versions[0].ID
 
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityKubernetesEnterprise}, "core")
+	ctx := context.Background()
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityKubernetesEnterprise).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

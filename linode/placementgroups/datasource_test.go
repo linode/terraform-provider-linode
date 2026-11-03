@@ -3,6 +3,7 @@
 package placementgroups_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -22,7 +23,14 @@ func TestAccDataSourcePlacementGroups_basic(t *testing.T) {
 
 	baseLabel := acctest.RandomWithPrefix("tf-test")
 
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityPlacementGroup}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatalf("failed to get client: %s", err)
+	}
+	testRegion, err := acceptance.NewRegionSelector(context.Background(), client).
+		WithCapabilities(linodego.CapabilityPlacementGroup).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		t.Error(fmt.Errorf("failed to get region with PG capability: %w", err))
 	}

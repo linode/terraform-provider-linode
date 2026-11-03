@@ -120,8 +120,14 @@ func requireNoExistingStreams(t *testing.T) {
 func getRegionForStreamTest(t *testing.T) string {
 	t.Helper()
 
-	region, err := acceptance.GetRandomRegionWithCaps(
-		[]linodego.RegionCapability{linodego.CapabilityObjectStorage}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatalf("Error getting client: %s", err)
+	}
+	region, err := acceptance.NewRegionSelector(context.Background(), client).
+		WithCapabilities(linodego.CapabilityObjectStorage).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		t.Fatalf("could not get region with Object Storage: %s", err)
 	}

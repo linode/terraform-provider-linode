@@ -24,9 +24,16 @@ import (
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
-		linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs,
-	}, "core")
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -535,11 +542,16 @@ func TestAccResourceInstanceConfig_vpcInterfaceIPv6(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
-		linodego.CapabilityLinodes,
-		linodego.CapabilityVPCs,
-		linodego.CapabilityVPCDualStack,
-	}, "core")
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes, linodego.CapabilityVPCs, linodego.CapabilityVPCDualStack).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

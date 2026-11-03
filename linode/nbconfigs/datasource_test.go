@@ -3,6 +3,7 @@
 package nbconfigs_test
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"testing"
@@ -20,7 +21,16 @@ func TestAccDataSourceNodeBalancerConfigs_basic(t *testing.T) {
 	resourceName := "data.linode_nodebalancer_configs.foo"
 
 	nbLabel := acctest.RandomWithPrefix("tf_test")
-	nbRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityNodeBalancers}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	nbRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityNodeBalancers).
+		AvailableForAccount(ctx, linodego.CapabilityNodeBalancers).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

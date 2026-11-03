@@ -32,7 +32,15 @@ func init() {
 
 	var err error
 
-	testRegion, err = acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	testRegion, err = acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityVPCs).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
@@ -230,10 +238,15 @@ func TestAccResourceVPC_dualStack(t *testing.T) {
 	resName := "linode_vpc.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
-		linodego.CapabilityVPCs,
-		linodego.CapabilityVPCDualStack,
-	}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityVPCs, linodego.CapabilityVPCDualStack).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -371,10 +384,15 @@ func TestAccResourceVPC_ipv4(t *testing.T) {
 	resName := "linode_vpc.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
-		linodego.CapabilityVPCs,
-		linodego.CapabilityVPCCustomIPv4Ranges,
-	}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityVPCs, linodego.CapabilityVPCCustomIPv4Ranges).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

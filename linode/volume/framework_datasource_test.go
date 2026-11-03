@@ -3,6 +3,8 @@
 package volume_test
 
 import (
+	"context"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -47,10 +49,16 @@ func TestAccDataSourceVolume_withBlockStorageEncryption(t *testing.T) {
 	resourceName := "data.linode_volume.foobar"
 
 	// Resolve a region with support for Block Storage Encryption
-	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityBlockStorageEncryption},
-		"core",
-	)
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes, linodego.CapabilityBlockStorageEncryption).
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		t.Fatal(err)
 	}

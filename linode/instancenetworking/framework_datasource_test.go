@@ -3,6 +3,7 @@
 package instancenetworking_test
 
 import (
+	"context"
 	"log"
 	"testing"
 
@@ -21,7 +22,16 @@ const testInstanceNetworkResName = "data.linode_instance_networking.test"
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs, linodego.CapabilityLinodes}, "core")
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityVPCs, linodego.CapabilityLinodes).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

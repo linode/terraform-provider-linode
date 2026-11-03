@@ -3,12 +3,12 @@
 package producerimagesharegroupimageshares_test
 
 import (
+	"context"
 	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v4/linode/producerimagesharegroupimageshares/tmpl"
 )
@@ -23,7 +23,14 @@ func TestAccDataSourceImageShareGroupImageShares_basic(t *testing.T) {
 	label := acctest.RandomWithPrefix("tf_test")
 	instanceLabel := acctest.RandomWithPrefix("tf_test")
 
-	instanceRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{}, "core")
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	instanceRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

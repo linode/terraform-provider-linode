@@ -161,7 +161,15 @@ func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 	t.Parallel()
 
-	//enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{"Kubernetes Enterprise", "VPCs"}, "core")
+	//ctx := context.Background()
+	//client, err := acceptance.GetTestClient()
+	//if err != nil {
+	//	t.Fatal(err)
+	//}
+	//enterpriseRegion, err := acceptance.NewRegionSelector(ctx, client).
+	//	WithCapabilities("Kubernetes Enterprise", linodego.CapabilityVPCs).
+	//	WithSiteType("core").
+	//	Random()
 	//if err != nil {
 	//	t.Fatal(err)
 	//}

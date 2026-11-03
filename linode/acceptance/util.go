@@ -11,7 +11,6 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -905,116 +904,6 @@ func (selector *RegionSelector) filteredCopy(keep func(linodego.Region) bool) *R
 
 func (selector *RegionSelector) withError(err error) *RegionSelector {
 	return &RegionSelector{client: selector.client, regions: selector.regions, err: err}
-}
-
-// GetRegionsWithCaps returns a list of region IDs that support the given capabilities
-// Parameters:
-// - capabilities: Required capabilities that the regions must support.
-// - siteType: The site type to filter by ("core" or "distributed" or "any").
-// - filters: Optional custom filters for additional criteria.
-func GetRegionsWithCaps(capabilities []linodego.RegionCapability, regionType string, filters ...RegionFilterFunc) ([]string, error) {
-	client, err := GetTestClient()
-	if err != nil {
-		return nil, err
-	}
-
-	regions, err := client.ListRegions(context.Background(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// Fetch per-region account availabilities. On failure, log a warning and proceed without account-level filtering.
-	accountAvail := make(map[string]*set.Set[string])
-	acctAvailabilities, err := client.ListAccountAvailabilities(context.Background(), nil)
-	if err != nil {
-		log.Printf("[WARN] Failed to retrieve account availabilities for regions. "+
-			"Assuming required capabilities are available in all regions for this account. "+
-			"Tests may fail if the account lacks access to necessary capabilities in the selected region. err=%v", err)
-	} else {
-		for _, aa := range acctAvailabilities {
-			avail := set.New[string](len(aa.Available))
-			for _, a := range aa.Available {
-				avail.Insert(a)
-			}
-			accountAvail[aa.Region] = avail
-		}
-	}
-
-	// Determine which of the requested capabilities also require account-level checks.
-	var requiredAccountCaps []linodego.RegionCapability
-	for _, c := range capabilities {
-		if accountAvailabilityCaps.Contains(c) {
-			requiredAccountCaps = append(requiredAccountCaps, c)
-		}
-	}
-
-	// Filter on capabilities and site type
-	regionsWithCaps := slices.DeleteFunc(regions, func(region linodego.Region) bool {
-		// Check if the site type matches
-		// Skip site type check if "any" is passed
-		if !strings.EqualFold(regionType, "any") && !strings.EqualFold(region.SiteType, regionType) {
-			return true
-		}
-
-		capsMap := set.New[linodego.RegionCapability](len(region.Capabilities))
-
-		for _, c := range region.Capabilities {
-			capsMap.Insert(linodego.RegionCapability(strings.ToUpper(c)))
-		}
-
-		for _, c := range capabilities {
-			if !capsMap.Contains(linodego.RegionCapability(strings.ToUpper(string(c)))) {
-				return true
-			}
-		}
-
-		// If account availability data was fetched, verify account-level caps too.
-		// If we have no data at all (fetch failed), skip this check.
-		if len(accountAvail) > 0 && len(requiredAccountCaps) > 0 {
-			regionAvail, ok := accountAvail[region.ID]
-			if !ok {
-				// Region not present in account availabilities → not available.
-				return true
-			}
-			for _, c := range requiredAccountCaps {
-				if !regionAvail.Contains(string(c)) {
-					return true
-				}
-			}
-		}
-
-		return false
-	})
-
-	// Apply test-supplied filters
-	filteredRegions := slices.DeleteFunc(regionsWithCaps, func(region linodego.Region) bool {
-		for _, filter := range filters {
-			if !filter(region) {
-				return true
-			}
-		}
-
-		return false
-	})
-
-	return helper.MapSlice(filteredRegions, func(r linodego.Region) string {
-		return r.ID
-	}), nil
-}
-
-// GetRandomRegionWithCaps gets a random region given a list of region capabilities.
-func GetRandomRegionWithCaps(capabilities []linodego.RegionCapability, regionType string, filters ...RegionFilterFunc) (string, error) {
-	regions, err := GetRegionsWithCaps(capabilities, regionType, filters...)
-	if err != nil {
-		return "", err
-	}
-
-	if len(regions) < 1 {
-		return "", fmt.Errorf("no region found with the provided caps")
-	}
-
-	// #nosec G404 -- Test data, doesn't need to be cryptographically secure
-	return regions[rand.Intn(len(regions))], nil
 }
 
 func GetTestClient() (*linodego.Client, error) {

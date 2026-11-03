@@ -81,6 +81,20 @@ func TestAccResourceUser_updates(t *testing.T) {
 func TestAccResourceUser_grants(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes).
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		WithSiteType("core").
+		Random()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	username := acctest.RandomWithPrefix("tf-test")
 	instance := acctest.RandomWithPrefix("tf-test")
 
@@ -110,7 +124,7 @@ func TestAccResourceUser_grants(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.GrantsUpdate(t, username, email, instance),
+				Config: tmpl.GrantsUpdate(t, username, email, instance, region),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.account_access", "read_only"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_domains", "false"),
