@@ -36,16 +36,17 @@ func (updatedPlanModifier) PlanModifyString(
 		return
 	}
 
-	var plan, state NATGatewayModel
+	var plan, state, config NATGatewayModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// An unknown planned addresses value means the user did not set it, so it is unchanged.
-	// The set's UseStateForUnknown has not run yet when this modifier reads req.Plan.
-	addressesUnchanged := plan.Addresses.IsUnknown() || plan.Addresses.Equal(state.Addresses)
+	// Unknown addresses are unchanged only when the user omitted them.
+	addressesUnchanged := plan.Addresses.Equal(state.Addresses) ||
+		(plan.Addresses.IsUnknown() && config.Addresses.IsNull())
 
 	if plan.Region.Equal(state.Region) &&
 		plan.Label.Equal(state.Label) &&
@@ -141,16 +142,10 @@ var frameworkResourceSchema = schema.Schema{
 		"portset_assignments": schema.Int64Attribute{
 			Computed:    true,
 			Description: "The number of portsets currently assigned to interfaces behind this NAT Gateway, excluding system-reserved ports.",
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
 		},
 		"portset_capacity": schema.Int64Attribute{
 			Computed:    true,
 			Description: "The total number of portsets available to allocate across all current and potential autoscaled public IP addresses assigned to this NAT Gateway, excluding system-reserved ports.",
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
 		},
 		"vpc_subnet": schema.SingleNestedAttribute{
 			Computed:    true,
