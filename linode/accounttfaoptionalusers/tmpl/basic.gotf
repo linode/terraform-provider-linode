@@ -1,0 +1,19 @@
+{{ define "account_tfa_optional_users_basic" }}
+resource "linode_user" "test" {
+  username   = "{{ .Username }}"
+  email      = "{{ .Email }}"
+  restricted = true
+}
+
+resource "linode_account_tfa_optional_users" "test" {
+  usernames = {{ if .Optional }}[linode_user.test.username]{{ else }}[]{{ end }}
+}
+{{ end }}
+
+{{ define "account_tfa_optional_users_data_basic" }}
+{{ template "account_tfa_optional_users_basic" . }}
+
+data "linode_account_tfa_optional_users" "test" {
+  depends_on = [linode_account_tfa_optional_users.test]
+}
+{{ end }}

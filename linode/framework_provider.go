@@ -13,6 +13,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/accountlogin"
 	"github.com/linode/terraform-provider-linode/v4/linode/accountlogins"
 	"github.com/linode/terraform-provider-linode/v4/linode/accountsettings"
+	"github.com/linode/terraform-provider-linode/v4/linode/accounttfaoptionalusers"
 	"github.com/linode/terraform-provider-linode/v4/linode/accounttransfer"
 	"github.com/linode/terraform-provider-linode/v4/linode/backup"
 	"github.com/linode/terraform-provider-linode/v4/linode/childaccount"
@@ -261,6 +262,7 @@ func (p *FrameworkProvider) Schema(
 func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		accountsettings.NewResource,
+		accounttfaoptionalusers.NewResource,
 		firewall.NewResource,
 		firewalldevice.NewResource,
 		iamuser.NewResource,
@@ -350,6 +352,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nbvpc.NewDataSource,
 		nbvpcs.NewDataSource,
 		accountsettings.NewDataSource,
+		accounttfaoptionalusers.NewDataSource,
 		accounttransfer.NewDataSource,
 		firewalls.NewDataSource,
 		kernels.NewDataSource,

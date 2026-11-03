@@ -79,6 +79,8 @@ The Linode User resource exports the following attributes:
 
 * `tfa_enabled` - A boolean value indicating if the User has Two Factor Authentication (TFA) enabled.
 
+* `tfa_enforced` - Whether the account policy and exemptions require this user to use two-factor authentication, independently of whether it is enabled.
+
 * `verified_phone_number` - The phone number verified for this User Profile with the Phone Number Verify command. null if this User Profile has no verified phone number.
 
 ### Global Grants

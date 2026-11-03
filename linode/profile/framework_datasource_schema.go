@@ -57,6 +57,10 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "If true, logins from untrusted computers will require Two Factor Authentication.",
 			Computed:    true,
 		},
+		"tfa_enforced": schema.BoolAttribute{
+			Description: "Whether two-factor authentication is required for this profile by the account policy and exemptions.",
+			Computed:    true,
+		},
 		"restricted": schema.BoolAttribute{
 			Description: "If true, the user has restrictions on what can be accessed on the Account.",
 			Computed:    true,

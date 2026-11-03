@@ -81,6 +81,15 @@ Use the following command template to execute particular Acceptance tests within
 make TEST_SUITE="volume" test-int
 ```
 
+The account-level TFA exemption acceptance tests modify an account-wide list and
+are not safe to run concurrently, so they are skipped unless opted in. They
+are also skipped if the account's exemption list is not empty:
+
+```shell
+ACC_OPT_IN_TESTS="TestAccResourceAccountTFAOptionalUsers_basic,TestAccDataSourceAccountTFAOptionalUsers_basic" \
+make TEST_SUITE="accounttfaoptionalusers" PARALLEL=1 test-int
+```
+
 There are a number of useful flags and variables to aid in debugging.
 
 - `TF_LOG_PROVIDER` - This instructs Terraform to emit provider logging messages at the given level. Accepted values are `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `OFF`, and `JSON` (case-insensitive).
