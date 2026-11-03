@@ -75,6 +75,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/natgateway"
 	"github.com/linode/terraform-provider-linode/v4/linode/natgatewayaddress"
 	"github.com/linode/terraform-provider-linode/v4/linode/natgatewayaddresses"
+	"github.com/linode/terraform-provider-linode/v4/linode/natgatewayinterfaces"
 	"github.com/linode/terraform-provider-linode/v4/linode/natgateways"
 	"github.com/linode/terraform-provider-linode/v4/linode/natgatewaysettings"
 	"github.com/linode/terraform-provider-linode/v4/linode/natgatewaytypes"
@@ -420,6 +421,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		natgateway.NewDataSource,
 		natgatewayaddress.NewDataSource,
 		natgatewayaddresses.NewDataSource,
+		natgatewayinterfaces.NewDataSource,
 		natgateways.NewDataSource,
 		natgatewaysettings.NewDataSource,
 		natgatewaytypes.NewDataSource,
