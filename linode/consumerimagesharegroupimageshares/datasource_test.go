@@ -53,7 +53,7 @@ func TestAccDataSourceImageShareGroupImageShares_basic(t *testing.T) {
 	instanceLabel := acctest.RandomWithPrefix("tf_test")
 
 	ctx := context.Background()
-	instanceRegion, err := acceptance.NewRegionSelector(ctx, consumerClient).
+	instanceRegion, err := acceptance.NewRegionSelector(ctx, producerClient).
 		WithCapabilities(linodego.CapabilityLinodes).
 		WithSiteType("core").
 		AvailableForAccount(ctx, linodego.CapabilityLinodes).
