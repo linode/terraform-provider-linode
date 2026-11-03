@@ -45,4 +45,3 @@ In addition to all arguments above, the following attributes are exported:
 * `portset_assignments` - The number of portsets currently assigned to interfaces using this address, excluding system-reserved ports.
 
 * `portset_capacity` - The total number of portsets available to allocate for this address, excluding system-reserved ports.
-

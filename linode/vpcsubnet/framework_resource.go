@@ -214,11 +214,7 @@ func (r *Resource) Update(
 	ctx = resourcePopulateLogAttributes(ctx, state)
 
 	var updateOpts linodego.VPCSubnetUpdateOptions
-	shouldUpdate := false
-
-	if !state.Label.Equal(plan.Label) {
-		shouldUpdate = true
-	}
+	shouldUpdate := !state.Label.Equal(plan.Label)
 
 	if !state.NATGateway.Equal(plan.NATGateway) {
 		// An omitted block or { id = null } unassigns the NAT Gateway.

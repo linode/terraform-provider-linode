@@ -93,4 +93,3 @@ The following attributes are exported under each entry of the `ports` field:
 * `start` - The first port in the range.
 
 * `end` - The last port in the range.
-
