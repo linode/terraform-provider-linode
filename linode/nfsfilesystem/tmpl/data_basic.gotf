@@ -1,0 +1,9 @@
+{{ define "nfs_filesystem_data_basic" }}
+
+{{ template "nfs_filesystem_basic" . }}
+
+data "linode_nfs_filesystem" "foobar" {
+    id = linode_nfs_filesystem.foobar.id
+}
+
+{{ end }}

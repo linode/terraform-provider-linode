@@ -1,0 +1,9 @@
+{{ define "nfs_space_data_basic" }}
+
+{{ template "nfs_space_basic" . }}
+
+data "linode_nfs_space" "foobar" {
+    id = linode_nfs_space.foobar.id
+}
+
+{{ end }}

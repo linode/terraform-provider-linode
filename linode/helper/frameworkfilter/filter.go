@@ -57,33 +57,49 @@ type FilterAttribute struct {
 // Config is the root configuration type for filter data sources.
 type Config map[string]FilterAttribute
 
-// Schema returns the schema that should be used for the `filter` attribute
-// in list data sources.
+// Schema returns the schema that should be used for the `filter` block
+// in existing list data sources.
 func (f Config) Schema() schema.SetNestedBlock {
 	return schema.SetNestedBlock{
 		NestedObject: schema.NestedBlockObject{
-			Attributes: map[string]schema.Attribute{
-				"name": schema.StringAttribute{
-					Required: true,
-					Validators: []validator.String{
-						f.validateFilterable(false),
-					},
-					Description: "The name of the attribute to filter on.",
-				},
-				"values": schema.SetAttribute{
-					Required:    true,
-					Description: "The value(s) to be used in the filter.",
-					ElementType: types.StringType,
-				},
-				"match_by": schema.StringAttribute{
-					Optional:    true,
-					Description: "The type of comparison to use for this filter.",
-					Validators: []validator.String{
-						stringvalidator.OneOfCaseInsensitive(
-							"exact", "substring", "sub", "re", "regex",
-						),
-					},
-				},
+			Attributes: f.filterAttributes(),
+		},
+	}
+}
+
+// NestedAttributeSchema returns the schema that should be used for the
+// `filter` attribute in new list data sources.
+func (f Config) NestedAttributeSchema() schema.SetNestedAttribute {
+	return schema.SetNestedAttribute{
+		Optional:    true,
+		Description: "A set of filters used to select the returned results.",
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: f.filterAttributes(),
+		},
+	}
+}
+
+func (f Config) filterAttributes() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"name": schema.StringAttribute{
+			Required: true,
+			Validators: []validator.String{
+				f.validateFilterable(false),
+			},
+			Description: "The name of the attribute to filter on.",
+		},
+		"values": schema.SetAttribute{
+			Required:    true,
+			Description: "The value(s) to be used in the filter.",
+			ElementType: types.StringType,
+		},
+		"match_by": schema.StringAttribute{
+			Optional:    true,
+			Description: "The type of comparison to use for this filter.",
+			Validators: []validator.String{
+				stringvalidator.OneOfCaseInsensitive(
+					"exact", "substring", "sub", "re", "regex",
+				),
 			},
 		},
 	}
