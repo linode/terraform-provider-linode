@@ -60,15 +60,7 @@ func (m *BaseModel) Flatten(
 	m.Region = helper.KeepOrUpdateString(m.Region, fs.Region, preserveKnown)
 	m.Status = helper.KeepOrUpdateString(m.Status, string(fs.Status), preserveKnown)
 	m.MountTargetFQDN = helper.KeepOrUpdateStringPointer(m.MountTargetFQDN, fs.MountTargetFQDN, preserveKnown)
-	//// The API does not reliably return max_capacity_bytes on GET. Only update when the API reports a non-zero value,
-	//// otherwise preserve the existing configured/known value to avoid a
-	//// perpetual diff.
-	//if fs.MaxCapacityBytes != 0 {
 	m.MaxCapacityBytes = helper.KeepOrUpdateInt64(m.MaxCapacityBytes, fs.MaxCapacityBytes, preserveKnown)
-	//}
-
-	m.MaxCapacityBytes = helper.KeepOrUpdateInt64(m.MaxCapacityBytes, fs.MaxCapacityBytes, preserveKnown)
-
 	m.SnapshotUsageBytes = helper.KeepOrUpdateInt64Pointer(m.SnapshotUsageBytes, fs.SnapshotUsageBytes, preserveKnown)
 	m.LDAPConfigID = helper.KeepOrUpdateStringPointer(m.LDAPConfigID, fs.LDAPConfigID, preserveKnown)
 	m.SourceSnapshotID = helper.KeepOrUpdateIntPointer(m.SourceSnapshotID, fs.SourceSnapshotID, preserveKnown)
