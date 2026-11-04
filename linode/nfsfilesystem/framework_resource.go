@@ -94,15 +94,26 @@ func (r *Resource) Create(
 		return
 	}
 
+	initialState := data
+	resp.Diagnostics.Append(initialState.Flatten(ctx, fs, true)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &initialState)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	filesystemID := fs.ID
 	fs, err = client.WaitForNFSFilesystemStatus(
 		ctx,
 		spaceID,
-		fs.ID,
+		filesystemID,
 		linodego.NFSFilesystemStatusActive,
 	)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to wait for NFS Filesystem %d to become active.", fs.ID),
+			fmt.Sprintf("Failed to wait for NFS Filesystem %d to become active.", filesystemID),
 			err.Error(),
 		)
 		return
