@@ -25,7 +25,9 @@ func TestAccLinodeInterface_vpc_natgateway(t *testing.T) {
 
 	natGatewayRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityLinodes,
+		linodego.CapabilityLinodeInterfaces,
 		linodego.CapabilityVPCs,
+		linodego.CapabilityNATGateway,
 	}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))

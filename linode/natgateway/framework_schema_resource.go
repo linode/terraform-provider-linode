@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -11,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // updatedPlanModifier keeps the prior `updated` value unless a user-settable attribute changes.
@@ -54,6 +56,47 @@ func (updatedPlanModifier) PlanModifyString(
 		plan.UseAutoscaling.Equal(state.UseAutoscaling) &&
 		plan.VPCSubnetID.Equal(state.VPCSubnetID) &&
 		addressesUnchanged {
+		resp.PlanValue = req.StateValue
+	}
+}
+
+// portsetPlanModifier keeps the prior portset value unless addresses change.
+// Portset values also change when a VPC subnet attaches or detaches, which
+// must not show as a diff. Address changes can alter them, so those plans
+// leave the value unknown and Update stores the refreshed API value.
+type portsetPlanModifier struct{}
+
+func (portsetPlanModifier) Description(_ context.Context) string {
+	return "Keeps the prior value unless addresses change."
+}
+
+func (m portsetPlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (portsetPlanModifier) PlanModifyInt64(
+	ctx context.Context,
+	req planmodifier.Int64Request,
+	resp *planmodifier.Int64Response,
+) {
+	// Keep the framework's unknown value on create and destroy.
+	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() || req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+		return
+	}
+
+	var planAddrs, stateAddrs, configAddrs types.Set
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("addresses"), &planAddrs)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("addresses"), &stateAddrs)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("addresses"), &configAddrs)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Unknown addresses are unchanged only when the user omitted them.
+	addressesUnchanged := planAddrs.Equal(stateAddrs) ||
+		(planAddrs.IsUnknown() && configAddrs.IsNull())
+
+	if addressesUnchanged {
 		resp.PlanValue = req.StateValue
 	}
 }
@@ -142,10 +185,16 @@ var frameworkResourceSchema = schema.Schema{
 		"portset_assignments": schema.Int64Attribute{
 			Computed:    true,
 			Description: "The number of portsets currently assigned to interfaces behind this NAT Gateway, excluding system-reserved ports.",
+			PlanModifiers: []planmodifier.Int64{
+				portsetPlanModifier{},
+			},
 		},
 		"portset_capacity": schema.Int64Attribute{
 			Computed:    true,
 			Description: "The total number of portsets available to allocate across all current and potential autoscaled public IP addresses assigned to this NAT Gateway, excluding system-reserved ports.",
+			PlanModifiers: []planmodifier.Int64{
+				portsetPlanModifier{},
+			},
 		},
 		"vpc_subnet": schema.SingleNestedAttribute{
 			Computed:    true,
