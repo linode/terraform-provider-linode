@@ -25,8 +25,7 @@ func NewDataSource() datasource.DataSource {
 func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	tflog.Debug(ctx, "Read data."+d.Config.Name)
 
-	usernames, diags := readUsernames(ctx, d.Meta.Client)
-	resp.Diagnostics.Append(diags...)
+	usernames := readUsernames(ctx, d.Meta.Client, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}

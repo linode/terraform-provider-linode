@@ -49,8 +49,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	usernames, diags := readUsernames(ctx, r.Meta.Client)
-	resp.Diagnostics.Append(diags...)
+	usernames := readUsernames(ctx, r.Meta.Client, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -100,8 +99,7 @@ func (r *Resource) write(ctx context.Context, plan ResourceModel, state *tfsdk.S
 		return
 	}
 
-	actual, readDiags := readUsernames(ctx, r.Meta.Client)
-	diags.Append(readDiags...)
+	actual := readUsernames(ctx, r.Meta.Client, diags)
 	if diags.HasError() {
 		return
 	}

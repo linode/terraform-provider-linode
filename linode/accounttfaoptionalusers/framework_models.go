@@ -21,18 +21,20 @@ type DataSourceModel struct {
 	Usernames types.Set    `tfsdk:"usernames"`
 }
 
-func readUsernames(ctx context.Context, client *linodego.Client) (types.Set, diag.Diagnostics) {
+func readUsernames(ctx context.Context, client *linodego.Client, diags *diag.Diagnostics) types.Set {
 	tflog.Trace(ctx, "client.ListTFAOptionalUsers(...)")
 	users, err := client.ListTFAOptionalUsers(ctx, nil)
 	if err != nil {
-		var diags diag.Diagnostics
 		diags.AddError("Failed to list TFA optional users", err.Error())
-		return types.SetNull(types.StringType), diags
+		return types.SetNull(types.StringType)
 	}
 
 	usernames := make([]string, len(users))
 	for i, user := range users {
 		usernames[i] = user.Username
 	}
-	return types.SetValueFrom(ctx, types.StringType, usernames)
+
+	result, d := types.SetValueFrom(ctx, types.StringType, usernames)
+	diags.Append(d...)
+	return result
 }
