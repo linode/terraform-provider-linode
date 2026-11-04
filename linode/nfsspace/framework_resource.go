@@ -78,14 +78,25 @@ func (r *Resource) Create(
 		return
 	}
 
+	initialState := data
+	resp.Diagnostics.Append(initialState.Flatten(ctx, space, true)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &initialState)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	spaceID := space.ID
 	space, err = client.WaitForNFSSpaceStatus(
 		ctx,
-		space.ID,
+		spaceID,
 		linodego.NFSSpaceStatusActive,
 	)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to wait for NFS Space %d to become active.", space.ID),
+			fmt.Sprintf("Failed to wait for NFS Space %d to become active.", spaceID),
 			err.Error(),
 		)
 		return
