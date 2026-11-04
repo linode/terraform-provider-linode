@@ -26,7 +26,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.1
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 	github.com/linode/linodego/k8s v1.26.1
-	github.com/linode/linodego/v2 v2.10.0
+	github.com/linode/linodego/v2 v2.11.0
 	github.com/stretchr/testify v1.12.1
 	golang.org/x/crypto v0.58.0
 	golang.org/x/sync v0.24.0
@@ -125,6 +125,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.2 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
-
-// Temporary: linodego main until MFA enforcement support is released.
-replace github.com/linode/linodego/v2 => github.com/linode/linodego/v2 v2.10.1-0.20261102212846-03124d974b77
