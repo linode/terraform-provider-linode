@@ -28,8 +28,6 @@ var frameworkDataSourceSchema = schema.Schema{
 				Attributes: nfsspace.SpaceAttributes,
 			},
 		},
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
+		"filter": filterConfig.NestedAttributeSchema(),
 	},
 }

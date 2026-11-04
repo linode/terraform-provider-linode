@@ -16,10 +16,12 @@ Get information about all NFS Spaces with a given label:
 
 ```terraform
 data "linode_nfs_spaces" "filtered" {
-    filter {
-        name   = "label"
-        values = ["prod-ml-space"]
-    }
+    filter = [
+        {
+            name   = "label"
+            values = ["prod-ml-space"]
+        }
+    ]
 }
 
 output "nfs_space_id" {
@@ -31,7 +33,9 @@ output "nfs_space_id" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select NFS Spaces that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Nested Attribute Set) A set of filters used to select NFS Spaces that meet certain requirements.
 
 ## Filterable Fields
 
@@ -71,8 +75,10 @@ Each NFS Space will be stored in the `nfs_spaces` attribute and will export the 
 
 ## Filter
 
-A `filter` block supports the following arguments:
+Each object in the `filter` nested attribute set supports the following arguments:
 
 * `name` - (Required) The name of the field to filter by.
 
 * `values` - (Required) A list of values for the filter to allow. These values should all be in string form.
+
+* `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)

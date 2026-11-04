@@ -18,10 +18,12 @@ Get information about all NFS Filesystems in an NFS Space with a given label:
 data "linode_nfs_filesystems" "filtered" {
     space_id = 12345
 
-    filter {
-        name   = "label"
-        values = ["training-data"]
-    }
+    filter = [
+        {
+            name   = "label"
+            values = ["training-data"]
+        }
+    ]
 }
 
 output "nfs_filesystem_id" {
@@ -35,7 +37,9 @@ The following arguments are supported:
 
 * `space_id` - (Required) The ID of the NFS Space to list filesystems for.
 
-* [`filter`](#filter) - (Optional) A set of filters used to select NFS Filesystems that meet certain requirements.
+**NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
+
+* [`filter`](#filter) - (Optional, Nested Attribute Set) A set of filters used to select NFS Filesystems that meet certain requirements.
 
 ## Filterable Fields
 
@@ -97,8 +101,10 @@ The following attributes are exported under each `stats` attribute:
 
 ## Filter
 
-A `filter` block supports the following arguments:
+Each object in the `filter` nested attribute set supports the following arguments:
 
 * `name` - (Required) The name of the field to filter by.
 
 * `values` - (Required) A list of values for the filter to allow. These values should all be in string form.
+
+* `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)

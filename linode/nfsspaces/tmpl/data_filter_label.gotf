@@ -5,10 +5,12 @@ resource "linode_nfs_space" "foobar" {
 }
 
 data "linode_nfs_spaces" "foobar" {
-    filter {
-        name = "label"
-        values = [linode_nfs_space.foobar.label]
-    }
+    filter = [
+        {
+            name   = "label"
+            values = [linode_nfs_space.foobar.label]
+        }
+    ]
 }
 
 {{ end }}

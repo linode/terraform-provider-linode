@@ -31,8 +31,6 @@ var frameworkDataSourceSchema = schema.Schema{
 				Attributes: nfsfilesystem.FilesystemAttributes,
 			},
 		},
-	},
-	Blocks: map[string]schema.Block{
-		"filter": filterConfig.Schema(),
+		"filter": filterConfig.NestedAttributeSchema(),
 	},
 }

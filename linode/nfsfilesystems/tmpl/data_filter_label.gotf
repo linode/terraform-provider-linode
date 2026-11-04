@@ -14,10 +14,12 @@ resource "linode_nfs_filesystem" "foobar" {
 data "linode_nfs_filesystems" "foobar" {
     space_id = linode_nfs_space.foobar.id
 
-    filter {
-        name = "label"
-        values = [linode_nfs_filesystem.foobar.label]
-    }
+    filter = [
+        {
+            name   = "label"
+            values = [linode_nfs_filesystem.foobar.label]
+        }
+    ]
 }
 
 {{ end }}
