@@ -64,7 +64,7 @@ func (m *BaseModel) Flatten(
 	//// otherwise preserve the existing configured/known value to avoid a
 	//// perpetual diff.
 	//if fs.MaxCapacityBytes != 0 {
-	//	m.MaxCapacityBytes = helper.KeepOrUpdateInt64(m.MaxCapacityBytes, fs.MaxCapacityBytes, preserveKnown)
+	m.MaxCapacityBytes = helper.KeepOrUpdateInt64(m.MaxCapacityBytes, fs.MaxCapacityBytes, preserveKnown)
 	//}
 
 	m.MaxCapacityBytes = helper.KeepOrUpdateInt64(m.MaxCapacityBytes, fs.MaxCapacityBytes, preserveKnown)

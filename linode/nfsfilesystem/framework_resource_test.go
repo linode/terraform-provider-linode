@@ -33,11 +33,13 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
-	if err != nil {
-		log.Fatalf("failed to get random region: %s", err)
-	}
-	testRegion = region
+	//region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
+	//if err != nil {
+	//	log.Fatalf("failed to get random region: %s", err)
+	//}
+	//testRegion = region
+	// only use pl-labkrk-2 for now since other regions are not available for NFS Filesystem creation
+	testRegion = "pl-labkrk-2"
 }
 
 func sweep(prefix string) error {

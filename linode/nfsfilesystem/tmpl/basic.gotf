@@ -7,7 +7,7 @@ resource "linode_nfs_space" "foobar" {
 resource "linode_nfs_filesystem" "foobar" {
     space_id           = linode_nfs_space.foobar.id
     label              = "{{.Label}}"
-    region             = "pl-labkrk-88"
+    region             = "{{.Region}}"
     max_capacity_bytes = {{.MaxCapacityBytes}}
 }
 

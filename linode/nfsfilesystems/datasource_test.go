@@ -3,7 +3,6 @@
 package nfsfilesystems_test
 
 import (
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -11,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v4/linode/nfsfilesystems/tmpl"
 )
@@ -22,11 +20,13 @@ const minCapacityBytes int64 = 1073741824
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
-	if err != nil {
-		log.Fatalf("failed to get random region: %s", err)
-	}
-	testRegion = region
+	//region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
+	//if err != nil {
+	//	log.Fatalf("failed to get random region: %s", err)
+	//}
+	//testRegion = region
+	// only use pl-labkrk-2 for now since other regions are not available for NFS Filesystem creation
+	testRegion = "pl-labkrk-2"
 }
 
 func TestAccDataSourceNFSFilesystems_basic(t *testing.T) {
