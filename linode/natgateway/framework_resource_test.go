@@ -3,10 +3,7 @@
 package natgateway_test
 
 import (
-	"context"
-	"fmt"
 	"regexp"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -14,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
@@ -186,59 +182,19 @@ func TestAccResourceNATGateway_complex(t *testing.T) {
 				},
 			},
 			{
-				// Cleanup: the API rejects deleting a NAT Gateway while it is attached to a
-				// subnet, so detach it before the post-test destroy.
-				Config: tmpl.Complex(t, label, region),
-				Check:  detachNATGatewayFromSubnet(natComplex),
+				// Changing vpc_subnet_id forces a replacement. The gateway is still attached
+				// to its original subnet when it is destroyed, so Delete must detach it.
+				Config: tmpl.ComplexAltSubnet(t, label, region),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(natComplex, plancheck.ResourceActionReplace),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(natComplex,
+						tfjsonpath.New("vpc_subnet").AtMapKey("label"), knownvalue.StringExact(label+"-alt")),
+				},
 			},
 		},
 	})
-}
-
-// detachNATGatewayFromSubnet clears the NAT Gateway association on the subnet it is attached to.
-func detachNATGatewayFromSubnet(resourceName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", resourceName)
-		}
-
-		natGatewayID, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("failed to parse NAT Gateway ID %q: %w", rs.Primary.ID, err)
-		}
-
-		client, err := acceptance.GetTestClient()
-		if err != nil {
-			return err
-		}
-
-		ctx := context.Background()
-
-		natGateway, err := client.GetNATGateway(ctx, natGatewayID)
-		if err != nil {
-			return fmt.Errorf("failed to get NAT Gateway %d: %w", natGatewayID, err)
-		}
-
-		if natGateway.VPCSubnet.ID == 0 {
-			return nil
-		}
-
-		// A nil inner pointer serializes as JSON null, which clears the association.
-		var nilID *int
-		if _, err := client.UpdateVPCSubnet(
-			ctx,
-			natGateway.VPCSubnet.VPCID,
-			natGateway.VPCSubnet.ID,
-			linodego.VPCSubnetUpdateOptions{
-				Label:      natGateway.VPCSubnet.Label,
-				NATGateway: &linodego.VPCSubnetUpdateOptionsNATGateway{ID: &nilID},
-			},
-		); err != nil {
-			return fmt.Errorf("failed to detach NAT Gateway %d from subnet %d: %w",
-				natGatewayID, natGateway.VPCSubnet.ID, err)
-		}
-
-		return nil
-	}
 }

@@ -65,12 +65,6 @@ func TestAccDataSourceNATGateway_basic(t *testing.T) {
 				Config:            tmpl.DataBasic(t, label, region),
 				ConfigStateChecks: checks,
 			},
-			{
-				// Cleanup: detach the NAT Gateway from its subnet so the post-test destroy
-				// can delete it.
-				Config: tmpl.DataBasic(t, label, region),
-				Check:  detachNATGatewayFromSubnet(natComplex),
-			},
 		},
 	})
 }
