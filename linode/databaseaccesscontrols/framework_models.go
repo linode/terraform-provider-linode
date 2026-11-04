@@ -1,6 +1,7 @@
 package databaseaccesscontrols
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
@@ -9,10 +10,11 @@ import (
 // ResourceModel represents the Terraform state of a
 // linode_database_access_controls resource.
 type ResourceModel struct {
-	ID           types.String `tfsdk:"id"`
-	DatabaseID   types.Int64  `tfsdk:"database_id"`
-	DatabaseType types.String `tfsdk:"database_type"`
-	AllowList    types.Set    `tfsdk:"allow_list"`
+	ID           types.String   `tfsdk:"id"`
+	DatabaseID   types.Int64    `tfsdk:"database_id"`
+	DatabaseType types.String   `tfsdk:"database_type"`
+	AllowList    types.Set      `tfsdk:"allow_list"`
+	Timeouts     timeouts.Value `tfsdk:"timeouts"`
 }
 
 // Flatten populates this model from the given database identity and allow list.
@@ -35,4 +37,5 @@ func (m *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	m.DatabaseID = helper.KeepOrUpdateValue(m.DatabaseID, other.DatabaseID, preserveKnown)
 	m.DatabaseType = helper.KeepOrUpdateValue(m.DatabaseType, other.DatabaseType, preserveKnown)
 	m.AllowList = helper.KeepOrUpdateValue(m.AllowList, other.AllowList, preserveKnown)
+	m.Timeouts = helper.KeepOrUpdateValue(m.Timeouts, other.Timeouts, preserveKnown)
 }

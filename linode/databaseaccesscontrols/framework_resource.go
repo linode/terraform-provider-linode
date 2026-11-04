@@ -3,13 +3,21 @@ package databaseaccesscontrols
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
+)
+
+const (
+	DefaultCreateTimeout = 20 * time.Minute
+	DefaultUpdateTimeout = 20 * time.Minute
+	DefaultDeleteTimeout = 20 * time.Minute
 )
 
 func NewResource() resource.Resource {
@@ -19,6 +27,11 @@ func NewResource() resource.Resource {
 				Name:   "linode_database_access_controls",
 				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
+				TimeoutOpts: &timeouts.Opts{
+					Create: true,
+					Update: true,
+					Delete: true,
+				},
 			},
 		),
 	}
@@ -42,6 +55,15 @@ func (r *Resource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	createTimeout, diags := plan.Timeouts.Create(ctx, DefaultCreateTimeout)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, createTimeout)
+	defer cancel()
 
 	dbID := helper.FrameworkSafeInt64ToInt(plan.DatabaseID.ValueInt64(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -158,6 +180,15 @@ func (r *Resource) Update(
 		return
 	}
 
+	updateTimeout, diags := plan.Timeouts.Update(ctx, DefaultUpdateTimeout)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
+	defer cancel()
+
 	dbID := helper.FrameworkSafeInt64ToInt(plan.DatabaseID.ValueInt64(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
@@ -208,6 +239,15 @@ func (r *Resource) Delete(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	deleteTimeout, diags := state.Timeouts.Delete(ctx, DefaultDeleteTimeout)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
+	defer cancel()
 
 	dbID, dbType, err := parseID(state.ID.ValueString())
 	if err != nil {
