@@ -21,12 +21,15 @@ type NodeBalancerModel struct {
 	ID                    types.String        `tfsdk:"id"`
 	Label                 types.String        `tfsdk:"label"`
 	Region                types.String        `tfsdk:"region"`
+	Type                  types.String        `tfsdk:"type"`
+	BackendConnectivity   types.String        `tfsdk:"backend_connectivity"`
 	ClientConnThrottle    types.Int64         `tfsdk:"client_conn_throttle"`
 	ClientUDPSessThrottle types.Int64         `tfsdk:"client_udp_sess_throttle"`
 	FirewallID            types.Int64         `tfsdk:"firewall_id"`
 	Hostname              types.String        `tfsdk:"hostname"`
 	IPv4                  iptypes.IPv4Address `tfsdk:"ipv4"`
 	IPv6                  types.String        `tfsdk:"ipv6"`
+	BackendIPv6Prefix     types.String        `tfsdk:"backend_ipv6_prefix"`
 	Created               timetypes.RFC3339   `tfsdk:"created"`
 	Updated               timetypes.RFC3339   `tfsdk:"updated"`
 	Transfer              types.List          `tfsdk:"transfer"`
@@ -34,6 +37,22 @@ type NodeBalancerModel struct {
 	Firewalls             types.List          `tfsdk:"firewalls"`
 	VPCs                  types.List          `tfsdk:"vpcs"`
 	LKECluster            types.List          `tfsdk:"lke_cluster"`
+}
+
+func (data *NodeBalancerModel) GetCreateOptions(clientConnThrottle, clientUDPSessThrottle int) linodego.NodeBalancerCreateOptions {
+	opts := linodego.NodeBalancerCreateOptions{
+		Region:                data.Region.ValueString(),
+		Label:                 data.Label.ValueStringPointer(),
+		ClientConnThrottle:    &clientConnThrottle,
+		ClientUDPSessThrottle: &clientUDPSessThrottle,
+	}
+	if !data.Type.IsNull() && !data.Type.IsUnknown() {
+		opts.Type = linodego.NodeBalancerPlanType(data.Type.ValueString())
+	}
+	if !data.BackendConnectivity.IsNull() && !data.BackendConnectivity.IsUnknown() {
+		opts.BackendConnectivity = new(linodego.NodeBalancerBackendConnectivity(data.BackendConnectivity.ValueString()))
+	}
+	return opts
 }
 
 // LKEClusterModel represents the lke_cluster nested object.
@@ -98,6 +117,10 @@ func (data *NodeBalancerModel) Flatten(
 	data.Tags = helper.KeepOrUpdateValue(data.Tags, tags, preserveKnown)
 
 	data.Region = helper.KeepOrUpdateString(data.Region, nodebalancer.Region, preserveKnown)
+	data.Type = helper.KeepOrUpdateString(data.Type, string(nodebalancer.Type), preserveKnown)
+	data.BackendConnectivity = helper.KeepOrUpdateStringPointer(
+		data.BackendConnectivity, helper.StringPtr(nodebalancer.BackendConnectivity), preserveKnown,
+	)
 	data.ClientConnThrottle = helper.KeepOrUpdateInt64(
 		data.ClientConnThrottle, int64(nodebalancer.ClientConnThrottle), preserveKnown,
 	)
@@ -107,6 +130,9 @@ func (data *NodeBalancerModel) Flatten(
 	data.Hostname = helper.KeepOrUpdateStringPointer(data.Hostname, nodebalancer.Hostname, preserveKnown)
 	data.IPv4 = helper.KeepOrUpdateValue(data.IPv4, iptypes.NewIPv4AddressPointerValue(nodebalancer.IPv4), preserveKnown)
 	data.IPv6 = helper.KeepOrUpdateStringPointer(data.IPv6, nodebalancer.IPv6, preserveKnown)
+	data.BackendIPv6Prefix = helper.KeepOrUpdateStringPointer(
+		data.BackendIPv6Prefix, nodebalancer.BackendIPv6Prefix, preserveKnown,
+	)
 	data.Created = helper.KeepOrUpdateValue(
 		data.Created, timetypes.NewRFC3339TimePointerValue(nodebalancer.Created), preserveKnown,
 	)
@@ -158,6 +184,10 @@ func (data *NodeBalancerModel) CopyFrom(other NodeBalancerModel, preserveKnown b
 	data.ID = helper.KeepOrUpdateValue(data.ID, other.ID, preserveKnown)
 	data.Label = helper.KeepOrUpdateValue(data.Label, other.Label, preserveKnown)
 	data.Region = helper.KeepOrUpdateValue(data.Region, other.Region, preserveKnown)
+	data.Type = helper.KeepOrUpdateValue(data.Type, other.Type, preserveKnown)
+	data.BackendConnectivity = helper.KeepOrUpdateValue(
+		data.BackendConnectivity, other.BackendConnectivity, preserveKnown,
+	)
 	data.ClientConnThrottle = helper.KeepOrUpdateValue(
 		data.ClientConnThrottle, other.ClientConnThrottle, preserveKnown,
 	)
@@ -168,6 +198,7 @@ func (data *NodeBalancerModel) CopyFrom(other NodeBalancerModel, preserveKnown b
 	data.Hostname = helper.KeepOrUpdateValue(data.Hostname, other.Hostname, preserveKnown)
 	data.IPv4 = helper.KeepOrUpdateValue(data.IPv4, other.IPv4, preserveKnown)
 	data.IPv6 = helper.KeepOrUpdateValue(data.IPv6, other.IPv6, preserveKnown)
+	data.BackendIPv6Prefix = helper.KeepOrUpdateValue(data.BackendIPv6Prefix, other.BackendIPv6Prefix, preserveKnown)
 	data.Created = helper.KeepOrUpdateValue(data.Created, other.Created, preserveKnown)
 	data.Updated = helper.KeepOrUpdateValue(data.Updated, other.Updated, preserveKnown)
 	data.Transfer = helper.KeepOrUpdateValue(data.Transfer, other.Transfer, preserveKnown)
@@ -268,11 +299,14 @@ type NodeBalancerDataSourceModel struct {
 	ID                    types.Int64       `tfsdk:"id"`
 	Label                 types.String      `tfsdk:"label"`
 	Region                types.String      `tfsdk:"region"`
+	Type                  types.String      `tfsdk:"type"`
+	BackendConnectivity   types.String      `tfsdk:"backend_connectivity"`
 	ClientConnThrottle    types.Int64       `tfsdk:"client_conn_throttle"`
 	ClientUDPSessThrottle types.Int64       `tfsdk:"client_udp_sess_throttle"`
 	Hostname              types.String      `tfsdk:"hostname"`
 	IPv4                  types.String      `tfsdk:"ipv4"`
 	IPv6                  types.String      `tfsdk:"ipv6"`
+	BackendIPv6Prefix     types.String      `tfsdk:"backend_ipv6_prefix"`
 	Created               timetypes.RFC3339 `tfsdk:"created"`
 	Updated               timetypes.RFC3339 `tfsdk:"updated"`
 	Transfer              types.List        `tfsdk:"transfer"`
@@ -304,11 +338,16 @@ func (data *NodeBalancerDataSourceModel) Flatten(
 	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Label = types.StringPointerValue(nodebalancer.Label)
 	data.Region = types.StringValue(nodebalancer.Region)
+	data.Type = types.StringValue(string(nodebalancer.Type))
+	data.BackendConnectivity = types.StringPointerValue(
+		helper.StringPtr(nodebalancer.BackendConnectivity),
+	)
 	data.ClientConnThrottle = types.Int64Value(int64(nodebalancer.ClientConnThrottle))
 	data.ClientUDPSessThrottle = types.Int64Value(int64(nodebalancer.ClientUDPSessThrottle))
 	data.Hostname = types.StringPointerValue(nodebalancer.Hostname)
 	data.IPv4 = types.StringPointerValue(nodebalancer.IPv4)
 	data.IPv6 = types.StringPointerValue(nodebalancer.IPv6)
+	data.BackendIPv6Prefix = types.StringPointerValue(nodebalancer.BackendIPv6Prefix)
 	data.Created = timetypes.NewRFC3339TimePointerValue(nodebalancer.Created)
 	data.Updated = timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated)
 

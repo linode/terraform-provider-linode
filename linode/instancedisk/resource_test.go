@@ -12,7 +12,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
@@ -338,6 +341,69 @@ func TestAccResourceInstanceDisk_imageNoAuth(t *testing.T) {
 			{
 				Config:      tmpl.ImageNoAuth(t, label, testRegion, 2048),
 				ExpectError: regexp.MustCompile("Insufficient Authentication"),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstanceDisk_swapNoImage(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance_disk.swap"
+	label := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(64)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Swap(t, label, testRegion, 512, rootPass),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(label+"-swap"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("size"),
+						knownvalue.Int64Exact(512),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("filesystem"),
+						knownvalue.StringExact("swap"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("status"),
+						knownvalue.StringExact("ready"),
+					),
+					// Most importantly: image should be null for swap disks
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("image"),
+						knownvalue.Null(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("linode_id"),
+						knownvalue.NotNull(),
+					),
+				},
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+				// Swap disks don't have image/root_pass attributes
+				ImportStateVerifyIgnore: []string{"image", "root_pass"},
 			},
 		},
 	})

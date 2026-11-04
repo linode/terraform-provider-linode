@@ -11,6 +11,13 @@ import (
 	"github.com/linode/linodego/v2"
 )
 
+func StringPtr[T ~string](value *T) *string {
+	if value == nil {
+		return nil
+	}
+	return new(string(*value))
+}
+
 func TypedSliceToAny[T any](obj []T) []any {
 	return MapSlice(obj, func(v T) any {
 		return v

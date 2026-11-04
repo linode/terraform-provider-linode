@@ -326,7 +326,7 @@ func TestAccResourceVPC_create_InvalidLabel(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.Basic(t, vpcLabel, testRegion),
-				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and underscores"),
+				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, underscores, dashes and\\s+periods"),
 			},
 		},
 	})
@@ -355,7 +355,7 @@ func TestAccResourceVPC_update_InvalidLabel(t *testing.T) {
 			},
 			{
 				Config:      tmpl.Updates(t, invalidLabel, testRegion),
-				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, and underscores"),
+				ExpectError: regexp.MustCompile("Must only use ASCII letters, numbers, underscores, dashes and\\s+periods"),
 			},
 			{
 				ResourceName:      resName,

@@ -55,6 +55,26 @@ In addition to all arguments above, the following attributes are exported:
 
 * `stack_type` - The networking stack type of the Kubernetes cluster.
 
+* `networking` - (Nested Attribute List) The pod network routing mode and network configuration of an LKE Enterprise cluster. **NOTE: This field may not be available to all users and is only populated when api_version is set to `v4beta`.**
+
+  * `routing_mode` - The pod network routing mode. (`native`, `vxlan`)
+
+  * `cluster_cidr_ipv4` - The IPv4 pod network CIDR.
+
+  * `node_cidr_mask_size_ipv4` - The IPv4 pod CIDR prefix length assigned to each node.
+
+  * `service_cluster_ip_range_ipv4` - The IPv4 service CIDR.
+
+  * `max_pods` - The maximum number of pods per node.
+
+  * `nodebalancer_backend_prefix_length` - The prefix length reserved from the highest portion of the VPC subnet for NodeBalancer backends.
+
+  * `cluster_cidr_ipv6` - The system-assigned IPv6 pod network CIDR. This is null for IPv4-only clusters.
+
+  * `node_cidr_mask_size_ipv6` - The IPv6 pod CIDR prefix length assigned to each node. This is null for IPv4-only clusters.
+
+  * `service_cluster_ip_range_ipv6` - The system-assigned IPv6 service CIDR. This is null for IPv4-only clusters.
+
 * `pools` - (Nested Attribute List) Node pools associated with this cluster.
 
   * `id` - The ID of the Node Pool.

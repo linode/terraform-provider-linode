@@ -79,8 +79,14 @@ func (data *ResourceModel) PopulateImageFromParentInstance(
 	ctx context.Context,
 	client *linodego.Client,
 	linodeID int,
+	filesystem linodego.DiskFilesystem,
 ) {
 	if !data.Image.IsNull() {
+		return
+	}
+
+	// Only ext3/ext4 disks can be deployed from an image; skip the backfill for all other filesystems.
+	if filesystem != linodego.FilesystemExt3 && filesystem != linodego.FilesystemExt4 {
 		return
 	}
 

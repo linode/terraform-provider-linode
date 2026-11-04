@@ -45,6 +45,91 @@ resource "linode_lke_cluster" "test" {
 }
 ```
 
+Creating an enterprise LKE cluster with VXLAN overlay networking in a bring-your-own VPC subnet:
+
+```terraform
+resource "linode_vpc" "my-vpc" {
+    label  = "lke-e-vpc"
+    region = "us-lax"
+
+    ipv6 = [
+      {
+        range = "/52"
+      }
+    ]
+}
+
+resource "linode_vpc_subnet" "my-subnet" {
+    vpc_id = linode_vpc.my-vpc.id
+    label  = "lke-e-subnet"
+    ipv4   = "10.0.0.0/20"
+
+    ipv6 = [
+      {
+        range = "/52"
+      }
+    ]
+}
+
+resource "linode_lke_cluster" "my-cluster" {
+    label       = "lke-e-vxlan-cluster"
+    region      = "us-lax"
+    k8s_version = "v1.32.9+lke4"
+    tier        = "enterprise"
+    vpc_id      = linode_vpc.my-vpc.id
+    subnet_id   = linode_vpc_subnet.my-subnet.id
+
+    networking {
+        routing_mode                       = "vxlan"
+        cluster_cidr_ipv4                  = "100.64.0.0/12"
+        node_cidr_mask_size_ipv4           = 25
+        service_cluster_ip_range_ipv4      = "100.96.0.0/22"
+        max_pods                           = 64
+        nodebalancer_backend_prefix_length = 22
+    }
+
+    pool {
+        type  = "g7-premium-2"
+        count = 3
+    }
+}
+```
+
+Creating an enterprise LKE cluster in an existing VPC without specifying a subnet:
+
+```terraform
+# NOTE: When subnet_id is omitted, the VPC's IPv4 ranges must include 10.0.0.0/8.
+resource "linode_vpc" "my-vpc" {
+    label  = "lke-e-vpc"
+    region = "us-lax"
+
+    ipv4 = [
+      {
+        range = "10.0.0.0/8"
+      }
+    ]
+
+    ipv6 = [
+      {
+        range = "/52"
+      }
+    ]
+}
+
+resource "linode_lke_cluster" "my-cluster" {
+    label       = "lke-e-vpc-cluster"
+    region      = "us-lax"
+    k8s_version = "v1.32.9+lke4"
+    tier        = "enterprise"
+    vpc_id      = linode_vpc.my-vpc.id
+
+    pool {
+        type  = "g7-premium-2"
+        count = 3
+    }
+}
+```
+
 Creating an LKE cluster with autoscaler:
 
 ```terraform
@@ -212,9 +297,11 @@ The following arguments are supported:
 
 * `subnet_id` - (Optional) The ID of the VPC subnet to use for the Kubernetes cluster. This subnet must be dual stack (IPv4 and IPv6 should both be enabled). **NOTE: This field may not be available for all users and is only accepted and populated when api_version is set to `v4beta`.**
 
-* `vpc_id` - (Optional) The ID of the VPC to use for the Kubernetes cluster.
+* `vpc_id` - (Optional) The ID of the VPC to use for the Kubernetes cluster. If `vpc_id` is set without `subnet_id`, the API allocates a workload subnet for the cluster from the `10.0.0.0/8` range of the VPC: a `/13` for the default `native` routing mode, or a `/19` when `networking.0.routing_mode` is `vxlan`. In this case the VPC's IPv4 ranges must include `10.0.0.0/8`, otherwise the cluster creation is rejected. A VPC created without custom [`ipv4`](vpc.md#ipv4) ranges already includes `10.0.0.0/8`. This requirement does not apply when `subnet_id` is set.
 
 * `stack_type` - (Optional) The networking stack type of the Kubernetes cluster.
+
+* [`networking`](#networking) - (Optional, Block) The pod network routing mode and network configuration of an LKE Enterprise cluster. Changing any of these values will cause the cluster to be replaced. Referenced with an index (e.g. `networking.0.routing_mode`). **NOTE: This field may not be available to all users and is only accepted and populated when api_version is set to `v4beta`.**
 
 ### pool
 
@@ -251,6 +338,24 @@ The following arguments are supported in the `pool` specification block:
 * `k8s_version` - (Optional) The k8s version of the nodes in this Node Pool. For LKE enterprise only and may not currently available to all users even under v4beta.
 
 * `update_strategy` - (Optional) The strategy for updating the Node Pool k8s version. For LKE enterprise only and may not currently available to all users even under v4beta.
+
+### networking
+
+The following arguments are supported in the `networking` specification block. The `networking` block can only be configured when `tier` is `enterprise`. Any value not configured is set by the API.
+
+* `routing_mode` - (Optional) The pod network routing mode. Must be `native` or `vxlan`. Defaults to `native`.
+
+* `cluster_cidr_ipv4` - (Optional) The IPv4 pod network CIDR. The prefix length must be between `/11` and `/22`. Only configurable when `routing_mode` is `vxlan`.
+
+* `node_cidr_mask_size_ipv4` - (Optional) The IPv4 pod CIDR prefix length assigned to each node. Must be between `24` and `28`. Only configurable when `routing_mode` is `vxlan`.
+
+* `service_cluster_ip_range_ipv4` - (Optional) The IPv4 service CIDR. The prefix length must be between `/20` and `/24`. Only configurable when `routing_mode` is `vxlan`.
+
+* `max_pods` - (Optional) The maximum number of pods per node. Must be between `16` and `110`, and must fit within `node_cidr_mask_size_ipv4`. Only configurable when `routing_mode` is `vxlan`.
+
+* `nodebalancer_backend_prefix_length` - (Optional) The prefix length reserved from the highest portion of the VPC subnet for NodeBalancer backends. The valid range depends on the size of the VPC subnet used by the cluster. Only configurable when `routing_mode` is `vxlan`.
+
+The pod and service CIDRs must be RFC1918 or CGNAT ranges, and must not overlap each other or the VPC subnet used by the cluster.
 
 ### autoscaler
 
@@ -299,6 +404,14 @@ In addition to all arguments above, the following attributes are exported:
 * `kubeconfig` - The base64 encoded kubeconfig for the Kubernetes cluster.
 
 * `apl_enabled` - Enables the App Platform Layer
+
+* `networking` - (Block) Additional nested attributes:
+
+  * `cluster_cidr_ipv6` - The system-assigned IPv6 pod network CIDR. This is empty for IPv4-only clusters.
+
+  * `node_cidr_mask_size_ipv6` - The IPv6 pod CIDR prefix length assigned to each node. This is `0` for IPv4-only clusters.
+
+  * `service_cluster_ip_range_ipv6` - The system-assigned IPv6 service CIDR. This is empty for IPv4-only clusters.
 
 * `pool` - (Block List) Additional nested attributes:
 

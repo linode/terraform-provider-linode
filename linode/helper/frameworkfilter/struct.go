@@ -13,8 +13,7 @@ import (
 func resolveStructFieldByJSON(val any, field string) (reflect.StructField, diag.Diagnostic) {
 	rType := reflect.TypeOf(val)
 
-	for i := 0; i < rType.NumField(); i++ {
-		currentField := rType.Field(i)
+	for currentField := range rType.Fields() {
 		if tag, ok := currentField.Tag.Lookup("json"); ok && tag == field {
 			return currentField, nil
 		}

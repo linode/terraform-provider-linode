@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	linodesetplanmodifier "github.com/linode/terraform-provider-linode/v4/linode/helper/setplanmodifiers"
@@ -113,6 +114,42 @@ var frameworkResourceSchema = schema.Schema{
 			},
 			Default: stringdefault.StaticString("us-east"),
 		},
+		"type": schema.StringAttribute{
+			Description: "The NodeBalancer plan type. Valid values are `common`, `premium`, and `enterprise`. " +
+				"If omitted, the API selects the default plan. Changing this value replaces the NodeBalancer.",
+			Optional: true,
+			Computed: true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(linodego.NBTypeCommon),
+					string(linodego.NBTypePremium),
+					string(linodego.NBTypeEnterprise),
+				),
+			},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"backend_connectivity": schema.StringAttribute{
+			Description: "How this NodeBalancer communicates with backends. Valid values are `legacy`, `ipv6`, " +
+				"and `vpc`. This setting may not be available to all users and requires API version `v4beta`. " +
+				"Changing this value replaces the NodeBalancer. The API may return `undefined` when no " +
+				"connectivity mode was specified; `undefined` cannot be configured.",
+			Optional: true,
+			Computed: true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(linodego.NBBackendConnectivityLegacy),
+					string(linodego.NBBackendConnectivityIPv6),
+					string(linodego.NBBackendConnectivityVPC),
+				),
+			},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
 		"client_conn_throttle": schema.Int64Attribute{
 			Description: "Throttle connections per second (0-20). Set to 0 (zero) to disable throttling.",
 			Validators: []validator.Int64{
@@ -164,6 +201,11 @@ var frameworkResourceSchema = schema.Schema{
 			Description:   "The Public IPv6 Address of this NodeBalancer",
 			Computed:      true,
 			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+		},
+		"backend_ipv6_prefix": schema.StringAttribute{
+			Description: "The /96 IPv6 source range used when this NodeBalancer connects to backends. " +
+				"Null if no backend IPv6 prefix is assigned.",
+			Computed: true,
 		},
 		"created": schema.StringAttribute{
 			Description:   "When this NodeBalancer was created.",

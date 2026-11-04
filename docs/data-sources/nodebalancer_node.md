@@ -36,7 +36,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `label` - The label of the Linode NodeBalancer Node. This is for display purposes only.
 
-* `address` - The private IP Address where this backend can be reached.
+* `address` - The backend IP address and port (`IPv4:PORT` or `[IPv6]:PORT`).
 
 * `mode` - The mode this NodeBalancer should use when sending traffic to this backend. If set to `accept` this backend is accepting traffic. If set to `reject` this backend will not receive traffic. If set to `drain` this backend will not receive new traffic, but connections already pinned to it will continue to be routed to it. (`accept`, `reject`, `drain`, `backup`)
 

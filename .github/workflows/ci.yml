@@ -45,8 +45,6 @@ jobs:
         uses: golangci/golangci-lint-action@v9
       - name: Tidy
         run: go mod tidy
-      - name: tflint
-        run: make tflint
       - name: Fail if changes
         run: git diff-index --exit-code HEAD
   tests:

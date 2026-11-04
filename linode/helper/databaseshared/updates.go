@@ -45,7 +45,7 @@ var ResourceAttributeUpdates = resourceSchema.SingleNestedAttribute{
 			},
 		},
 		"duration": resourceSchema.Int64Attribute{
-			Description: "The maximum maintenance window time in hours.",
+			Description: "The maximum maintenance window time in hours. Currently can only be 4.",
 			Optional:    true,
 			Computed:    true,
 		},
@@ -78,7 +78,7 @@ var DataSourceAttributeUpdates = dataSourceSchema.SingleNestedAttribute{
 			Computed: true,
 		},
 		"duration": dataSourceSchema.Int64Attribute{
-			Description: "The maximum maintenance window time in hours.",
+			Description: "The maximum maintenance window time in hours. Currently can only be 4.",
 			Computed:    true,
 		},
 		"frequency": dataSourceSchema.StringAttribute{

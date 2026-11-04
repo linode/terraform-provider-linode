@@ -1,0 +1,32 @@
+{{ define "nodebalancer_connectivity" }}
+provider "linode" {
+    api_version = "v4beta"
+}
+
+resource "linode_nodebalancer" "test" {
+    label                = "{{ .Label }}"
+    region               = "{{ .Region }}"
+    type                 = "common"
+    backend_connectivity = "ipv6"
+}
+
+data "linode_nodebalancer" "test" {
+    id = linode_nodebalancer.test.id
+}
+
+data "linode_nodebalancers" "test" {
+    filter {
+        name   = "label"
+        values = ["{{ .Label }}"]
+    }
+    filter {
+        name   = "type"
+        values = ["common"]
+    }
+    filter {
+        name   = "backend_connectivity"
+        values = ["ipv6"]
+    }
+    depends_on = [linode_nodebalancer.test]
+}
+{{ end }}

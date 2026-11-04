@@ -721,6 +721,61 @@ func expandACLAddressOptions(addressOptions map[string]any) *linodego.LKECluster
 	return &result
 }
 
+// vxlanNetworkingFields are the networking fields that can only be
+// configured when routing_mode is "vxlan".
+var vxlanNetworkingFields = []string{
+	"cluster_cidr_ipv4",
+	"node_cidr_mask_size_ipv4",
+	"service_cluster_ip_range_ipv4",
+	"max_pods",
+	"nodebalancer_backend_prefix_length",
+}
+
+func flattenLKEClusterNetworking(networking *linodego.LKEClusterNetworking) []map[string]any {
+	if networking == nil {
+		return []map[string]any{}
+	}
+
+	flattened := map[string]any{
+		"routing_mode":                       string(networking.RoutingMode),
+		"cluster_cidr_ipv4":                  networking.ClusterCIDRIPv4,
+		"node_cidr_mask_size_ipv4":           networking.NodeCIDRMaskSizeIPv4,
+		"service_cluster_ip_range_ipv4":      networking.ServiceClusterIPRangeIPv4,
+		"max_pods":                           networking.MaxPods,
+		"nodebalancer_backend_prefix_length": networking.NodeBalancerBackendPrefixLength,
+	}
+
+	if networking.ClusterCIDRIPv6 != nil {
+		flattened["cluster_cidr_ipv6"] = *networking.ClusterCIDRIPv6
+	}
+
+	if networking.NodeCIDRMaskSizeIPv6 != nil {
+		flattened["node_cidr_mask_size_ipv6"] = *networking.NodeCIDRMaskSizeIPv6
+	}
+
+	if networking.ServiceClusterIPRangeIPv6 != nil {
+		flattened["service_cluster_ip_range_ipv6"] = *networking.ServiceClusterIPRangeIPv6
+	}
+
+	return []map[string]any{flattened}
+}
+
+func expandLKEClusterNetworkingCreateOptions(ctx context.Context, d *schema.ResourceData) *linodego.LKEClusterNetworkingCreateOptions {
+	result := linodego.LKEClusterNetworkingCreateOptions{
+		ClusterCIDRIPv4:                 helper.SDKv2UnwrapOptionalConfigAttr[string](ctx, d, "networking.0.cluster_cidr_ipv4"),
+		NodeCIDRMaskSizeIPv4:            helper.SDKv2UnwrapOptionalConfigAttr[int](ctx, d, "networking.0.node_cidr_mask_size_ipv4"),
+		ServiceClusterIPRangeIPv4:       helper.SDKv2UnwrapOptionalConfigAttr[string](ctx, d, "networking.0.service_cluster_ip_range_ipv4"),
+		MaxPods:                         helper.SDKv2UnwrapOptionalConfigAttr[int](ctx, d, "networking.0.max_pods"),
+		NodeBalancerBackendPrefixLength: helper.SDKv2UnwrapOptionalConfigAttr[int](ctx, d, "networking.0.nodebalancer_backend_prefix_length"),
+	}
+
+	if value := helper.SDKv2UnwrapOptionalConfigAttr[string](ctx, d, "networking.0.routing_mode"); value != nil {
+		result.RoutingMode = linodego.Pointer(linodego.LKEClusterRoutingMode(*value))
+	}
+
+	return &result
+}
+
 func filterExternalPools(ctx context.Context, externalPoolTags []string, pools []linodego.LKENodePool) []linodego.LKENodePool {
 	var filteredPools []linodego.LKENodePool
 	if len(externalPoolTags) == 0 {
