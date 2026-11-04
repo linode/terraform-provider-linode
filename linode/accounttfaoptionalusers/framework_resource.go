@@ -37,7 +37,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	r.write(ctx, plan, &resp.State, &resp.Diagnostics)
+	r.updateMFAOptionalUsers(ctx, plan, &resp.State, &resp.Diagnostics)
 }
 
 func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -75,10 +75,10 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		return
 	}
 
-	r.write(ctx, plan, &resp.State, &resp.Diagnostics)
+	r.updateMFAOptionalUsers(ctx, plan, &resp.State, &resp.Diagnostics)
 }
 
-func (r *Resource) write(ctx context.Context, plan ResourceModel, state *tfsdk.State, diags *diag.Diagnostics) {
+func (r *Resource) updateMFAOptionalUsers(ctx context.Context, plan ResourceModel, state *tfsdk.State, diags *diag.Diagnostics) {
 	usernames := make([]string, 0, len(plan.Usernames.Elements()))
 	diags.Append(plan.Usernames.ElementsAs(ctx, &usernames, false)...)
 	if diags.HasError() {
