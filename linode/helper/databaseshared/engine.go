@@ -55,6 +55,13 @@ func CreateDatabaseEngineSlug(engine, version string) string {
 
 		return fmt.Sprintf("%s/%s", engine, version)
 
+	case "valkey":
+		if len(parts) >= 2 && parts[1] != "0" {
+			return fmt.Sprintf("%s/%s.%s", engine, parts[0], parts[1])
+		}
+
+		return fmt.Sprintf("%s/%s", engine, parts[0])
+
 	default:
 		if len(parts) >= 1 {
 			return fmt.Sprintf("%s/%s", engine, parts[0])

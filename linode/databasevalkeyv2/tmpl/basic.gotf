@@ -1,0 +1,8 @@
+{{ define "database_valkey_v2_basic" }}
+resource "linode_database_valkey_v2" "foobar" {
+  label    = "{{ .Label }}"
+  region   = "{{ .Region }}"
+  type     = "{{ .Type }}"
+  engine_id = "{{ .EngineID }}"
+}
+{{ end }}

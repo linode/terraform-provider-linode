@@ -1,0 +1,26 @@
+{{ define "database_valkey_v2_data_listing" }}
+{{ template "database_valkey_v2_basic" . }}
+
+data "linode_databases" "foobar" {
+  filter {
+    name = "engine"
+    values = ["valkey"]
+  }
+  filter {
+    name = "label"
+    values = [linode_database_valkey_v2.foobar.label]
+  }
+  depends_on = [linode_database_valkey_v2.foobar]
+}
+
+data "linode_database_engines" "foobar" {
+  filter {
+    name = "engine"
+    values = ["valkey"]
+  }
+  filter {
+    name = "id"
+    values = ["{{ .EngineID }}"]
+  }
+}
+{{ end }}

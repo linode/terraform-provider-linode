@@ -21,25 +21,26 @@ type ModelPrivateNetwork struct {
 
 // DatabaseModel represents a single Database object.
 type DatabaseModel struct {
-	ID                types.Int64       `tfsdk:"id"`
-	AllowList         []types.String    `tfsdk:"allow_list"`
-	ClusterSize       types.Int64       `tfsdk:"cluster_size"`
-	Created           types.String      `tfsdk:"created"`
-	Encrypted         types.Bool        `tfsdk:"encrypted"`
-	Engine            types.String      `tfsdk:"engine"`
-	HostPrimary       types.String      `tfsdk:"host_primary"`
-	HostSecondary     types.String      `tfsdk:"host_secondary"`
-	HostStandby       types.String      `tfsdk:"host_standby"`
-	InstanceURI       types.String      `tfsdk:"instance_uri"`
-	Label             types.String      `tfsdk:"label"`
-	Platform          types.String      `tfsdk:"platform"`
-	PrivateNetwork    types.Object      `tfsdk:"private_network"`
-	Region            types.String      `tfsdk:"region"`
-	Status            types.String      `tfsdk:"status"`
-	Type              types.String      `tfsdk:"type"`
-	Updated           types.String      `tfsdk:"updated"`
-	Version           types.String      `tfsdk:"version"`
-	OldestRestoreTime timetypes.RFC3339 `tfsdk:"oldest_restore_time"`
+	ID                    types.Int64       `tfsdk:"id"`
+	AllowList             []types.String    `tfsdk:"allow_list"`
+	ClusterSize           types.Int64       `tfsdk:"cluster_size"`
+	Created               types.String      `tfsdk:"created"`
+	Encrypted             types.Bool        `tfsdk:"encrypted"`
+	Engine                types.String      `tfsdk:"engine"`
+	HostPrimary           types.String      `tfsdk:"host_primary"`
+	HostSecondary         types.String      `tfsdk:"host_secondary"`
+	HostStandby           types.String      `tfsdk:"host_standby"`
+	InstanceURI           types.String      `tfsdk:"instance_uri"`
+	Label                 types.String      `tfsdk:"label"`
+	Platform              types.String      `tfsdk:"platform"`
+	PrivateNetwork        types.Object      `tfsdk:"private_network"`
+	Region                types.String      `tfsdk:"region"`
+	Status                types.String      `tfsdk:"status"`
+	Type                  types.String      `tfsdk:"type"`
+	Updated               types.String      `tfsdk:"updated"`
+	Version               types.String      `tfsdk:"version"`
+	OldestRestoreTime     timetypes.RFC3339 `tfsdk:"oldest_restore_time"`
+	AvailableRestoreTimes []types.String    `tfsdk:"available_restore_times"`
 
 	// Fork-specific fields
 	ForkSource      types.Int64       `tfsdk:"fork_source"`
@@ -91,6 +92,13 @@ func (model *DatabaseFilterModel) parseDatabases(
 			m.OldestRestoreTime = timetypes.NewRFC3339TimePointerValue(db.OldestRestoreTime)
 		} else {
 			m.OldestRestoreTime = timetypes.NewRFC3339Null()
+		}
+
+		if db.AvailableRestoreTimes != nil {
+			m.AvailableRestoreTimes = make([]types.String, len(db.AvailableRestoreTimes))
+			for i, restoreTime := range db.AvailableRestoreTimes {
+				m.AvailableRestoreTimes[i] = types.StringValue(restoreTime.Format(time.RFC3339))
+			}
 		}
 
 		if db.Created != nil {

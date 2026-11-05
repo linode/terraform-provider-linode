@@ -102,6 +102,10 @@ Each engine will be stored in the `databases` attribute and will export the foll
 
 * `oldest_restore_time` - The oldest time to which a database can be restored.
 
+* `available_restore_times` - The discrete restore snapshot times supported by
+  engines such as Valkey. This list is not a continuous point-in-time recovery
+  range; use one of the returned timestamps when forking a Valkey database.
+
 ## private_network
 
 The following arguments are exposed by the `private_network` attribute:
