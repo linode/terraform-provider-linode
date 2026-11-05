@@ -64,7 +64,7 @@ func (r *Resource) Create(
 
 	ctx = tflog.SetField(ctx, "id", natGateway.ID)
 
-	resp.Diagnostics.Append(data.ParseNATGateway(natGateway)...)
+	resp.Diagnostics.Append(data.FlattenNATGateway(natGateway, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -121,7 +121,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.ParseNATGateway(natGateway)...)
+	resp.Diagnostics.Append(data.FlattenNATGateway(natGateway, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -186,7 +186,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	resp.Diagnostics.Append(plan.ParseNATGateway(natGateway)...)
+	resp.Diagnostics.Append(plan.FlattenNATGateway(natGateway, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

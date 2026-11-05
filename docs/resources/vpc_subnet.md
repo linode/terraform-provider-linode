@@ -94,7 +94,6 @@ The following arguments can be configured for each entry under the `ipv6` field:
 
 * `allocated_range` - (Read-Only) The value of range computed by the API. This is necessary when needing to access the range for an implicit allocation.
 
-
 ## Attributes Reference
 
 In addition to all the arguments above, the following attributes are exported.

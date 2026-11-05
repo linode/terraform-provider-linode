@@ -9,12 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 )
 
 var (
 	natGatewayAddressAttrTypes = map[string]attr.Type{
 		"address": types.StringType,
 	}
+	natGatewayAddressObjectType  = types.ObjectType{AttrTypes: natGatewayAddressAttrTypes}
 	natGatewayVPCSubnetAttrTypes = map[string]attr.Type{
 		"id":        types.StringType,
 		"type":      types.StringType,
@@ -40,33 +42,23 @@ type NATGatewayModel struct {
 	Addresses                types.Set         `tfsdk:"addresses"`
 }
 
-func (m *NATGatewayModel) ParseNATGateway(gw *linodego.NATGateway) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	m.ID = types.Int64Value(int64(gw.ID))
-	m.Region = types.StringValue(gw.Region)
-	m.Label = types.StringValue(gw.Label)
-	m.DefaultPortsPerInterface = types.Int64Value(int64(gw.DefaultPortsPerInterface))
-	m.AddressAutoscaleMax = types.Int64Value(int64(gw.AddressAutoscaleMax))
-	m.PortsetAssignments = types.Int64Value(int64(gw.PortsetAssignments))
-	m.PortsetCapacity = types.Int64Value(int64(gw.PortsetCapacity))
-	m.Created = timetypes.NewRFC3339TimePointerValue(gw.Created)
-	m.Updated = timetypes.NewRFC3339TimePointerValue(gw.Updated)
-
+func natGatewayVPCSubnetObject(gw *linodego.NATGateway) (types.Object, diag.Diagnostics) {
 	if gw.VPCSubnet.ID == 0 {
-		m.VPCSubnet = types.ObjectNull(natGatewayVPCSubnetAttrTypes)
-	} else {
-		subnet, d := types.ObjectValue(natGatewayVPCSubnetAttrTypes, map[string]attr.Value{
-			"id":        types.StringValue(strconv.Itoa(gw.VPCSubnet.ID)),
-			"type":      types.StringValue(gw.VPCSubnet.Type),
-			"url":       types.StringValue(gw.VPCSubnet.URL),
-			"label":     types.StringValue(gw.VPCSubnet.Label),
-			"vpc_id":    types.StringValue(strconv.Itoa(gw.VPCSubnet.VPCID)),
-			"vpc_label": types.StringValue(gw.VPCSubnet.VPCLabel),
-		})
-		diags.Append(d...)
-		m.VPCSubnet = subnet
+		return types.ObjectNull(natGatewayVPCSubnetAttrTypes), nil
 	}
+
+	return types.ObjectValue(natGatewayVPCSubnetAttrTypes, map[string]attr.Value{
+		"id":        types.StringValue(strconv.Itoa(gw.VPCSubnet.ID)),
+		"type":      types.StringValue(gw.VPCSubnet.Type),
+		"url":       types.StringValue(gw.VPCSubnet.URL),
+		"label":     types.StringValue(gw.VPCSubnet.Label),
+		"vpc_id":    types.StringValue(strconv.Itoa(gw.VPCSubnet.VPCID)),
+		"vpc_label": types.StringValue(gw.VPCSubnet.VPCLabel),
+	})
+}
+
+func natGatewayAddressesSet(gw *linodego.NATGateway) (types.Set, diag.Diagnostics) {
+	var diags diag.Diagnostics
 
 	addresses := make([]attr.Value, 0, len(gw.Addresses))
 	for _, a := range gw.Addresses {
@@ -76,23 +68,43 @@ func (m *NATGatewayModel) ParseNATGateway(gw *linodego.NATGateway) diag.Diagnost
 		diags.Append(d...)
 		addresses = append(addresses, obj)
 	}
-	addressSet, d := types.SetValue(types.ObjectType{AttrTypes: natGatewayAddressAttrTypes}, addresses)
+
+	set, d := types.SetValue(natGatewayAddressObjectType, addresses)
 	diags.Append(d...)
-	m.Addresses = addressSet
+
+	return set, diags
+}
+
+func (m *NATGatewayModel) FlattenNATGateway(gw *linodego.NATGateway, preserveKnown bool) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	m.ID = helper.KeepOrUpdateInt64(m.ID, int64(gw.ID), preserveKnown)
+	m.Region = helper.KeepOrUpdateString(m.Region, gw.Region, preserveKnown)
+	m.Label = helper.KeepOrUpdateString(m.Label, gw.Label, preserveKnown)
+	m.DefaultPortsPerInterface = helper.KeepOrUpdateInt64(
+		m.DefaultPortsPerInterface, int64(gw.DefaultPortsPerInterface), preserveKnown,
+	)
+	m.AddressAutoscaleMax = helper.KeepOrUpdateInt64(m.AddressAutoscaleMax, int64(gw.AddressAutoscaleMax), preserveKnown)
+	m.PortsetAssignments = helper.KeepOrUpdateInt64(m.PortsetAssignments, int64(gw.PortsetAssignments), preserveKnown)
+	m.PortsetCapacity = helper.KeepOrUpdateInt64(m.PortsetCapacity, int64(gw.PortsetCapacity), preserveKnown)
+	m.Created = helper.KeepOrUpdateValue(m.Created, timetypes.NewRFC3339TimePointerValue(gw.Created), preserveKnown)
+	m.Updated = helper.KeepOrUpdateValue(m.Updated, timetypes.NewRFC3339TimePointerValue(gw.Updated), preserveKnown)
+
+	vpcSubnet, d := natGatewayVPCSubnetObject(gw)
+	diags.Append(d...)
+	m.VPCSubnet = helper.KeepOrUpdateValue(m.VPCSubnet, vpcSubnet, preserveKnown)
+
+	addresses, d := natGatewayAddressesSet(gw)
+	diags.Append(d...)
+	m.Addresses = helper.KeepOrUpdateValue(m.Addresses, addresses, preserveKnown)
 
 	return diags
 }
 
-// natGatewayAddressModel is the Terraform representation of a single entry
-// in the addresses set.
 type natGatewayAddressModel struct {
 	Address types.String `tfsdk:"address"`
 }
 
-// ExpandCreateOptions builds the NAT Gateway create request from the model.
-// Optional fields are only sent when they are known and not null, so the API
-// applies its own defaults otherwise. addresses is always sent (as [] when
-// empty), since the API requires it to be empty when use_autoscaling is true.
 func (m *NATGatewayModel) ExpandCreateOptions(ctx context.Context) (linodego.NATGatewayCreateOptions, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -125,9 +137,6 @@ func (m *NATGatewayModel) ExpandCreateOptions(ctx context.Context) (linodego.NAT
 	return opts, diags
 }
 
-// NATGatewayDataSourceModel is the state model for the linode_natgateway data source.
-// It omits the create-only field (use_autoscaling), which the data
-// source schema does not define.
 type NATGatewayDataSourceModel struct {
 	ID                       types.Int64       `tfsdk:"id"`
 	Region                   types.String      `tfsdk:"region"`
@@ -142,23 +151,26 @@ type NATGatewayDataSourceModel struct {
 	Addresses                types.Set         `tfsdk:"addresses"`
 }
 
-// ParseNATGateway maps the API response to the data source model by reusing the
-// resource parse and copying the shared fields.
 func (m *NATGatewayDataSourceModel) ParseNATGateway(gw *linodego.NATGateway) diag.Diagnostics {
-	var full NATGatewayModel
-	diags := full.ParseNATGateway(gw)
+	var diags diag.Diagnostics
 
-	m.ID = full.ID
-	m.Region = full.Region
-	m.Label = full.Label
-	m.DefaultPortsPerInterface = full.DefaultPortsPerInterface
-	m.AddressAutoscaleMax = full.AddressAutoscaleMax
-	m.PortsetAssignments = full.PortsetAssignments
-	m.PortsetCapacity = full.PortsetCapacity
-	m.VPCSubnet = full.VPCSubnet
-	m.Created = full.Created
-	m.Updated = full.Updated
-	m.Addresses = full.Addresses
+	m.ID = types.Int64Value(int64(gw.ID))
+	m.Region = types.StringValue(gw.Region)
+	m.Label = types.StringValue(gw.Label)
+	m.DefaultPortsPerInterface = types.Int64Value(int64(gw.DefaultPortsPerInterface))
+	m.AddressAutoscaleMax = types.Int64Value(int64(gw.AddressAutoscaleMax))
+	m.PortsetAssignments = types.Int64Value(int64(gw.PortsetAssignments))
+	m.PortsetCapacity = types.Int64Value(int64(gw.PortsetCapacity))
+	m.Created = timetypes.NewRFC3339TimePointerValue(gw.Created)
+	m.Updated = timetypes.NewRFC3339TimePointerValue(gw.Updated)
+
+	vpcSubnet, d := natGatewayVPCSubnetObject(gw)
+	diags.Append(d...)
+	m.VPCSubnet = vpcSubnet
+
+	addresses, d := natGatewayAddressesSet(gw)
+	diags.Append(d...)
+	m.Addresses = addresses
 
 	return diags
 }
