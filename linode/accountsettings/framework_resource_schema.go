@@ -34,6 +34,12 @@ var frameworkResourceSchema = schema.Schema{
 				boolplanmodifier.UseStateForUnknown(),
 			},
 		},
+		"tfa_enforced": schema.BoolAttribute{
+			Description: "Whether two-factor authentication is required by default for account users. " +
+				"Exemptions are managed with linode_account_tfa_optional_users.",
+			Optional: true,
+			Computed: true,
+		},
 		"longview_subscription": schema.StringAttribute{
 			Description: "The Longview Pro tier you are currently subscribed to.",
 			Computed:    true,

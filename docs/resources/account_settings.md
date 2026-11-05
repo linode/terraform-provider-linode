@@ -27,6 +27,8 @@ The following arguments are supported:
 
 * `network_helper` - (Optional) Enables network helper across all users by default for new Linodes and Linode Configs.
 
+* `tfa_enforced` - (Optional) Whether two-factor authentication is required by default for account users. Omit to retain the current policy. Manage exemptions with [`linode_account_tfa_optional_users`](account_tfa_optional_users.md). Enabling enforcement can prevent users without 2FA configured from logging in. Destroying this resource leaves the policy unchanged.
+
 * `interfaces_for_new_linodes` - (Optional) Type of interfaces for new Linode instances. Available values are `"legacy_config_only"`, `"legacy_config_default_but_linode_allowed"`, `"linode_default_but_legacy_config_allowed"`, and `"linode_only"`.
 
 * `maintenance_policy` - (Optional) The default maintenance policy for this account. Examples are `"linode/migrate"` and `"linode/power_off_on"`. Defaults to `"linode/migrate"`.

@@ -82,6 +82,8 @@ In addition to all the arguments above, the following attributes are exported.
 
 * `tfa_enabled` - Whether the user has two-factor-authentication enabled.
 
+* `tfa_enforced` - Whether the account policy and exemptions require this user to use two-factor authentication. Read-only; manage exemptions with [`linode_account_tfa_optional_users`](account_tfa_optional_users.md). This does not indicate whether the user has configured 2FA.
+
 * `ssh_keys` - A list of the User's SSH keys.
 
 ## Global Grants

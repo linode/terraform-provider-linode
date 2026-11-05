@@ -159,6 +159,10 @@ func (r *Resource) createOrUpdateAccountSettings(
 
 	updateOpts := linodego.AccountSettingsUpdateOptions{}
 
+	if !plan.TFAEnforced.IsUnknown() {
+		updateOpts.TFAEnforced = plan.TFAEnforced.ValueBoolPointer()
+	}
+
 	if !plan.BackupsEnabled.IsUnknown() {
 		updateOpts.BackupsEnabled = plan.BackupsEnabled.ValueBoolPointer()
 	}
