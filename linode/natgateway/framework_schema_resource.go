@@ -54,7 +54,6 @@ func (updatedPlanModifier) PlanModifyString(
 		plan.Label.Equal(state.Label) &&
 		plan.DefaultPortsPerInterface.Equal(state.DefaultPortsPerInterface) &&
 		plan.UseAutoscaling.Equal(state.UseAutoscaling) &&
-		plan.VPCSubnetID.Equal(state.VPCSubnetID) &&
 		addressesUnchanged {
 		resp.PlanValue = req.StateValue
 	}
@@ -165,14 +164,6 @@ var frameworkResourceSchema = schema.Schema{
 				"If omitted, defaults to true when addresses is empty, otherwise false. Create-only and Write-only.",
 			PlanModifiers: []planmodifier.Bool{
 				boolplanmodifier.RequiresReplace(),
-			},
-		},
-		"vpc_subnet_id": schema.Int64Attribute{
-			Optional:    true,
-			Description: "The ID of the VPC subnet for this NAT Gateway. Create-only.",
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.RequiresReplace(),
-				int64planmodifier.UseStateForUnknown(),
 			},
 		},
 		"address_autoscale_max": schema.Int64Attribute{

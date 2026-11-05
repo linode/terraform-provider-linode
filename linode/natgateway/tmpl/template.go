@@ -11,7 +11,6 @@ type TemplateData struct {
 	Region           string
 	UseSwapAddress   bool
 	AutoscaleAddress bool
-	UseAltSubnet     bool
 }
 
 func Basic(t *testing.T, label, region string) string {
@@ -46,15 +45,6 @@ func Complex(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(t, "natgateway_complex", TemplateData{
 		Label:  label,
 		Region: region,
-	})
-}
-
-// ComplexAltSubnet renders the complex config with the gateway attached to the alt subnet instead.
-func ComplexAltSubnet(t *testing.T, label, region string) string {
-	return acceptance.ExecuteTemplate(t, "natgateway_complex", TemplateData{
-		Label:        label,
-		Region:       region,
-		UseAltSubnet: true,
 	})
 }
 

@@ -17,13 +17,13 @@ import (
 
 const natDataSource = "data.linode_natgateway.foobar"
 
-// TestAccDataSourceNATGateway_basic reads a NAT Gateway attached to a VPC subnet and checks
-// that every field is populated.
+// TestAccDataSourceNATGateway_basic reads a NAT Gateway and checks that the
+// populated fields are set.
 func TestAccDataSourceNATGateway_basic(t *testing.T) {
 	t.Parallel()
 
 	region, err := acceptance.GetRandomRegionWithCaps(
-		[]linodego.RegionCapability{linodego.CapabilityVPCs, linodego.CapabilityNATGateway}, "core")
+		[]linodego.RegionCapability{linodego.CapabilityNATGateway}, "core")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,19 +42,12 @@ func TestAccDataSourceNATGateway_basic(t *testing.T) {
 		"address_autoscale_max",
 		"portset_assignments",
 		"portset_capacity",
-		"vpc_subnet",
 		"created",
 		"updated",
 	}
 	for _, field := range topLevel {
 		checks = append(checks, statecheck.ExpectKnownValue(
 			natDataSource, tfjsonpath.New(field), knownvalue.NotNull()))
-	}
-
-	subnetFields := []string{"id", "type", "url", "label", "vpc_id", "vpc_label"}
-	for _, field := range subnetFields {
-		checks = append(checks, statecheck.ExpectKnownValue(
-			natDataSource, tfjsonpath.New("vpc_subnet").AtMapKey(field), knownvalue.NotNull()))
 	}
 
 	resource.Test(t, resource.TestCase{

@@ -121,7 +121,7 @@ func TestAccResourceNATGateway_update(t *testing.T) {
 }
 
 // TestAccResourceNATGateway_complex creates a manual (autoscaling false) NAT Gateway with one
-// reserved address, attached to a VPC subnet created in the same config.
+// reserved address.
 func TestAccResourceNATGateway_complex(t *testing.T) {
 	t.Parallel()
 
@@ -148,9 +148,7 @@ func TestAccResourceNATGateway_complex(t *testing.T) {
 					statecheck.ExpectKnownValue(natComplex,
 						tfjsonpath.New("addresses"), knownvalue.SetSizeExact(1)),
 					statecheck.ExpectKnownValue(natComplex,
-						tfjsonpath.New("vpc_subnet_id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(natComplex,
-						tfjsonpath.New("vpc_subnet"), knownvalue.NotNull()),
+						tfjsonpath.New("vpc_subnet"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(natComplex,
 						tfjsonpath.New("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(natComplex,
@@ -167,32 +165,6 @@ func TestAccResourceNATGateway_complex(t *testing.T) {
 						tfjsonpath.New("created"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(natComplex,
 						tfjsonpath.New("updated"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(natComplex,
-						tfjsonpath.New("vpc_subnet").AtMapKey("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(natComplex,
-						tfjsonpath.New("vpc_subnet").AtMapKey("type"), knownvalue.StringExact("vpc_subnet")),
-					statecheck.ExpectKnownValue(natComplex,
-						tfjsonpath.New("vpc_subnet").AtMapKey("url"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(natComplex,
-						tfjsonpath.New("vpc_subnet").AtMapKey("label"), knownvalue.StringExact(label)),
-					statecheck.ExpectKnownValue(natComplex,
-						tfjsonpath.New("vpc_subnet").AtMapKey("vpc_id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(natComplex,
-						tfjsonpath.New("vpc_subnet").AtMapKey("vpc_label"), knownvalue.StringExact(label)),
-				},
-			},
-			{
-				// Changing vpc_subnet_id forces a replacement. The gateway is still attached
-				// to its original subnet when it is destroyed, so Delete must detach it.
-				Config: tmpl.ComplexAltSubnet(t, label, region),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(natComplex, plancheck.ResourceActionReplace),
-					},
-				},
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(natComplex,
-						tfjsonpath.New("vpc_subnet").AtMapKey("label"), knownvalue.StringExact(label+"-alt")),
 				},
 			},
 		},

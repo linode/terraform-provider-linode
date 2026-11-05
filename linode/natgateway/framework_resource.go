@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"slices"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -149,8 +148,8 @@ func (r *Resource) Update(
 	id := int(state.ID.ValueInt64())
 	ctx = tflog.SetField(ctx, "id", id)
 
-	// Create-only fields (region, default_ports_per_interface, use_autoscaling,
-	// vpc_subnet_id) force replacement when they change, so they never reach
+	// Create-only fields (region, default_ports_per_interface, use_autoscaling)
+	// force replacement when they change, so they never reach
 	// Update with a real change. They are left untouched here.
 
 	if !plan.Label.Equal(state.Label) {
@@ -291,13 +290,6 @@ func (r *Resource) Delete(
 	id := int(data.ID.ValueInt64())
 	ctx = tflog.SetField(ctx, "id", id)
 
-	// The API rejects deletion while the gateway is attached to a subnet, so
-	// clear the attachment this resource created before deleting.
-	resp.Diagnostics.Append(r.detachVPCSubnet(ctx, id, data.VPCSubnetID)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	tflog.Debug(ctx, "client.DeleteNATGateway(...)")
 	if err := client.DeleteNATGateway(ctx, id); err != nil {
 		if linodego.IsNotFound(err) {
@@ -307,98 +299,5 @@ func (r *Resource) Delete(
 			fmt.Sprintf("Failed to delete NAT Gateway (%d).", id),
 			err.Error(),
 		)
-	}
-}
-
-const (
-	detachPollAttempts = 10
-	detachPollInterval = 3 * time.Second
-)
-
-// detachVPCSubnet refreshes the NAT Gateway's subnet association and, when the
-// attached subnet is the one set in vpc_subnet_id, detaches it and waits until
-// the API reports the gateway as detached. Attachments made through other
-// resources are left alone.
-func (r *Resource) detachVPCSubnet(
-	ctx context.Context,
-	id int,
-	configuredSubnetID types.Int64,
-) diag.Diagnostics {
-	var diags diag.Diagnostics
-	client := r.Meta.Client
-
-	natGateway, err := client.GetNATGateway(ctx, id)
-	if err != nil {
-		if linodego.IsNotFound(err) {
-			return diags
-		}
-		diags.AddError(
-			fmt.Sprintf("Failed to refresh NAT Gateway (%d) before deletion.", id),
-			err.Error(),
-		)
-		return diags
-	}
-
-	subnetID := natGateway.VPCSubnet.ID
-	if subnetID == 0 {
-		return diags
-	}
-
-	if configuredSubnetID.IsNull() || configuredSubnetID.IsUnknown() ||
-		int(configuredSubnetID.ValueInt64()) != subnetID {
-		return diags
-	}
-
-	tflog.Debug(ctx, "client.UpdateVPCSubnet(...) to detach NAT Gateway", map[string]any{
-		"subnet_id": subnetID,
-	})
-
-	// A nil inner pointer serializes as JSON null, which clears the association.
-	var nilID *int
-	if _, err := client.UpdateVPCSubnet(
-		ctx,
-		natGateway.VPCSubnet.VPCID,
-		subnetID,
-		linodego.VPCSubnetUpdateOptions{
-			Label:      natGateway.VPCSubnet.Label,
-			NATGateway: &linodego.VPCSubnetUpdateOptionsNATGateway{ID: &nilID},
-		},
-	); err != nil {
-		diags.AddError(
-			fmt.Sprintf("Failed to detach NAT Gateway (%d) from subnet (%d).", id, subnetID),
-			err.Error(),
-		)
-		return diags
-	}
-
-	for attempt := 1; ; attempt++ {
-		current, err := client.GetNATGateway(ctx, id)
-		if err != nil {
-			diags.AddError(
-				fmt.Sprintf("Failed to refresh NAT Gateway (%d) after detaching.", id),
-				err.Error(),
-			)
-			return diags
-		}
-		if current.VPCSubnet.ID == 0 {
-			return diags
-		}
-		if attempt >= detachPollAttempts {
-			diags.AddError(
-				fmt.Sprintf("NAT Gateway (%d) is still attached to subnet (%d).", id, subnetID),
-				"The NAT Gateway cannot be deleted while attached to a subnet.",
-			)
-			return diags
-		}
-
-		select {
-		case <-ctx.Done():
-			diags.AddError(
-				fmt.Sprintf("Context canceled while waiting to detach NAT Gateway (%d).", id),
-				ctx.Err().Error(),
-			)
-			return diags
-		case <-time.After(detachPollInterval):
-		}
 	}
 }

@@ -42,27 +42,6 @@ resource "linode_natgateway" "manual" {
 }
 ```
 
-Create a NAT Gateway attached to a VPC subnet:
-
-```terraform
-resource "linode_vpc" "test" {
-    label = "test-vpc"
-    region = "us-iad"
-}
-
-resource "linode_vpc_subnet" "test" {
-    vpc_id = linode_vpc.test.id
-    label = "test-subnet"
-    ipv4 = "10.0.0.0/24"
-}
-
-resource "linode_natgateway" "test" {
-    label = "test-natgateway"
-    region = "us-iad"
-    vpc_subnet_id = linode_vpc_subnet.test.id
-}
-```
-
 ## Argument Reference
 
 The following arguments are supported:
@@ -76,8 +55,6 @@ The following arguments are supported:
 * `default_ports_per_interface` - (Optional) The default number of ports per interface for the NAT Gateway. If omitted, the API assigns a value. Changing this value forces the creation of a new NAT Gateway.
 
 * `use_autoscaling` - (Optional) Whether the NAT Gateway automatically scales its public IPv4 addresses. If omitted, defaults to `true` when `addresses` is empty and `false` otherwise. This value is write-only and is not returned by the API. Changing this value forces the creation of a new NAT Gateway.
-
-* `vpc_subnet_id` - (Optional) The ID of the VPC subnet to attach this NAT Gateway to. Changing this value forces the creation of a new NAT Gateway. The API does not allow a NAT Gateway attached to a subnet to be deleted. Detach it from the subnet before destroying the resource.
 
 * [`addresses`](#addresses) - (Optional, Nested Attribute Set) The public IPv4 addresses assigned to this NAT Gateway. Must be empty when `use_autoscaling` is `true`. If omitted, the API assigns addresses.
 

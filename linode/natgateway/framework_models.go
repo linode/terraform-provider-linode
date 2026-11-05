@@ -31,7 +31,6 @@ type NATGatewayModel struct {
 	Label                    types.String      `tfsdk:"label"`
 	DefaultPortsPerInterface types.Int64       `tfsdk:"default_ports_per_interface"`
 	UseAutoscaling           types.Bool        `tfsdk:"use_autoscaling"`
-	VPCSubnetID              types.Int64       `tfsdk:"vpc_subnet_id"`
 	AddressAutoscaleMax      types.Int64       `tfsdk:"address_autoscale_max"`
 	PortsetAssignments       types.Int64       `tfsdk:"portset_assignments"`
 	PortsetCapacity          types.Int64       `tfsdk:"portset_capacity"`
@@ -123,16 +122,11 @@ func (m *NATGatewayModel) ExpandCreateOptions(ctx context.Context) (linodego.NAT
 		opts.UseAutoscaling = &v
 	}
 
-	if !m.VPCSubnetID.IsNull() && !m.VPCSubnetID.IsUnknown() {
-		v := int(m.VPCSubnetID.ValueInt64())
-		opts.VPCSubnetID = &v
-	}
-
 	return opts, diags
 }
 
 // NATGatewayDataSourceModel is the state model for the linode_natgateway data source.
-// It omits the create-only fields (use_autoscaling, vpc_subnet_id), which the data
+// It omits the create-only field (use_autoscaling), which the data
 // source schema does not define.
 type NATGatewayDataSourceModel struct {
 	ID                       types.Int64       `tfsdk:"id"`
