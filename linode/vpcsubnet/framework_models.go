@@ -228,12 +228,6 @@ func FlattenSubnetNodebalancers(
 	return &nbsList, diags
 }
 
-var NATGatewayObjectType = types.ObjectType{
-	AttrTypes: map[string]attr.Type{
-		"id": types.Int64Type,
-	},
-}
-
 var NATGatewayPortsetPortObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"start": types.Int64Type,
@@ -261,17 +255,6 @@ var NATGatewayDetailsObjectType = types.ObjectType{
 			ElemType: NATGatewayPortsetObjectType,
 		},
 	},
-}
-
-// flattenNATGatewaySetting converts a subnet's NAT Gateway into the settable natgateway block.
-func flattenNATGatewaySetting(gw *linodego.VPCSubnetNATGateway) (types.Object, diag.Diagnostics) {
-	if gw == nil {
-		return types.ObjectNull(NATGatewayObjectType.AttrTypes), nil
-	}
-
-	return types.ObjectValue(NATGatewayObjectType.AttrTypes, map[string]attr.Value{
-		"id": types.Int64Value(int64(gw.ID)),
-	})
 }
 
 // flattenNATGatewayDetails converts a subnet's NAT Gateway into the read-only natgateway details block.
@@ -343,16 +326,6 @@ func FlattenNATGatewayDetails(
 	return flattenNATGatewayDetails(ctx, gw)
 }
 
-// isNATGatewayIDNull reports whether a natgateway block is set but its id is null ({ id = null }).
-func isNATGatewayIDNull(obj types.Object) bool {
-	if obj.IsNull() || obj.IsUnknown() {
-		return false
-	}
-
-	id, ok := obj.Attributes()["id"]
-	return ok && id.IsNull()
-}
-
 func (m *BaseModel) CopyFrom(other BaseModel, preserveKnown bool) {
 	m.ID = helper.KeepOrUpdateValue(m.ID, other.ID, preserveKnown)
 	m.VPCId = helper.KeepOrUpdateValue(m.VPCId, other.VPCId, preserveKnown)
@@ -417,7 +390,7 @@ Resource-specific Implementation
 type ResourceModel struct {
 	BaseModel
 	IPv6              types.List   `tfsdk:"ipv6"`
-	NATGateway        types.Object `tfsdk:"natgateway"`
+	NATGatewayID      types.Int64  `tfsdk:"natgateway_id"`
 	NATGatewayDetails types.Object `tfsdk:"natgateway_details"`
 }
 
@@ -429,7 +402,7 @@ type ResourceModelIPv6 struct {
 func (m *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	m.BaseModel.CopyFrom(other.BaseModel, preserveKnown)
 	m.IPv6 = helper.KeepOrUpdateValue(m.IPv6, other.IPv6, preserveKnown)
-	m.NATGateway = helper.KeepOrUpdateValue(m.NATGateway, other.NATGateway, preserveKnown)
+	m.NATGatewayID = helper.KeepOrUpdateValue(m.NATGatewayID, other.NATGatewayID, preserveKnown)
 	m.NATGatewayDetails = helper.KeepOrUpdateValue(m.NATGatewayDetails, other.NATGatewayDetails, preserveKnown)
 }
 
@@ -467,20 +440,11 @@ func (m *ResourceModel) FlattenSubnet(
 	}
 	m.NATGatewayDetails = helper.KeepOrUpdateValue(m.NATGatewayDetails, natGatewayDetails, preserveKnown)
 
-	natGateway, natGatewayDiags := flattenNATGatewaySetting(subnet.NATGateway)
-	if natGatewayDiags.HasError() {
-		return natGatewayDiags
+	natGatewayID := types.Int64Null()
+	if subnet.NATGateway != nil {
+		natGatewayID = types.Int64Value(int64(subnet.NATGateway.ID))
 	}
-
-	// The natgateway block is config-owned. Keep it null when the subnet has no block in state, even if the
-	// NAT Gateway was attached from the NAT Gateway side (vpc_subnet_id). The attachment is still reported in
-	// natgateway_details. Also keep a configured { id = null }, since both forms mean "no NAT Gateway".
-	if subnet.NATGateway == nil && isNATGatewayIDNull(m.NATGateway) {
-		natGateway = m.NATGateway
-	} else if subnet.NATGateway != nil && m.NATGateway.IsNull() {
-		natGateway = m.NATGateway
-	}
-	m.NATGateway = natGateway
+	m.NATGatewayID = helper.KeepOrUpdateValue(m.NATGatewayID, natGatewayID, preserveKnown)
 
 	return diags
 }

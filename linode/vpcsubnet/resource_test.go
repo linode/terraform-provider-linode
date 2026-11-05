@@ -446,12 +446,12 @@ func TestAccResourceVPCSubnet_natgatewayAddThenRemoveOmitted(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				// No natgateway block
+				// No natgateway_id
 				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, ""),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("natgateway"),
+						tfjsonpath.New("natgateway_id"),
 						knownvalue.Null(),
 					),
 					statecheck.ExpectKnownValue(
@@ -462,12 +462,12 @@ func TestAccResourceVPCSubnet_natgatewayAddThenRemoveOmitted(t *testing.T) {
 				},
 			},
 			{
-				// Add a natgateway
+				// Assign a NAT Gateway with natgateway_id
 				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, "first"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("natgateway").AtMapKey("id"),
+						tfjsonpath.New("natgateway_id"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
@@ -478,12 +478,12 @@ func TestAccResourceVPCSubnet_natgatewayAddThenRemoveOmitted(t *testing.T) {
 				},
 			},
 			{
-				// Remove the natgateway by omitting the block
+				// Unassign the NAT Gateway by omitting natgateway_id
 				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, ""),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("natgateway"),
+						tfjsonpath.New("natgateway_id"),
 						knownvalue.Null(),
 					),
 					statecheck.ExpectKnownValue(
@@ -516,12 +516,12 @@ func TestAccResourceVPCSubnet_natgatewayReplaceThenRemoveNull(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				// Assign the first natgateway
+				// Assign the first NAT Gateway
 				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, "first"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("natgateway").AtMapKey("id"),
+						tfjsonpath.New("natgateway_id"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
@@ -532,12 +532,12 @@ func TestAccResourceVPCSubnet_natgatewayReplaceThenRemoveNull(t *testing.T) {
 				},
 			},
 			{
-				// Replace with the second natgateway
+				// Replace with the second NAT Gateway
 				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, "second"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("natgateway").AtMapKey("id"),
+						tfjsonpath.New("natgateway_id"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
@@ -548,12 +548,12 @@ func TestAccResourceVPCSubnet_natgatewayReplaceThenRemoveNull(t *testing.T) {
 				},
 			},
 			{
-				// Remove the natgateway with { id = null }
+				// Unassign the NAT Gateway with natgateway_id = null
 				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, "null"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resName,
-						tfjsonpath.New("natgateway").AtMapKey("id"),
+						tfjsonpath.New("natgateway_id"),
 						knownvalue.Null(),
 					),
 					statecheck.ExpectKnownValue(
@@ -564,12 +564,11 @@ func TestAccResourceVPCSubnet_natgatewayReplaceThenRemoveNull(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: resourceImportStateID,
-				// Import reads an omitted block, so the { id = null } form is not reproduced
-				ImportStateVerifyIgnore: []string{"updated", "natgateway"},
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       resourceImportStateID,
+				ImportStateVerifyIgnore: []string{"updated"},
 			},
 		},
 	})

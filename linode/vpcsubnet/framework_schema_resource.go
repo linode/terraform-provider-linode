@@ -121,18 +121,9 @@ var frameworkResourceSchema = schema.Schema{
 			},
 			NestedObject: ResourceSchemaIPv6NestedObject,
 		},
-		"natgateway": schema.SingleNestedAttribute{
-			Description: "The NAT Gateway configuration for this subnet. " +
-				"Omitting this block unassigns the NAT Gateway. " +
-				"Setting `id` to null also unassigns the NAT Gateway.",
-			Optional: true,
-			Attributes: map[string]schema.Attribute{
-				"id": schema.Int64Attribute{
-					Description: "The ID of the NAT Gateway to assign to this subnet. " +
-						"Set to null to unassign the NAT Gateway.",
-					Optional: true,
-				},
-			},
+		"natgateway_id": schema.Int64Attribute{
+			Description: "The ID of the NAT Gateway to assign to this subnet.",
+			Optional:    true,
 		},
 		"natgateway_details": schema.SingleNestedAttribute{
 			Description: "The details of the NAT Gateway currently assigned to this subnet.",

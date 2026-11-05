@@ -75,8 +75,8 @@ func (r *Resource) Create(
 		IPv4:  data.IPv4.ValueString(),
 	}
 
-	// An omitted block or { id = null } creates the subnet without a NAT Gateway.
-	if natGatewayID := natGatewayIDFromModel(data.NATGateway, &resp.Diagnostics); natGatewayID != nil {
+	// An omitted or null natgateway_id creates the subnet without a NAT Gateway.
+	if natGatewayID := natGatewayIDFromModel(data.NATGatewayID, &resp.Diagnostics); natGatewayID != nil {
 		createOpts.NATGateway = &linodego.VPCSubnetCreateOptionsNATGateway{ID: &natGatewayID}
 	}
 
@@ -216,9 +216,9 @@ func (r *Resource) Update(
 	var updateOpts linodego.VPCSubnetUpdateOptions
 	shouldUpdate := !state.Label.Equal(plan.Label)
 
-	if !state.NATGateway.Equal(plan.NATGateway) {
-		// An omitted block or { id = null } unassigns the NAT Gateway.
-		updateOpts.NATGateway = natGatewayUpdateOptions(plan.NATGateway, &resp.Diagnostics)
+	if !state.NATGatewayID.Equal(plan.NATGatewayID) {
+		// An omitted or null natgateway_id unassigns the NAT Gateway.
+		updateOpts.NATGateway = natGatewayUpdateOptions(plan.NATGatewayID, &resp.Diagnostics)
 		shouldUpdate = true
 	}
 
@@ -336,29 +336,24 @@ func (r *Resource) Delete(
 	}
 }
 
-// natGatewayIDFromModel returns the NAT Gateway ID from a natgateway block,
-// or nil if the block is omitted or its id is null.
-func natGatewayIDFromModel(obj types.Object, diags *diag.Diagnostics) *int {
-	if obj.IsNull() || obj.IsUnknown() {
+// natGatewayIDFromModel returns the NAT Gateway ID from natgateway_id,
+// or nil if the value is null or unknown.
+func natGatewayIDFromModel(value types.Int64, diags *diag.Diagnostics) *int {
+	if value.IsNull() || value.IsUnknown() {
 		return nil
 	}
 
-	idValue, ok := obj.Attributes()["id"].(types.Int64)
-	if !ok || idValue.IsNull() || idValue.IsUnknown() {
-		return nil
-	}
-
-	id := helper.FrameworkSafeInt64ToInt(idValue.ValueInt64(), diags)
+	id := helper.FrameworkSafeInt64ToInt(value.ValueInt64(), diags)
 	return &id
 }
 
-// natGatewayUpdateOptions builds the update payload for the natgateway block.
+// natGatewayUpdateOptions builds the update payload for natgateway_id.
 // A nil ID is sent as null, which unassigns the NAT Gateway.
 func natGatewayUpdateOptions(
-	obj types.Object,
+	value types.Int64,
 	diags *diag.Diagnostics,
 ) *linodego.VPCSubnetUpdateOptionsNATGateway {
-	id := natGatewayIDFromModel(obj, diags)
+	id := natGatewayIDFromModel(value, diags)
 	return &linodego.VPCSubnetUpdateOptionsNATGateway{ID: &id}
 }
 

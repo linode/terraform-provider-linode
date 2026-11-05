@@ -105,8 +105,8 @@ func VPCType(t testing.TB, label, ipv4, region, vpcType string) string {
 		})
 }
 
-// NATGateway renders a subnet with the given natgateway ref: "first", "second",
-// "null" ({ id = null }), or "" (block omitted).
+// NATGateway renders a subnet with the given natgateway_id ref: "first", "second",
+// "null" (natgateway_id = null), or "" (natgateway_id omitted).
 func NATGateway(t testing.TB, label, ipv4, region, natGatewayRef string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_subnet_natgateway", TemplateData{

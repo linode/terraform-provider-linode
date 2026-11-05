@@ -24,11 +24,11 @@ resource "linode_vpc_subnet" "foobar" {
     label = "{{.Label}}"
     ipv4 = "{{.IPv4}}"
 {{- if eq .NATGatewayRef "first" }}
-    natgateway = { id = linode_natgateway.first.id }
+    natgateway_id = linode_natgateway.first.id
 {{- else if eq .NATGatewayRef "second" }}
-    natgateway = { id = linode_natgateway.second.id }
+    natgateway_id = linode_natgateway.second.id
 {{- else if eq .NATGatewayRef "null" }}
-    natgateway = { id = null }
+    natgateway_id = null
 {{- end }}
 }
 

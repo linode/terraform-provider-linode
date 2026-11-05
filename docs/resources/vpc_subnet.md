@@ -64,9 +64,7 @@ resource "linode_vpc_subnet" "test" {
     label = "test-subnet"
     ipv4 = "10.0.0.0/24"
 
-    natgateway = {
-      id = linode_natgateway.test.id
-    }
+    natgateway_id = linode_natgateway.test.id
 }
 ```
 
@@ -84,7 +82,7 @@ The following arguments are supported:
 
 * [`ipv6`](#ipv6) - (Optional, Nested Attribute List) A list of IPv6 ranges under this VPC subnet. NOTE: IPv6 VPCs may not currently be available to all users.
 
-* [`natgateway`](#nat-gateway) - (Optional, Nested Attribute) The NAT Gateway assigned to this VPC subnet. Omitting this field unassigns any NAT Gateway from the subnet.
+* `natgateway_id` - (Optional) The ID of the NAT Gateway to assign to this VPC subnet. Setting this field assigns the NAT Gateway. Omitting it, or setting it to `null`, unassigns any NAT Gateway from the subnet.
 
 ## IPv6
 
@@ -96,13 +94,6 @@ The following arguments can be configured for each entry under the `ipv6` field:
 
 * `allocated_range` - (Read-Only) The value of range computed by the API. This is necessary when needing to access the range for an implicit allocation.
 
-## NAT Gateway
-
-The `natgateway` field assigns a NAT Gateway to the subnet. It has one argument:
-
-* `id` - (Optional) The ID of the NAT Gateway to assign. Set to `null` (`natgateway = { id = null }`) to unassign the NAT Gateway.
-
-Omitting the `natgateway` field also unassigns the NAT Gateway.
 
 ## Attributes Reference
 
