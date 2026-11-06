@@ -179,3 +179,21 @@ func DataSourceBasic(t testing.TB, label, region string) string {
 			Region: region,
 		})
 }
+
+func VPCNATGateway(t testing.TB, label, region, subnetIPv4 string) string {
+	return acceptance.ExecuteTemplate(t,
+		"interface_vpc_natgateway", TemplateData{
+			Label:      label,
+			Region:     region,
+			SubnetIPv4: subnetIPv4,
+		})
+}
+
+func DataSourceVPCNATGateway(t testing.TB, label, region, subnetIPv4 string) string {
+	return acceptance.ExecuteTemplate(t,
+		"interface_datasource_vpc_natgateway", TemplateData{
+			Label:      label,
+			Region:     region,
+			SubnetIPv4: subnetIPv4,
+		})
+}

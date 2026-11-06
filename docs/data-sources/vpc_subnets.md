@@ -95,6 +95,28 @@ Each Linode VPC subnet will be stored in the `vpc_subnets` attribute and will ex
 
 * `updated` - The date and time when the VPC Subnet was last updated.
 
+* `natgateway` - (Read-Only Object) The details of the NAT Gateway currently assigned to this subnet.
+
+  * `id` - The ID of the assigned NAT Gateway.
+
+  * `label` - The label of the assigned NAT Gateway.
+
+  * `addresses` - (Read-Only List) The addresses of the assigned NAT Gateway.
+
+  * `portset_assignments` - The number of portset assignments on the assigned NAT Gateway.
+
+  * `portset_capacity` - The total portset capacity of the assigned NAT Gateway.
+
+  * `portsets` - (Read-Only Object List) The portsets assigned to the NAT Gateway. Referenced with an index (e.g. `natgateway.portsets.0.address`).
+
+    * `address` - The address of the portset.
+
+    * `ports` - (Read-Only Object List) The port ranges assigned to the portset. Referenced with an index (e.g. `ports.0.start`).
+
+      * `start` - The first port in the range.
+
+      * `end` - The last port in the range.
+
 ## IPv6
 
 -> **Limited Availability** IPv6 VPCs may not currently be available to all users.

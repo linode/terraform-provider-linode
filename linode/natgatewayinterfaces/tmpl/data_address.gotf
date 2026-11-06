@@ -1,0 +1,58 @@
+{{ define "natgateway_interfaces_address" }}
+
+{{ template "e2e_test_firewall" . }}
+
+resource "linode_networking_ip" "reserved" {
+  type = "ipv4"
+  region = "{{.Region}}"
+  public = true
+  reserved = true
+}
+
+resource "linode_vpc" "test" {
+  label = "{{.Label}}-vpc"
+  region = "{{.Region}}"
+  description = "vpc for natgateway interfaces address data source testing"
+}
+
+resource "linode_natgateway" "test" {
+  label = "{{.Label}}-natgateway"
+  region = "{{.Region}}"
+  default_ports_per_interface = 4096
+  use_autoscaling = false
+  addresses = [
+    { address = linode_networking_ip.reserved.address },
+  ]
+}
+
+resource "linode_vpc_subnet" "test" {
+  vpc_id = linode_vpc.test.id
+  label = "{{.Label}}-subnet"
+  ipv4 = "{{.SubnetIPv4}}"
+  natgateway_id = linode_natgateway.test.id
+}
+
+resource "linode_instance" "test" {
+  label = "{{.Label}}"
+  region = "{{.Region}}"
+  type = "g6-nanode-1"
+  interface_generation = "linode"
+}
+
+resource "linode_interface" "test" {
+  linode_id = linode_instance.test.id
+  firewall_id = linode_firewall.e2e_test_firewall.id
+
+  vpc = {
+    subnet_id = linode_vpc_subnet.test.id
+  }
+}
+
+data "linode_natgateway_interfaces" "by_address" {
+  natgateway_id = linode_natgateway.test.id
+  address = linode_networking_ip.reserved.address
+  depends_on = [linode_interface.test]
+}
+
+{{ end }}
+

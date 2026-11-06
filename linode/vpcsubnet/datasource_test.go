@@ -147,3 +147,40 @@ func TestAccDataSourceVPCSubnet_nodebalancer(t *testing.T) {
 		},
 	})
 }
+
+func TestAccDataSourceVPCSubnet_natgateway(t *testing.T) {
+	t.Parallel()
+
+	resourceName := "data.linode_vpc_subnet.foobar"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
+		linodego.CapabilityVPCs,
+		linodego.CapabilityNATGateway,
+	}, "core")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataNATGateway(t, subnetLabel, "10.0.0.0/24", region),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("natgateway").AtMapKey("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("natgateway").AtMapKey("label"),
+						knownvalue.StringExact(subnetLabel+"-first"),
+					),
+				},
+			},
+		},
+	})
+}
