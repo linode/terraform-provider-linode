@@ -440,6 +440,11 @@ func TestAccResourceVPCSubnet_natgatewayAddThenRemoveOmitted(t *testing.T) {
 	resName := "linode_vpc_subnet.foobar"
 	subnetLabel := acctest.RandomWithPrefix("tf-test")
 
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs, linodego.CapabilityNATGateway}, "core")
+	if err != nil {
+		log.Fatal(fmt.Errorf("Error getting region: %s", err))
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
@@ -509,6 +514,11 @@ func TestAccResourceVPCSubnet_natgatewayReplaceThenRemoveNull(t *testing.T) {
 
 	resName := "linode_vpc_subnet.foobar"
 	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs, linodego.CapabilityNATGateway}, "core")
+	if err != nil {
+		log.Fatal(fmt.Errorf("Error getting region: %s", err))
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

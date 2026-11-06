@@ -67,6 +67,7 @@ func TestAccDataSourceNATGatewayInterfaces_basic(t *testing.T) {
 	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
 		linodego.CapabilityLinodes,
 		linodego.CapabilityVPCs,
+		linodego.CapabilityNATGateway,
 	}, "core")
 	if err != nil {
 		t.Fatal(err)

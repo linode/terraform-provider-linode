@@ -173,7 +173,7 @@ func TestAccDataSourceVPCSubnets_natgateway(t *testing.T) {
 
 	resourceName := "data.linode_vpc_subnets.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs}, "core")
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs, linodego.CapabilityNATGateway}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
