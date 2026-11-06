@@ -45,3 +45,11 @@ The following arguments are supported:
 * `database_type` - (Required) The unique type of the target database. (`mysql`, `postgresql`)
 
 * `allow_list` - (Required) A list of IP addresses that can access the Managed Database. Each item can be a single IP address or a range in CIDR format.
+
+### Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 20 mins) Used when creating the access controls (until the database update has finished)
+* `update` - (Defaults to 20 mins) Used when updating the access controls (until the database update has finished)
+* `delete` - (Defaults to 20 mins) Used when deleting the access controls (until the database update has finished)
