@@ -1,0 +1,11 @@
+{{ define "nfs_quota_basic" }}
+
+resource "linode_nfs_quota" "foobar" {
+    space_id           = {{ .SpaceID }}
+    filesystem_id      = {{ .FilesystemID }}
+    path               = "{{ .Path }}"
+    max_capacity_bytes = {{ .MaxCapacityBytes }}
+    max_file_count     = {{ .MaxFileCount }}
+}
+
+{{ end }}

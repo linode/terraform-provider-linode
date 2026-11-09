@@ -1,0 +1,27 @@
+{{ define "nfs_quota_updates" }}
+
+resource "linode_nfs_quota" "foobar" {
+    space_id           = {{ .SpaceID }}
+    filesystem_id      = {{ .FilesystemID }}
+    path               = "{{ .Path }}"
+    max_capacity_bytes = {{ .MaxCapacityBytes }}
+    max_file_count     = {{ .MaxFileCount }}
+
+    user_group_config = {
+        default_user_limit = {
+            max_capacity_bytes = 1073741824
+            max_file_count     = 1000
+        }
+
+        user_limits = [
+            {
+                identifier_type    = "uid"
+                identifier         = "1001"
+                max_capacity_bytes = 536870912
+                max_file_count     = 500
+            }
+        ]
+    }
+}
+
+{{ end }}

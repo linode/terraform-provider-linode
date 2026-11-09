@@ -84,6 +84,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/networkingipassignment"
 	"github.com/linode/terraform-provider-linode/v4/linode/networkingips"
 	"github.com/linode/terraform-provider-linode/v4/linode/networktransferprices"
+	"github.com/linode/terraform-provider-linode/v4/linode/nfsquota"
 	"github.com/linode/terraform-provider-linode/v4/linode/obj"
 	"github.com/linode/terraform-provider-linode/v4/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v4/linode/objendpoints"
@@ -299,6 +300,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		monitorlogsdestination.NewResource,
 		monitorlogsstream.NewResource,
 		monitoralertdefinition.NewResource,
+		nfsquota.NewResource,
 	}
 }
 
@@ -410,5 +412,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		monitorlogsstreams.NewDataSource,
 		monitoralertchannels.NewDataSource,
 		vpcdefaultranges.NewDataSource,
+		nfsquota.NewDataSource,
 	}
 }
