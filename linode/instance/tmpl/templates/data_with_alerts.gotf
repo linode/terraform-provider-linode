@@ -1,0 +1,23 @@
+{{ define "instance_data_with_alerts" }}
+
+{{ template "e2e_test_firewall" . }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    tags = ["tf_test"]
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+    alerts {
+        system_alerts = [{{ .SystemAlert }}]
+    }
+    firewall_id = linode_firewall.e2e_test_firewall.id
+}
+
+data "linode_instances" "foobar" {
+    filter {
+        name = "id"
+        values = [linode_instance.foobar.id]
+    }
+}
+
+{{ end }}

@@ -316,7 +316,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		if stackscriptDataRaw, ok := d.GetOk("stackscript_data"); ok {
 			stackscriptData, ok := stackscriptDataRaw.(map[string]any)
 			if !ok {
-				return diag.Errorf("Error parsing stackscript_data: expected map[string]interface{}")
+				return diag.Errorf("Error parsing stackscript_data: expected map[string]any")
 			}
 
 			if len(stackscriptData) == 0 {
@@ -332,6 +332,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 	} else {
 		createOpts.Booted = linodego.Pointer(false) // necessary to prepare disks and configs
+	}
+
+	if alertsRaw, ok := d.GetOk("alerts.0"); ok {
+		alerts := alertsRaw.(map[string]any)
+		createOpts.Alerts = expandInstanceACLPAlertsOpts(alerts)
 	}
 
 	createPoller, err := client.NewEventPollerWithoutEntity(linodego.EntityLinode, linodego.ActionLinodeCreate)
@@ -376,16 +381,19 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		updateOpts.WatchdogEnabled = &watchdogEnabled
 	}
 
-	if _, alertsOk := d.GetOk("alerts.0"); alertsOk {
+	// The create endpoint only accepts ACLP system/user alerts, so the
+	// individual alert thresholds (cpu, io, network, transfer) must be
+	// applied via a subsequent update call.
+	if alertsRaw, ok := d.GetOk("alerts.0"); ok {
 		doUpdate = true
-		updateOpts.Alerts = &linodego.InstanceAlert{}
-
-		// TODO(displague) only set specified alerts
-		updateOpts.Alerts.CPU = d.Get("alerts.0.cpu").(int)
-		updateOpts.Alerts.IO = d.Get("alerts.0.io").(int)
-		updateOpts.Alerts.NetworkIn = d.Get("alerts.0.network_in").(int)
-		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.network_out").(int)
-		updateOpts.Alerts.TransferQuota = d.Get("alerts.0.transfer_quota").(int)
+		alerts := alertsRaw.(map[string]any)
+		createdAlerts := flattenInstanceAlerts(*instance)[0]
+		for _, name := range []string{"cpu", "io", "network_in", "network_out", "transfer_quota"} {
+			if helper.SDKv2UnwrapOptionalConfigAttr[int](ctx, d, "alerts.0."+name) == nil {
+				alerts[name] = createdAlerts[name]
+			}
+		}
+		updateOpts.Alerts = expandInstanceAlertsUpdateOpts(alerts)
 	}
 
 	if doUpdate {
@@ -633,12 +641,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		simpleUpdate = true
 	}
 	if d.HasChange("alerts") {
-		updateOpts.Alerts = &linodego.InstanceAlert{}
-		updateOpts.Alerts.CPU = d.Get("alerts.0.cpu").(int)
-		updateOpts.Alerts.IO = d.Get("alerts.0.io").(int)
-		updateOpts.Alerts.NetworkIn = d.Get("alerts.0.network_in").(int)
-		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.network_out").(int)
-		updateOpts.Alerts.TransferQuota = d.Get("alerts.0.transfer_quota").(int)
+		if alertsRaw, ok := d.GetOk("alerts.0"); ok {
+			updateOpts.Alerts = expandInstanceAlertsUpdateOpts(alertsRaw.(map[string]any))
+		}
 		simpleUpdate = true
 	}
 

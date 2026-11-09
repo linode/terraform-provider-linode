@@ -83,7 +83,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeInt,
 		Optional:    true,
 		Computed:    true,
-		Description: "The ID of the VPC to use for the Kubernetes cluster.",
+		Description: "The ID of the VPC to use for the Kubernetes cluster. When set without `subnet_id`, the VPC's IPv4 ranges must include `10.0.0.0/8`, because the workload subnet is allocated from that range.",
 	},
 	"stack_type": {
 		Type:        schema.TypeString,
@@ -96,6 +96,83 @@ var resourceSchema = map[string]*schema.Schema{
 				string(linodego.LKEClusterDualStack),
 			}, false),
 		),
+	},
+	"networking": {
+		Type:     schema.TypeList,
+		MaxItems: 1,
+		Optional: true,
+		Computed: true,
+		ForceNew: true,
+		Description: "The pod network routing mode and network configuration of an LKE Enterprise cluster. " +
+			"Note: v4beta only and may not currently be available to all users.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"routing_mode": {
+					Type:        schema.TypeString,
+					Description: "The pod network routing mode. Defaults to `native`.",
+					Optional:    true,
+					Computed:    true,
+					ForceNew:    true,
+					ValidateDiagFunc: validation.ToDiagFunc(
+						validation.StringInSlice([]string{
+							string(linodego.LKEClusterRoutingModeNative),
+							string(linodego.LKEClusterRoutingModeVXLAN),
+						}, false),
+					),
+				},
+				"cluster_cidr_ipv4": {
+					Type:        schema.TypeString,
+					Description: "The IPv4 pod network CIDR. Only configurable when `routing_mode` is `vxlan`.",
+					Optional:    true,
+					Computed:    true,
+					ForceNew:    true,
+				},
+				"node_cidr_mask_size_ipv4": {
+					Type:        schema.TypeInt,
+					Description: "The IPv4 pod CIDR prefix length assigned to each node. Only configurable when `routing_mode` is `vxlan`.",
+					Optional:    true,
+					Computed:    true,
+					ForceNew:    true,
+				},
+				"service_cluster_ip_range_ipv4": {
+					Type:        schema.TypeString,
+					Description: "The IPv4 service CIDR. Only configurable when `routing_mode` is `vxlan`.",
+					Optional:    true,
+					Computed:    true,
+					ForceNew:    true,
+				},
+				"max_pods": {
+					Type:        schema.TypeInt,
+					Description: "The maximum number of pods per node. Only configurable when `routing_mode` is `vxlan`.",
+					Optional:    true,
+					Computed:    true,
+					ForceNew:    true,
+				},
+				"nodebalancer_backend_prefix_length": {
+					Type: schema.TypeInt,
+					Description: "The prefix length reserved from the highest portion of the VPC subnet for NodeBalancer backends. " +
+						"Only configurable when `routing_mode` is `vxlan`.",
+					Optional: true,
+					Computed: true,
+					ForceNew: true,
+				},
+				"cluster_cidr_ipv6": {
+					Type:        schema.TypeString,
+					Description: "The system-assigned IPv6 pod network CIDR.",
+					Computed:    true,
+				},
+				"node_cidr_mask_size_ipv6": {
+					Type:        schema.TypeInt,
+					Description: "The IPv6 pod CIDR prefix length assigned to each node.",
+					Computed:    true,
+				},
+				"service_cluster_ip_range_ipv6": {
+					Type:        schema.TypeString,
+					Description: "The system-assigned IPv6 service CIDR.",
+					Computed:    true,
+				},
+			},
+		},
 	},
 	"pool": {
 		Type: schema.TypeList,
