@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -176,15 +177,15 @@ func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta any) err
 		updateOpts.Global = expandGrantsGlobal(global)
 	}
 
-	updateOpts.Domain = expandGrantsEntities(d.Get("domain_grant").(*schema.Set).List())
-	updateOpts.Firewall = expandGrantsEntities(d.Get("firewall_grant").(*schema.Set).List())
-	updateOpts.Image = expandGrantsEntities(d.Get("image_grant").(*schema.Set).List())
-	updateOpts.Linode = expandGrantsEntities(d.Get("linode_grant").(*schema.Set).List())
-	updateOpts.Longview = expandGrantsEntities(d.Get("longview_grant").(*schema.Set).List())
-	updateOpts.NodeBalancer = expandGrantsEntities(d.Get("nodebalancer_grant").(*schema.Set).List())
-	updateOpts.StackScript = expandGrantsEntities(d.Get("stackscript_grant").(*schema.Set).List())
-	updateOpts.VPC = expandGrantsEntities(d.Get("vpc_grant").(*schema.Set).List())
-	updateOpts.Volume = expandGrantsEntities(d.Get("volume_grant").(*schema.Set).List())
+	updateOpts.Domain = expandGrantsEntityChanges(d, "domain_grant")
+	updateOpts.Firewall = expandGrantsEntityChanges(d, "firewall_grant")
+	updateOpts.Image = expandGrantsEntityChanges(d, "image_grant")
+	updateOpts.Linode = expandGrantsEntityChanges(d, "linode_grant")
+	updateOpts.Longview = expandGrantsEntityChanges(d, "longview_grant")
+	updateOpts.NodeBalancer = expandGrantsEntityChanges(d, "nodebalancer_grant")
+	updateOpts.StackScript = expandGrantsEntityChanges(d, "stackscript_grant")
+	updateOpts.VPC = expandGrantsEntityChanges(d, "vpc_grant")
+	updateOpts.Volume = expandGrantsEntityChanges(d, "volume_grant")
 
 	tflog.Debug(ctx, "client.UpdateUserGrants(...)", map[string]any{
 		"options": updateOpts,
@@ -203,6 +204,37 @@ func expandGrantsEntities(entities []any) []linodego.EntityUserGrant {
 	for i, entity := range entities {
 		entity := entity.(map[string]any)
 		result[i] = expandGrantsEntity(entity)
+	}
+
+	return result
+}
+
+func expandGrantsEntityChanges(d *schema.ResourceData, field string) []linodego.EntityUserGrant {
+	oldValue, newValue := d.GetChange(field)
+
+	oldEntities := oldValue.(*schema.Set).List()
+	newEntities := newValue.(*schema.Set).List()
+
+	return expandGrantsEntitiesWithRemovals(oldEntities, newEntities)
+}
+
+func expandGrantsEntitiesWithRemovals(oldEntities, newEntities []any) []linodego.EntityUserGrant {
+	result := expandGrantsEntities(newEntities)
+
+	newIDs := set.New[int](len(result))
+	for _, grant := range result {
+		newIDs.Insert(grant.ID)
+	}
+
+	for _, entity := range oldEntities {
+		id := entity.(map[string]any)["id"].(int)
+
+		if !newIDs.Contains(id) {
+			result = append(result, linodego.EntityUserGrant{
+				ID:          id,
+				Permissions: nil,
+			})
+		}
 	}
 
 	return result
