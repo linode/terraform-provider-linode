@@ -335,6 +335,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diags
 		}
 
+		// Avoid resending the previously computed revision ID unless it was changed in config.
+		if expandedControlPlane.ACL != nil && !d.HasChange("control_plane.0.acl.0.revision_id") {
+			expandedControlPlane.ACL.RevisionID = ""
+		}
+
 		updateOpts.ControlPlane = &expandedControlPlane
 	}
 
