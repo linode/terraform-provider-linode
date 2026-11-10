@@ -232,3 +232,48 @@ func TestAccDataSourceLKECluster_enterprise(t *testing.T) {
 
 	client.DeleteFirewall(context.Background(), firewall.ID)
 }
+
+func TestAccDataSourceLKECluster_enterpriseVXLAN(t *testing.T) {
+	acceptance.LongRunningTest(t)
+	t.Parallel()
+
+	if k8sVersionEnterprise == "" {
+		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
+	}
+
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf-test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.DataEnterpriseVXLAN(t, clusterName, k8sVersionEnterprise, enterpriseRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(dataSourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "tier", "enterprise"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "networking.#", "1"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "networking.0.routing_mode", "vxlan"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "networking.0.cluster_cidr_ipv4", "100.64.0.0/11"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "networking.0.node_cidr_mask_size_ipv4", "24"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "networking.0.service_cluster_ip_range_ipv4", "100.96.0.0/20"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "networking.0.max_pods", "110"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "networking.0.nodebalancer_backend_prefix_length", "21"),
+						resource.TestCheckNoResourceAttr(dataSourceClusterName, "networking.0.cluster_cidr_ipv6"),
+						resource.TestCheckNoResourceAttr(dataSourceClusterName, "networking.0.node_cidr_mask_size_ipv6"),
+						resource.TestCheckNoResourceAttr(dataSourceClusterName, "networking.0.service_cluster_ip_range_ipv6"),
+						resource.TestCheckResourceAttrPair(
+							dataSourceClusterName, "networking.0.routing_mode",
+							resourceClusterName, "networking.0.routing_mode",
+						),
+						resource.TestCheckResourceAttrPair(
+							dataSourceClusterName, "networking.0.cluster_cidr_ipv4",
+							resourceClusterName, "networking.0.cluster_cidr_ipv4",
+						),
+					),
+				},
+			},
+		})
+	})
+}

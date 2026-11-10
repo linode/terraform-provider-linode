@@ -31,6 +31,7 @@ type NodePoolSpec struct {
 	Label             *string
 	FirewallID        *int
 	DiskEncryption    *string
+	Networking        *linodego.LKENodePoolNetworking
 }
 
 type NodePoolUpdates struct {
@@ -75,6 +76,10 @@ func ReconcileLKENodePoolSpecs(
 		if spec.DiskEncryption != nil {
 			de := linodego.InstanceDiskEncryption(*spec.DiskEncryption)
 			createOpts.DiskEncryption = &de
+		}
+
+		if spec.Networking != nil {
+			createOpts.Networking = spec.Networking
 		}
 
 		if spec.Taints != nil {
@@ -149,6 +154,16 @@ func ReconcileLKENodePoolSpecs(
 			(newSpec.DiskEncryption != nil && oldSpec.DiskEncryption == nil) ||
 			(newSpec.DiskEncryption == nil && oldSpec.DiskEncryption != nil)
 		if diskEncryptionChanged {
+			if err := createPool(newSpec); err != nil {
+				return result, err
+			}
+
+			deletePool(oldSpec.ID)
+			continue
+		}
+
+		// Networking is immutable after pool creation.
+		if !reflect.DeepEqual(newSpec.Networking, oldSpec.Networking) {
 			if err := createPool(newSpec); err != nil {
 				return result, err
 			}
@@ -561,6 +576,7 @@ func expandLinodeLKENodePoolSpecs(pool []any, preserveNoTarget bool) (poolSpecs 
 			AutoScalerMax:     autoscaler.Max,
 			K8sVersion:        k8sVersionPtr,
 			UpdateStrategy:    updateStrategyPtr,
+			Networking:        expandPoolNetworking(specMap["networking"]),
 		})
 	}
 	return poolSpecs
@@ -604,6 +620,7 @@ func flattenLKENodePools(pools []linodego.LKENodePool) []map[string]any {
 			"k8s_version":     pool.K8sVersion,
 			"update_strategy": pool.UpdateStrategy,
 			"firewall_id":     pool.FirewallID,
+			"networking":      flattenPoolNetworking(pool.Networking),
 		}
 	}
 	return flattened
@@ -621,6 +638,43 @@ func flattenNodePoolTaints(taints []linodego.LKENodePoolTaint) []map[string]stri
 	}
 
 	return result
+}
+
+func expandPoolNetworking(raw any) *linodego.LKENodePoolNetworking {
+	list, ok := raw.([]any)
+	if !ok || len(list) == 0 {
+		return nil
+	}
+	m := list[0].(map[string]any)
+	ifaceRaw, ok := m["interfaces"].([]any)
+	if !ok || len(ifaceRaw) == 0 {
+		return nil
+	}
+	ifaces := make([]linodego.LKENodePoolInterface, len(ifaceRaw))
+	for i, v := range ifaceRaw {
+		ifm := v.(map[string]any)
+		ifaces[i] = linodego.LKENodePoolInterface{
+			Type:     linodego.LKENodePoolInterfaceType(ifm["type"].(string)),
+			VPCID:    ifm["vpc_id"].(int),
+			SubnetID: ifm["subnet_id"].(int),
+		}
+	}
+	return &linodego.LKENodePoolNetworking{Interfaces: ifaces}
+}
+
+func flattenPoolNetworking(n *linodego.LKENodePoolNetworking) []map[string]any {
+	if n == nil {
+		return nil
+	}
+	ifaces := make([]map[string]any, len(n.Interfaces))
+	for i, iface := range n.Interfaces {
+		ifaces[i] = map[string]any{
+			"type":      string(iface.Type),
+			"vpc_id":    iface.VPCID,
+			"subnet_id": iface.SubnetID,
+		}
+	}
+	return []map[string]any{{"interfaces": ifaces}}
 }
 
 func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane, aclResp *linodego.LKEClusterControlPlaneACLResponse) map[string]any {
@@ -716,6 +770,61 @@ func expandACLAddressOptions(addressOptions map[string]any) *linodego.LKECluster
 	if value, ok := addressOptions["ipv6"]; ok {
 		ipv6 := helper.ExpandStringSet(value.(*schema.Set))
 		result.IPv6 = ipv6
+	}
+
+	return &result
+}
+
+// vxlanNetworkingFields are the networking fields that can only be
+// configured when routing_mode is "vxlan".
+var vxlanNetworkingFields = []string{
+	"cluster_cidr_ipv4",
+	"node_cidr_mask_size_ipv4",
+	"service_cluster_ip_range_ipv4",
+	"max_pods",
+	"nodebalancer_backend_prefix_length",
+}
+
+func flattenLKEClusterNetworking(networking *linodego.LKEClusterNetworking) []map[string]any {
+	if networking == nil {
+		return []map[string]any{}
+	}
+
+	flattened := map[string]any{
+		"routing_mode":                       string(networking.RoutingMode),
+		"cluster_cidr_ipv4":                  networking.ClusterCIDRIPv4,
+		"node_cidr_mask_size_ipv4":           networking.NodeCIDRMaskSizeIPv4,
+		"service_cluster_ip_range_ipv4":      networking.ServiceClusterIPRangeIPv4,
+		"max_pods":                           networking.MaxPods,
+		"nodebalancer_backend_prefix_length": networking.NodeBalancerBackendPrefixLength,
+	}
+
+	if networking.ClusterCIDRIPv6 != nil {
+		flattened["cluster_cidr_ipv6"] = *networking.ClusterCIDRIPv6
+	}
+
+	if networking.NodeCIDRMaskSizeIPv6 != nil {
+		flattened["node_cidr_mask_size_ipv6"] = *networking.NodeCIDRMaskSizeIPv6
+	}
+
+	if networking.ServiceClusterIPRangeIPv6 != nil {
+		flattened["service_cluster_ip_range_ipv6"] = *networking.ServiceClusterIPRangeIPv6
+	}
+
+	return []map[string]any{flattened}
+}
+
+func expandLKEClusterNetworkingCreateOptions(ctx context.Context, d *schema.ResourceData) *linodego.LKEClusterNetworkingCreateOptions {
+	result := linodego.LKEClusterNetworkingCreateOptions{
+		ClusterCIDRIPv4:                 helper.SDKv2UnwrapOptionalConfigAttr[string](ctx, d, "networking.0.cluster_cidr_ipv4"),
+		NodeCIDRMaskSizeIPv4:            helper.SDKv2UnwrapOptionalConfigAttr[int](ctx, d, "networking.0.node_cidr_mask_size_ipv4"),
+		ServiceClusterIPRangeIPv4:       helper.SDKv2UnwrapOptionalConfigAttr[string](ctx, d, "networking.0.service_cluster_ip_range_ipv4"),
+		MaxPods:                         helper.SDKv2UnwrapOptionalConfigAttr[int](ctx, d, "networking.0.max_pods"),
+		NodeBalancerBackendPrefixLength: helper.SDKv2UnwrapOptionalConfigAttr[int](ctx, d, "networking.0.nodebalancer_backend_prefix_length"),
+	}
+
+	if value := helper.SDKv2UnwrapOptionalConfigAttr[string](ctx, d, "networking.0.routing_mode"); value != nil {
+		result.RoutingMode = linodego.Pointer(linodego.LKEClusterRoutingMode(*value))
 	}
 
 	return &result

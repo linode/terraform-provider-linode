@@ -81,6 +81,51 @@ var frameworkDataSourceSchema = schema.Schema{
 			Computed:    true,
 			Description: "The networking stack type of the Kubernetes cluster.",
 		},
+		"networking": schema.ListNestedAttribute{
+			Computed: true,
+			Description: "The pod network routing mode and network configuration of an LKE Enterprise cluster. " +
+				"Note: v4beta only and may not currently be available to all users.",
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"routing_mode": schema.StringAttribute{
+						Computed:    true,
+						Description: "The pod network routing mode.",
+					},
+					"cluster_cidr_ipv4": schema.StringAttribute{
+						Computed:    true,
+						Description: "The IPv4 pod network CIDR.",
+					},
+					"node_cidr_mask_size_ipv4": schema.Int64Attribute{
+						Computed:    true,
+						Description: "The IPv4 pod CIDR prefix length assigned to each node.",
+					},
+					"service_cluster_ip_range_ipv4": schema.StringAttribute{
+						Computed:    true,
+						Description: "The IPv4 service CIDR.",
+					},
+					"max_pods": schema.Int64Attribute{
+						Computed:    true,
+						Description: "The maximum number of pods per node.",
+					},
+					"nodebalancer_backend_prefix_length": schema.Int64Attribute{
+						Computed:    true,
+						Description: "The prefix length reserved from the highest portion of the VPC subnet for NodeBalancer backends.",
+					},
+					"cluster_cidr_ipv6": schema.StringAttribute{
+						Computed:    true,
+						Description: "The system-assigned IPv6 pod network CIDR.",
+					},
+					"node_cidr_mask_size_ipv6": schema.Int64Attribute{
+						Computed:    true,
+						Description: "The IPv6 pod CIDR prefix length assigned to each node.",
+					},
+					"service_cluster_ip_range_ipv6": schema.StringAttribute{
+						Computed:    true,
+						Description: "The system-assigned IPv6 service CIDR.",
+					},
+				},
+			},
+		},
 		"control_plane": schema.ListNestedAttribute{
 			Computed:    true,
 			Description: "Defines settings for the Kubernetes Control Plane.",

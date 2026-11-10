@@ -104,7 +104,23 @@ func (r *DataSource) Read(
 		}
 	}
 
-	resp.Diagnostics.Append(data.parseLKEAttributes(ctx, cluster, pools, kubeconfig, endpoints, acl)...)
+	var networking *linodego.LKEClusterNetworking
+	if cluster.Tier == TierEnterprise {
+		tflog.Trace(ctx, "client.GetLKEClusterNetworking(...)")
+
+		networking, err = client.GetLKEClusterNetworking(ctx, clusterId)
+		if err != nil && !linodego.IsNotFound(err) {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to get networking configuration for LKE cluster %d", clusterId),
+				err.Error(),
+			)
+			return
+		}
+		// A 404 means the networking endpoint isn't available to this account
+		// or API version. Nothing to do here.
+	}
+
+	resp.Diagnostics.Append(data.parseLKEAttributes(ctx, cluster, pools, kubeconfig, endpoints, acl, networking)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

@@ -202,6 +202,48 @@ var resourceSchema = schema.Schema{
 				},
 			},
 		},
+
+		"networking": schema.ListNestedBlock{
+			Description: "Networking configuration for the node pool. " +
+				"Immutable after creation — changing this block forces pool replacement. " +
+				"Requires api_version = \"v4beta\" and tier = \"enterprise\" on the cluster.",
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.RequiresReplaceIfConfigured(),
+			},
+			NestedObject: schema.NestedBlockObject{
+				Blocks: map[string]schema.Block{
+					"interfaces": schema.ListNestedBlock{
+						Description: "Ordered list of VPC interfaces to attach to nodes in the pool. " +
+							"The first entry must have type = \"vpc\" and reference the cluster's VPC subnet.",
+						Validators: []validator.List{
+							listvalidator.SizeAtLeast(1),
+						},
+						NestedObject: schema.NestedBlockObject{
+							Attributes: map[string]schema.Attribute{
+								"type": schema.StringAttribute{
+									Required:    true,
+									Description: "The interface type. Must be \"vpc\" for the first entry; subsequent entries may be \"rdma_vpc\".",
+									Validators: []validator.String{
+										stringvalidator.OneOf(
+											string(linodego.LKENodePoolInterfaceTypeVPC),
+											string(linodego.LKENodePoolInterfaceTypeRDMAVPC),
+										),
+									},
+								},
+								"vpc_id": schema.Int64Attribute{
+									Required:    true,
+									Description: "The ID of the VPC for this interface.",
+								},
+								"subnet_id": schema.Int64Attribute{
+									Required:    true,
+									Description: "The ID of the VPC subnet for this interface.",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	},
 }
 

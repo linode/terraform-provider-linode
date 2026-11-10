@@ -43,11 +43,15 @@ func Resource() *schema.Resource {
 			customDiffValidateOptionalCount,
 			customDiffValidatePoolForStandardTier,
 			customDiffValidateUpdateStrategyWithTier,
+			customDiffValidatePoolNetworkingRequiresBeta,
+			customDiffValidatePoolNetworkingFirstInterface,
+			customDiffValidateNetworking,
 			linodediffs.ComputedWithDefault("tags", []string{}),
 			linodediffs.CaseInsensitiveSet("tags"),
 			helper.SDKv2ValidateFieldRequiresAPIVersion(
 				helper.APIVersionV4Beta,
 				"tier",
+				"networking.0.routing_mode",
 			),
 		),
 		Timeouts: &schema.ResourceTimeout{
@@ -118,6 +122,17 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane, acl)
 
+	var networking *linodego.LKEClusterNetworking
+	if cluster.Tier == TierEnterprise {
+		tflog.Trace(ctx, "client.GetLKEClusterNetworking(...)")
+		networking, err = client.GetLKEClusterNetworking(ctx, id)
+		if err != nil && !linodego.IsNotFound(err) {
+			return diag.Errorf("failed to get networking configuration for LKE cluster %d: %s", id, err)
+		}
+		// A 404 means the networking endpoint isn't available to this account
+		// or API version. Nothing to do here.
+	}
+
 	d.Set("label", cluster.Label)
 	d.Set("k8s_version", cluster.K8sVersion)
 	d.Set("region", cluster.Region)
@@ -130,6 +145,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	d.Set("subnet_id", cluster.SubnetID)
 	d.Set("vpc_id", cluster.VpcID)
 	d.Set("stack_type", cluster.StackType)
+	d.Set("networking", flattenLKEClusterNetworking(networking))
 
 	matchedPools, err := matchPoolsWithSchema(ctx, pools, declaredPools)
 	if err != nil {
@@ -176,6 +192,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if stack_type, ok := d.GetOk("stack_type"); ok {
 		createOpts.StackType = linodego.Pointer(linodego.LKEClusterStackType(stack_type.(string)))
+	}
+
+	if networking := d.Get("networking").([]any); len(networking) > 0 {
+		createOpts.Networking = expandLKEClusterNetworkingCreateOptions(ctx, d)
 	}
 
 	if len(controlPlane) > 0 {
@@ -233,6 +253,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			Labels:         helper.StringAnyMapToTyped[string](poolSpec["labels"].(map[string]any)),
 			Count:          count,
 			Autoscaler:     autoscaler,
+			Networking:     expandPoolNetworking(poolSpec["networking"]),
 		})
 	}
 
@@ -661,6 +682,119 @@ func customDiffValidateUpdateStrategyWithTier(ctx context.Context, diff *schema.
 		return fmt.Errorf(
 			"%s: `update_strategy` can only be configured when tier is set to \"enterprise\"",
 			strings.Join(invalidPools, ", "),
+		)
+	}
+
+	return nil
+}
+
+// customDiffValidatePoolNetworkingRequiresBeta errors if any pool has a
+// networking block configured without api_version = "v4beta" in the provider.
+func customDiffValidatePoolNetworkingRequiresBeta(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	providerMeta := meta.(*helper.ProviderMeta)
+	if strings.EqualFold(providerMeta.Config.APIVersion, helper.APIVersionV4Beta) {
+		return nil
+	}
+
+	poolIterator := diff.GetRawConfig().GetAttr("pool").ElementIterator()
+	for poolIterator.Next() {
+		rawKey, rawPool := poolIterator.Element()
+		networking := rawPool.GetAttr("networking")
+		if networking.IsNull() || networking.LengthInt() == 0 {
+			continue
+		}
+		index, _ := rawKey.AsBigFloat().Int64()
+		return fmt.Errorf(
+			"pool.%d.networking: the api_version provider argument must be set to %q to use this field",
+			index, helper.APIVersionV4Beta,
+		)
+	}
+	return nil
+}
+
+// customDiffValidatePoolNetworkingFirstInterface errors if any pool has a
+// networking block whose first interface is not type = "vpc".
+func customDiffValidatePoolNetworkingFirstInterface(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	poolIterator := diff.GetRawConfig().GetAttr("pool").ElementIterator()
+	for poolIterator.Next() {
+		rawKey, rawPool := poolIterator.Element()
+		networking := rawPool.GetAttr("networking")
+		if networking.IsNull() || networking.LengthInt() == 0 {
+			continue
+		}
+
+		netBlock := networking.Index(cty.NumberIntVal(0))
+		interfaces := netBlock.GetAttr("interfaces")
+		if interfaces.IsNull() || !interfaces.IsKnown() || interfaces.LengthInt() == 0 {
+			continue
+		}
+
+		firstIface := interfaces.Index(cty.NumberIntVal(0))
+		firstType := firstIface.GetAttr("type")
+		if firstType.IsNull() || !firstType.IsKnown() {
+			continue
+		}
+
+		if firstType.AsString() != "vpc" {
+			index, _ := rawKey.AsBigFloat().Int64()
+			return fmt.Errorf(
+				"pool.%d.networking.interfaces[0].type: must be \"vpc\" (the first interface must reference the cluster VPC subnet)",
+				index,
+			)
+		}
+	}
+	return nil
+}
+
+// customDiffValidateNetworking ensures that the networking block can only
+// be configured when tier is explicitly set to "enterprise", and that the
+// configurable network fields can only be configured when routing_mode is
+// set to "vxlan".
+//
+// This validation is implemented as a custom diff using cty to only
+// validate the user's config rather than the computed values in state.
+func customDiffValidateNetworking(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	networking := diff.GetRawConfig().GetAttr("networking")
+	if !networking.IsKnown() || networking.IsNull() || networking.LengthInt() == 0 {
+		return nil
+	}
+
+	tier := diff.GetRawConfig().GetAttr("tier")
+	if !tier.IsKnown() {
+		return nil
+	}
+
+	if tier.IsNull() || tier.AsString() != TierEnterprise {
+		return fmt.Errorf("`networking` can only be configured when tier is set to \"enterprise\"")
+	}
+
+	networkingBlock := networking.Index(cty.NumberIntVal(0))
+	if !networkingBlock.IsKnown() || networkingBlock.IsNull() {
+		return nil
+	}
+
+	routingMode := networkingBlock.GetAttr("routing_mode")
+	if routingMode.IsNull() {
+		// Optional+Computed retains the existing routing mode when omitted.
+		routingMode = cty.StringVal(diff.Get("networking.0.routing_mode").(string))
+	}
+	if !routingMode.IsKnown() ||
+		(!routingMode.IsNull() && routingMode.AsString() == string(linodego.LKEClusterRoutingModeVXLAN)) {
+		return nil
+	}
+
+	invalidFields := make([]string, 0)
+
+	for _, field := range vxlanNetworkingFields {
+		if !networkingBlock.GetAttr(field).IsNull() {
+			invalidFields = append(invalidFields, "networking.0."+field)
+		}
+	}
+
+	if len(invalidFields) > 0 {
+		return fmt.Errorf(
+			"%s: can only be configured when `networking.0.routing_mode` is set to \"vxlan\"",
+			strings.Join(invalidFields, ", "),
 		)
 	}
 
