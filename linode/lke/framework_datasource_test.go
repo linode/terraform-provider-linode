@@ -149,6 +149,7 @@ func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 						resource.TestCheckResourceAttr(dataSourceClusterName, "control_plane.0.acl.0.enabled", "true"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "control_plane.0.acl.0.addresses.0.ipv4.0", testIPv4),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "control_plane.0.acl.0.addresses.0.ipv6.0", testIPv6),
+						resource.TestCheckResourceAttrSet(dataSourceClusterName, "control_plane.0.acl.0.revision_id"),
 						resource.TestCheckResourceAttrSet(dataSourceClusterName, "pools.0.id"),
 						resource.TestCheckResourceAttrSet(dataSourceClusterName, "kubeconfig"),
 					),
