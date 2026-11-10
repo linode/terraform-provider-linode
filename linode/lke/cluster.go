@@ -31,6 +31,7 @@ type NodePoolSpec struct {
 	Label             *string
 	FirewallID        *int
 	DiskEncryption    *string
+	Networking        *linodego.LKENodePoolNetworking
 }
 
 type NodePoolUpdates struct {
@@ -75,6 +76,10 @@ func ReconcileLKENodePoolSpecs(
 		if spec.DiskEncryption != nil {
 			de := linodego.InstanceDiskEncryption(*spec.DiskEncryption)
 			createOpts.DiskEncryption = &de
+		}
+
+		if spec.Networking != nil {
+			createOpts.Networking = spec.Networking
 		}
 
 		if spec.Taints != nil {
@@ -149,6 +154,16 @@ func ReconcileLKENodePoolSpecs(
 			(newSpec.DiskEncryption != nil && oldSpec.DiskEncryption == nil) ||
 			(newSpec.DiskEncryption == nil && oldSpec.DiskEncryption != nil)
 		if diskEncryptionChanged {
+			if err := createPool(newSpec); err != nil {
+				return result, err
+			}
+
+			deletePool(oldSpec.ID)
+			continue
+		}
+
+		// Networking is immutable after pool creation.
+		if !reflect.DeepEqual(newSpec.Networking, oldSpec.Networking) {
 			if err := createPool(newSpec); err != nil {
 				return result, err
 			}
@@ -561,6 +576,7 @@ func expandLinodeLKENodePoolSpecs(pool []any, preserveNoTarget bool) (poolSpecs 
 			AutoScalerMax:     autoscaler.Max,
 			K8sVersion:        k8sVersionPtr,
 			UpdateStrategy:    updateStrategyPtr,
+			Networking:        expandPoolNetworking(specMap["networking"]),
 		})
 	}
 	return poolSpecs
@@ -604,6 +620,7 @@ func flattenLKENodePools(pools []linodego.LKENodePool) []map[string]any {
 			"k8s_version":     pool.K8sVersion,
 			"update_strategy": pool.UpdateStrategy,
 			"firewall_id":     pool.FirewallID,
+			"networking":      flattenPoolNetworking(pool.Networking),
 		}
 	}
 	return flattened
@@ -621,6 +638,43 @@ func flattenNodePoolTaints(taints []linodego.LKENodePoolTaint) []map[string]stri
 	}
 
 	return result
+}
+
+func expandPoolNetworking(raw any) *linodego.LKENodePoolNetworking {
+	list, ok := raw.([]any)
+	if !ok || len(list) == 0 {
+		return nil
+	}
+	m := list[0].(map[string]any)
+	ifaceRaw, ok := m["interfaces"].([]any)
+	if !ok || len(ifaceRaw) == 0 {
+		return nil
+	}
+	ifaces := make([]linodego.LKENodePoolInterface, len(ifaceRaw))
+	for i, v := range ifaceRaw {
+		ifm := v.(map[string]any)
+		ifaces[i] = linodego.LKENodePoolInterface{
+			Type:     linodego.LKENodePoolInterfaceType(ifm["type"].(string)),
+			VPCID:    ifm["vpc_id"].(int),
+			SubnetID: ifm["subnet_id"].(int),
+		}
+	}
+	return &linodego.LKENodePoolNetworking{Interfaces: ifaces}
+}
+
+func flattenPoolNetworking(n *linodego.LKENodePoolNetworking) []map[string]any {
+	if n == nil {
+		return nil
+	}
+	ifaces := make([]map[string]any, len(n.Interfaces))
+	for i, iface := range n.Interfaces {
+		ifaces[i] = map[string]any{
+			"type":      string(iface.Type),
+			"vpc_id":    iface.VPCID,
+			"subnet_id": iface.SubnetID,
+		}
+	}
+	return []map[string]any{{"interfaces": ifaces}}
 }
 
 func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane, aclResp *linodego.LKEClusterControlPlaneACLResponse) map[string]any {

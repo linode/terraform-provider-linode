@@ -43,6 +43,8 @@ func Resource() *schema.Resource {
 			customDiffValidateOptionalCount,
 			customDiffValidatePoolForStandardTier,
 			customDiffValidateUpdateStrategyWithTier,
+			customDiffValidatePoolNetworkingRequiresBeta,
+			customDiffValidatePoolNetworkingFirstInterface,
 			customDiffValidateNetworking,
 			linodediffs.ComputedWithDefault("tags", []string{}),
 			linodediffs.CaseInsensitiveSet("tags"),
@@ -251,6 +253,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			Labels:         helper.StringAnyMapToTyped[string](poolSpec["labels"].(map[string]any)),
 			Count:          count,
 			Autoscaler:     autoscaler,
+			Networking:     expandPoolNetworking(poolSpec["networking"]),
 		})
 	}
 
@@ -682,6 +685,64 @@ func customDiffValidateUpdateStrategyWithTier(ctx context.Context, diff *schema.
 		)
 	}
 
+	return nil
+}
+
+// customDiffValidatePoolNetworkingRequiresBeta errors if any pool has a
+// networking block configured without api_version = "v4beta" in the provider.
+func customDiffValidatePoolNetworkingRequiresBeta(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	providerMeta := meta.(*helper.ProviderMeta)
+	if strings.EqualFold(providerMeta.Config.APIVersion, helper.APIVersionV4Beta) {
+		return nil
+	}
+
+	poolIterator := diff.GetRawConfig().GetAttr("pool").ElementIterator()
+	for poolIterator.Next() {
+		rawKey, rawPool := poolIterator.Element()
+		networking := rawPool.GetAttr("networking")
+		if networking.IsNull() || networking.LengthInt() == 0 {
+			continue
+		}
+		index, _ := rawKey.AsBigFloat().Int64()
+		return fmt.Errorf(
+			"pool.%d.networking: the api_version provider argument must be set to %q to use this field",
+			index, helper.APIVersionV4Beta,
+		)
+	}
+	return nil
+}
+
+// customDiffValidatePoolNetworkingFirstInterface errors if any pool has a
+// networking block whose first interface is not type = "vpc".
+func customDiffValidatePoolNetworkingFirstInterface(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	poolIterator := diff.GetRawConfig().GetAttr("pool").ElementIterator()
+	for poolIterator.Next() {
+		rawKey, rawPool := poolIterator.Element()
+		networking := rawPool.GetAttr("networking")
+		if networking.IsNull() || networking.LengthInt() == 0 {
+			continue
+		}
+
+		netBlock := networking.Index(cty.NumberIntVal(0))
+		interfaces := netBlock.GetAttr("interfaces")
+		if interfaces.IsNull() || !interfaces.IsKnown() || interfaces.LengthInt() == 0 {
+			continue
+		}
+
+		firstIface := interfaces.Index(cty.NumberIntVal(0))
+		firstType := firstIface.GetAttr("type")
+		if firstType.IsNull() || !firstType.IsKnown() {
+			continue
+		}
+
+		if firstType.AsString() != "vpc" {
+			index, _ := rawKey.AsBigFloat().Int64()
+			return fmt.Errorf(
+				"pool.%d.networking.interfaces[0].type: must be \"vpc\" (the first interface must reference the cluster VPC subnet)",
+				index,
+			)
+		}
+	}
 	return nil
 }
 

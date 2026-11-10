@@ -27,7 +27,7 @@ resource "linode_lke_cluster" "my-cluster" {
 }
 ```
 
-Creating an enterprise LKE cluster:
+Creating an Enterprise LKE cluster:
 
 ```terraform
 resource "linode_lke_cluster" "test" {
@@ -273,6 +273,48 @@ resource "linode_lke_cluster" "my-cluster" {
 }
 ```
 
+Creating an Enterprise LKE cluster with an inline RDMA-enabled pool:
+
+```terraform
+provider "linode" {
+  api_version = "v4beta"
+}
+
+resource "linode_lke_cluster" "rdma" {
+  label       = "rdma-cluster"
+  k8s_version = "v1.35.9+lke3"
+  region      = "us-mia"
+  tier        = "enterprise"
+  vpc_id      = var.vpc_id
+  subnet_id   = var.vpc_subnet_id
+
+  pool {
+    type  = "g3-gpu-rtxpro6000-blackwell-rdma-8"
+    count = 2
+
+    networking {
+      interfaces {
+        type      = "vpc"
+        vpc_id    = var.vpc_id
+        subnet_id = var.vpc_subnet_id
+      }
+
+      interfaces {
+        type      = "rdma_vpc"
+        vpc_id    = var.vpc_id
+        subnet_id = var.rdma_subnet_id
+      }
+    }
+  }
+}
+```
+
+Replace the VPC and subnet variables with IDs for existing resources in the
+cluster's region. The first interface must be the cluster VPC interface; add
+RDMA VPC interfaces after it. RDMA-capable plans and RDMA VPC subnets may not
+be available in every region or account. For a pool managed separately from
+the cluster, see the [LKE node pool examples](lke_node_pool.md#example-usage).
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -338,6 +380,22 @@ The following arguments are supported in the `pool` specification block:
 * `k8s_version` - (Optional) The k8s version of the nodes in this Node Pool. For LKE enterprise only and may not currently available to all users even under v4beta.
 
 * `update_strategy` - (Optional) The strategy for updating the Node Pool k8s version. For LKE enterprise only and may not currently available to all users even under v4beta.
+
+* [`networking`](#networking-pool) - (Optional, Block List) Networking configuration for the pool. Immutable after creation; changing it forces pool replacement. Requires `api_version = "v4beta"` and an Enterprise cluster.
+
+#### networking (pool)
+
+The following arguments are supported in the pool `networking` block:
+
+* [`interfaces`](#interfaces) - (Required, Block List) Ordered VPC interfaces for nodes in the pool. The first interface must have `type = "vpc"` and reference the cluster's VPC subnet. Subsequent interfaces may use `type = "rdma_vpc"`.
+
+#### interfaces
+
+* `type` - (Required) Interface type: `vpc` for the first interface; subsequent interfaces may be `rdma_vpc`.
+
+* `vpc_id` - (Required) ID of the VPC for the interface.
+
+* `subnet_id` - (Required) ID of the VPC subnet for the interface.
 
 ### networking
 

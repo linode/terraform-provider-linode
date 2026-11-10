@@ -152,6 +152,131 @@ func TestSetNodePoolCreateOptions(t *testing.T) {
 	assert.True(t, *createOpts.Isolation.PublicIPv6)
 }
 
+func TestSetNodePoolCreateOptions_Networking(t *testing.T) {
+	pool := createNodePoolModel()
+	pool.Networking = []NodePoolNetworkingModel{{
+		Interfaces: []NodePoolInterfaceModel{
+			{
+				Type:     types.StringValue("vpc"),
+				VPCID:    types.Int64Value(101),
+				SubnetID: types.Int64Value(201),
+			},
+			{
+				Type:     types.StringValue("rdma_vpc"),
+				VPCID:    types.Int64Value(101),
+				SubnetID: types.Int64Value(301),
+			},
+		},
+	}}
+
+	var createOpts linodego.LKENodePoolCreateOptions
+	var diags diag.Diagnostics
+
+	pool.SetNodePoolCreateOptions(context.Background(), &createOpts, &diags, "enterprise")
+
+	require.False(t, diags.HasError())
+	require.NotNil(t, createOpts.Networking)
+	assert.Equal(t, []linodego.LKENodePoolInterface{
+		{Type: linodego.LKENodePoolInterfaceTypeVPC, VPCID: 101, SubnetID: 201},
+		{Type: linodego.LKENodePoolInterfaceTypeRDMAVPC, VPCID: 101, SubnetID: 301},
+	}, createOpts.Networking.Interfaces)
+}
+
+func TestFlattenNodePoolNetworking(t *testing.T) {
+	t.Run("networking is flattened", func(t *testing.T) {
+		pool := NodePoolModel{}
+		var diags diag.Diagnostics
+
+		pool.FlattenLKENodePool(context.Background(), &linodego.LKENodePool{
+			Networking: &linodego.LKENodePoolNetworking{Interfaces: []linodego.LKENodePoolInterface{
+				{Type: linodego.LKENodePoolInterfaceTypeVPC, VPCID: 101, SubnetID: 201},
+				{Type: linodego.LKENodePoolInterfaceTypeRDMAVPC, VPCID: 101, SubnetID: 301},
+			}},
+		}, false, &diags)
+
+		require.False(t, diags.HasError())
+		require.Len(t, pool.Networking, 1)
+		require.Len(t, pool.Networking[0].Interfaces, 2)
+		assert.Equal(t, "vpc", pool.Networking[0].Interfaces[0].Type.ValueString())
+		assert.Equal(t, int64(201), pool.Networking[0].Interfaces[0].SubnetID.ValueInt64())
+		assert.Equal(t, "rdma_vpc", pool.Networking[0].Interfaces[1].Type.ValueString())
+		assert.Equal(t, int64(301), pool.Networking[0].Interfaces[1].SubnetID.ValueInt64())
+	})
+
+	t.Run("absent networking clears prior state", func(t *testing.T) {
+		pool := NodePoolModel{Networking: []NodePoolNetworkingModel{{
+			Interfaces: []NodePoolInterfaceModel{{
+				Type:     types.StringValue("vpc"),
+				VPCID:    types.Int64Value(101),
+				SubnetID: types.Int64Value(201),
+			}},
+		}}}
+		var diags diag.Diagnostics
+
+		pool.FlattenLKENodePool(context.Background(), &linodego.LKENodePool{}, false, &diags)
+
+		require.False(t, diags.HasError())
+		assert.Empty(t, pool.Networking)
+	})
+}
+
+func TestValidateEnterpriseOnlyAttributes_Networking(t *testing.T) {
+	validNetworking := []NodePoolNetworkingModel{{
+		Interfaces: []NodePoolInterfaceModel{
+			{Type: types.StringValue("vpc")},
+			{Type: types.StringValue("rdma_vpc")},
+		},
+	}}
+
+	tests := []struct {
+		name        string
+		tier        string
+		networking  []NodePoolNetworkingModel
+		wantError   bool
+		wantSummary string
+	}{
+		{
+			name:       "Enterprise accepts VPC followed by RDMA VPC",
+			tier:       "enterprise",
+			networking: validNetworking,
+		},
+		{
+			name: "Enterprise accepts no networking block",
+			tier: "enterprise",
+		},
+		{
+			name:        "Enterprise requires the first interface to be VPC",
+			tier:        "enterprise",
+			networking:  []NodePoolNetworkingModel{{Interfaces: []NodePoolInterfaceModel{{Type: types.StringValue("rdma_vpc")}}}},
+			wantError:   true,
+			wantSummary: "Invalid networking configuration",
+		},
+		{
+			name:        "standard tier rejects networking",
+			tier:        "standard",
+			networking:  validNetworking,
+			wantError:   true,
+			wantSummary: "networking is only available for LKE Enterprise clusters.",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			pool := NodePoolModel{Networking: tc.networking}
+			var diags diag.Diagnostics
+
+			pool.validateEnterpriseOnlyAttributes(tc.tier, &diags)
+
+			if tc.wantError {
+				require.True(t, diags.HasError())
+				assert.Contains(t, diags.Errors()[0].Summary()+diags.Errors()[0].Detail(), tc.wantSummary)
+				return
+			}
+			assert.False(t, diags.HasError())
+		})
+	}
+}
+
 func TestSetNodePoolCreateOptions_IsolationUnset(t *testing.T) {
 	nodePoolModel := createNodePoolModel()
 	nodePoolModel.IsolationIPv4 = types.BoolUnknown()

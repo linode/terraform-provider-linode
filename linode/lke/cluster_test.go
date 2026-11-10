@@ -62,6 +62,37 @@ func TestReconcileLKENodePoolSpecs(t *testing.T) {
 			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{},
 		},
 		{
+			name: "change pool networking",
+			oldSpecs: []lke.NodePoolSpec{
+				{
+					ID: 123, Type: "g3-gpu-rtxpro6000-blackwell-rdma-8", Count: 1,
+					Networking: &linodego.LKENodePoolNetworking{Interfaces: []linodego.LKENodePoolInterface{
+						{Type: linodego.LKENodePoolInterfaceTypeVPC, VPCID: 101, SubnetID: 201},
+					}},
+				},
+			},
+			newSpecs: []lke.NodePoolSpec{
+				{
+					ID: 123, Type: "g3-gpu-rtxpro6000-blackwell-rdma-8", Count: 1,
+					Networking: &linodego.LKENodePoolNetworking{Interfaces: []linodego.LKENodePoolInterface{
+						{Type: linodego.LKENodePoolInterfaceTypeVPC, VPCID: 101, SubnetID: 201},
+						{Type: linodego.LKENodePoolInterfaceTypeRDMAVPC, VPCID: 101, SubnetID: 301},
+					}},
+				},
+			},
+			expectedToCreate: []linodego.LKENodePoolCreateOptions{
+				{
+					Type: "g3-gpu-rtxpro6000-blackwell-rdma-8", Count: 1,
+					Networking: &linodego.LKENodePoolNetworking{Interfaces: []linodego.LKENodePoolInterface{
+						{Type: linodego.LKENodePoolInterfaceTypeVPC, VPCID: 101, SubnetID: 201},
+						{Type: linodego.LKENodePoolInterfaceTypeRDMAVPC, VPCID: 101, SubnetID: 301},
+					}},
+				},
+			},
+			expectedToDelete: []int{123},
+			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{},
+		},
+		{
 			name: "reuse cluster for resize",
 			oldSpecs: []lke.NodePoolSpec{
 				{ID: 123, Type: "g6-standard-1", Count: 1},

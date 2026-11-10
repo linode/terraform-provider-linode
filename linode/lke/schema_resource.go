@@ -350,6 +350,47 @@ var resourceSchema = map[string]*schema.Schema{
 						string(linodego.LKENodePoolRollingUpdate),
 					}, false),
 				},
+				"networking": {
+					Type:     schema.TypeList,
+					MaxItems: 1,
+					Optional: true,
+					Description: "Networking configuration for the node pool. " +
+						"Immutable after creation — changing this block forces pool replacement. " +
+						"Requires api_version = \"v4beta\" and tier = \"enterprise\".",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"interfaces": {
+								Type:        schema.TypeList,
+								Required:    true,
+								MinItems:    1,
+								Description: "Ordered list of VPC interfaces to attach to nodes in the pool. The first entry must have type = \"vpc\" and reference the cluster's VPC subnet.",
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+										"type": {
+											Type:        schema.TypeString,
+											Required:    true,
+											Description: "The type of interface. Must be \"vpc\" for the first entry; subsequent entries may be \"rdma_vpc\".",
+											ValidateFunc: validation.StringInSlice([]string{
+												string(linodego.LKENodePoolInterfaceTypeVPC),
+												string(linodego.LKENodePoolInterfaceTypeRDMAVPC),
+											}, false),
+										},
+										"vpc_id": {
+											Type:        schema.TypeInt,
+											Required:    true,
+											Description: "The ID of the VPC for this interface.",
+										},
+										"subnet_id": {
+											Type:        schema.TypeInt,
+											Required:    true,
+											Description: "The ID of the VPC subnet for this interface.",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 		Optional:    true,

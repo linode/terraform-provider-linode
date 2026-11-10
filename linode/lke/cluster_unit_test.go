@@ -271,3 +271,69 @@ func TestFlattenLKEClusterNetworking(t *testing.T) {
 		})
 	}
 }
+
+func TestExpandPoolNetworking(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    any
+		expected *linodego.LKENodePoolNetworking
+	}{
+		{
+			name: "omitted networking",
+		},
+		{
+			name:  "empty networking block",
+			input: []any{map[string]any{}},
+		},
+		{
+			name: "VPC and RDMA interfaces preserve order and IDs",
+			input: []any{map[string]any{
+				"interfaces": []any{
+					map[string]any{"type": "vpc", "vpc_id": 101, "subnet_id": 201},
+					map[string]any{"type": "rdma_vpc", "vpc_id": 101, "subnet_id": 301},
+				},
+			}},
+			expected: &linodego.LKENodePoolNetworking{Interfaces: []linodego.LKENodePoolInterface{
+				{Type: linodego.LKENodePoolInterfaceTypeVPC, VPCID: 101, SubnetID: 201},
+				{Type: linodego.LKENodePoolInterfaceTypeRDMAVPC, VPCID: 101, SubnetID: 301},
+			}},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, expandPoolNetworking(tc.input))
+		})
+	}
+}
+
+func TestFlattenPoolNetworking(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    *linodego.LKENodePoolNetworking
+		expected []map[string]any
+	}{
+		{
+			name: "no networking",
+		},
+		{
+			name: "VPC and RDMA interfaces",
+			input: &linodego.LKENodePoolNetworking{Interfaces: []linodego.LKENodePoolInterface{
+				{Type: linodego.LKENodePoolInterfaceTypeVPC, VPCID: 101, SubnetID: 201},
+				{Type: linodego.LKENodePoolInterfaceTypeRDMAVPC, VPCID: 101, SubnetID: 301},
+			}},
+			expected: []map[string]any{{
+				"interfaces": []map[string]any{
+					{"type": "vpc", "vpc_id": 101, "subnet_id": 201},
+					{"type": "rdma_vpc", "vpc_id": 101, "subnet_id": 301},
+				},
+			}},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, flattenPoolNetworking(tc.input))
+		})
+	}
+}
