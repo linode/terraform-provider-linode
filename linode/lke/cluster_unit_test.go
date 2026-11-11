@@ -337,3 +337,85 @@ func TestFlattenPoolNetworking(t *testing.T) {
 		})
 	}
 }
+
+func makeTestDeclaredPool(networkingRaw []any) map[string]any {
+	return map[string]any{
+		"id":              0,
+		"type":            "g6-standard-1",
+		"count":           2,
+		"autoscaler":      []any{},
+		"tags":            schema.NewSet(schema.HashString, nil),
+		"taint":           schema.NewSet(schema.HashString, nil),
+		"labels":          map[string]any{},
+		"k8s_version":     "",
+		"update_strategy": "",
+		"label":           "",
+		"firewall_id":     0,
+		"disk_encryption": "",
+		"networking":      networkingRaw,
+	}
+}
+
+func TestMatchPoolsWithSchema_NetworkingPairing(t *testing.T) {
+	networking1 := []any{map[string]any{
+		"interfaces": []any{map[string]any{"type": "vpc", "vpc_id": 1, "subnet_id": 10}},
+	}}
+	networking2 := []any{map[string]any{
+		"interfaces": []any{map[string]any{"type": "vpc", "vpc_id": 2, "subnet_id": 20}},
+	}}
+
+	apiPool1 := linodego.LKENodePool{
+		ID: 100, Type: "g6-standard-1", Count: 2,
+		Networking: &linodego.LKENodePoolNetworking{
+			Interfaces: []linodego.LKENodePoolInterface{
+				{Type: linodego.LKENodePoolInterfaceTypeVPC, VPCID: 1, SubnetID: 10},
+			},
+		},
+	}
+	apiPool2 := linodego.LKENodePool{
+		ID: 101, Type: "g6-standard-1", Count: 2,
+		Networking: &linodego.LKENodePoolNetworking{
+			Interfaces: []linodego.LKENodePoolInterface{
+				{Type: linodego.LKENodePoolInterfaceTypeVPC, VPCID: 2, SubnetID: 20},
+			},
+		},
+	}
+
+	// declaredPools are ordered opposite to apiPools to exercise the matching logic
+	declaredPools := []any{
+		makeTestDeclaredPool(networking2), // should pair with apiPool2
+		makeTestDeclaredPool(networking1), // should pair with apiPool1
+	}
+
+	result, err := matchPoolsWithSchema(context.Background(), []linodego.LKENodePool{apiPool1, apiPool2}, declaredPools)
+	require.NoError(t, err)
+	assert.Equal(t, apiPool2, result[0], "first declared pool (networking2) must match apiPool2")
+	assert.Equal(t, apiPool1, result[1], "second declared pool (networking1) must match apiPool1")
+}
+
+func TestMatchPoolsWithSchema_NetworkingNilPairing(t *testing.T) {
+	apiPoolWithNet := linodego.LKENodePool{
+		ID: 100, Type: "g6-standard-1", Count: 2,
+		Networking: &linodego.LKENodePoolNetworking{
+			Interfaces: []linodego.LKENodePoolInterface{
+				{Type: linodego.LKENodePoolInterfaceTypeVPC, VPCID: 1, SubnetID: 10},
+			},
+		},
+	}
+	apiPoolNoNet := linodego.LKENodePool{
+		ID: 101, Type: "g6-standard-1", Count: 2,
+		Networking: nil,
+	}
+
+	declaredPools := []any{
+		makeTestDeclaredPool(nil),
+		makeTestDeclaredPool([]any{map[string]any{
+			"interfaces": []any{map[string]any{"type": "vpc", "vpc_id": 1, "subnet_id": 10}},
+		}}),
+	}
+
+	result, err := matchPoolsWithSchema(context.Background(), []linodego.LKENodePool{apiPoolWithNet, apiPoolNoNet}, declaredPools)
+	require.NoError(t, err)
+	assert.Equal(t, apiPoolNoNet, result[0], "declared pool without networking must match apiPool without networking")
+	assert.Equal(t, apiPoolWithNet, result[1], "declared pool with networking must match apiPool with networking")
+}

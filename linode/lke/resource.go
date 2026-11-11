@@ -715,12 +715,21 @@ func customDiffValidatePoolNetworkingRequiresBeta(ctx context.Context, diff *sch
 
 // customDiffValidatePoolNetworkingRequiresEnterprise errors if any pool has a
 // networking block configured when the cluster tier is known and not "enterprise".
+// A null tier (omitted) is treated as non-enterprise on new resources; on updates
+// the pool networking block is immutable so this case cannot arise in practice.
 func customDiffValidatePoolNetworkingRequiresEnterprise(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 	tier := diff.GetRawConfig().GetAttr("tier")
-	if !tier.IsKnown() || tier.IsNull() || tier.AsString() == TierEnterprise {
+	if !tier.IsKnown() {
 		return nil
 	}
-	poolIterator := diff.GetRawConfig().GetAttr("pool").ElementIterator()
+	if !tier.IsNull() && tier.AsString() == TierEnterprise {
+		return nil
+	}
+	pool := diff.GetRawConfig().GetAttr("pool")
+	if !pool.IsKnown() || pool.IsNull() {
+		return nil
+	}
+	poolIterator := pool.ElementIterator()
 	for poolIterator.Next() {
 		rawKey, rawPool := poolIterator.Element()
 		networking := rawPool.GetAttr("networking")
