@@ -487,6 +487,10 @@ func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, dec
 				}
 			}
 
+			if !reflect.DeepEqual(expandPoolNetworking(declaredPool["networking"]), apiPool.Networking) {
+				continue
+			}
+
 			// Pair the API pool with the declared pool
 			result[i] = apiPool
 			delete(apiPools, apiPool.ID)

@@ -207,6 +207,9 @@ var resourceSchema = schema.Schema{
 			Description: "Networking configuration for the node pool. " +
 				"Immutable after creation — changing this block forces pool replacement. " +
 				"Requires api_version = \"v4beta\" and tier = \"enterprise\" on the cluster.",
+			Validators: []validator.List{
+				listvalidator.SizeAtMost(1),
+			},
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.RequiresReplaceIfConfigured(),
 			},

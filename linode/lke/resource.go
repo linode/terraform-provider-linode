@@ -44,6 +44,7 @@ func Resource() *schema.Resource {
 			customDiffValidatePoolForStandardTier,
 			customDiffValidateUpdateStrategyWithTier,
 			customDiffValidatePoolNetworkingRequiresBeta,
+			customDiffValidatePoolNetworkingRequiresEnterprise,
 			customDiffValidatePoolNetworkingFirstInterface,
 			customDiffValidateNetworking,
 			linodediffs.ComputedWithDefault("tags", []string{}),
@@ -700,13 +701,36 @@ func customDiffValidatePoolNetworkingRequiresBeta(ctx context.Context, diff *sch
 	for poolIterator.Next() {
 		rawKey, rawPool := poolIterator.Element()
 		networking := rawPool.GetAttr("networking")
-		if networking.IsNull() || networking.LengthInt() == 0 {
+		if networking.IsNull() || !networking.IsKnown() || networking.LengthInt() == 0 {
 			continue
 		}
 		index, _ := rawKey.AsBigFloat().Int64()
 		return fmt.Errorf(
 			"pool.%d.networking: the api_version provider argument must be set to %q to use this field",
 			index, helper.APIVersionV4Beta,
+		)
+	}
+	return nil
+}
+
+// customDiffValidatePoolNetworkingRequiresEnterprise errors if any pool has a
+// networking block configured when the cluster tier is known and not "enterprise".
+func customDiffValidatePoolNetworkingRequiresEnterprise(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	tier := diff.GetRawConfig().GetAttr("tier")
+	if !tier.IsKnown() || tier.IsNull() || tier.AsString() == TierEnterprise {
+		return nil
+	}
+	poolIterator := diff.GetRawConfig().GetAttr("pool").ElementIterator()
+	for poolIterator.Next() {
+		rawKey, rawPool := poolIterator.Element()
+		networking := rawPool.GetAttr("networking")
+		if networking.IsNull() || !networking.IsKnown() || networking.LengthInt() == 0 {
+			continue
+		}
+		index, _ := rawKey.AsBigFloat().Int64()
+		return fmt.Errorf(
+			"pool.%d.networking: pool networking is only available for LKE Enterprise clusters",
+			index,
 		)
 	}
 	return nil
@@ -719,7 +743,7 @@ func customDiffValidatePoolNetworkingFirstInterface(ctx context.Context, diff *s
 	for poolIterator.Next() {
 		rawKey, rawPool := poolIterator.Element()
 		networking := rawPool.GetAttr("networking")
-		if networking.IsNull() || networking.LengthInt() == 0 {
+		if networking.IsNull() || !networking.IsKnown() || networking.LengthInt() == 0 {
 			continue
 		}
 

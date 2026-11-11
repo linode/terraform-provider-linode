@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -119,6 +120,14 @@ func (r *Resource) Create(
 	}
 	config.validateEnterpriseOnlyAttributes(cluster.Tier, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if len(config.Networking) > 0 && !strings.EqualFold(r.Meta.Config.APIVersion.ValueString(), helper.APIVersionV4Beta) {
+		resp.Diagnostics.AddError(
+			"Invalid networking configuration",
+			fmt.Sprintf("the api_version provider argument must be set to %q to use networking", helper.APIVersionV4Beta),
+		)
 		return
 	}
 
