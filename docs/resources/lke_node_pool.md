@@ -117,7 +117,7 @@ locals {
 
 resource "linode_lke_cluster" "rdma" {
     label              = "rdma-cluster"
-    k8s_version        = "1.32"
+    k8s_version        = "v1.35.9+lke3"
     region             = "us-mia"
     tier               = "enterprise"
     vpc_id             = var.vpc_id

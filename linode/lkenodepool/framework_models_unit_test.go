@@ -252,6 +252,16 @@ func TestValidateEnterpriseOnlyAttributes_Networking(t *testing.T) {
 			wantSummary: "Invalid networking configuration",
 		},
 		{
+			name: "Enterprise rejects vpc at non-first position",
+			tier: "enterprise",
+			networking: []NodePoolNetworkingModel{{Interfaces: []NodePoolInterfaceModel{
+				{Type: types.StringValue("vpc")},
+				{Type: types.StringValue("vpc")},
+			}}},
+			wantError:   true,
+			wantSummary: "Invalid networking configuration",
+		},
+		{
 			name:        "standard tier rejects networking",
 			tier:        "standard",
 			networking:  validNetworking,

@@ -2,6 +2,7 @@ package lkenodepool
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -274,13 +275,22 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 // LKE Enterprise clusters are not configured on non-enterprise clusters.
 func (pool *NodePoolModel) validateEnterpriseOnlyAttributes(tier string, diags *diag.Diagnostics) {
 	if tier == string(linodego.LKEVersionEnterprise) {
-		// Validate that interfaces[0].type == "vpc" when networking is configured.
+		// Validate interface ordering: first must be "vpc", subsequent must not be "vpc".
 		if len(pool.Networking) > 0 && len(pool.Networking[0].Interfaces) > 0 {
-			if pool.Networking[0].Interfaces[0].Type.ValueString() != "vpc" {
+			ifaces := pool.Networking[0].Interfaces
+			if ifaces[0].Type.ValueString() != "vpc" {
 				diags.AddError(
 					"Invalid networking configuration",
 					"networking.interfaces[0].type must be \"vpc\" — the first interface must reference the cluster VPC subnet.",
 				)
+			}
+			for i := 1; i < len(ifaces); i++ {
+				if ifaces[i].Type.ValueString() == "vpc" {
+					diags.AddError(
+						"Invalid networking configuration",
+						fmt.Sprintf("networking.interfaces[%d].type must not be \"vpc\" — only the first interface may be of type \"vpc\".", i),
+					)
+				}
 			}
 		}
 		return
