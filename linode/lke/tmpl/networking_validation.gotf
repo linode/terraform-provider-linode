@@ -1,0 +1,20 @@
+{{ define "lke_cluster_networking_validation" }}
+
+resource "linode_lke_cluster" "test" {
+    label       = "{{ .Label }}"
+    region      = "{{ .Region }}"
+    k8s_version = "{{ .K8sVersion }}"
+    tier        = "{{ .Tier }}"
+
+    networking {
+        routing_mode = "{{ .RoutingMode }}"
+        max_pods     = 64
+    }
+
+    pool {
+        type  = "g6-standard-1"
+        count = 1
+    }
+}
+
+{{ end }}
