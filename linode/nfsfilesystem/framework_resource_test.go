@@ -25,21 +25,11 @@ const resourceName = "linode_nfs_filesystem.foobar"
 // minCapacityBytes is the minimum provisionable filesystem capacity (1 GiB).
 const minCapacityBytes int64 = 1073741824
 
-var testRegion string
-
 func init() {
 	resource.AddTestSweepers("linode_nfs_filesystem", &resource.Sweeper{
 		Name: "linode_nfs_filesystem",
 		F:    sweep,
 	})
-
-	//region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
-	//if err != nil {
-	//	log.Fatalf("failed to get random region: %s", err)
-	//}
-	//testRegion = region
-	// only use pl-labkrk-2 for now since other regions are not available for NFS Filesystem creation
-	testRegion = "pl-labkrk-2"
 }
 
 func sweep(prefix string) error {
@@ -76,6 +66,7 @@ func TestAccResourceNFSFilesystem_basic(t *testing.T) {
 	t.Parallel()
 
 	label := acctest.RandomWithPrefix("tf-test")
+	testRegion := acceptance.GetNFSTestRegion(t)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -113,6 +104,7 @@ func TestAccResourceNFSFilesystem_update(t *testing.T) {
 
 	label := acctest.RandomWithPrefix("tf-test")
 	newLabel := acctest.RandomWithPrefix("tf-test")
+	testRegion := acceptance.GetNFSTestRegion(t)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

@@ -20,6 +20,7 @@ func TestAccDataSourceNFSFilesystem_basic(t *testing.T) {
 	t.Parallel()
 
 	label := acctest.RandomWithPrefix("tf-test")
+	testRegion := acceptance.GetNFSTestRegion(t)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
