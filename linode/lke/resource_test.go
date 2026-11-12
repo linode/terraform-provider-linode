@@ -575,6 +575,7 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 }
 
 func TestAccResourceLKECluster_controlPlane(t *testing.T) {
+	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
@@ -583,6 +584,11 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 		testIPv6 := "2001:db8::/32"
 		testIPv4Updated := "203.0.113.1"
 		testIPv6Updated := "2001:db8:1234:abcd::/64"
+		testIPv4Final := "198.51.100.1"
+		testIPv6Final := "2001:db8:5678::/64"
+		revisionID := acctest.RandomWithPrefix("tf-test-rev")
+
+		var initialRevisionID string
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -601,6 +607,11 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv4.0", testIPv4),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv6.0", testIPv6),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "control_plane.0.acl.0.revision_id"),
+						func(s *terraform.State) error {
+							rs := s.RootModule().Resources[resourceClusterName]
+							initialRevisionID = rs.Primary.Attributes["control_plane.0.acl.0.revision_id"]
+							return nil
+						},
 					),
 				},
 				{
@@ -615,10 +626,32 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv4.0", testIPv4Updated),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv6.0", testIPv6Updated),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "control_plane.0.acl.0.revision_id"),
+						func(s *terraform.State) error {
+							rs := s.RootModule().Resources[resourceClusterName]
+							revisionID := rs.Primary.Attributes["control_plane.0.acl.0.revision_id"]
+							if revisionID == initialRevisionID {
+								return fmt.Errorf("expected revision_id to change after ACL update, but it remained %q", revisionID)
+							}
+							return nil
+						},
 					),
 				},
 				{
-					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, false, true),
+					Config: tmpl.ControlPlaneRevisionID(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, revisionID, true),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv4.0", testIPv4Updated),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.revision_id", revisionID),
+					),
+				},
+				{
+					Config: tmpl.ControlPlaneRevisionID(t, clusterName, k8sVersionLatest, testRegion, testIPv4Final, testIPv6Final, revisionID, true),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv4.0", testIPv4Final),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.revision_id", revisionID),
+					),
+				},
+				{
+					Config: tmpl.ControlPlaneRevisionID(t, clusterName, k8sVersionLatest, testRegion, testIPv4Final, testIPv6Final, revisionID, false),
 
 					// Expect a 400 response when attempting to disable HA
 					ExpectError: regexp.MustCompile("\\[400]"),

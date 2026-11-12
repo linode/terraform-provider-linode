@@ -19,6 +19,7 @@ type TemplateData struct {
 	HighAvailability bool
 	Region           string
 	ACLEnabled       bool
+	RevisionID       string
 	IPv4             string
 	IPv6             string
 	PoolLabel        string
@@ -85,6 +86,20 @@ func ControlPlane(t testing.TB, name, version, region, ipv4, ipv6 string, ha, en
 			IPv4:             ipv4,
 			IPv6:             ipv6,
 			ACLEnabled:       enabled,
+		})
+}
+
+func ControlPlaneRevisionID(t testing.TB, name, version, region, ipv4, ipv6, revisionID string, ha bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_control_plane", TemplateData{
+			Label:            name,
+			HighAvailability: ha,
+			K8sVersion:       version,
+			Region:           region,
+			IPv4:             ipv4,
+			IPv6:             ipv6,
+			ACLEnabled:       true,
+			RevisionID:       revisionID,
 		})
 }
 
