@@ -56,6 +56,8 @@ The following arguments are supported:
 
 The following arguments are sets of [entity grants](#entity-grants):
 
+Omitting all blocks for an entity grant set removes all grants of that type from the user.
+
 * `domain_grant` - (optional, Block Set) The domains the user has permissions access to. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
 * `firewall_grant` - (optional, Block Set) The firewalls the user has permissions access to. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
