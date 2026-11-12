@@ -1,0 +1,25 @@
+{{ define "nfs_filesystems_data_basic" }}
+
+resource "linode_nfs_space" "foobar" {
+    label = "{{.Label}}-space"
+}
+
+resource "linode_nfs_filesystem" "foobar" {
+    space_id           = linode_nfs_space.foobar.id
+    label              = "{{.Label}}"
+    region             = "{{.Region}}"
+    max_capacity_bytes = {{.MaxCapacityBytes}}
+}
+
+data "linode_nfs_filesystems" "foobar" {
+    space_id = linode_nfs_space.foobar.id
+
+    filter = [
+        {
+            name   = "id"
+            values = [linode_nfs_filesystem.foobar.id]
+        }
+    ]
+}
+
+{{ end }}

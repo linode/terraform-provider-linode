@@ -84,6 +84,10 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/networkingipassignment"
 	"github.com/linode/terraform-provider-linode/v4/linode/networkingips"
 	"github.com/linode/terraform-provider-linode/v4/linode/networktransferprices"
+	"github.com/linode/terraform-provider-linode/v4/linode/nfsfilesystem"
+	"github.com/linode/terraform-provider-linode/v4/linode/nfsfilesystems"
+	"github.com/linode/terraform-provider-linode/v4/linode/nfsspace"
+	"github.com/linode/terraform-provider-linode/v4/linode/nfsspaces"
 	"github.com/linode/terraform-provider-linode/v4/linode/obj"
 	"github.com/linode/terraform-provider-linode/v4/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v4/linode/objendpoints"
@@ -299,6 +303,8 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		monitorlogsdestination.NewResource,
 		monitorlogsstream.NewResource,
 		monitoralertdefinition.NewResource,
+		nfsspace.NewResource,
+		nfsfilesystem.NewResource,
 	}
 }
 
@@ -396,6 +402,10 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		consumerimagesharegroup.NewDataSource,
 		consumerimagesharegroupimageshares.NewDataSource,
 		monitoralertdefinition.NewDataSource,
+		nfsspace.NewDataSource,
+		nfsspaces.NewDataSource,
+		nfsfilesystem.NewDataSource,
+		nfsfilesystems.NewDataSource,
 		monitoralertdefinitions.NewDataSource,
 		monitoralertdefinitionentities.NewDataSource,
 		lkenodepool.NewDataSource,

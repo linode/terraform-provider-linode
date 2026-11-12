@@ -1,0 +1,15 @@
+{{ define "nfs_filesystem_updates" }}
+
+resource "linode_nfs_space" "foobar" {
+    label = "{{.Label}}-space"
+}
+
+resource "linode_nfs_filesystem" "foobar" {
+    space_id           = linode_nfs_space.foobar.id
+    label              = "{{.Label}}"
+    region             = "{{.Region}}"
+    max_capacity_bytes = {{.MaxCapacityBytes}}
+    tags               = ["test", "nfs"]
+}
+
+{{ end }}
