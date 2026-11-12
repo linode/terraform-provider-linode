@@ -7,42 +7,34 @@ import (
 )
 
 type TemplateData struct {
-	SpaceID          int
-	FilesystemID     int
-	Path             string
-	MaxCapacityBytes int64
-	MaxFileCount     int64
+	Label        string
+	SpaceID      int
+	FilesystemID int
 }
 
-func Basic(t testing.TB, spaceID, filesystemID int, path string, maxCapacityBytes, maxFileCount int64) string {
+func Basic(t testing.TB, label string, spaceID, filesystemID int) string {
 	return acceptance.ExecuteTemplate(t,
 		"nfs_quota_basic", TemplateData{
-			SpaceID:          spaceID,
-			FilesystemID:     filesystemID,
-			Path:             path,
-			MaxCapacityBytes: maxCapacityBytes,
-			MaxFileCount:     maxFileCount,
+			Label:        label,
+			SpaceID:      spaceID,
+			FilesystemID: filesystemID,
 		})
 }
 
-func Updates(t testing.TB, spaceID, filesystemID int, path string, maxCapacityBytes, maxFileCount int64) string {
+func Updates(t testing.TB, label string, spaceID, filesystemID int) string {
 	return acceptance.ExecuteTemplate(t,
 		"nfs_quota_updates", TemplateData{
-			SpaceID:          spaceID,
-			FilesystemID:     filesystemID,
-			Path:             path,
-			MaxCapacityBytes: maxCapacityBytes,
-			MaxFileCount:     maxFileCount,
+			Label:        label,
+			SpaceID:      spaceID,
+			FilesystemID: filesystemID,
 		})
 }
 
-func DataBasic(t testing.TB, spaceID, filesystemID int, path string, maxCapacityBytes, maxFileCount int64) string {
+func DataBasic(t testing.TB, label string, spaceID, filesystemID int) string {
 	return acceptance.ExecuteTemplate(t,
 		"nfs_quota_data_basic", TemplateData{
-			SpaceID:          spaceID,
-			FilesystemID:     filesystemID,
-			Path:             path,
-			MaxCapacityBytes: maxCapacityBytes,
-			MaxFileCount:     maxFileCount,
+			Label:        label,
+			SpaceID:      spaceID,
+			FilesystemID: filesystemID,
 		})
 }

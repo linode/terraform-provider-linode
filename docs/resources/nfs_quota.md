@@ -167,3 +167,47 @@ NFS Quotas can be imported using the NFS Space ID, NFS Filesystem ID, and NFS Qu
 ```sh
 terraform import linode_nfs_quota.example 123,456,789
 ```
+
+-> **Note:** Each NFS Filesystem is created with a root quota on its mount path. The root quota cannot be created, but it can be imported to manage its `user_group_config`. Its `max_capacity_bytes` (determined by the filesystem size) and `max_file_count` are read-only and must match the values reported by the API. Destroying a root quota only removes it from Terraform state; the API removes it when the filesystem is deleted.
+
+The root quota can be looked up with the [`linode_nfs_quotas`](../data-sources/nfs_quotas.md) data source and imported with an `import` block:
+
+```terraform
+data "linode_nfs_quotas" "root" {
+  space_id      = linode_nfs_space.example.id
+  filesystem_id = linode_nfs_filesystem.example.id
+
+  filter = [
+    {
+      name   = "is_root"
+      values = ["true"]
+    }
+  ]
+}
+
+locals {
+  root_quota = data.linode_nfs_quotas.root.nfs_quotas[0]
+}
+
+import {
+  to = linode_nfs_quota.root
+  id = "${linode_nfs_space.example.id},${linode_nfs_filesystem.example.id},${local.root_quota.id}"
+}
+
+resource "linode_nfs_quota" "root" {
+  space_id           = linode_nfs_space.example.id
+  filesystem_id      = linode_nfs_filesystem.example.id
+  path               = local.root_quota.path
+  max_capacity_bytes = local.root_quota.max_capacity_bytes
+  max_file_count     = local.root_quota.max_file_count
+
+  user_group_config = {
+    default_user_limit = {
+      max_capacity_bytes = 1073741824
+      max_file_count     = 1000
+    }
+  }
+}
+```
+
+The filesystem must already exist before this configuration is planned, since the import ID must be known at plan time.

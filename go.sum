@@ -191,12 +191,8 @@ github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
 github.com/kr/text v0.2.0/go.mod h1:eLer722TekiGuMkidMxC/pM04lWEeraHUUmBw8l2grE=
 github.com/linode/linodego/k8s v1.26.1 h1:7/Wln3A7DPPEiS2KfaJexSbbFHbFE/xwokUU2R2TTOc=
 github.com/linode/linodego/k8s v1.26.1/go.mod h1:54MTxB+ecs+mHnLOIRT7SbqR7y9mJ1t626CdWaP9qGs=
-<<<<<<< HEAD
-github.com/linode/linodego/v2 v2.8.0/go.mod h1:VzN8px4lhrGSiBBuSsar2GOVJY9S7pN1pF6d1Q8zENM=
-=======
 github.com/linode/linodego/v2 v2.11.1-0.20261104194850-d352a4773d70 h1:66JoyR0QM/E2OGSWub+id03bo7MVifdBdV4tJ0SeAZU=
 github.com/linode/linodego/v2 v2.11.1-0.20261104194850-d352a4773d70/go.mod h1:nfJhXC/SV/Ae/nj1DjAUJAipckkOp4yTc2vd7JNMKAM=
->>>>>>> TPT-support-nfs-spaces-filesystems
 github.com/mailru/easyjson v0.7.7 h1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=
 github.com/mailru/easyjson v0.7.7/go.mod h1:xzfreul335JAWq5oZzymOObrkdz5UnU4kGfJJLY9Nlc=
 github.com/mattn/go-colorable v0.1.9/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=

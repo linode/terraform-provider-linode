@@ -264,6 +264,12 @@ func (r *Resource) Delete(
 
 	ctx = resourcePopulateLogAttributes(ctx, data)
 
+	// The root quota cannot be deleted; it is removed along with its filesystem.
+	if data.IsRoot.ValueBool() {
+		tflog.Debug(ctx, "Skipping deletion of root NFS Quota; removing from state only")
+		return
+	}
+
 	spaceID := helper.FrameworkSafeInt64ToInt(data.SpaceID.ValueInt64(), &resp.Diagnostics)
 	filesystemID := helper.FrameworkSafeInt64ToInt(data.FilesystemID.ValueInt64(), &resp.Diagnostics)
 	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)

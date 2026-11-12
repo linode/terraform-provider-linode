@@ -5,6 +5,8 @@ package nfsquota_test
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/compare"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -16,8 +18,8 @@ import (
 func TestAccDataSourceNFSQuota_basic(t *testing.T) {
 	t.Parallel()
 
-	spaceID, filesystemID, mountPath := setupFilesystem(t)
-	path := mountPath
+	label := acctest.RandomWithPrefix("tf-test")
+	fs := acceptance.GetNFSTestFilesystem(t)
 
 	dataName := "data.linode_nfs_quota.foobar"
 
@@ -27,13 +29,34 @@ func TestAccDataSourceNFSQuota_basic(t *testing.T) {
 		CheckDestroy:             checkNFSQuotaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, spaceID, filesystemID, path, 2147483648, 2000),
+				Config: tmpl.DataBasic(t, label, fs.SpaceID, fs.ID),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("space_id"), knownvalue.Int64Exact(int64(spaceID))),
-					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("filesystem_id"), knownvalue.Int64Exact(int64(filesystemID))),
-					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("path"), knownvalue.StringExact(path)),
-					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("max_capacity_bytes"), knownvalue.Int64Exact(2147483648)),
-					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("max_file_count"), knownvalue.Int64Exact(2000)),
+					statecheck.CompareValuePairs(
+						dataName, tfjsonpath.New("space_id"),
+						resourceName, tfjsonpath.New("space_id"),
+						compare.ValuesSame(),
+					),
+					statecheck.CompareValuePairs(
+						dataName, tfjsonpath.New("filesystem_id"),
+						resourceName, tfjsonpath.New("filesystem_id"),
+						compare.ValuesSame(),
+					),
+					statecheck.CompareValuePairs(
+						dataName, tfjsonpath.New("path"),
+						resourceName, tfjsonpath.New("path"),
+						compare.ValuesSame(),
+					),
+					statecheck.CompareValuePairs(
+						dataName, tfjsonpath.New("max_capacity_bytes"),
+						resourceName, tfjsonpath.New("max_capacity_bytes"),
+						compare.ValuesSame(),
+					),
+					statecheck.CompareValuePairs(
+						dataName, tfjsonpath.New("max_file_count"),
+						resourceName, tfjsonpath.New("max_file_count"),
+						compare.ValuesSame(),
+					),
+					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("is_root"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("status"), knownvalue.NotNull()),
 				},
 			},
