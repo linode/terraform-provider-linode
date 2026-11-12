@@ -17,23 +17,12 @@ import (
 // minCapacityBytes is the minimum provisionable filesystem capacity (1 GiB).
 const minCapacityBytes int64 = 1073741824
 
-var testRegion string
-
-func init() {
-	//region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes}, "core")
-	//if err != nil {
-	//	log.Fatalf("failed to get random region: %s", err)
-	//}
-	//testRegion = region
-	// only use pl-labkrk-2 for now since other regions are not available for NFS Filesystem creation
-	testRegion = "pl-labkrk-2"
-}
-
 func TestAccDataSourceNFSFilesystems_basic(t *testing.T) {
 	t.Parallel()
 
 	dataSourceName := "data.linode_nfs_filesystems.foobar"
 	label := acctest.RandomWithPrefix("tf-test")
+	testRegion := acceptance.GetNFSTestRegion(t)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -62,6 +51,7 @@ func TestAccDataSourceNFSFilesystems_filterLabel(t *testing.T) {
 
 	dataSourceName := "data.linode_nfs_filesystems.foobar"
 	label := acctest.RandomWithPrefix("tf-test")
+	testRegion := acceptance.GetNFSTestRegion(t)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
