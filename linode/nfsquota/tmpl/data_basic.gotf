@@ -1,0 +1,11 @@
+{{ define "nfs_quota_data_basic" }}
+
+{{ template "nfs_quota_basic" . }}
+
+data "linode_nfs_quota" "foobar" {
+    space_id      = {{ .SpaceID }}
+    filesystem_id = {{ .FilesystemID }}
+    id            = linode_nfs_quota.foobar.id
+}
+
+{{ end }}

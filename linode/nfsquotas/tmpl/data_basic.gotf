@@ -1,0 +1,15 @@
+{{ define "nfs_quotas_data_basic" }}
+
+data "linode_nfs_quotas" "foobar" {
+    space_id      = {{ .SpaceID }}
+    filesystem_id = {{ .FilesystemID }}
+
+    filter = [
+        {
+            name   = "is_root"
+            values = ["true"]
+        }
+    ]
+}
+
+{{ end }}
