@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -27,6 +28,57 @@ func NewResource() resource.Resource {
 
 type Resource struct {
 	helper.BaseResource
+}
+
+var _ resource.ResourceWithValidateConfig = (*Resource)(nil)
+
+// ValidateConfig rejects configurations where `addresses` is declared for an
+// autoscaling NAT Gateway. Autoscaling gateways allocate their own addresses,
+// which Read stores in `addresses`. A declared set (including an empty one)
+// would then permanently conflict with that state, and Update would try to
+// delete addresses the API refuses to remove.
+func (r *Resource) ValidateConfig(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var config NATGatewayModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// An omitted `addresses` is the only valid configuration for an
+	// autoscaling gateway, so there is nothing left to check.
+	if config.Addresses.IsNull() || config.Addresses.IsUnknown() {
+		return
+	}
+
+	if config.UseAutoscaling.IsUnknown() {
+		return
+	}
+
+	// `use_autoscaling` defaults to true when `addresses` is empty.
+	autoscaling := config.UseAutoscaling.ValueBool() ||
+		(config.UseAutoscaling.IsNull() && len(config.Addresses.Elements()) == 0)
+	if !autoscaling {
+		return
+	}
+
+	detail := "An autoscaling NAT Gateway allocates its own addresses, which are " +
+		"reported in the computed `addresses` attribute. Remove the `addresses` " +
+		"attribute from this resource."
+
+	if config.UseAutoscaling.IsNull() {
+		detail += " To manage addresses explicitly, set `use_autoscaling = false`."
+	}
+
+	resp.Diagnostics.AddAttributeError(
+		path.Root("addresses"),
+		"`addresses` cannot be configured when autoscaling is enabled.",
+		detail,
+	)
 }
 
 func (r *Resource) Create(
@@ -171,8 +223,15 @@ func (r *Resource) Update(
 	// An unknown planned addresses set (not configured) is not treated as a change.
 	// Whether addresses may be modified (use_autoscaling) is enforced by the API.
 	if !plan.Addresses.IsUnknown() && !plan.Addresses.Equal(state.Addresses) {
-		resp.Diagnostics.Append(r.updateAddresses(ctx, id, plan.Addresses, state.Addresses)...)
-		if resp.Diagnostics.HasError() {
+		addressDiags := r.updateAddresses(ctx, id, plan.Addresses, state.Addresses)
+		resp.Diagnostics.Append(addressDiags...)
+		if addressDiags.HasError() {
+			// Addresses may have been partially modified, so persist the
+			// gateway's actual configuration rather than leaving stale state.
+			if natGateway, err := client.GetNATGateway(ctx, id); err == nil {
+				resp.Diagnostics.Append(state.FlattenNATGateway(natGateway, false)...)
+				resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+			}
 			return
 		}
 	}
@@ -194,9 +253,20 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-// updateAddresses removes addresses present in state but not in plan, then
-// adds addresses present in plan but not in state. Removals run first so
-// addresses are freed before new ones are assigned.
+// addressOp is a single pending address assignment or unassignment.
+type addressOp struct {
+	address string
+	add     bool
+}
+
+// updateAddresses reconciles the NAT Gateway's addresses with the plan.
+//
+// Additions are ordered ahead of removals whenever the gateway has headroom
+// under maximum_reserved_addresses_per_natgateway, so a failed addition never
+// leaves the gateway without its working egress addresses. When the gateway is
+// already at the limit, a removal is interleaved first to free a slot. Any
+// operation that fails causes the operations already applied to be undone, so
+// a failed replacement preserves the working configuration.
 func (r *Resource) updateAddresses(
 	ctx context.Context,
 	id int,
@@ -212,43 +282,139 @@ func (r *Resource) updateAddresses(
 		return diags
 	}
 
-	client := r.Meta.Client
+	toAdd := addressesMissingFrom(planAddrs, stateAddrs)
+	toRemove := addressesMissingFrom(stateAddrs, planAddrs)
+	if len(toAdd) == 0 && len(toRemove) == 0 {
+		return diags
+	}
 
-	for _, addr := range stateAddrs {
-		if slices.Contains(planAddrs, addr) {
-			continue
-		}
-		tflog.Debug(ctx, "client.NATGatewayDeleteAddress(...)", map[string]any{
-			"address": addr,
-		})
-		if err := client.NATGatewayDeleteAddress(ctx, id, addr); err != nil {
+	headroom, d := r.addressHeadroom(ctx, len(stateAddrs))
+	diags.Append(d...)
+
+	ops := planAddressOps(toAdd, toRemove, headroom)
+
+	applied := make([]addressOp, 0, len(ops))
+	for _, op := range ops {
+		if err := r.applyAddressOp(ctx, id, op); err != nil {
 			diags.AddError(
-				fmt.Sprintf("Failed to remove address %s from NAT Gateway (%d).", addr, id),
+				fmt.Sprintf("Failed to update the addresses of NAT Gateway (%d).", id),
 				err.Error(),
 			)
+			diags.Append(r.rollbackAddressOps(ctx, id, applied)...)
 			return diags
+		}
+		applied = append(applied, op)
+	}
+
+	return diags
+}
+
+// addressHeadroom returns how many additional addresses may be assigned to a
+// NAT Gateway that currently has assigned addresses. If the settings cannot be
+// read, zero is returned so the gateway is treated as being at its limit.
+func (r *Resource) addressHeadroom(ctx context.Context, assigned int) (int, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	tflog.Debug(ctx, "client.NATGatewayGetSettings(...)")
+	settings, err := r.Meta.Client.NATGatewayGetSettings(ctx)
+	if err != nil {
+		diags.AddWarning(
+			"Failed to read NAT Gateway settings.",
+			"Address changes will be applied one slot at a time because the maximum number "+
+				"of reserved addresses per NAT Gateway could not be determined: "+err.Error(),
+		)
+		return 0, diags
+	}
+
+	return max(settings.MaximumReservedAddressesPerNATGateway-assigned, 0), diags
+}
+
+// planAddressOps orders the pending address changes so the limit on reserved
+// addresses is never exceeded while keeping as many working addresses assigned
+// as possible. Additions are applied while there is headroom; otherwise a
+// removal is applied first to free a slot.
+func planAddressOps(toAdd, toRemove []string, headroom int) []addressOp {
+	ops := make([]addressOp, 0, len(toAdd)+len(toRemove))
+
+	for len(toAdd) > 0 || len(toRemove) > 0 {
+		switch {
+		case len(toAdd) > 0 && headroom > 0:
+			ops = append(ops, addressOp{address: toAdd[0], add: true})
+			toAdd = toAdd[1:]
+			headroom--
+		case len(toRemove) > 0:
+			ops = append(ops, addressOp{address: toRemove[0]})
+			toRemove = toRemove[1:]
+			headroom++
+		default:
+			// No headroom and nothing left to remove. Attempt the addition
+			// anyway so the API reports the limit to the user.
+			ops = append(ops, addressOp{address: toAdd[0], add: true})
+			toAdd = toAdd[1:]
 		}
 	}
 
-	for _, addr := range planAddrs {
-		if slices.Contains(stateAddrs, addr) {
-			continue
-		}
+	return ops
+}
+
+// applyAddressOp assigns or unassigns a single address.
+func (r *Resource) applyAddressOp(ctx context.Context, id int, op addressOp) error {
+	if op.add {
 		tflog.Debug(ctx, "client.NATGatewayAddAddress(...)", map[string]any{
-			"address": addr,
+			"address": op.address,
 		})
-		if _, err := client.NATGatewayAddAddress(ctx, id, linodego.NATGatewayAddAddressOptions{
-			Address: addr,
+		if _, err := r.Meta.Client.NATGatewayAddAddress(ctx, id, linodego.NATGatewayAddAddressOptions{
+			Address: op.address,
 		}); err != nil {
-			diags.AddError(
-				fmt.Sprintf("Failed to add address %s to NAT Gateway (%d).", addr, id),
-				err.Error(),
+			return fmt.Errorf("failed to add address %s: %w", op.address, err)
+		}
+		return nil
+	}
+
+	tflog.Debug(ctx, "client.NATGatewayDeleteAddress(...)", map[string]any{
+		"address": op.address,
+	})
+	if err := r.Meta.Client.NATGatewayDeleteAddress(ctx, id, op.address); err != nil {
+		return fmt.Errorf("failed to remove address %s: %w", op.address, err)
+	}
+
+	return nil
+}
+
+// rollbackAddressOps undoes the applied operations in reverse order on a
+// best-effort basis. Failures are reported as warnings because the original
+// error is the one the user needs to act on.
+func (r *Resource) rollbackAddressOps(ctx context.Context, id int, applied []addressOp) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	for _, op := range slices.Backward(applied) {
+		op.add = !op.add
+
+		if err := r.applyAddressOp(ctx, id, op); err != nil {
+			diags.AddWarning(
+				"Failed to roll back a NAT Gateway address change.",
+				fmt.Sprintf(
+					"NAT Gateway (%d) may be left with addresses that do not match the "+
+						"previous configuration and should be reconciled manually: %s",
+					id, err.Error(),
+				),
 			)
 			return diags
 		}
 	}
 
 	return diags
+}
+
+// addressesMissingFrom returns the addresses in a that are not in b.
+func addressesMissingFrom(a, b []string) []string {
+	missing := make([]string, 0, len(a))
+	for _, addr := range a {
+		if !slices.Contains(b, addr) {
+			missing = append(missing, addr)
+		}
+	}
+	return missing
 }
 
 // natGatewayAddressStrings returns the address strings in the set.

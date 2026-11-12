@@ -40,6 +40,24 @@ func AutoscaleAddressUpdate(t *testing.T, label, region string) string {
 	})
 }
 
+// AutoscalingEmptyAddresses renders an autoscaling gateway that explicitly declares an empty
+// addresses set. The provider must reject this during validation.
+func AutoscalingEmptyAddresses(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t, "natgateway_autoscaling_empty_addresses", TemplateData{
+		Label:  label,
+		Region: region,
+	})
+}
+
+// ImpliedAutoscalingEmptyAddresses renders a gateway that omits use_autoscaling and declares an
+// empty addresses set, which implies autoscaling. The provider must reject this during validation.
+func ImpliedAutoscalingEmptyAddresses(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t, "natgateway_implied_autoscaling_empty_addresses", TemplateData{
+		Label:  label,
+		Region: region,
+	})
+}
+
 // Complex renders a manual (autoscaling false) NAT gateway with one reserved address, attached to a VPC subnet.
 func Complex(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(t, "natgateway_complex", TemplateData{

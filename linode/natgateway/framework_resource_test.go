@@ -111,10 +111,57 @@ func TestAccResourceNATGateway_update(t *testing.T) {
 				ConfigStateChecks: natGatewayStateChecks(updatedLabel),
 			},
 			{
-				// Assign an address to the autoscaling-true gateway. The API must reject this.
-				// Address 1 is free here because the swap moved the manual gateway to address 3.
+				// Assign an address to the autoscaling-true gateway. The provider must
+				// reject this during validation, before any API call is made.
 				Config:      tmpl.AutoscaleAddressUpdate(t, updatedLabel, region),
-				ExpectError: regexp.MustCompile(`Addresses cannot be modified when autoscaling is enabled`),
+				ExpectError: regexp.MustCompile(`(?s)cannot be configured when\s+autoscaling is enabled`),
+			},
+			{
+				// Restore the valid configuration. The post-test destroy reuses the
+				// configuration left by the final step, which must therefore be valid.
+				Config:            tmpl.AddressSwap(t, updatedLabel, region),
+				ConfigStateChecks: natGatewayStateChecks(updatedLabel),
+			},
+		},
+	})
+}
+
+// TestAccResourceNATGateway_autoscalingEmptyAddresses asserts that an explicitly configured
+// empty addresses set is rejected for an autoscaling gateway. Autoscaling allocates addresses
+// that Read stores in the attribute, so such a configuration could never be reconciled.
+//
+// Both configurations fail validation, so no resources are created.
+func TestAccResourceNATGateway_autoscalingEmptyAddresses(t *testing.T) {
+	t.Parallel()
+
+	region, err := acceptance.GetRandomRegionWithCaps(
+		[]linodego.RegionCapability{linodego.CapabilityVPCs, linodego.CapabilityNATGateway}, "core")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	label := "tf-" + acctest.RandString(10)
+	expectedError := regexp.MustCompile(`(?s)cannot be configured when\s+autoscaling is enabled`)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				// use_autoscaling is explicitly true.
+				Config:      tmpl.AutoscalingEmptyAddresses(t, label, region),
+				ExpectError: expectedError,
+			},
+			{
+				// use_autoscaling is omitted, so an empty addresses set implies autoscaling.
+				Config:      tmpl.ImpliedAutoscalingEmptyAddresses(t, label, region),
+				ExpectError: expectedError,
+			},
+			{
+				// The post-test destroy reuses the configuration left by the final step.
+				// An empty configuration keeps that destroy valid, since the preceding
+				// steps never created anything.
+				Config: "# No resources. See the comment on this test step.\n",
 			},
 		},
 	})

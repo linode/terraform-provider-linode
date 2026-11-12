@@ -161,7 +161,7 @@ var frameworkResourceSchema = schema.Schema{
 		"use_autoscaling": schema.BoolAttribute{
 			Optional: true,
 			Description: "Whether the NAT Gateway automatically scales its public IPv4 addresses. " +
-				"If omitted, defaults to true when addresses is empty, otherwise false. Create-only and Write-only.",
+				"If omitted, defaults to true when addresses is omitted, otherwise false. Create-only and Write-only.",
 			PlanModifiers: []planmodifier.Bool{
 				boolplanmodifier.RequiresReplace(),
 			},
@@ -212,9 +212,11 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"addresses": schema.SetNestedAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The public IP addresses assigned to this NAT Gateway. Must be empty when use_autoscaling is true.",
+			Optional: true,
+			Computed: true,
+			Description: "The public IP addresses assigned to this NAT Gateway. Must be omitted, " +
+				"rather than set to an empty set, when use_autoscaling is true; the addresses " +
+				"allocated by autoscaling are reported here.",
 			PlanModifiers: []planmodifier.Set{
 				setplanmodifier.UseStateForUnknown(),
 			},
