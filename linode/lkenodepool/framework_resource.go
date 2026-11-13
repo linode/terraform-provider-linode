@@ -46,7 +46,7 @@ func (r *Resource) ModifyPlan(
 		return
 	}
 
-	if len(plan.Networking) == 0 {
+	if plan.Networking == nil {
 		return
 	}
 
@@ -62,8 +62,8 @@ func (r *Resource) ModifyPlan(
 
 	// Validate interface ordering without an API call: vpc must be first,
 	// subsequent entries must not be vpc.
-	if len(plan.Networking[0].Interfaces) > 0 {
-		ifaces := plan.Networking[0].Interfaces
+	if len(plan.Networking.Interfaces) > 0 {
+		ifaces := plan.Networking.Interfaces
 		for _, iface := range ifaces {
 			// Skip entries that are still unknown (e.g. from references).
 			if iface.Type.IsUnknown() {
@@ -198,7 +198,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	if len(config.Networking) > 0 && !strings.EqualFold(r.Meta.Config.APIVersion.ValueString(), helper.APIVersionV4Beta) {
+	if config.Networking != nil && !strings.EqualFold(r.Meta.Config.APIVersion.ValueString(), helper.APIVersionV4Beta) {
 		resp.Diagnostics.AddError(
 			"Invalid networking configuration",
 			fmt.Sprintf("the api_version provider argument must be set to %q to use networking", helper.APIVersionV4Beta),

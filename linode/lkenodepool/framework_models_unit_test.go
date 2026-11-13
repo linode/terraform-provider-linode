@@ -154,7 +154,7 @@ func TestSetNodePoolCreateOptions(t *testing.T) {
 
 func TestSetNodePoolCreateOptions_Networking(t *testing.T) {
 	pool := createNodePoolModel()
-	pool.Networking = []NodePoolNetworkingModel{{
+	pool.Networking = &NodePoolNetworkingModel{
 		Interfaces: []NodePoolInterfaceModel{
 			{
 				Type:     types.StringValue("vpc"),
@@ -167,7 +167,7 @@ func TestSetNodePoolCreateOptions_Networking(t *testing.T) {
 				SubnetID: types.Int64Value(301),
 			},
 		},
-	}}
+	}
 
 	var createOpts linodego.LKENodePoolCreateOptions
 	var diags diag.Diagnostics
@@ -195,43 +195,43 @@ func TestFlattenNodePoolNetworking(t *testing.T) {
 		}, false, &diags)
 
 		require.False(t, diags.HasError())
-		require.Len(t, pool.Networking, 1)
-		require.Len(t, pool.Networking[0].Interfaces, 2)
-		assert.Equal(t, "vpc", pool.Networking[0].Interfaces[0].Type.ValueString())
-		assert.Equal(t, int64(201), pool.Networking[0].Interfaces[0].SubnetID.ValueInt64())
-		assert.Equal(t, "rdma_vpc", pool.Networking[0].Interfaces[1].Type.ValueString())
-		assert.Equal(t, int64(301), pool.Networking[0].Interfaces[1].SubnetID.ValueInt64())
+		require.NotNil(t, pool.Networking)
+		require.Len(t, pool.Networking.Interfaces, 2)
+		assert.Equal(t, "vpc", pool.Networking.Interfaces[0].Type.ValueString())
+		assert.Equal(t, int64(201), pool.Networking.Interfaces[0].SubnetID.ValueInt64())
+		assert.Equal(t, "rdma_vpc", pool.Networking.Interfaces[1].Type.ValueString())
+		assert.Equal(t, int64(301), pool.Networking.Interfaces[1].SubnetID.ValueInt64())
 	})
 
 	t.Run("absent networking clears prior state", func(t *testing.T) {
-		pool := NodePoolModel{Networking: []NodePoolNetworkingModel{{
+		pool := NodePoolModel{Networking: &NodePoolNetworkingModel{
 			Interfaces: []NodePoolInterfaceModel{{
 				Type:     types.StringValue("vpc"),
 				VPCID:    types.Int64Value(101),
 				SubnetID: types.Int64Value(201),
 			}},
-		}}}
+		}}
 		var diags diag.Diagnostics
 
 		pool.FlattenLKENodePool(context.Background(), &linodego.LKENodePool{}, false, &diags)
 
 		require.False(t, diags.HasError())
-		assert.Empty(t, pool.Networking)
+		assert.Nil(t, pool.Networking)
 	})
 }
 
 func TestValidateEnterpriseOnlyAttributes_Networking(t *testing.T) {
-	validNetworking := []NodePoolNetworkingModel{{
+	validNetworking := &NodePoolNetworkingModel{
 		Interfaces: []NodePoolInterfaceModel{
 			{Type: types.StringValue("vpc")},
 			{Type: types.StringValue("rdma_vpc")},
 		},
-	}}
+	}
 
 	tests := []struct {
 		name        string
 		tier        string
-		networking  []NodePoolNetworkingModel
+		networking  *NodePoolNetworkingModel
 		wantError   bool
 		wantSummary string
 	}{
@@ -247,17 +247,17 @@ func TestValidateEnterpriseOnlyAttributes_Networking(t *testing.T) {
 		{
 			name:        "Enterprise requires the first interface to be VPC",
 			tier:        "enterprise",
-			networking:  []NodePoolNetworkingModel{{Interfaces: []NodePoolInterfaceModel{{Type: types.StringValue("rdma_vpc")}}}},
+			networking:  &NodePoolNetworkingModel{Interfaces: []NodePoolInterfaceModel{{Type: types.StringValue("rdma_vpc")}}},
 			wantError:   true,
 			wantSummary: "Invalid networking configuration",
 		},
 		{
 			name: "Enterprise rejects vpc at non-first position",
 			tier: "enterprise",
-			networking: []NodePoolNetworkingModel{{Interfaces: []NodePoolInterfaceModel{
+			networking: &NodePoolNetworkingModel{Interfaces: []NodePoolInterfaceModel{
 				{Type: types.StringValue("vpc")},
 				{Type: types.StringValue("vpc")},
-			}}},
+			}},
 			wantError:   true,
 			wantSummary: "Invalid networking configuration",
 		},

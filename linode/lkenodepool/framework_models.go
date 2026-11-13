@@ -30,7 +30,7 @@ type NodePoolModel struct {
 	FirewallID     types.Int64               `tfsdk:"firewall_id"`
 	IsolationIPv4  types.Bool                `tfsdk:"isolation_public_ipv4"`
 	IsolationIPv6  types.Bool                `tfsdk:"isolation_public_ipv6"`
-	Networking     []NodePoolNetworkingModel `tfsdk:"networking"`
+	Networking     *NodePoolNetworkingModel  `tfsdk:"networking"`
 }
 
 type NodePoolNetworkingModel struct {
@@ -264,9 +264,9 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 					SubnetID: types.Int64Value(int64(iface.SubnetID)),
 				}
 			}
-			pool.Networking = []NodePoolNetworkingModel{{Interfaces: ifaces}}
+			pool.Networking = &NodePoolNetworkingModel{Interfaces: ifaces}
 		} else {
-			pool.Networking = []NodePoolNetworkingModel{}
+			pool.Networking = nil
 		}
 	}
 }
@@ -276,8 +276,8 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 func (pool *NodePoolModel) validateEnterpriseOnlyAttributes(tier string, diags *diag.Diagnostics) {
 	if tier == string(linodego.LKEVersionEnterprise) {
 		// Validate interface ordering: first must be "vpc", subsequent must not be "vpc".
-		if len(pool.Networking) > 0 && len(pool.Networking[0].Interfaces) > 0 {
-			ifaces := pool.Networking[0].Interfaces
+		if pool.Networking != nil && len(pool.Networking.Interfaces) > 0 {
+			ifaces := pool.Networking.Interfaces
 			if ifaces[0].Type.ValueString() != "vpc" {
 				diags.AddError(
 					"Invalid networking configuration",
@@ -305,7 +305,7 @@ func (pool *NodePoolModel) validateEnterpriseOnlyAttributes(tier string, diags *
 		)
 	}
 
-	if len(pool.Networking) > 0 {
+	if pool.Networking != nil {
 		diags.AddError(
 			"Invalid networking configuration",
 			"networking is only available for LKE Enterprise clusters.",
@@ -358,9 +358,9 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 		p.DiskEncryption = linodego.Pointer(linodego.InstanceDiskEncryption(pool.DiskEncryption.ValueString()))
 	}
 
-	if len(pool.Networking) > 0 {
-		ifaces := make([]linodego.LKENodePoolInterface, len(pool.Networking[0].Interfaces))
-		for i, iface := range pool.Networking[0].Interfaces {
+	if pool.Networking != nil {
+		ifaces := make([]linodego.LKENodePoolInterface, len(pool.Networking.Interfaces))
+		for i, iface := range pool.Networking.Interfaces {
 			ifaces[i] = linodego.LKENodePoolInterface{
 				Type:     linodego.LKENodePoolInterfaceType(iface.Type.ValueString()),
 				VPCID:    int(iface.VPCID.ValueInt64()),
