@@ -36,6 +36,11 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "If the User has Two Factor Authentication (TFA) enabled.",
 	},
+	"tfa_enforced": {
+		Type:        schema.TypeBool,
+		Computed:    true,
+		Description: "Whether two-factor authentication is required for this user by the account policy and exemptions.",
+	},
 	"global_grants": {
 		Type:        schema.TypeList,
 		Description: "A structure containing the Account-level grants a User has.",
