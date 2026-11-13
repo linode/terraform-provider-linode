@@ -17,9 +17,6 @@ section for more information.
 
 ## Example Usage
 
-Use `linode_lke_node_pool` to manage a pool separately from its cluster. To
-manage pools inline with `linode_lke_cluster`, see the [cluster examples](lke_cluster.md#example-usage).
-
 Creating a basic LKE Node Pool:
 
 ```terraform
@@ -123,13 +120,6 @@ resource "linode_lke_cluster" "rdma" {
     vpc_id             = var.vpc_id
     subnet_id          = var.vpc_subnet_id
     external_pool_tags = [local.external_pool_tag]
-
-    # LKE requires a pool in the cluster configuration. This pool remains
-    # managed inline; the RDMA pool below is managed by its own resource.
-    pool {
-        type  = "g6-standard-1"
-        count = 1
-    }
 }
 
 resource "linode_lke_node_pool" "rdma" {
