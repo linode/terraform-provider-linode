@@ -138,18 +138,19 @@ resource "linode_lke_node_pool" "rdma" {
     node_count = 1
     tags       = [local.external_pool_tag]
 
-    networking {
-        interfaces {
-            type      = "vpc"
-            vpc_id    = var.vpc_id
-            subnet_id = var.vpc_subnet_id
-        }
-
-        interfaces {
-            type      = "rdma_vpc"
-            vpc_id    = var.vpc_id
-            subnet_id = var.rdma_subnet_id
-        }
+    networking = {
+        interfaces = [
+            {
+                type      = "vpc"
+                vpc_id    = var.vpc_id
+                subnet_id = var.vpc_subnet_id
+            },
+            {
+                type      = "rdma_vpc"
+                vpc_id    = var.vpc_id
+                subnet_id = var.rdma_subnet_id
+            }
+        ]
     }
 }
 ```
@@ -193,15 +194,15 @@ The following arguments are supported:
 
 * `isolation_public_ipv6` - (Optional) Whether nodes in this pool should have public IPv6 addresses. This is only available for LKE Enterprise clusters and may not be available to all customers. Changing this value replaces the pool.
 
-* [`networking`](#networking) - (Optional, Block List) Networking configuration for the node pool. Immutable after creation; changing it forces pool replacement. Requires `api_version = "v4beta"` and an Enterprise cluster.
+* [`networking`](#networking) - (Optional, Nested Attribute) Networking configuration for the node pool. Immutable after creation; changing it forces pool replacement. Requires `api_version = "v4beta"` and an Enterprise cluster.
 
 ### networking
 
-The following arguments are supported in the `networking` block:
+The following arguments are supported in the `networking` nested attribute:
 
-* [`interfaces`](#interfaces) - (Required, Block List) Ordered VPC interfaces for nodes in the pool. The first interface must have `type = "vpc"` and reference the cluster's VPC subnet. Subsequent interfaces may use `type = "rdma_vpc"`.
+* `interfaces` - (Required, Nested Attribute List) Ordered VPC interfaces for nodes in the pool. The first interface must have `type = "vpc"` and reference the cluster's VPC subnet. Subsequent interfaces may use `type = "rdma_vpc"`.
 
-### interfaces
+Each entry in `interfaces` supports:
 
 * `type` - (Required) Interface type: `vpc` for the first interface; subsequent interfaces may be `rdma_vpc`.
 
