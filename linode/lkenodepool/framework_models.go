@@ -245,6 +245,9 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 
 // validateEnterpriseOnlyAttributes ensures attributes that are only valid for
 // LKE Enterprise clusters are not configured on non-enterprise clusters.
+// Call this with the resource config, not the plan: Optional+Computed
+// attributes absent from config are null there, but the plan may carry prior
+// state values after a refresh.
 func (pool *NodePoolModel) validateEnterpriseOnlyAttributes(tier string, diags *diag.Diagnostics) {
 	if tier == string(linodego.LKEVersionEnterprise) {
 		return
@@ -256,6 +259,20 @@ func (pool *NodePoolModel) validateEnterpriseOnlyAttributes(tier string, diags *
 		diags.AddError(
 			"Invalid isolation configuration",
 			"isolation is only available for LKE Enterprise clusters.",
+		)
+	}
+
+	if !pool.K8sVersion.IsNull() && !pool.K8sVersion.IsUnknown() {
+		diags.AddError(
+			"Invalid k8s_version configuration",
+			"k8s_version is only available for LKE Enterprise clusters.",
+		)
+	}
+
+	if !pool.UpdateStrategy.IsNull() && !pool.UpdateStrategy.IsUnknown() {
+		diags.AddError(
+			"Invalid update_strategy configuration",
+			"update_strategy is only available for LKE Enterprise clusters.",
 		)
 	}
 }
