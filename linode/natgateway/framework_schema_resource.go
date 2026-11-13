@@ -159,10 +159,13 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"use_autoscaling": schema.BoolAttribute{
+			Computed: true,
 			Optional: true,
 			Description: "Whether the NAT Gateway automatically scales its public IPv4 addresses. " +
-				"If omitted, defaults to true when addresses is omitted, otherwise false. Create-only and Write-only.",
+				"If omitted, defaults to true when addresses is omitted, otherwise false. " +
+				"The API does not return this value, so it is derived from address_autoscale_max. Create-only.",
 			PlanModifiers: []planmodifier.Bool{
+				boolplanmodifier.UseStateForUnknown(),
 				boolplanmodifier.RequiresReplace(),
 			},
 		},

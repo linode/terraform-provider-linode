@@ -85,6 +85,10 @@ func (m *NATGatewayModel) FlattenNATGateway(gw *linodego.NATGateway, preserveKno
 		m.DefaultPortsPerInterface, int64(gw.DefaultPortsPerInterface), preserveKnown,
 	)
 	m.AddressAutoscaleMax = helper.KeepOrUpdateInt64(m.AddressAutoscaleMax, int64(gw.AddressAutoscaleMax), preserveKnown)
+
+	// The API does not return use_autoscaling; address_autoscale_max is non-zero only when it is enabled.
+	m.UseAutoscaling = helper.KeepOrUpdateValue(m.UseAutoscaling, types.BoolValue(gw.AddressAutoscaleMax > 0), preserveKnown)
+
 	m.PortsetAssignments = helper.KeepOrUpdateInt64(m.PortsetAssignments, int64(gw.PortsetAssignments), preserveKnown)
 	m.PortsetCapacity = helper.KeepOrUpdateInt64(m.PortsetCapacity, int64(gw.PortsetCapacity), preserveKnown)
 	m.Created = helper.KeepOrUpdateValue(m.Created, timetypes.NewRFC3339TimePointerValue(gw.Created), preserveKnown)

@@ -54,7 +54,7 @@ The following arguments are supported:
 
 * `default_ports_per_interface` - (Optional) The default number of ports per interface for the NAT Gateway. If omitted, the API assigns a value. Changing this value forces the creation of a new NAT Gateway.
 
-* `use_autoscaling` - (Optional) Whether the NAT Gateway automatically scales its public IPv4 addresses. If omitted, defaults to `true` when `addresses` is omitted and `false` otherwise. This value is write-only and is not returned by the API. Changing this value forces the creation of a new NAT Gateway.
+* `use_autoscaling` - (Optional, Computed) Whether the NAT Gateway automatically scales its public IPv4 addresses. If omitted, defaults to `true` when `addresses` is omitted and `false` otherwise. The API does not return this value directly, so the provider derives it from `address_autoscale_max`, which means the attribute is populated on import. Changing this value forces the creation of a new NAT Gateway.
 
 * [`addresses`](#addresses) - (Optional, Nested Attribute Set) The public IPv4 addresses assigned to this NAT Gateway. Only valid when `use_autoscaling` is `false`.
 

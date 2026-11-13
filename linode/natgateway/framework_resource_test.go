@@ -31,7 +31,11 @@ func TestAccResourceNATGateway_update(t *testing.T) {
 	t.Parallel()
 
 	region, err := acceptance.GetRandomRegionWithCaps(
-		[]linodego.RegionCapability{linodego.CapabilityVPCs}, "core")
+		[]linodego.RegionCapability{
+			linodego.CapabilityVPCs,
+			linodego.CapabilityNATGateway,
+			linodego.CapabilityLinodeInterfaces,
+		}, "core")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,16 +63,17 @@ func TestAccResourceNATGateway_update(t *testing.T) {
 			statecheck.ExpectKnownValue(natAutoFalse,
 				tfjsonpath.New("addresses"), knownvalue.SetSizeExact(1)),
 
-			// Implied autoscaling: not configured, so not stored (the API does not return it).
+			// Implied autoscaling: not configured, so the value is inferred from
+			// address_autoscale_max, which the API does return.
 			statecheck.ExpectKnownValue(natDefaultEmpty,
-				tfjsonpath.New("use_autoscaling"), knownvalue.Null()),
+				tfjsonpath.New("use_autoscaling"), knownvalue.Bool(true)),
 			statecheck.ExpectKnownValue(natDefaultEmpty,
 				tfjsonpath.New("label"), knownvalue.StringExact(base+"-default-empty")),
 			statecheck.ExpectKnownValue(natDefaultEmpty,
 				tfjsonpath.New("addresses"), knownvalue.SetSizeExact(0)),
 
 			statecheck.ExpectKnownValue(natDefaultPop,
-				tfjsonpath.New("use_autoscaling"), knownvalue.Null()),
+				tfjsonpath.New("use_autoscaling"), knownvalue.Bool(false)),
 			statecheck.ExpectKnownValue(natDefaultPop,
 				tfjsonpath.New("label"), knownvalue.StringExact(base+"-default-populated")),
 			statecheck.ExpectKnownValue(natDefaultPop,
@@ -213,6 +218,13 @@ func TestAccResourceNATGateway_complex(t *testing.T) {
 					statecheck.ExpectKnownValue(natComplex,
 						tfjsonpath.New("updated"), knownvalue.NotNull()),
 				},
+			},
+			{
+				// use_autoscaling is derived from address_autoscale_max during Read,
+				// so an imported gateway must match the configured one exactly.
+				ResourceName:      natComplex,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
