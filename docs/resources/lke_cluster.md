@@ -27,7 +27,7 @@ resource "linode_lke_cluster" "my-cluster" {
 }
 ```
 
-Creating an Enterprise LKE cluster:
+Creating an enterprise LKE cluster:
 
 ```terraform
 resource "linode_lke_cluster" "test" {
