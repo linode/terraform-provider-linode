@@ -1,0 +1,26 @@
+{{ define "user_grants_revocation_partial" }}
+
+resource "linode_domain" "first_domain" {
+    domain    = "{{.FirstDomain}}"
+    type      = "master"
+    soa_email = "admin@{{.FirstDomain}}"
+}
+
+resource "linode_domain" "second_domain" {
+    domain    = "{{.SecondDomain}}"
+    type      = "master"
+    soa_email = "admin@{{.SecondDomain}}"
+}
+
+resource "linode_user" "test" {
+    username   = "{{.Username}}"
+    email      = "{{.Email}}"
+    restricted = true
+
+    domain_grant {
+        id          = linode_domain.second_domain.id
+        permissions = "read_only"
+    }
+}
+
+{{ end }}
