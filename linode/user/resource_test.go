@@ -9,7 +9,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
@@ -128,6 +131,58 @@ func TestAccResourceUser_grants(t *testing.T) {
 					resource.TestCheckResourceAttr(testUserResName, "linode_grant.#", "1"),
 					resource.TestCheckResourceAttr(testUserResName, "linode_grant.0.permissions", "read_write"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccResourceUser_grantsRevocation(t *testing.T) {
+	t.Parallel()
+
+	username := acctest.RandomWithPrefix("tf-test")
+	email := username + "@example.com"
+	firstDomain := acctest.RandomWithPrefix("tf-test") + ".example"
+	secondDomain := acctest.RandomWithPrefix("tf-test") + ".example"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.GrantsRevocation(t, username, email, firstDomain, secondDomain),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testUserResName, tfjsonpath.New("domain_grant"),
+						knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"permissions": knownvalue.StringExact("read_write"),
+							}),
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"permissions": knownvalue.StringExact("read_only"),
+							}),
+						}),
+					),
+				},
+			},
+			{
+				Config: tmpl.GrantsRevocationPartial(t, username, email, firstDomain, secondDomain),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testUserResName, tfjsonpath.New("domain_grant"),
+						knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"permissions": knownvalue.StringExact("read_only"), // secondDomain
+							}),
+						}),
+					),
+				},
+			},
+			{
+				Config: tmpl.GrantsRevocationFull(t, username, email, firstDomain, secondDomain),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testUserResName, tfjsonpath.New("domain_grant"),
+						knownvalue.SetSizeExact(0),
+					),
+				},
 			},
 		},
 	})
