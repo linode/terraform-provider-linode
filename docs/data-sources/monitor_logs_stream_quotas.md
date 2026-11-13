@@ -7,6 +7,7 @@ description: |-
 # linode\_monitor\_logs\_stream\_quotas
 
 Provides details about logs stream quotas available.
+This data source requires the `v4beta` API.
 
 ## Example Usage
 
