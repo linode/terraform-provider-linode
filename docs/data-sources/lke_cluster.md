@@ -139,6 +139,8 @@ In addition to all arguments above, the following attributes are exported:
 
     * `enabled` - The default policy. A value of true means a default policy of DENY. A value of false means a default policy of ALLOW.
 
+    * `revision_id` - The unique identifier of the current revision of the control plane ACL.
+
     * `addresses` - (Nested Attribute List) A list of ip addresses to allow.
 
       * `ipv4` - A set of individual ipv4 addresses or CIDRs to ALLOW.
