@@ -49,6 +49,25 @@ resource "linode_vpc" "test" {
 }
 ```
 
+Assign a NAT Gateway to a VPC subnet:
+
+```terraform
+resource "linode_natgateway" "test" {
+    label = "test-natgateway"
+    region = "us-mia"
+    default_ports_per_interface = 4096
+    use_autoscaling = true
+}
+
+resource "linode_vpc_subnet" "test" {
+    vpc_id = linode_vpc.test.id
+    label = "test-subnet"
+    ipv4 = "10.0.0.0/24"
+
+    natgateway_id = linode_natgateway.test.id
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -62,6 +81,8 @@ The following arguments are supported:
 * `ipv4` - (Required) The IPv4 range of this subnet in CIDR format.
 
 * [`ipv6`](#ipv6) - (Optional, Nested Attribute List) A list of IPv6 ranges under this VPC subnet. NOTE: IPv6 VPCs may not currently be available to all users.
+
+* `natgateway_id` - (Optional) The ID of the NAT Gateway to assign to this VPC subnet. Setting this field assigns the NAT Gateway. Omitting it, or setting it to `null`, unassigns any NAT Gateway from the subnet.
 
 ## IPv6
 
@@ -103,6 +124,18 @@ In addition to all the arguments above, the following attributes are exported.
 * `created` - The date and time when the VPC was created.
 
 * `updated` - The date and time when the VPC was last updated.
+
+* `natgateway_details` - (Read-Only Object) The details of the NAT Gateway currently assigned to this subnet.
+  * `id` - The ID of the assigned NAT Gateway.
+  * `label` - The label of the assigned NAT Gateway.
+  * `addresses` - (Read-Only List) The addresses of the assigned NAT Gateway.
+  * `portset_assignments` - The number of portset assignments on the assigned NAT Gateway.
+  * `portset_capacity` - The total portset capacity of the assigned NAT Gateway.
+  * `portsets` - (Read-Only Object List) The portsets assigned to the NAT Gateway. Referenced with an index (e.g. `natgateway_details.portsets.0.address`).
+    * `address` - The address of the portset.
+    * `ports` - (Read-Only Object List) The port ranges assigned to the portset. Referenced with an index (e.g. `ports.0.start`).
+      * `start` - The first port in the range.
+      * `end` - The last port in the range.
 
 ## Import
 

@@ -1,0 +1,21 @@
+{{ define "natgateway_autoscaling_empty_addresses" }}
+
+resource "linode_natgateway" "autoscaling_empty_addresses" {
+    label = "{{ .Label }}-autoscaling-empty"
+    region = "{{ .Region }}"
+    use_autoscaling = true
+    addresses = []
+}
+
+{{ end }}
+
+{{ define "natgateway_implied_autoscaling_empty_addresses" }}
+
+resource "linode_natgateway" "implied_autoscaling_empty_addresses" {
+    label = "{{ .Label }}-implied-autoscaling-empty"
+    region = "{{ .Region }}"
+    addresses = []
+}
+
+{{ end }}
+
