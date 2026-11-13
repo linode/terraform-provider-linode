@@ -335,7 +335,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diags
 		}
 
-		if expandedControlPlane.ACL != nil && !d.HasChange("control_plane.0.acl.0.revision_id") {
+		if expandedControlPlane.ACL != nil && helper.SDKv2UnwrapOptionalConfigAttr[string](ctx, d, "control_plane.0.acl.0.revision_id") == nil {
 			expandedControlPlane.ACL.RevisionID = ""
 		}
 
