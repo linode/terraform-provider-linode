@@ -157,7 +157,6 @@ func ReconcileLKENodePoolSpecs(
 			continue
 		}
 
-
 		updateOpts := linodego.LKENodePoolUpdateOptions{
 			Count: newSpec.Count,
 			Tags:  newSpecs[i].Tags,

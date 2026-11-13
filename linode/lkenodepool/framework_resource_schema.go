@@ -244,7 +244,6 @@ var resourceSchema = schema.Schema{
 				},
 			},
 		},
-
 	},
 }
 
