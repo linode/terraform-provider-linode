@@ -70,7 +70,7 @@ func init() {
 func valkeyPreCheck(t *testing.T) {
 	acceptance.PreCheck(t)
 	if valkeyAvailabilityError != nil {
-		t.Skipf("Valkey is not available in this test account: %v", valkeyAvailabilityError)
+		t.Fatalf("failed to initialize Valkey acceptance tests: %v", valkeyAvailabilityError)
 	}
 }
 

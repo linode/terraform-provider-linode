@@ -114,7 +114,6 @@ func TestParseDatabases(t *testing.T) {
 	assert.Nil(t, model.Databases[1].AvailableRestoreTimes)
 	assert.Equal(t, int64(54321), model.Databases[1].ForkSource.ValueInt64())
 
-	// Valkey preserves the distinction between an explicitly empty and a nil list.
 	assert.Equal(t, types.StringValue("valkey"), model.Databases[2].Engine)
 	assert.NotNil(t, model.Databases[2].AvailableRestoreTimes)
 	assert.Empty(t, model.Databases[2].AvailableRestoreTimes)

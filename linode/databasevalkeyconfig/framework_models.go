@@ -29,19 +29,27 @@ type DataSourceModel struct {
 	ValkeyTimeout                       types.List   `tfsdk:"valkey_timeout"`
 }
 
-func flattenOption(ctx context.Context, name, description string, restart bool, paramType linodego.DatabaseConfigParamType,
+func flattenOption(
+	ctx context.Context,
+	name, description string,
+	restart bool,
+	paramType linodego.DatabaseConfigParamType,
 	fields map[string]attr.Value, diags *diag.Diagnostics,
 ) types.List {
 	fields["description"] = types.StringValue(description)
 	fields["requires_restart"] = types.BoolValue(restart)
+
 	typeList, diagnostics := types.ListValueFrom(ctx, types.StringType, []string(paramType))
 	diags.Append(diagnostics...)
 	fields["type"] = typeList
+
 	objectType := frameworkDataSourceSchema.Attributes[name].GetType().(types.ListType).ElemType.(types.ObjectType)
 	object, diagnostics := types.ObjectValue(objectType.AttrTypes, fields)
 	diags.Append(diagnostics...)
+
 	result, diagnostics := types.ListValue(objectType, []attr.Value{object})
 	diags.Append(diagnostics...)
+
 	return result
 }
 
@@ -53,17 +61,29 @@ func intMetadata(valueField string, value, minimum, maximum int) map[string]attr
 	}
 }
 
-func (data *DataSourceModel) ParseValkeyConfig(ctx context.Context, config *linodego.ValkeyDatabaseConfigInfo, diags *diag.Diagnostics) {
-	data.BackupHour = flattenOption(ctx, "backup_hour", config.BackupHour.Description, config.BackupHour.RequiresRestart, config.BackupHour.Type,
-		intMetadata("example", config.BackupHour.Example, config.BackupHour.Minimum, config.BackupHour.Maximum), diags)
-	data.BackupMinute = flattenOption(ctx, "backup_minute", config.BackupMinute.Description, config.BackupMinute.RequiresRestart, config.BackupMinute.Type,
-		intMetadata("example", config.BackupMinute.Example, config.BackupMinute.Minimum, config.BackupMinute.Maximum), diags)
-	data.FrequentSnapshots = flattenOption(ctx, "frequent_snapshots", config.FrequentSnapshots.Description, config.FrequentSnapshots.RequiresRestart,
-		config.FrequentSnapshots.Type, map[string]attr.Value{"default": types.BoolValue(config.FrequentSnapshots.Default)}, diags)
+func (data *DataSourceModel) ParseValkeyConfig(
+	ctx context.Context, config *linodego.ValkeyDatabaseConfigInfo, diags *diag.Diagnostics,
+) {
+	data.BackupHour = flattenOption(
+		ctx, "backup_hour", config.BackupHour.Description, config.BackupHour.RequiresRestart, config.BackupHour.Type,
+		intMetadata("example", config.BackupHour.Example, config.BackupHour.Minimum, config.BackupHour.Maximum), diags,
+	)
+	data.BackupMinute = flattenOption(
+		ctx, "backup_minute", config.BackupMinute.Description, config.BackupMinute.RequiresRestart, config.BackupMinute.Type,
+		intMetadata("example", config.BackupMinute.Example, config.BackupMinute.Minimum, config.BackupMinute.Maximum), diags,
+	)
+	data.FrequentSnapshots = flattenOption(
+		ctx, "frequent_snapshots", config.FrequentSnapshots.Description, config.FrequentSnapshots.RequiresRestart,
+		config.FrequentSnapshots.Type, map[string]attr.Value{"default": types.BoolValue(config.FrequentSnapshots.Default)}, diags,
+	)
+
 	aclEnum, diagnostics := types.ListValueFrom(ctx, types.StringType, config.ValkeyACLChannelsDefault.Enum)
 	diags.Append(diagnostics...)
-	data.ValkeyACLChannelsDefault = flattenOption(ctx, "valkey_acl_channels_default", config.ValkeyACLChannelsDefault.Description,
-		config.ValkeyACLChannelsDefault.RequiresRestart, config.ValkeyACLChannelsDefault.Type, map[string]attr.Value{"enum": aclEnum}, diags)
+	data.ValkeyACLChannelsDefault = flattenOption(
+		ctx, "valkey_acl_channels_default", config.ValkeyACLChannelsDefault.Description,
+		config.ValkeyACLChannelsDefault.RequiresRestart, config.ValkeyACLChannelsDefault.Type, map[string]attr.Value{"enum": aclEnum}, diags,
+	)
+
 	data.ValkeyActiveExpireEffort = flattenOption(
 		ctx,
 		"valkey_active_expire_effort",
@@ -78,8 +98,10 @@ func (data *DataSourceModel) ParseValkeyConfig(ctx context.Context, config *lino
 		),
 		diags,
 	)
-	data.ValkeyActiveDefrag = flattenOption(ctx, "valkey_activedefrag", config.ValkeyActiveDefrag.Description, config.ValkeyActiveDefrag.RequiresRestart,
-		config.ValkeyActiveDefrag.Type, map[string]attr.Value{"default": types.BoolValue(config.ValkeyActiveDefrag.Default)}, diags)
+	data.ValkeyActiveDefrag = flattenOption(
+		ctx, "valkey_activedefrag", config.ValkeyActiveDefrag.Description, config.ValkeyActiveDefrag.RequiresRestart,
+		config.ValkeyActiveDefrag.Type, map[string]attr.Value{"default": types.BoolValue(config.ValkeyActiveDefrag.Default)}, diags,
+	)
 	data.ValkeyLFUDecayTime = flattenOption(
 		ctx,
 		"valkey_lfu_decay_time",
@@ -100,33 +122,49 @@ func (data *DataSourceModel) ParseValkeyConfig(ctx context.Context, config *lino
 	)
 	policyEnum, diagnostics := types.ListValueFrom(ctx, types.StringType, config.ValkeyMaxmemoryPolicy.Enum)
 	diags.Append(diagnostics...)
-	data.ValkeyMaxmemoryPolicy = flattenOption(ctx, "valkey_maxmemory_policy", config.ValkeyMaxmemoryPolicy.Description,
+	data.ValkeyMaxmemoryPolicy = flattenOption(
+		ctx, "valkey_maxmemory_policy", config.ValkeyMaxmemoryPolicy.Description,
 		config.ValkeyMaxmemoryPolicy.RequiresRestart, config.ValkeyMaxmemoryPolicy.Type,
-		map[string]attr.Value{"default": types.StringValue(config.ValkeyMaxmemoryPolicy.Default), "enum": policyEnum}, diags)
-	data.ValkeyNumberOfDatabases = flattenOption(ctx, "valkey_number_of_databases", config.ValkeyNumberOfDatabases.Description,
+		map[string]attr.Value{"default": types.StringValue(config.ValkeyMaxmemoryPolicy.Default), "enum": policyEnum}, diags,
+	)
+	data.ValkeyNumberOfDatabases = flattenOption(
+		ctx, "valkey_number_of_databases", config.ValkeyNumberOfDatabases.Description,
 		config.ValkeyNumberOfDatabases.RequiresRestart, config.ValkeyNumberOfDatabases.Type,
-		intMetadata("example", config.ValkeyNumberOfDatabases.Example, config.ValkeyNumberOfDatabases.Minimum, config.ValkeyNumberOfDatabases.Maximum), diags)
+		intMetadata(
+			"example", config.ValkeyNumberOfDatabases.Example,
+			config.ValkeyNumberOfDatabases.Minimum, config.ValkeyNumberOfDatabases.Maximum,
+		), diags,
+	)
+
 	persistenceEnum, diagnostics := types.ListValueFrom(ctx, types.StringType, config.ValkeyPersistence.Enum)
 	diags.Append(diagnostics...)
-	data.ValkeyPersistence = flattenOption(ctx, "valkey_persistence", config.ValkeyPersistence.Description, config.ValkeyPersistence.RequiresRestart,
-		config.ValkeyPersistence.Type, map[string]attr.Value{"enum": persistenceEnum}, diags)
+	data.ValkeyPersistence = flattenOption(
+		ctx, "valkey_persistence", config.ValkeyPersistence.Description, config.ValkeyPersistence.RequiresRestart,
+		config.ValkeyPersistence.Type, map[string]attr.Value{"enum": persistenceEnum}, diags,
+	)
 	data.ValkeyPubsubClientOutputBufferLimit = flattenOption(
 		ctx,
 		"valkey_pubsub_client_output_buffer_limit",
 		config.ValkeyPubsubClientOutputBufferLimit.Description,
 		config.ValkeyPubsubClientOutputBufferLimit.RequiresRestart,
 		config.ValkeyPubsubClientOutputBufferLimit.Type,
-		intMetadata("example", config.ValkeyPubsubClientOutputBufferLimit.Example, config.ValkeyPubsubClientOutputBufferLimit.Minimum,
-			config.ValkeyPubsubClientOutputBufferLimit.Maximum),
+		intMetadata(
+			"example", config.ValkeyPubsubClientOutputBufferLimit.Example,
+			config.ValkeyPubsubClientOutputBufferLimit.Minimum, config.ValkeyPubsubClientOutputBufferLimit.Maximum,
+		),
 		diags,
 	)
-	data.ValkeyTimeout = flattenOption(ctx, "valkey_timeout", config.ValkeyTimeout.Description, config.ValkeyTimeout.RequiresRestart, config.ValkeyTimeout.Type,
-		intMetadata("default", config.ValkeyTimeout.Default, config.ValkeyTimeout.Minimum, config.ValkeyTimeout.Maximum), diags)
+	data.ValkeyTimeout = flattenOption(
+		ctx, "valkey_timeout", config.ValkeyTimeout.Description, config.ValkeyTimeout.RequiresRestart, config.ValkeyTimeout.Type,
+		intMetadata("default", config.ValkeyTimeout.Default, config.ValkeyTimeout.Minimum, config.ValkeyTimeout.Maximum), diags,
+	)
+
 	jsonBytes, err := json.Marshal(config)
 	if err != nil {
 		diags.AddError("Error marshaling json", err.Error())
 		return
 	}
+
 	hash := sha256.Sum256(jsonBytes)
 	data.ID = types.StringValue(hex.EncodeToString(hash[:]))
 }

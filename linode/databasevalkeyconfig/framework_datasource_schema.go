@@ -1,55 +1,60 @@
 package databasevalkeyconfig
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func configOption(fields map[string]schema.Attribute) schema.ListNestedAttribute {
-	fields["description"] = schema.StringAttribute{Computed: true, Description: "A description of the configuration option."}
-	fields["requires_restart"] = schema.BoolAttribute{Computed: true, Description: "Whether changing this option requires a restart."}
-	fields["type"] = schema.ListAttribute{Computed: true, ElementType: types.StringType, Description: "The accepted API types, including null when supported."}
-	return schema.ListNestedAttribute{
-		Computed:     true,
-		Description:  "Metadata for this Valkey configuration option.",
-		NestedObject: schema.NestedAttributeObject{Attributes: fields},
+func configOption(description string, fields map[string]attr.Type) schema.ListAttribute {
+	fields["description"] = types.StringType
+	fields["requires_restart"] = types.BoolType
+	fields["type"] = types.ListType{ElemType: types.StringType}
+
+	return schema.ListAttribute{
+		Description: description,
+		Computed:    true,
+		ElementType: types.ObjectType{AttrTypes: fields},
 	}
 }
 
-func intConfigOption(valueField string) schema.ListNestedAttribute {
-	return configOption(map[string]schema.Attribute{
-		valueField: schema.Int64Attribute{Computed: true, Description: "The API-provided " + valueField + " value."},
-		"minimum":  schema.Int64Attribute{Computed: true, Description: "The minimum accepted value."},
-		"maximum":  schema.Int64Attribute{Computed: true, Description: "The maximum accepted value."},
+func intConfigOption(description, valueField string) schema.ListAttribute {
+	return configOption(description, map[string]attr.Type{
+		valueField: types.Int64Type,
+		"minimum":  types.Int64Type,
+		"maximum":  types.Int64Type,
 	})
 }
 
 var frameworkDataSourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
-		"id":            schema.StringAttribute{Computed: true, Description: "A content-derived identifier for the configuration catalog."},
-		"backup_hour":   intConfigOption("example"),
-		"backup_minute": intConfigOption("example"),
-		"frequent_snapshots": configOption(map[string]schema.Attribute{
-			"default": schema.BoolAttribute{Computed: true, Description: "The default value."},
+		"id": schema.StringAttribute{
+			Description: "Unique identifier for this DataSource.",
+			Computed:    true,
+		},
+		"backup_hour":   intConfigOption("The UTC hour when a backup starts.", "example"),
+		"backup_minute": intConfigOption("The minute within the hour when a backup starts.", "example"),
+		"frequent_snapshots": configOption("Whether frequent local RDB snapshots are enabled.", map[string]attr.Type{
+			"default": types.BoolType,
 		}),
-		"valkey_acl_channels_default": configOption(map[string]schema.Attribute{
-			"enum": schema.ListAttribute{Computed: true, ElementType: types.StringType, Description: "The accepted values."},
+		"valkey_acl_channels_default": configOption("The default pub/sub channel ACL for new users.", map[string]attr.Type{
+			"enum": types.ListType{ElemType: types.StringType},
 		}),
-		"valkey_active_expire_effort": intConfigOption("default"),
-		"valkey_activedefrag": configOption(map[string]schema.Attribute{
-			"default": schema.BoolAttribute{Computed: true, Description: "The default value."},
+		"valkey_active_expire_effort": intConfigOption("The effort used to reclaim expired keys.", "default"),
+		"valkey_activedefrag": configOption("Whether active memory defragmentation is enabled.", map[string]attr.Type{
+			"default": types.BoolType,
 		}),
-		"valkey_lfu_decay_time": intConfigOption("default"),
-		"valkey_lfu_log_factor": intConfigOption("default"),
-		"valkey_maxmemory_policy": configOption(map[string]schema.Attribute{
-			"default": schema.StringAttribute{Computed: true, Description: "The default value."},
-			"enum":    schema.ListAttribute{Computed: true, ElementType: types.StringType, Description: "The accepted values."},
+		"valkey_lfu_decay_time": intConfigOption("The LFU counter decay time in minutes.", "default"),
+		"valkey_lfu_log_factor": intConfigOption("The logarithm factor for LFU counters.", "default"),
+		"valkey_maxmemory_policy": configOption("The memory eviction policy.", map[string]attr.Type{
+			"default": types.StringType,
+			"enum":    types.ListType{ElemType: types.StringType},
 		}),
-		"valkey_number_of_databases": intConfigOption("example"),
-		"valkey_persistence": configOption(map[string]schema.Attribute{
-			"enum": schema.ListAttribute{Computed: true, ElementType: types.StringType, Description: "The accepted values."},
+		"valkey_number_of_databases": intConfigOption("The number of logical Valkey databases.", "example"),
+		"valkey_persistence": configOption("The persistence mode.", map[string]attr.Type{
+			"enum": types.ListType{ElemType: types.StringType},
 		}),
-		"valkey_pubsub_client_output_buffer_limit": intConfigOption("example"),
-		"valkey_timeout": intConfigOption("default"),
+		"valkey_pubsub_client_output_buffer_limit": intConfigOption("The hard output-buffer limit for pub/sub clients in MB.", "example"),
+		"valkey_timeout": intConfigOption("The idle connection timeout in seconds.", "default"),
 	},
 }

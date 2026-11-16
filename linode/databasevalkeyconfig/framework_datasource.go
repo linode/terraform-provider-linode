@@ -9,27 +9,45 @@ import (
 )
 
 func NewDataSource() datasource.DataSource {
-	return &DataSource{BaseDataSource: helper.NewBaseDataSource(helper.BaseDataSourceConfig{
-		Name: "linode_database_valkey_config", Schema: &frameworkDataSourceSchema,
-	})}
+	return &DataSource{
+		BaseDataSource: helper.NewBaseDataSource(
+			helper.BaseDataSourceConfig{
+				Name:   "linode_database_valkey_config",
+				Schema: &frameworkDataSourceSchema,
+			},
+		),
+	}
 }
 
 type DataSource struct {
 	helper.BaseDataSource
 }
 
-func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *DataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	tflog.Debug(ctx, "Read data."+d.Config.Name)
+
+	client := d.Meta.Client
+
 	var data DataSourceModel
+
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	config, err := d.Meta.Client.GetValkeyDatabaseConfig(ctx)
+
+	config, err := client.GetValkeyDatabaseConfig(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Error getting Valkey Config", "Unable to retrieve Valkey Config: "+err.Error())
+		resp.Diagnostics.AddError(
+			"Error getting Valkey Config",
+			"Unable to retrieve Valkey Config: "+err.Error(),
+		)
 		return
 	}
+
 	data.ParseValkeyConfig(ctx, config, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return

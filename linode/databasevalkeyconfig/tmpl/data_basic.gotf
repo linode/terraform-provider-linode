@@ -1,3 +1,5 @@
 {{ define "database_valkey_config_data_basic" }}
+
 data "linode_database_valkey_config" "foobar" {}
+
 {{ end }}

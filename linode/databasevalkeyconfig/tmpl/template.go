@@ -7,5 +7,6 @@ import (
 )
 
 func DataBasic(t testing.TB) string {
-	return acceptance.ExecuteTemplate(t, "database_valkey_config_data_basic", nil)
+	return acceptance.ExecuteTemplate(t,
+		"database_valkey_config_data_basic", nil)
 }

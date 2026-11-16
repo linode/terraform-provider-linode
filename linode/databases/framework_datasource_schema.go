@@ -66,12 +66,12 @@ var frameworkDataSourceSchema = schema.Schema{
 						Computed:    true,
 					},
 					"oldest_restore_time": schema.StringAttribute{
-						Description: "The oldest time to which a database can be restored.",
+						Description: "For MySQL and PostgreSQL databases, the oldest time to which the database can be restored.",
 						Computed:    true,
 						CustomType:  timetypes.RFC3339Type{},
 					},
 					"available_restore_times": schema.ListAttribute{
-						Description: "Available discrete restore snapshot times for the database, when supported by its engine.",
+						Description: "For Valkey databases, the available discrete restore snapshot times.",
 						Computed:    true,
 						ElementType: timetypes.RFC3339Type{},
 					},

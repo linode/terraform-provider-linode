@@ -15,7 +15,9 @@ import (
 
 func TestAccDataSourceDatabaseValkeyConfig_basic(t *testing.T) {
 	t.Parallel()
+
 	const resourceName = "data.linode_database_valkey_config.foobar"
+
 	checks := []statecheck.StateCheck{
 		statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
 	}
@@ -26,23 +28,43 @@ func TestAccDataSourceDatabaseValkeyConfig_basic(t *testing.T) {
 		"valkey_pubsub_client_output_buffer_limit", "valkey_timeout",
 	} {
 		for _, field := range []string{"description", "requires_restart", "type"} {
-			checks = append(checks, statecheck.ExpectKnownValue(resourceName,
-				tfjsonpath.New(option).AtSliceIndex(0).AtMapKey(field), knownvalue.NotNull()))
+			checks = append(checks, statecheck.ExpectKnownValue(
+				resourceName,
+				tfjsonpath.New(option).AtSliceIndex(0).AtMapKey(field),
+				knownvalue.NotNull(),
+			))
 		}
 	}
+
 	for _, option := range []string{"valkey_acl_channels_default", "valkey_maxmemory_policy", "valkey_persistence"} {
-		checks = append(checks, statecheck.ExpectKnownValue(resourceName,
-			tfjsonpath.New(option).AtSliceIndex(0).AtMapKey("enum"), knownvalue.NotNull()))
+		checks = append(checks, statecheck.ExpectKnownValue(
+			resourceName,
+			tfjsonpath.New(option).AtSliceIndex(0).AtMapKey("enum"),
+			knownvalue.NotNull(),
+		))
 	}
+
 	checks = append(checks,
-		statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("backup_hour").AtSliceIndex(0).AtMapKey("type"),
-			knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("integer"), knownvalue.StringExact("null")})),
-		statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("frequent_snapshots").AtSliceIndex(0).AtMapKey("type"),
-			knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("boolean")})),
+		statecheck.ExpectKnownValue(
+			resourceName,
+			tfjsonpath.New("backup_hour").AtSliceIndex(0).AtMapKey("type"),
+			knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("integer"), knownvalue.StringExact("null")}),
+		),
+		statecheck.ExpectKnownValue(
+			resourceName,
+			tfjsonpath.New("frequent_snapshots").AtSliceIndex(0).AtMapKey("type"),
+			knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("boolean")}),
+		),
 	)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		Steps:                    []resource.TestStep{{Config: tmpl.DataBasic(t), ConfigStateChecks: checks}},
+		Steps: []resource.TestStep{
+			{
+				Config:            tmpl.DataBasic(t),
+				ConfigStateChecks: checks,
+			},
+		},
 	})
 }

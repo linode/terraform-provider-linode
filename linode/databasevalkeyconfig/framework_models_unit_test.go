@@ -40,6 +40,7 @@ func TestModel_ParseValkeyConfig(t *testing.T) {
 	state := tfsdk.State{Schema: frameworkDataSourceSchema}
 	diags = state.Set(t.Context(), &model)
 	require.False(t, diags.HasError(), "%v", diags)
+
 	var value map[string]tftypes.Value
 	require.NoError(t, state.Raw.As(&value))
 	require.Len(t, value, 14)
@@ -49,14 +50,17 @@ func TestModel_ParseValkeyConfig(t *testing.T) {
 		}
 		require.False(t, value[name].IsNull(), name)
 	}
+
 	backup := model.BackupHour.Elements()[0].(types.Object).Attributes()
 	require.Equal(t, types.Int64Value(0), backup["example"])
 	require.Equal(t, types.Int64Value(23), backup["maximum"])
 	require.NotContains(t, backup, "default")
 	require.Equal(t, []attr.Value{types.StringValue("integer"), types.StringValue("null")}, backup["type"].(types.List).Elements())
+
 	frequent := model.FrequentSnapshots.Elements()[0].(types.Object).Attributes()
 	require.Equal(t, types.BoolValue(false), frequent["default"])
 	require.NotContains(t, frequent, "minimum")
+
 	policy := model.ValkeyMaxmemoryPolicy.Elements()[0].(types.Object).Attributes()
 	require.Equal(t, types.StringValue("noeviction"), policy["default"])
 	require.Len(t, policy["enum"].(types.List).Elements(), 2)

@@ -100,10 +100,11 @@ Each engine will be stored in the `databases` attribute and will export the foll
 
 * `fork_source` - The ID of the database that was forked from.
 
-* `oldest_restore_time` - The oldest time to which a database can be restored.
+* `oldest_restore_time` - For MySQL and PostgreSQL databases, the oldest time to
+  which the database can be restored.
 
-* `available_restore_times` - The discrete restore snapshot times supported by
-  engines such as Valkey. This list is not a continuous point-in-time recovery
+* `available_restore_times` - For Valkey databases, the available discrete
+  restore snapshot times. This list is not a continuous point-in-time recovery
   range; use one of the returned timestamps when forking a Valkey database.
 
 ## private_network
