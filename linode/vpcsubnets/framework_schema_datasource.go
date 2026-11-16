@@ -3,6 +3,7 @@ package vpcsubnets
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/customtypes"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 	"github.com/linode/terraform-provider-linode/v4/linode/vpcsubnet"
@@ -75,6 +76,61 @@ var frameworkDataSourceSchema = schema.Schema{
 					"nodebalancers": schema.ListAttribute{
 						Computed:    true,
 						ElementType: vpcsubnet.NodebalancerObjectType,
+					},
+					"natgateway": schema.SingleNestedAttribute{
+						Description: "The details of the NAT Gateway currently assigned to this subnet.",
+						Computed:    true,
+						Attributes: map[string]schema.Attribute{
+							"id": schema.Int64Attribute{
+								Description: "The ID of the assigned NAT Gateway.",
+								Computed:    true,
+							},
+							"label": schema.StringAttribute{
+								Description: "The label of the assigned NAT Gateway.",
+								Computed:    true,
+							},
+							"addresses": schema.ListAttribute{
+								Description: "The addresses of the assigned NAT Gateway.",
+								Computed:    true,
+								ElementType: types.StringType,
+							},
+							"portset_assignments": schema.Int64Attribute{
+								Description: "The number of portset assignments on the assigned NAT Gateway.",
+								Computed:    true,
+							},
+							"portset_capacity": schema.Int64Attribute{
+								Description: "The total portset capacity of the assigned NAT Gateway.",
+								Computed:    true,
+							},
+							"portsets": schema.ListNestedAttribute{
+								Description: "The portsets of the assigned NAT Gateway.",
+								Computed:    true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"address": schema.StringAttribute{
+											Description: "The address the portset is assigned to.",
+											Computed:    true,
+										},
+										"ports": schema.ListNestedAttribute{
+											Description: "The port ranges in the portset.",
+											Computed:    true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"start": schema.Int64Attribute{
+														Description: "The first port in the range.",
+														Computed:    true,
+													},
+													"end": schema.Int64Attribute{
+														Description: "The last port in the range.",
+														Computed:    true,
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},

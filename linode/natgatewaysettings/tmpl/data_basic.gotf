@@ -1,0 +1,6 @@
+{{ define "natgateway_settings_data_basic" }}
+
+data "linode_natgateway_settings" "foobar" {}
+
+{{ end }}
+

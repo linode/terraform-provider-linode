@@ -3,6 +3,7 @@ package vpcsubnet
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var DataSourceSchemaIPv6NestedObject = schema.NestedAttributeObject{
@@ -41,6 +42,61 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description:  "The IPv6 ranges of this subnet.",
 			Computed:     true,
 			NestedObject: DataSourceSchemaIPv6NestedObject,
+		},
+		"natgateway": schema.SingleNestedAttribute{
+			Description: "The details of the NAT Gateway currently assigned to this subnet.",
+			Computed:    true,
+			Attributes: map[string]schema.Attribute{
+				"id": schema.Int64Attribute{
+					Description: "The ID of the assigned NAT Gateway.",
+					Computed:    true,
+				},
+				"label": schema.StringAttribute{
+					Description: "The label of the assigned NAT Gateway.",
+					Computed:    true,
+				},
+				"addresses": schema.ListAttribute{
+					Description: "The addresses of the assigned NAT Gateway.",
+					Computed:    true,
+					ElementType: types.StringType,
+				},
+				"portset_assignments": schema.Int64Attribute{
+					Description: "The number of portset assignments on the assigned NAT Gateway.",
+					Computed:    true,
+				},
+				"portset_capacity": schema.Int64Attribute{
+					Description: "The total portset capacity of the assigned NAT Gateway.",
+					Computed:    true,
+				},
+				"portsets": schema.ListNestedAttribute{
+					Description: "The portsets of the assigned NAT Gateway.",
+					Computed:    true,
+					NestedObject: schema.NestedAttributeObject{
+						Attributes: map[string]schema.Attribute{
+							"address": schema.StringAttribute{
+								Description: "The address the portset is assigned to.",
+								Computed:    true,
+							},
+							"ports": schema.ListNestedAttribute{
+								Description: "The port ranges in the portset.",
+								Computed:    true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"start": schema.Int64Attribute{
+											Description: "The first port in the range.",
+											Computed:    true,
+										},
+										"end": schema.Int64Attribute{
+											Description: "The last port in the range.",
+											Computed:    true,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 		"created": schema.StringAttribute{
 			Description: "The date and time when the VPC Subnet was created.",

@@ -434,6 +434,156 @@ func TestAccResourceVPCSubnet_vpcTypeRDMA(t *testing.T) {
 	})
 }
 
+func TestAccResourceVPCSubnet_natgatewayAddThenRemoveOmitted(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc_subnet.foobar"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs, linodego.CapabilityNATGateway}, "core")
+	if err != nil {
+		log.Fatal(fmt.Errorf("Error getting region: %s", err))
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				// No natgateway_id
+				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, ""),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_id"),
+						knownvalue.Null(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_details"),
+						knownvalue.Null(),
+					),
+				},
+			},
+			{
+				// Assign a NAT Gateway with natgateway_id
+				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, "first"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_details").AtMapKey("label"),
+						knownvalue.StringExact(subnetLabel+"-first"),
+					),
+				},
+			},
+			{
+				// Unassign the NAT Gateway by omitting natgateway_id
+				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, ""),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_id"),
+						knownvalue.Null(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_details"),
+						knownvalue.Null(),
+					),
+				},
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       resourceImportStateID,
+				ImportStateVerifyIgnore: []string{"updated"},
+			},
+		},
+	})
+}
+
+func TestAccResourceVPCSubnet_natgatewayReplaceThenRemoveNull(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc_subnet.foobar"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs, linodego.CapabilityNATGateway}, "core")
+	if err != nil {
+		log.Fatal(fmt.Errorf("Error getting region: %s", err))
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkVPCSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Assign the first NAT Gateway
+				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, "first"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_details").AtMapKey("label"),
+						knownvalue.StringExact(subnetLabel+"-first"),
+					),
+				},
+			},
+			{
+				// Replace with the second NAT Gateway
+				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, "second"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_details").AtMapKey("label"),
+						knownvalue.StringExact(subnetLabel+"-second"),
+					),
+				},
+			},
+			{
+				// Unassign the NAT Gateway with natgateway_id = null
+				Config: tmpl.NATGateway(t, subnetLabel, "10.0.0.0/24", testRegion, "null"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_id"),
+						knownvalue.Null(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("natgateway_details"),
+						knownvalue.Null(),
+					),
+				},
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       resourceImportStateID,
+				ImportStateVerifyIgnore: []string{"updated"},
+			},
+		},
+	})
+}
+
 func checkVPCSubnetExists(s *terraform.State) error {
 	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 

@@ -1,0 +1,36 @@
+{{ define "natgateways_data_basic" }}
+
+resource "linode_natgateway" "first" {
+    label = "{{ .Label }}-first"
+    region = "{{ .Region }}"
+    default_ports_per_interface = 4096
+    use_autoscaling = true
+}
+
+resource "linode_natgateway" "second" {
+    label = "{{ .Label }}-second"
+    region = "{{ .Region }}"
+    default_ports_per_interface = 4096
+    use_autoscaling = true
+}
+
+data "linode_natgateways" "by_label" {
+    depends_on = [linode_natgateway.first, linode_natgateway.second]
+
+    filter {
+        name = "label"
+        values = ["{{ .Label }}-first"]
+    }
+}
+
+data "linode_natgateways" "by_id" {
+    depends_on = [linode_natgateway.first, linode_natgateway.second]
+
+    filter {
+        name = "id"
+        values = [linode_natgateway.second.id]
+    }
+}
+
+{{ end }}
+

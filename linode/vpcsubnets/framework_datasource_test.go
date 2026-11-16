@@ -168,6 +168,39 @@ func TestAccDataSourceVPCSubnets_dualStack(t *testing.T) {
 	})
 }
 
+func TestAccDataSourceVPCSubnets_natgateway(t *testing.T) {
+	t.Parallel()
+
+	resourceName := "data.linode_vpc_subnets.foobar"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs, linodego.CapabilityNATGateway}, "core")
+	if err != nil {
+		log.Fatal(fmt.Errorf("Error getting region: %s", err))
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataNATGateway(t, vpcLabel, testRegion, "10.0.0.0/24"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("natgateway").AtMapKey("id"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_subnets").AtSliceIndex(0).AtMapKey("natgateway").AtMapKey("label"),
+						knownvalue.StringExact(vpcLabel+"-first"),
+					),
+				},
+			},
+		},
+	})
+}
+
 func TestAccDataSourceVPCSubnets_filterByLabel(t *testing.T) {
 	t.Parallel()
 

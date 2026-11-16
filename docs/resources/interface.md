@@ -334,6 +334,28 @@ In addition to all arguments above, the following attributes are exported:
 
       * `range` - The assigned IPv4 range.
 
+    * `natgateway` - (Computed, Nested Attribute) The NAT gateway serving this VPC interface's IPv4 configuration. Read-only; NAT gateways are assigned through the VPC subnet. Null if none is assigned. Referenced directly (e.g. `vpc.ipv4.natgateway.id`).
+
+      * `id` - The ID of the NAT gateway.
+
+      * `label` - The label of the NAT gateway.
+
+      * `addresses` - The public IPv4 addresses of the NAT gateway used by this interface.
+
+      * `portset_assignments` - The number of portsets currently assigned to the NAT gateway.
+
+      * `portset_capacity` - The maximum number of portsets the NAT gateway can assign.
+
+      * `portsets` - (Nested Attribute List) The portsets assigned to the NAT gateway.
+
+        * `address` - The public IP address of the portset.
+
+        * `ports` - (Nested Attribute List) The port ranges assigned to the portset.
+
+          * `start` - The first port in the range.
+
+          * `end` - The last port in the range.
+
   * `ipv6` - (Nested Attribute) IPv6 assigned through `slaac` and `ranges`. **NOTE: IPv6 VPCs may not currently be available to all users.** Referenced directly (e.g. `vpc.ipv6.assigned_slaac`).
 
     * `assigned_slaac` - (Nested Attribute Set) Assigned IPv6 SLAAC address ranges to use in the VPC subnet, calculated from `slaac` input. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.

@@ -35,6 +35,7 @@ type ModelVPCSubnet struct {
 	Updated       timetypes.RFC3339 `tfsdk:"updated"`
 	Databases     types.List        `tfsdk:"databases"`
 	Nodebalancers types.List        `tfsdk:"nodebalancers"`
+	NATGateway    types.Object      `tfsdk:"natgateway"`
 }
 
 func (model *Model) FlattenSubnets(
@@ -141,6 +142,14 @@ func (model *Model) FlattenSubnets(
 			}
 
 			s.Nodebalancers = helper.KeepOrUpdateValue(s.Nodebalancers, nodebalancersList, preserveKnown)
+
+			natGateway, d := vpcsubnet.FlattenNATGatewayDetails(ctx, subnet.NATGateway)
+			diags.Append(d...)
+			if diags.HasError() {
+				return s
+			}
+
+			s.NATGateway = helper.KeepOrUpdateValue(s.NATGateway, natGateway, preserveKnown)
 
 			return s
 		},

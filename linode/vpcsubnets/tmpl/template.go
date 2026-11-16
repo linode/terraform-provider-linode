@@ -7,9 +7,20 @@ import (
 )
 
 type TemplateData struct {
-	Label  string
-	Region string
-	IPv4   string
+	Label         string
+	Region        string
+	IPv4          string
+	NATGatewayRef string
+}
+
+func DataNATGateway(t testing.TB, label, region, ipv4 string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vpc_subnets_data_natgateway", TemplateData{
+			Label:         label,
+			Region:        region,
+			IPv4:          ipv4,
+			NATGatewayRef: "first",
+		})
 }
 
 func DataBasic(t testing.TB, label, region, ipv4 string) string {

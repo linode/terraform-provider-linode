@@ -1,0 +1,11 @@
+{{ define "interface_datasource_vpc_natgateway" }}
+
+{{ template "interface_vpc_natgateway" . }}
+
+data "linode_interface" "test" {
+  id = linode_interface.test.id
+  linode_id = linode_instance.test.id
+}
+
+{{ end }}
+

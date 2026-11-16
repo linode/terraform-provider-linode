@@ -1,0 +1,11 @@
+{{ define "natgateway_types_data_basic" }}
+
+data "linode_natgateway_types" "foobar" {
+    filter {
+        name = "id"
+        values = ["g1-natgateway"]
+    }
+}
+
+{{ end }}
+

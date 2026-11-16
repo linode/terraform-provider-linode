@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-nettypes/cidrtypes"
 	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -20,10 +21,115 @@ type VPCAttrModel struct {
 }
 
 type VPCIPv4AttrModel struct {
-	Addresses         types.List `tfsdk:"addresses"`
-	AssignedAddresses types.Set  `tfsdk:"assigned_addresses"`
-	Ranges            types.List `tfsdk:"ranges"`
-	AssignedRanges    types.Set  `tfsdk:"assigned_ranges"`
+	Addresses         types.List   `tfsdk:"addresses"`
+	AssignedAddresses types.Set    `tfsdk:"assigned_addresses"`
+	Ranges            types.List   `tfsdk:"ranges"`
+	AssignedRanges    types.Set    `tfsdk:"assigned_ranges"`
+	NATGateway        types.Object `tfsdk:"natgateway"`
+}
+
+// vpcInterfaceNATGatewayPortAttrTypes is the attribute type map of a NAT gateway portset port.
+var vpcInterfaceNATGatewayPortAttrTypes = map[string]attr.Type{
+	"start": types.Int64Type,
+	"end":   types.Int64Type,
+}
+
+// vpcInterfaceNATGatewayPortsetAttrTypes is the attribute type map of a NAT gateway portset.
+var vpcInterfaceNATGatewayPortsetAttrTypes = map[string]attr.Type{
+	"address": types.StringType,
+	"ports":   types.ListType{ElemType: types.ObjectType{AttrTypes: vpcInterfaceNATGatewayPortAttrTypes}},
+}
+
+// vpcInterfaceNATGatewayAttrTypes is the attribute type map of the natgateway block on a VPC interface's IPv4 config.
+// It must match the schema of `natgateway` in both the resource and the data source.
+var vpcInterfaceNATGatewayAttrTypes = map[string]attr.Type{
+	"id":                  types.Int64Type,
+	"label":               types.StringType,
+	"addresses":           types.ListType{ElemType: types.StringType},
+	"portset_assignments": types.Int64Type,
+	"portset_capacity":    types.Int64Type,
+	"portsets":            types.ListType{ElemType: types.ObjectType{AttrTypes: vpcInterfaceNATGatewayPortsetAttrTypes}},
+}
+
+type VPCInterfaceNATGatewayPortModel struct {
+	Start types.Int64 `tfsdk:"start"`
+	End   types.Int64 `tfsdk:"end"`
+}
+
+type VPCInterfaceNATGatewayPortsetModel struct {
+	Address types.String `tfsdk:"address"`
+	Ports   types.List   `tfsdk:"ports"`
+}
+
+type VPCInterfaceNATGatewayModel struct {
+	ID                 types.Int64  `tfsdk:"id"`
+	Label              types.String `tfsdk:"label"`
+	Addresses          types.List   `tfsdk:"addresses"`
+	PortsetAssignments types.Int64  `tfsdk:"portset_assignments"`
+	PortsetCapacity    types.Int64  `tfsdk:"portset_capacity"`
+	Portsets           types.List   `tfsdk:"portsets"`
+}
+
+// flattenVPCInterfaceNATGateway converts the NAT gateway of a VPC interface's IPv4 config into a
+// natgateway object. A nil gateway yields a null object.
+func flattenVPCInterfaceNATGateway(
+	ctx context.Context,
+	gateway *linodego.VPCInterfaceIPv4NATGateway,
+	diags *diag.Diagnostics,
+) types.Object {
+	if gateway == nil {
+		return types.ObjectNull(vpcInterfaceNATGatewayAttrTypes)
+	}
+
+	addresses, addressesDiags := types.ListValueFrom(ctx, types.StringType, gateway.Addresses)
+	diags.Append(addressesDiags...)
+
+	portsets := types.ListNull(types.ObjectType{AttrTypes: vpcInterfaceNATGatewayPortsetAttrTypes})
+	// Portsets are only returned for some customers, so keep them null when absent.
+	if gateway.Portsets != nil {
+		portsetModels := make([]VPCInterfaceNATGatewayPortsetModel, len(gateway.Portsets))
+		for i, portset := range gateway.Portsets {
+			ports := types.ListNull(types.ObjectType{AttrTypes: vpcInterfaceNATGatewayPortAttrTypes})
+			if portset.Ports != nil {
+				portModels := make([]VPCInterfaceNATGatewayPortModel, len(portset.Ports))
+				for j, port := range portset.Ports {
+					portModels[j] = VPCInterfaceNATGatewayPortModel{
+						Start: types.Int64Value(int64(port.Start)),
+						End:   types.Int64Value(int64(port.End)),
+					}
+				}
+
+				var portDiags diag.Diagnostics
+				ports, portDiags = types.ListValueFrom(
+					ctx, types.ObjectType{AttrTypes: vpcInterfaceNATGatewayPortAttrTypes}, portModels,
+				)
+				diags.Append(portDiags...)
+			}
+
+			portsetModels[i] = VPCInterfaceNATGatewayPortsetModel{
+				Address: types.StringValue(portset.Address),
+				Ports:   ports,
+			}
+		}
+
+		var portsetDiags diag.Diagnostics
+		portsets, portsetDiags = types.ListValueFrom(
+			ctx, types.ObjectType{AttrTypes: vpcInterfaceNATGatewayPortsetAttrTypes}, portsetModels,
+		)
+		diags.Append(portsetDiags...)
+	}
+
+	obj, objDiags := types.ObjectValueFrom(ctx, vpcInterfaceNATGatewayAttrTypes, VPCInterfaceNATGatewayModel{
+		ID:                 types.Int64Value(int64(gateway.ID)),
+		Label:              types.StringValue(gateway.Label),
+		Addresses:          addresses,
+		PortsetAssignments: types.Int64Value(int64(gateway.PortsetAssignments)),
+		PortsetCapacity:    types.Int64Value(int64(gateway.PortsetCapacity)),
+		Portsets:           portsets,
+	})
+	diags.Append(objDiags...)
+
+	return obj
 }
 
 // VPCIPv4AddressAttrModel is a shared model between `configuredVPCInterfaceIPv4Address` and
@@ -287,6 +393,12 @@ func (data *VPCIPv4AttrModel) FlattenVPCIPv4(ctx context.Context, ipv4 linodego.
 	}
 
 	data.AssignedRanges = helper.KeepOrUpdateValue(data.AssignedRanges, assignedRangesValue, preserveKnown)
+
+	natGateway := flattenVPCInterfaceNATGateway(ctx, ipv4.NATGateway, diags)
+	if diags.HasError() {
+		return
+	}
+	data.NATGateway = helper.KeepOrUpdateValue(data.NATGateway, natGateway, preserveKnown)
 }
 
 func (plan *VPCIPv6AttrModel) GetCreateOrUpdateOptions(

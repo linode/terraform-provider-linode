@@ -87,8 +87,9 @@ type DataSourceVPCModel struct {
 
 // DataSourceVPCIPv4Model is the data source model for VPC IPv4
 type DataSourceVPCIPv4Model struct {
-	Addresses types.Set `tfsdk:"addresses"`
-	Ranges    types.Set `tfsdk:"ranges"`
+	Addresses  types.Set    `tfsdk:"addresses"`
+	Ranges     types.Set    `tfsdk:"ranges"`
+	NATGateway types.Object `tfsdk:"natgateway"`
 }
 
 // DataSourceVPCIPv6Model is the data source model for VPC IPv6
@@ -361,6 +362,11 @@ func (data *DataSourceModel) flattenVPCInterface(
 		return
 	}
 	vpcIPv4.Ranges = rangesSet
+
+	vpcIPv4.NATGateway = flattenVPCInterfaceNATGateway(ctx, vpcInterface.IPv4.NATGateway, diags)
+	if diags.HasError() {
+		return
+	}
 
 	// Convert IPv4 model to object
 	ipv4Obj, ipv4Diags := types.ObjectValueFrom(ctx, dataSourceVPCIPv4Attribute.GetType().(types.ObjectType).AttrTypes, vpcIPv4)

@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-nettypes/cidrtypes"
 	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var (
@@ -207,6 +208,68 @@ var (
 				Description:  "IPv4 ranges assigned to this VPC interface.",
 				Computed:     true,
 				NestedObject: dataSourceVPCIPv4RangeAttribute,
+			},
+			"natgateway": dataSourceVPCInterfaceNATGatewayAttribute,
+		},
+	}
+
+	dataSourceVPCInterfaceNATGatewayPortAttribute = schema.NestedAttributeObject{
+		Attributes: map[string]schema.Attribute{
+			"start": schema.Int64Attribute{
+				Description: "The first port in the range.",
+				Computed:    true,
+			},
+			"end": schema.Int64Attribute{
+				Description: "The last port in the range.",
+				Computed:    true,
+			},
+		},
+	}
+
+	dataSourceVPCInterfaceNATGatewayPortsetAttribute = schema.NestedAttributeObject{
+		Attributes: map[string]schema.Attribute{
+			"address": schema.StringAttribute{
+				Description: "The public IP address of the portset.",
+				Computed:    true,
+			},
+			"ports": schema.ListNestedAttribute{
+				Description:  "The port ranges assigned to the portset.",
+				Computed:     true,
+				NestedObject: dataSourceVPCInterfaceNATGatewayPortAttribute,
+			},
+		},
+	}
+
+	// dataSourceVPCInterfaceNATGatewayAttribute is the NAT gateway serving a VPC interface's IPv4 config.
+	dataSourceVPCInterfaceNATGatewayAttribute = schema.SingleNestedAttribute{
+		Description: "The NAT gateway serving this VPC interface's IPv4 configuration. Null if none is assigned.",
+		Computed:    true,
+		Attributes: map[string]schema.Attribute{
+			"id": schema.Int64Attribute{
+				Description: "The ID of the NAT gateway.",
+				Computed:    true,
+			},
+			"label": schema.StringAttribute{
+				Description: "The label of the NAT gateway.",
+				Computed:    true,
+			},
+			"addresses": schema.ListAttribute{
+				Description: "The public IP addresses of the NAT gateway used by this interface.",
+				Computed:    true,
+				ElementType: types.StringType,
+			},
+			"portset_assignments": schema.Int64Attribute{
+				Description: "The number of portsets currently assigned to the NAT gateway.",
+				Computed:    true,
+			},
+			"portset_capacity": schema.Int64Attribute{
+				Description: "The maximum number of portsets the NAT gateway can assign.",
+				Computed:    true,
+			},
+			"portsets": schema.ListNestedAttribute{
+				Description:  "The portsets assigned to the NAT gateway.",
+				Computed:     true,
+				NestedObject: dataSourceVPCInterfaceNATGatewayPortsetAttribute,
 			},
 		},
 	}

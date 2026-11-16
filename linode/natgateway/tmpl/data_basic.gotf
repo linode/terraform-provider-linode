@@ -1,0 +1,10 @@
+{{ define "natgateway_data_basic" }}
+
+{{ template "natgateway_complex" . }}
+
+data "linode_natgateway" "foobar" {
+    id = linode_natgateway.complex.id
+}
+
+{{ end }}
+
