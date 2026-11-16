@@ -39,6 +39,10 @@ func EnterpriseBasic(t testing.TB, data *TemplateData) string {
 	return acceptance.ExecuteTemplate(t, "lke_e_nodepool", *data)
 }
 
+func EnterpriseNetworking(t testing.TB, data *TemplateData) string {
+	return acceptance.ExecuteTemplate(t, "lke_e_nodepool_networking", *data)
+}
+
 func DataBasic(t testing.TB, data *TemplateData) string {
 	return acceptance.ExecuteTemplate(t, "lke_nodepool_data_basic", *data)
 }

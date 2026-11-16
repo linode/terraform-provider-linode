@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -27,6 +28,81 @@ func NewResource() resource.Resource {
 
 type Resource struct {
 	helper.BaseResource
+}
+
+func (r *Resource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	// Skip on destroy.
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+
+	var plan NodePoolModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if plan.Networking == nil {
+		return
+	}
+
+	// Validate api_version at plan time so a misconfigured replace cannot
+	// destroy the existing pool before Create rejects it.
+	if !strings.EqualFold(r.Meta.Config.APIVersion.ValueString(), helper.APIVersionV4Beta) {
+		resp.Diagnostics.AddError(
+			"Invalid networking configuration",
+			fmt.Sprintf("the api_version provider argument must be set to %q to use networking", helper.APIVersionV4Beta),
+		)
+		return
+	}
+
+	// Validate interface ordering without an API call: vpc must be first,
+	// subsequent entries must not be vpc.
+	if len(plan.Networking.Interfaces) > 0 {
+		ifaces := plan.Networking.Interfaces
+		for _, iface := range ifaces {
+			// Skip entries that are still unknown (e.g. from references).
+			if iface.Type.IsUnknown() {
+				return
+			}
+		}
+		if ifaces[0].Type.ValueString() != "vpc" {
+			resp.Diagnostics.AddError(
+				"Invalid networking configuration",
+				"networking.interfaces[0].type must be \"vpc\" — the first interface must reference the cluster VPC subnet.",
+			)
+		}
+		for i := 1; i < len(ifaces); i++ {
+			if ifaces[i].Type.ValueString() == "vpc" {
+				resp.Diagnostics.AddError(
+					"Invalid networking configuration",
+					fmt.Sprintf("networking.interfaces[%d].type must not be \"vpc\" — only the first interface may be of type \"vpc\".", i),
+				)
+			}
+		}
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	// Validate enterprise-only constraint at plan time when cluster_id is known.
+	if plan.ClusterID.IsUnknown() || plan.ClusterID.IsNull() {
+		return
+	}
+	clusterID := helper.FrameworkSafeInt64ToInt(plan.ClusterID.ValueInt64(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	cluster, err := r.Meta.Client.GetLKECluster(ctx, clusterID)
+	if err != nil {
+		resp.Diagnostics.AddError("error getting cluster during plan validation", err.Error())
+		return
+	}
+	plan.validateEnterpriseOnlyAttributes(cluster.Tier, &resp.Diagnostics)
 }
 
 func (r *Resource) Read(
@@ -119,6 +195,14 @@ func (r *Resource) Create(
 	}
 	config.validateEnterpriseOnlyAttributes(cluster.Tier, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if config.Networking != nil && !strings.EqualFold(r.Meta.Config.APIVersion.ValueString(), helper.APIVersionV4Beta) {
+		resp.Diagnostics.AddError(
+			"Invalid networking configuration",
+			fmt.Sprintf("the api_version provider argument must be set to %q to use networking", helper.APIVersionV4Beta),
+		)
 		return
 	}
 
