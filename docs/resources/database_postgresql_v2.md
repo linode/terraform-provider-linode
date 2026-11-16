@@ -277,7 +277,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the Managed Database.
 
-* `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database.
+* `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database. This attribute is sensitive.
 
 * `created` - When this Managed Database was created.
 
@@ -297,7 +297,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `root_password` - The randomly-generated root password for the Managed Database instance. This attribute is sensitive.
 
-* `root_username` - The root username for the Managed Database instance.
+* `root_username` - The root username for the Managed Database instance. This attribute is sensitive.
 
 * `ssl_connection` - Whether to require SSL credentials to establish a connection to the Managed Database.
 

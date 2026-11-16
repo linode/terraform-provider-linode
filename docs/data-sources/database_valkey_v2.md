@@ -35,7 +35,7 @@ The `linode_database_valkey_v2` data source exports the following attributes:
 
 * `available_restore_times` - Available discrete snapshot timestamps that can be used to fork this database. These are not a continuous point-in-time recovery range; use a returned timestamp or omit the restore time to request the latest snapshot.
 
-* `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database.
+* `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database. This attribute is sensitive.
 
 * `cluster_size` - The number of Linode Instance nodes deployed to the Managed Database.
 

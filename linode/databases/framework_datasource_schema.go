@@ -73,7 +73,7 @@ var frameworkDataSourceSchema = schema.Schema{
 					"available_restore_times": schema.ListAttribute{
 						Description: "Available discrete restore snapshot times for the database, when supported by its engine.",
 						Computed:    true,
-						ElementType: types.StringType,
+						ElementType: timetypes.RFC3339Type{},
 					},
 					"created": schema.StringAttribute{
 						Description: "When this Managed Database was created.",

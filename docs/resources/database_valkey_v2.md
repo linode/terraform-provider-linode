@@ -96,7 +96,7 @@ In addition to the arguments listed above, the following attributes are exported
 
 * `available_restore_times` - Available discrete snapshot timestamps, formatted as RFC3339 strings. Snapshot availability changes over time, so the API validates a requested timestamp when it creates a fork. Do not assume an arbitrary timestamp is valid.
 
-* `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database.
+* `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database. This attribute is sensitive.
 
 * `created` - When this Managed Database was created.
 

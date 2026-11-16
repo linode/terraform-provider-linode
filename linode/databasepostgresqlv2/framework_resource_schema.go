@@ -75,6 +75,7 @@ var frameworkResourceSchema = schema.Schema{
 		"ca_cert": schema.StringAttribute{
 			Description:   "The base64-encoded SSL CA certificate for the Managed Database.",
 			Computed:      true,
+			Sensitive:     true,
 			PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
 		},
 		"cluster_size": schema.Int64Attribute{
@@ -144,7 +145,7 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"engine": schema.StringAttribute{
-			Description: "The Managed Database engine in engine/version format.",
+			Description: "The Managed Database engine (e.g. postgresql).",
 			Computed:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),

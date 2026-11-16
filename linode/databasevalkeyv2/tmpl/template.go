@@ -6,45 +6,57 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
 )
 
+type TemplateDataUpdates struct {
+	HourOfDay, DayOfWeek, Duration int
+	Frequency                      string
+}
+
 type TemplateData struct {
-	Label                         string
-	Region                        string
-	EngineID                      string
-	Type                          string
-	AllowedIP                     string
-	ClusterSize                   int
-	MaintenanceHour               int
-	Suspended                     bool
-	BackupHour                    int
-	BackupMinute                  int
-	Timeout                       int
-	MaxmemoryPolicy               string
-	FrequentSnapshots             bool
-	ACLChannelsDefault            string
-	ActiveExpireEffort            int
-	ActiveDefrag                  bool
-	LFUDecayTime                  int
-	LFULogFactor                  int
-	NumberOfDatabases             int
-	Persistence                   string
-	PubsubClientOutputBufferLimit int
+	Label       string
+	Region      string
+	EngineID    string
+	Type        string
+	AllowedIP   string
+	ClusterSize int
+	Suspended   bool
+
+	Updates TemplateDataUpdates
 }
 
-func Basic(t testing.TB, label, region, engineID, nodeType string) string {
+type TemplateDataEngineConfig struct {
+	Label    string
+	Region   string
+	EngineID string
+	Type     string
+
+	EngineConfigBackupHour                          int
+	EngineConfigBackupMinute                        int
+	EngineConfigFrequentSnapshots                   bool
+	EngineConfigValkeyACLChannelsDefault            string
+	EngineConfigValkeyActiveExpireEffort            int
+	EngineConfigValkeyActiveDefrag                  bool
+	EngineConfigValkeyLFUDecayTime                  int
+	EngineConfigValkeyLFULogFactor                  int
+	EngineConfigValkeyMaxmemoryPolicy               string
+	EngineConfigValkeyNumberOfDatabases             int
+	EngineConfigValkeyPersistence                   string
+	EngineConfigValkeyPubsubClientOutputBufferLimit int
+	EngineConfigValkeyTimeout                       int
+}
+
+func Basic(t testing.TB, label, region, engineID string) string {
 	return acceptance.ExecuteTemplate(t, "database_valkey_v2_basic", TemplateData{
-		Label: label, Region: region, EngineID: engineID, Type: nodeType,
+		Label: label, Region: region, EngineID: engineID,
 	})
 }
 
-func DataBasic(t testing.TB, label, region, engineID, nodeType string) string {
-	return acceptance.ExecuteTemplate(t, "database_valkey_v2_data_basic", TemplateData{
-		Label: label, Region: region, EngineID: engineID, Type: nodeType,
-	})
+func Data(t testing.TB, data TemplateData) string {
+	return acceptance.ExecuteTemplate(t, "database_valkey_v2_data", data)
 }
 
-func DataListing(t testing.TB, label, region, engineID, nodeType string) string {
+func DataListing(t testing.TB, label, region, engineID string) string {
 	return acceptance.ExecuteTemplate(t, "database_valkey_v2_data_listing", TemplateData{
-		Label: label, Region: region, EngineID: engineID, Type: nodeType,
+		Label: label, Region: region, EngineID: engineID,
 	})
 }
 
@@ -56,14 +68,8 @@ func Suspension(t testing.TB, data TemplateData) string {
 	return acceptance.ExecuteTemplate(t, "database_valkey_v2_suspension", data)
 }
 
-func EngineConfig(t testing.TB, data TemplateData) string {
+func EngineConfig(t testing.TB, data TemplateDataEngineConfig) string {
 	return acceptance.ExecuteTemplate(t, "database_valkey_v2_engine_config", data)
-}
-
-func Resize(t testing.TB, label, region, engineID, nodeType string, clusterSize int) string {
-	return acceptance.ExecuteTemplate(t, "database_valkey_v2_resize", TemplateData{
-		Label: label, Region: region, EngineID: engineID, Type: nodeType, ClusterSize: clusterSize,
-	})
 }
 
 func Fork(t testing.TB, label, region, engineID, nodeType string) string {
@@ -90,7 +96,7 @@ func VPCDetach(t testing.TB, label, region, engineID, nodeType string) string {
 	})
 }
 
-func DataEngineConfig(t testing.TB, data TemplateData) string {
+func DataEngineConfig(t testing.TB, data TemplateDataEngineConfig) string {
 	return acceptance.ExecuteTemplate(t, "database_valkey_v2_data_engine_config", data)
 }
 

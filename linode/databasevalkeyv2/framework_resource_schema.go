@@ -65,6 +65,7 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"ca_cert": schema.StringAttribute{
 			Computed:      true,
+			Sensitive:     true,
 			Description:   "The base64-encoded SSL CA certificate for the Managed Valkey Database.",
 			PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
 		},
@@ -164,7 +165,7 @@ var frameworkResourceSchema = schema.Schema{
 		"version": schema.StringAttribute{Computed: true, Description: "The Valkey server version."},
 		"available_restore_times": schema.ListAttribute{
 			Computed:    true,
-			ElementType: types.StringType,
+			ElementType: timetypes.RFC3339Type{},
 			Description: "Available RDB snapshot timestamps that can be used as discrete restore points when forking this database.",
 		},
 		"pending_updates": databaseshared.ResourceAttributePendingUpdates,

@@ -11,7 +11,7 @@ resource "linode_database_access_controls" "foobar" {
     database_id = linode_database_valkey_v2.foobar.id
     database_type = "valkey"
 
-    allow_list = [{{ if .AllowedIP }}"{{ .AllowedIP }}"{{ end }}]
+    allow_list = ["{{.AllowedIP}}"]
 }
 
 {{ end }}

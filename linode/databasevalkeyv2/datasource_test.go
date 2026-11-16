@@ -26,11 +26,25 @@ func TestAccDataSourceDatabaseValkeyV2_basic(t *testing.T) {
 		CheckDestroy:             checkValkeyDatabaseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, label, testRegion, testEngine, "g7-dedicated-4-2"),
+				Config: tmpl.Data(t, tmpl.TemplateData{
+					Label: label, Region: testRegion, EngineID: testEngine, Type: "g7-dedicated-4-2",
+					AllowedIP: "10.0.0.3/32", ClusterSize: 1,
+					Updates: tmpl.TemplateDataUpdates{
+						HourOfDay: 3, DayOfWeek: 2, Duration: 4, Frequency: "weekly",
+					},
+				}),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("label"), knownvalue.StringExact(label)),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("engine_id"), knownvalue.StringExact(testEngine)),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("status"), knownvalue.StringExact("active")),
+					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("cluster_size"), knownvalue.Int64Exact(1)),
+					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("allow_list"), knownvalue.SetExact([]knownvalue.Check{
+						knownvalue.StringExact("10.0.0.3/32"),
+					})),
+					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("updates").AtMapKey("hour_of_day"), knownvalue.Int64Exact(3)),
+					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("updates").AtMapKey("day_of_week"), knownvalue.Int64Exact(2)),
+					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("updates").AtMapKey("duration"), knownvalue.Int64Exact(4)),
+					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("updates").AtMapKey("frequency"), knownvalue.StringExact("weekly")),
 				},
 			},
 		},
@@ -48,7 +62,7 @@ func TestAccDataSourceDatabaseValkeyV2_listing(t *testing.T) {
 		CheckDestroy:             checkValkeyDatabaseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataListing(t, label, testRegion, testEngine, "g7-dedicated-4-2"),
+				Config: tmpl.DataListing(t, label, testRegion, testEngine),
 				Check:  resource.TestCheckResourceAttrPair(databaseName, "databases.0.id", "linode_database_valkey_v2.foobar", "id"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(databaseName, tfjsonpath.New("databases"), knownvalue.ListSizeExact(1)),
@@ -70,12 +84,14 @@ func TestAccDataSourceDatabaseValkeyV2_engineConfig(t *testing.T) {
 
 	const dataSourceName = "data.linode_database_valkey_v2.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
-	config := tmpl.TemplateData{
+	config := tmpl.TemplateDataEngineConfig{
 		Label: label, Region: testRegion, EngineID: testEngine, Type: "g7-dedicated-4-2",
-		BackupHour: 1, BackupMinute: 15, FrequentSnapshots: true, ACLChannelsDefault: "allchannels",
-		ActiveExpireEffort: 2, ActiveDefrag: true, LFUDecayTime: 1, LFULogFactor: 10,
-		MaxmemoryPolicy: "allkeys-lru", NumberOfDatabases: 16, Persistence: "rdb",
-		PubsubClientOutputBufferLimit: 32768, Timeout: 300,
+		EngineConfigBackupHour: 1, EngineConfigBackupMinute: 15, EngineConfigFrequentSnapshots: true,
+		EngineConfigValkeyACLChannelsDefault: "allchannels", EngineConfigValkeyActiveExpireEffort: 2,
+		EngineConfigValkeyActiveDefrag: true, EngineConfigValkeyLFUDecayTime: 1, EngineConfigValkeyLFULogFactor: 10,
+		EngineConfigValkeyMaxmemoryPolicy: "allkeys-lru", EngineConfigValkeyNumberOfDatabases: 16,
+		EngineConfigValkeyPersistence: "rdb", EngineConfigValkeyPubsubClientOutputBufferLimit: 32768,
+		EngineConfigValkeyTimeout: 300,
 	}
 
 	resource.Test(t, resource.TestCase{

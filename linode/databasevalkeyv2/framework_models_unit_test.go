@@ -11,7 +11,10 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
@@ -24,11 +27,11 @@ func TestModel_FlattenAvailableRestoreTimes(t *testing.T) {
 		name           string
 		availableTimes []time.Time
 		wantNull       bool
-		want           []string
+		want           []timetypes.RFC3339
 	}{
 		{name: "nil is null", wantNull: true},
-		{name: "empty stays empty", availableTimes: []time.Time{}, want: []string{}},
-		{name: "populated", availableTimes: []time.Time{timestamp}, want: []string{timestamp.Format(time.RFC3339)}},
+		{name: "empty stays empty", availableTimes: []time.Time{}, want: []timetypes.RFC3339{}},
+		{name: "populated", availableTimes: []time.Time{timestamp}, want: []timetypes.RFC3339{timetypes.NewRFC3339TimeValue(timestamp)}},
 	}
 
 	for _, test := range tests {
@@ -38,13 +41,22 @@ func TestModel_FlattenAvailableRestoreTimes(t *testing.T) {
 
 			diags := model.Flatten(t.Context(), database, nil, nil, false)
 			require.False(t, diags.HasError(), "%v", diags)
+
+			state := tfsdk.State{Schema: frameworkDatasourceSchema}
+			diags = state.Set(t.Context(), model)
+			require.False(t, diags.HasError(), "%v", diags)
+			var restoreTimes types.List
+			diags = state.GetAttribute(t.Context(), path.Root("available_restore_times"), &restoreTimes)
+			require.False(t, diags.HasError(), "%v", diags)
+
 			if test.wantNull {
 				assert.True(t, model.AvailableRestoreTimes.IsNull())
+				assert.True(t, restoreTimes.IsNull())
 				return
 			}
 
-			var got []string
-			require.False(t, model.AvailableRestoreTimes.ElementsAs(t.Context(), &got, false).HasError())
+			var got []timetypes.RFC3339
+			require.False(t, restoreTimes.ElementsAs(t.Context(), &got, false).HasError())
 			assert.Equal(t, test.want, got)
 		})
 	}
@@ -162,7 +174,10 @@ func TestModel_GetEngineConfigOmitsUnknownValues(t *testing.T) {
 }
 
 func TestModel_CopyFromCopiesRestoreTimes(t *testing.T) {
-	list, diags := types.ListValueFrom(t.Context(), types.StringType, []string{"2026-10-05T12:30:00Z"})
+	restoreTime := time.Date(2026, time.October, 5, 12, 30, 0, 0, time.UTC)
+	list, diags := types.ListValue(timetypes.RFC3339Type{}, []attr.Value{
+		timetypes.NewRFC3339TimeValue(restoreTime),
+	})
 	require.False(t, diags.HasError())
 	original := Model{AvailableRestoreTimes: list}
 	var copied Model
@@ -171,7 +186,10 @@ func TestModel_CopyFromCopiesRestoreTimes(t *testing.T) {
 }
 
 func TestModel_FlattenRefreshesAvailableRestoreTimes(t *testing.T) {
-	previous, diags := types.ListValueFrom(t.Context(), types.StringType, []string{"2026-10-05T12:30:00Z"})
+	restoreTime := time.Date(2026, time.October, 5, 12, 30, 0, 0, time.UTC)
+	previous, diags := types.ListValue(timetypes.RFC3339Type{}, []attr.Value{
+		timetypes.NewRFC3339TimeValue(restoreTime),
+	})
 	require.False(t, diags.HasError())
 
 	currentTime := time.Date(2026, time.October, 6, 12, 30, 0, 0, time.UTC)
@@ -181,9 +199,9 @@ func TestModel_FlattenRefreshesAvailableRestoreTimes(t *testing.T) {
 	}, nil, nil, true)
 	require.False(t, diags.HasError(), "%v", diags)
 
-	var got []string
+	var got []timetypes.RFC3339
 	require.False(t, model.AvailableRestoreTimes.ElementsAs(t.Context(), &got, false).HasError())
-	assert.Equal(t, []string{currentTime.Format(time.RFC3339)}, got)
+	assert.Equal(t, []timetypes.RFC3339{timetypes.NewRFC3339TimeValue(currentTime)}, got)
 }
 
 func TestModel_Flatten(t *testing.T) {
@@ -254,9 +272,12 @@ func TestModel_Flatten(t *testing.T) {
 	assert.Equal(t, int64(7), model.EngineConfigValkeyPubsubClientOutputBufferLimit.ValueInt64())
 	assert.Equal(t, int64(8), model.EngineConfigValkeyTimeout.ValueInt64())
 
-	var restoreTimes []string
+	var restoreTimes []timetypes.RFC3339
 	require.False(t, model.AvailableRestoreTimes.ElementsAs(t.Context(), &restoreTimes, false).HasError())
-	assert.Equal(t, []string{restoreTime.Format(time.RFC3339), created.Format(time.RFC3339)}, restoreTimes)
+	assert.Equal(t, []timetypes.RFC3339{
+		timetypes.NewRFC3339TimeValue(restoreTime),
+		timetypes.NewRFC3339TimeValue(created),
+	}, restoreTimes)
 
 	var copied Model
 	copied.CopyFrom(&model, false)

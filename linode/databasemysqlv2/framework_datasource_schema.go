@@ -38,6 +38,7 @@ var frameworkDatasourceSchema = schema.Schema{
 		"ca_cert": schema.StringAttribute{
 			Description: "The base64-encoded SSL CA certificate for the Managed Database.",
 			Computed:    true,
+			Sensitive:   true,
 		},
 		"cluster_size": schema.Int64Attribute{
 			Computed:    true,
@@ -63,7 +64,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			Computed:    true,
 		},
 		"engine": schema.StringAttribute{
-			Description: "The Managed Database engine in engine/version format.",
+			Description: "The Managed Database engine (e.g. mysql).",
 			Computed:    true,
 		},
 		"host_primary": schema.StringAttribute{

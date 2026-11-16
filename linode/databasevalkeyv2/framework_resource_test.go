@@ -198,7 +198,7 @@ func TestAccResourceDatabaseValkeyV2_basic(t *testing.T) {
 		CheckDestroy:             checkValkeyDatabaseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, testRegion, testEngine, "g7-dedicated-4-2"),
+				Config: tmpl.Basic(t, label, testRegion, testEngine),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("label"), knownvalue.StringExact(label)),
@@ -208,7 +208,7 @@ func TestAccResourceDatabaseValkeyV2_basic(t *testing.T) {
 				},
 			},
 			{
-				Config:   tmpl.Basic(t, label, testRegion, testEngine, "g7-dedicated-4-2"),
+				Config:   tmpl.Basic(t, label, testRegion, testEngine),
 				PlanOnly: true,
 			},
 			{
@@ -234,7 +234,7 @@ func TestAccResourceDatabaseValkeyV2_externalDeletion(t *testing.T) {
 		CheckDestroy:             checkValkeyDatabaseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, testRegion, testEngine, "g7-dedicated-4-2"),
+				Config: tmpl.Basic(t, label, testRegion, testEngine),
 				Check: func(state *terraform.State) error {
 					resourceState := state.RootModule().Resources[resourceName]
 					id, err := strconv.Atoi(resourceState.Primary.ID)
@@ -247,7 +247,7 @@ func TestAccResourceDatabaseValkeyV2_externalDeletion(t *testing.T) {
 			},
 			{
 				PreConfig:          func() { deleteValkeyDatabaseAndWait(t, databaseID) },
-				Config:             tmpl.Basic(t, label, testRegion, testEngine, "g7-dedicated-4-2"),
+				Config:             tmpl.Basic(t, label, testRegion, testEngine),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			},
@@ -262,7 +262,8 @@ func TestAccResourceDatabaseValkeyV2_complex(t *testing.T) {
 	label := acctest.RandomWithPrefix("tf_test")
 	updates := tmpl.TemplateData{
 		Label: label, Region: testRegion, EngineID: testEngine, Type: "g7-dedicated-4-2",
-		AllowedIP: "10.0.0.3/32", ClusterSize: 1, MaintenanceHour: 3,
+		AllowedIP: "10.0.0.3/32", ClusterSize: 1,
+		Updates: tmpl.TemplateDataUpdates{HourOfDay: 3, DayOfWeek: 2, Duration: 4, Frequency: "weekly"},
 	}
 	resized := updates
 	resized.AllowedIP = "10.0.0.4/32"
@@ -270,7 +271,7 @@ func TestAccResourceDatabaseValkeyV2_complex(t *testing.T) {
 	cleared := resized
 	cleared.AllowedIP = ""
 	maintenanceOnly := cleared
-	maintenanceOnly.MaintenanceHour = 4
+	maintenanceOnly.Updates.HourOfDay = 4
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
@@ -361,13 +362,23 @@ func TestAccResourceDatabaseValkeyV2_resize(t *testing.T) {
 	label := acctest.RandomWithPrefix("tf_test")
 	var databaseID string
 
+	initial := tmpl.TemplateData{
+		Label: label, Region: testRegion, EngineID: testEngine, Type: "g7-dedicated-4-2",
+		AllowedIP: "10.0.0.3/32", ClusterSize: 1,
+		Updates: tmpl.TemplateDataUpdates{HourOfDay: 3, DayOfWeek: 2, Duration: 4, Frequency: "weekly"},
+	}
+	clusterResized := initial
+	clusterResized.ClusterSize = 3
+	planResized := clusterResized
+	planResized.Type = targetType.ID
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkValkeyDatabaseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, testRegion, testEngine, "g7-dedicated-4-2"),
+				Config: tmpl.Complex(t, initial),
 				Check: func(state *terraform.State) error {
 					databaseID = state.RootModule().Resources[resourceName].Primary.ID
 					return nil
@@ -377,7 +388,7 @@ func TestAccResourceDatabaseValkeyV2_resize(t *testing.T) {
 				},
 			},
 			{
-				Config: tmpl.Resize(t, label, testRegion, testEngine, "g7-dedicated-4-2", 3),
+				Config: tmpl.Complex(t, clusterResized),
 				Check: func(state *terraform.State) error {
 					if state.RootModule().Resources[resourceName].Primary.ID != databaseID {
 						return fmt.Errorf("cluster-size resize replaced the database")
@@ -389,7 +400,7 @@ func TestAccResourceDatabaseValkeyV2_resize(t *testing.T) {
 				},
 			},
 			{
-				Config: tmpl.Resize(t, label, testRegion, testEngine, targetType.ID, 3),
+				Config: tmpl.Complex(t, planResized),
 				Check: func(state *terraform.State) error {
 					if state.RootModule().Resources[resourceName].Primary.ID != databaseID {
 						return fmt.Errorf("plan-type resize replaced the database")
@@ -460,7 +471,7 @@ func TestAccResourceDatabaseValkeyV2_engineVersion(t *testing.T) {
 		CheckDestroy:             checkValkeyDatabaseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, testRegion, sourceEngine, "g7-dedicated-4-2"),
+				Config: tmpl.Basic(t, label, testRegion, sourceEngine),
 				Check: func(state *terraform.State) error {
 					databaseID = state.RootModule().Resources[resourceName].Primary.ID
 					return nil
@@ -470,7 +481,7 @@ func TestAccResourceDatabaseValkeyV2_engineVersion(t *testing.T) {
 				},
 			},
 			{
-				Config: tmpl.Basic(t, label, testRegion, targetEngine, "g7-dedicated-4-2"),
+				Config: tmpl.Basic(t, label, testRegion, targetEngine),
 				Check: func(state *terraform.State) error {
 					if state.RootModule().Resources[resourceName].Primary.ID != databaseID {
 						return fmt.Errorf("engine version upgrade replaced the database")
@@ -483,7 +494,7 @@ func TestAccResourceDatabaseValkeyV2_engineVersion(t *testing.T) {
 				},
 			},
 			{
-				Config:   tmpl.Basic(t, label, testRegion, targetEngine, "g7-dedicated-4-2"),
+				Config:   tmpl.Basic(t, label, testRegion, targetEngine),
 				PlanOnly: true,
 			},
 		},
@@ -504,7 +515,7 @@ func TestAccResourceDatabaseValkeyV2_fork(t *testing.T) {
 		CheckDestroy:             checkValkeyDatabaseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, testRegion, testEngine, "g7-dedicated-4-2"),
+				Config: tmpl.Basic(t, label, testRegion, testEngine),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(sourceName, tfjsonpath.New("status"), knownvalue.StringExact("active")),
 				},
@@ -582,26 +593,28 @@ func TestAccResourceDatabaseValkeyV2_engineConfig(t *testing.T) {
 
 	const resourceName = "linode_database_valkey_v2.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
-	data := tmpl.TemplateData{
+	data := tmpl.TemplateDataEngineConfig{
 		Label: label, Region: testRegion, EngineID: testEngine, Type: "g7-dedicated-4-2",
-		BackupHour: 1, BackupMinute: 15, FrequentSnapshots: true, ACLChannelsDefault: "allchannels",
-		ActiveExpireEffort: 2, ActiveDefrag: true, LFUDecayTime: 1, LFULogFactor: 10,
-		MaxmemoryPolicy: "allkeys-lru", NumberOfDatabases: 16, Persistence: "rdb",
-		PubsubClientOutputBufferLimit: 32768, Timeout: 300,
+		EngineConfigBackupHour: 1, EngineConfigBackupMinute: 15, EngineConfigFrequentSnapshots: true,
+		EngineConfigValkeyACLChannelsDefault: "allchannels", EngineConfigValkeyActiveExpireEffort: 2,
+		EngineConfigValkeyActiveDefrag: true, EngineConfigValkeyLFUDecayTime: 1, EngineConfigValkeyLFULogFactor: 10,
+		EngineConfigValkeyMaxmemoryPolicy: "allkeys-lru", EngineConfigValkeyNumberOfDatabases: 16,
+		EngineConfigValkeyPersistence: "rdb", EngineConfigValkeyPubsubClientOutputBufferLimit: 32768,
+		EngineConfigValkeyTimeout: 300,
 	}
 	updated := data
-	updated.BackupHour = 2
-	updated.BackupMinute = 30
-	updated.FrequentSnapshots = false
-	updated.ACLChannelsDefault = "resetchannels"
-	updated.ActiveExpireEffort = 4
-	updated.ActiveDefrag = false
-	updated.LFUDecayTime = 2
-	updated.LFULogFactor = 20
-	updated.Timeout = 600
-	updated.MaxmemoryPolicy = "volatile-lru"
-	updated.NumberOfDatabases = 32
-	updated.PubsubClientOutputBufferLimit = 65536
+	updated.EngineConfigBackupHour = 2
+	updated.EngineConfigBackupMinute = 30
+	updated.EngineConfigFrequentSnapshots = false
+	updated.EngineConfigValkeyACLChannelsDefault = "resetchannels"
+	updated.EngineConfigValkeyActiveExpireEffort = 4
+	updated.EngineConfigValkeyActiveDefrag = false
+	updated.EngineConfigValkeyLFUDecayTime = 2
+	updated.EngineConfigValkeyLFULogFactor = 20
+	updated.EngineConfigValkeyTimeout = 600
+	updated.EngineConfigValkeyMaxmemoryPolicy = "volatile-lru"
+	updated.EngineConfigValkeyNumberOfDatabases = 32
+	updated.EngineConfigValkeyPubsubClientOutputBufferLimit = 65536
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
@@ -728,13 +741,13 @@ func TestAccResourceDatabaseValkeyV2_noPendingUpdatesRegression(t *testing.T) {
 		CheckDestroy: checkValkeyDatabaseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, testRegion, testEngine, "g7-dedicated-4-2"),
+				Config: tmpl.Basic(t, label, testRegion, testEngine),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("pending_updates"), acceptance.DatabasePendingUpdatesSetExact),
 				},
 			},
 			{
-				Config: tmpl.Basic(t, label, testRegion, testEngine, "g7-dedicated-4-2"),
+				Config: tmpl.Basic(t, label, testRegion, testEngine),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("pending_updates"), acceptance.DatabasePendingUpdatesSetExact),
 				},

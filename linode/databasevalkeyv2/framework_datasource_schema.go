@@ -9,60 +9,122 @@ import (
 
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
-		"id": schema.StringAttribute{Required: true, Description: "The ID of the Managed Valkey Database."},
+		"id": schema.StringAttribute{Required: true, Description: "The id of the Valkey Database."},
 		"allow_list": schema.SetAttribute{
 			Computed:    true,
 			ElementType: types.StringType,
-			Description: "IP addresses or CIDR ranges allowed to access the database.",
+			Description: "A list of IP addresses that can access the Managed Database. " +
+				"Each item can be a single IP address or a range in CIDR format.",
 		},
-		"ca_cert":      schema.StringAttribute{Computed: true, Description: "The base64-encoded SSL CA certificate."},
-		"cluster_size": schema.Int64Attribute{Computed: true, Description: "The number of nodes in the database cluster."},
-		"created":      schema.StringAttribute{Computed: true, CustomType: timetypes.RFC3339Type{}, Description: "When the database was created."},
-		"encrypted":    schema.BoolAttribute{Computed: true, Description: "Whether the database is encrypted."},
-		"engine":       schema.StringAttribute{Computed: true, Description: "The database engine."},
-		"engine_id":    schema.StringAttribute{Computed: true, Description: "The engine and version identifier."},
+		"ca_cert": schema.StringAttribute{
+			Computed:    true,
+			Sensitive:   true,
+			Description: "The base64-encoded SSL CA certificate for the Managed Database.",
+		},
+		"cluster_size": schema.Int64Attribute{
+			Computed:    true,
+			Description: "The number of Linode instance nodes deployed to the Managed Database.",
+		},
+		"created": schema.StringAttribute{
+			Computed:    true,
+			CustomType:  timetypes.RFC3339Type{},
+			Description: "When this Managed Database was created.",
+		},
+		"encrypted": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether the Managed Database is encrypted.",
+		},
+		"engine": schema.StringAttribute{
+			Computed:    true,
+			Description: "The Managed Database engine (e.g. valkey).",
+		},
+		"engine_id": schema.StringAttribute{
+			Computed:    true,
+			Description: "The unique ID of the database engine and version to use. (e.g. valkey/8.1)",
+		},
 		"fork_restore_time": schema.StringAttribute{
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
-			Description: "The snapshot time used when this database was forked.",
+			Description: "The database timestamp from which it was restored.",
 		},
-		"fork_source":  schema.Int64Attribute{Computed: true, Description: "The source database ID when this database was forked."},
-		"host_primary": schema.StringAttribute{Computed: true, Description: "The primary database host."},
+		"fork_source": schema.Int64Attribute{
+			Computed:    true,
+			Description: "The ID of the database that was forked from.",
+		},
+		"host_primary": schema.StringAttribute{
+			Computed:    true,
+			Description: "The primary host for the Managed Database.",
+		},
 		"host_secondary": schema.StringAttribute{
 			Computed:           true,
 			DeprecationMessage: "Use host_standby instead.",
-			Description:        "The secondary database host.",
+			Description:        "The secondary host for the Managed Database.",
 		},
-		"host_standby":    schema.StringAttribute{Computed: true, Description: "The standby database host."},
-		"label":           schema.StringAttribute{Computed: true, Description: "The database label."},
-		"members":         schema.MapAttribute{Computed: true, ElementType: types.StringType, Description: "Cluster members and their roles."},
-		"platform":        schema.StringAttribute{Computed: true, Description: "The backend platform."},
-		"port":            schema.Int64Attribute{Computed: true, Description: "The database connection port."},
+		"host_standby": schema.StringAttribute{
+			Computed:    true,
+			Description: "The standby host for the Managed Database.",
+		},
+		"label": schema.StringAttribute{
+			Computed:    true,
+			Description: "A unique, user-defined string referring to the Managed Database.",
+		},
+		"members": schema.MapAttribute{
+			Computed:    true,
+			ElementType: types.StringType,
+			Description: "A mapping between IP addresses and strings designating them as primary or failover.",
+		},
+		"platform": schema.StringAttribute{
+			Computed:    true,
+			Description: "The back-end platform used by the service.",
+		},
+		"port": schema.Int64Attribute{
+			Computed:    true,
+			Description: "The access port for this Managed Database.",
+		},
 		"private_network": databaseshared.DataSourceAttributePrivateNetwork,
-		"region":          schema.StringAttribute{Computed: true, Description: "The database region."},
+		"region": schema.StringAttribute{
+			Computed:    true,
+			Description: "The Region ID for the Managed Database.",
+		},
 		"root_password": schema.StringAttribute{
 			Computed:    true,
 			Sensitive:   true,
-			Description: "The generated root password. This value is stored in Terraform state.",
+			Description: "The randomly generated root password for the Managed Database instance.",
 		},
 		"root_username": schema.StringAttribute{
 			Computed:    true,
 			Description: "The Valkey username (akmadmin) for the Managed Database instance.",
 		},
-		"ssl_connection": schema.BoolAttribute{Computed: true, Description: "Whether SSL is required for connections."},
-		"status":         schema.StringAttribute{Computed: true, Description: "The current database status."},
-		"suspended":      schema.BoolAttribute{Computed: true, Description: "Whether the database is suspended."},
-		"type":           schema.StringAttribute{Computed: true, Description: "The database plan type."},
+		"ssl_connection": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether to require SSL credentials to establish a connection to the Managed Database.",
+		},
+		"status": schema.StringAttribute{
+			Computed:    true,
+			Description: "The operating status of the Managed Database.",
+		},
+		"suspended": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether this database is suspended.",
+		},
+		"type": schema.StringAttribute{
+			Computed:    true,
+			Description: "The Linode Instance type used by the Managed Database for its nodes.",
+		},
 		"updated": schema.StringAttribute{
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
-			Description: "When the database was last updated.",
+			Description: "When this Managed Database was last updated.",
 		},
-		"version": schema.StringAttribute{Computed: true, Description: "The Valkey version."},
+		"version": schema.StringAttribute{
+			Computed:    true,
+			Description: "The Managed Database engine version.",
+		},
 		"available_restore_times": schema.ListAttribute{
 			Computed:    true,
-			ElementType: types.StringType,
-			Description: "Available discrete snapshot times for restoring this database.",
+			ElementType: timetypes.RFC3339Type{},
+			Description: "Available discrete snapshot timestamps that can be used to fork this database. " +
+				"These are not a continuous point-in-time recovery range.",
 		},
 		"updates":                   databaseshared.DataSourceAttributeUpdates,
 		"pending_updates":           databaseshared.DataSourceAttributePendingUpdates,

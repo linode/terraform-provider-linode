@@ -1,17 +1,17 @@
 ---
 page_title: "Linode: linode_database_valkey_config"
 description: |-
-  Provides information about available Linode Valkey Database configuration options.
+  Provides information about a Linode Valkey Database's Configuration Options.
 ---
 
 # Data Source: linode\_database\_valkey\_config
 
-Provides information about available Linode Valkey Database configuration options, including accepted types, ranges, enums, defaults or examples, and restart requirements.
+Provides information about a Linode Valkey Database's Configuration Options.
 For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-databases-valkey-config).
 
 ## Example Usage
 
-Get information about Valkey configuration options:
+Get information about a Valkey database's configuration options:
 
 ```hcl
 data "linode_database_valkey_config" "example" {}

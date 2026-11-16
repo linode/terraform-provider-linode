@@ -62,7 +62,7 @@ func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkDestroy,
+		CheckDestroy:             acceptance.CheckMySQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.MySQL(t, dbName, mysqlEngineVersion, "0.0.0.0/0", testRegion),
@@ -98,7 +98,7 @@ func TestAccResourceDatabaseAccessControls_PostgreSQL(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkDestroy,
+		CheckDestroy:             acceptance.CheckPostgreSQLDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.PostgreSQL(t, dbName, postgresEngineVersion, "0.0.0.0/0", testRegion),
@@ -125,7 +125,6 @@ func TestAccResourceDatabaseAccessControls_PostgreSQL(t *testing.T) {
 
 func TestAccResourceDatabaseAccessControls_Valkey(t *testing.T) {
 	t.Parallel()
-	acceptance.PreCheck(t)
 
 	client, err := acceptance.GetTestClient()
 	if err != nil {
@@ -133,13 +132,14 @@ func TestAccResourceDatabaseAccessControls_Valkey(t *testing.T) {
 	}
 	engine, err := databaseshared.ResolveValidDBEngine(context.Background(), *client, string(linodego.DatabaseEngineTypeValkey))
 	if err != nil {
-		t.Skipf("Valkey is not available in this test account: %v", err)
+		t.Fatalf("failed to get Valkey database engine version: %v", err)
 	}
 
 	const resourceName = "linode_database_access_controls.foobar"
 	databaseLabel := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkValkeyDatabaseDestroy,
 		Steps: []resource.TestStep{
@@ -152,10 +152,11 @@ func TestAccResourceDatabaseAccessControls_Valkey(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Valkey(t, databaseLabel, engine.ID, "", testRegion),
+				Config: tmpl.Valkey(t, databaseLabel, engine.ID, "192.168.0.25/32", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "database_type", "valkey"),
-					resource.TestCheckResourceAttr(resourceName, "allow_list.#", "0"),
+					resource.TestCheckResourceAttr(resourceName, "allow_list.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "allow_list.0", "192.168.0.25/32"),
 				),
 			},
 			{
@@ -183,35 +184,6 @@ func checkMySQLDatabaseExists(s *terraform.State) error {
 		_, err = client.GetMySQLDatabase(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf("error retrieving state of mysql database %s: %s", rs.Primary.Attributes["label"], err)
-		}
-	}
-
-	return nil
-}
-
-func checkDestroy(s *terraform.State) error {
-	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_database_mysql_v2" {
-			continue
-		}
-
-		id, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
-		}
-		if id == 0 {
-			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
-		}
-
-		_, err = client.GetMySQLDatabase(context.Background(), id)
-
-		if err == nil {
-			return fmt.Errorf("mysql database with id %d still exists", id)
-		}
-
-		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("error requesting mysql database with id %d", id)
 		}
 	}
 

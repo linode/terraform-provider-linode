@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -140,13 +141,13 @@ func (m *Model) Flatten(
 	}
 
 	if db.AvailableRestoreTimes == nil {
-		m.AvailableRestoreTimes = types.ListNull(types.StringType)
+		m.AvailableRestoreTimes = types.ListNull(timetypes.RFC3339Type{})
 	} else {
-		restoreTimes := make([]string, len(db.AvailableRestoreTimes))
+		restoreTimes := make([]attr.Value, len(db.AvailableRestoreTimes))
 		for i, restoreTime := range db.AvailableRestoreTimes {
-			restoreTimes[i] = restoreTime.Format(time.RFC3339)
+			restoreTimes[i] = timetypes.NewRFC3339TimeValue(restoreTime)
 		}
-		restoreTimesValue, rd := types.ListValueFrom(ctx, types.StringType, restoreTimes)
+		restoreTimesValue, rd := types.ListValue(timetypes.RFC3339Type{}, restoreTimes)
 		d.Append(rd...)
 		m.AvailableRestoreTimes = restoreTimesValue
 	}

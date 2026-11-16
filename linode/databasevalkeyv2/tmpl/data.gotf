@@ -1,12 +1,9 @@
-{{ define "database_valkey_v2_data_basic" }}
-resource "linode_database_valkey_v2" "foobar" {
-  label     = "{{ .Label }}"
-  region    = "{{ .Region }}"
-  type      = "{{ .Type }}"
-  engine_id = "{{ .EngineID }}"
-}
+{{ define "database_valkey_v2_data" }}
+
+{{ template "database_valkey_v2_complex" . }}
 
 data "linode_database_valkey_v2" "foobar" {
-  id = linode_database_valkey_v2.foobar.id
+    id = linode_database_valkey_v2.foobar.id
 }
+
 {{ end }}
