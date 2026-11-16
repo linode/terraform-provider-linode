@@ -21,6 +21,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/consumerimagesharegroupimageshares"
 	"github.com/linode/terraform-provider-linode/v4/linode/consumerimagesharegrouptoken"
 	"github.com/linode/terraform-provider-linode/v4/linode/consumerimagesharegrouptokens"
+	"github.com/linode/terraform-provider-linode/v4/linode/databaseaccesscontrols"
 	"github.com/linode/terraform-provider-linode/v4/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/v4/linode/databasemysqlconfig"
 	"github.com/linode/terraform-provider-linode/v4/linode/databasemysqlv2"
@@ -44,6 +45,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/iamuser"
 	"github.com/linode/terraform-provider-linode/v4/linode/image"
 	"github.com/linode/terraform-provider-linode/v4/linode/images"
+	"github.com/linode/terraform-provider-linode/v4/linode/instance"
 	"github.com/linode/terraform-provider-linode/v4/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/v4/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/v4/linode/instancenetworking"
@@ -74,6 +76,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstream"
 	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstreamhistory"
 	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstreams"
+	"github.com/linode/terraform-provider-linode/v4/linode/monitorlogsstreamsquotas"
 	"github.com/linode/terraform-provider-linode/v4/linode/nb"
 	"github.com/linode/terraform-provider-linode/v4/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/v4/linode/nbconfigs"
@@ -302,6 +305,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		monitorlogsdestination.NewResource,
 		monitorlogsstream.NewResource,
 		monitoralertdefinition.NewResource,
+		databaseaccesscontrols.NewResource,
 	}
 }
 
@@ -336,6 +340,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nbconfig.NewDataSource,
 		nbtypes.NewDataSource,
 		instancetype.NewDataSource,
+		instance.NewDataSource,
 		instancetypes.NewDataSource,
 		iamentities.NewDataSource,
 		iamuser.NewDataSource,
@@ -412,6 +417,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		monitorlogsdestinations.NewDataSource,
 		monitorlogsstream.NewDataSource,
 		monitorlogsstreamhistory.NewDataSource,
+		monitorlogsstreamsquotas.NewDataSource,
 		monitorlogsstreams.NewDataSource,
 		monitoralertchannels.NewDataSource,
 		vpcdefaultranges.NewDataSource,
