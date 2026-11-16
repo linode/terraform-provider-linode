@@ -35,7 +35,7 @@ The `linode_database_valkey_v2` data source exports the following attributes:
 
 * `available_restore_times` - Available discrete snapshot timestamps that can be used to fork this database. These are not a continuous point-in-time recovery range; use a returned timestamp or omit the restore time to request the latest snapshot.
 
-* `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database. This attribute is sensitive.
+* `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database.
 
 * `cluster_size` - The number of Linode Instance nodes deployed to the Managed Database.
 
@@ -73,7 +73,7 @@ The `linode_database_valkey_v2` data source exports the following attributes:
 
 * `root_password` - The randomly-generated root password for the Managed Database instance. This attribute is sensitive.
 
-* `root_username` - The root username for the Managed Database instance. This attribute is sensitive.
+* `root_username` - The Valkey username (`akmadmin`) for the Managed Database instance.
 
 * `ssl_connection` - Whether SSL is required to establish a connection to the Managed Database.
 
@@ -115,7 +115,7 @@ The `linode_database_valkey_v2` data source exports the following attributes:
 
 * `engine_config_valkey_timeout` - The idle connection timeout in seconds (`0`..`2073600`).
 
-Sensitive attributes are hidden in Terraform output, but Terraform still stores them in state. Protect and restrict access to the state file and its backups.
+Terraform redacts sensitive attribute values in CLI output, but still stores them in state. Protect and restrict access to state files and their backups.
 
 ## pending_updates
 

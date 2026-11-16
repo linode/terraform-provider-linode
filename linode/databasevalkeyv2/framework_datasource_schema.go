@@ -15,7 +15,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			ElementType: types.StringType,
 			Description: "IP addresses or CIDR ranges allowed to access the database.",
 		},
-		"ca_cert":      schema.StringAttribute{Computed: true, Sensitive: true, Description: "The base64-encoded SSL CA certificate."},
+		"ca_cert":      schema.StringAttribute{Computed: true, Description: "The base64-encoded SSL CA certificate."},
 		"cluster_size": schema.Int64Attribute{Computed: true, Description: "The number of nodes in the database cluster."},
 		"created":      schema.StringAttribute{Computed: true, CustomType: timetypes.RFC3339Type{}, Description: "When the database was created."},
 		"encrypted":    schema.BoolAttribute{Computed: true, Description: "Whether the database is encrypted."},
@@ -47,8 +47,7 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 		"root_username": schema.StringAttribute{
 			Computed:    true,
-			Sensitive:   true,
-			Description: "The root username. This value is stored in Terraform state.",
+			Description: "The Valkey username (akmadmin) for the Managed Database instance.",
 		},
 		"ssl_connection": schema.BoolAttribute{Computed: true, Description: "Whether SSL is required for connections."},
 		"status":         schema.StringAttribute{Computed: true, Description: "The current database status."},

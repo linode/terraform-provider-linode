@@ -65,7 +65,7 @@ The `linode_database_postgresql_v2` data source exports the following attributes
 
 * `region` - The region to use for the Managed Database.
 
-* `root_password` - The randomly-generated root password for the Managed Database instance.
+* `root_password` - The randomly-generated root password for the Managed Database instance. This attribute is sensitive.
 
 * `root_username` - The root username for the Managed Database instance.
 
@@ -176,6 +176,8 @@ The `linode_database_postgresql_v2` data source exports the following attributes
 * `engine_config_shared_buffers_percentage` - Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.
 
 * `engine_config_work_mem` - Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).
+
+Terraform redacts sensitive attribute values in CLI output, but still stores them in state. Protect and restrict access to state files and their backups.
 
 ## pending_updates
 

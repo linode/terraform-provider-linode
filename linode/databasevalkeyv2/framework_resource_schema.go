@@ -65,7 +65,6 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"ca_cert": schema.StringAttribute{
 			Computed:      true,
-			Sensitive:     true,
 			Description:   "The base64-encoded SSL CA certificate for the Managed Valkey Database.",
 			PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
 		},
@@ -148,9 +147,8 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"root_username": schema.StringAttribute{
 			Computed:      true,
-			Sensitive:     true,
 			PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
-			Description:   "The root username. This value is stored in Terraform state.",
+			Description:   "The Valkey username (akmadmin) for the Managed Database instance.",
 		},
 		"ssl_connection": schema.BoolAttribute{
 			Computed:      true,

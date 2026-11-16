@@ -96,7 +96,7 @@ In addition to the arguments listed above, the following attributes are exported
 
 * `available_restore_times` - Available discrete snapshot timestamps, formatted as RFC3339 strings. Snapshot availability changes over time, so the API validates a requested timestamp when it creates a fork. Do not assume an arbitrary timestamp is valid.
 
-* `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database. This attribute is sensitive.
+* `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database.
 
 * `created` - When this Managed Database was created.
 
@@ -120,7 +120,7 @@ In addition to the arguments listed above, the following attributes are exported
 
 * `root_password` - The generated root password for the Managed Database instance. This attribute is sensitive.
 
-* `root_username` - The root username for the Managed Database instance. This attribute is sensitive.
+* `root_username` - The Valkey username (`akmadmin`) for the Managed Database instance.
 
 * `ssl_connection` - Whether SSL is required to establish a connection to the Managed Database.
 
@@ -130,7 +130,7 @@ In addition to the arguments listed above, the following attributes are exported
 
 * `version` - The Managed Database engine version, such as `8.1.0`.
 
-Sensitive attributes are hidden in Terraform output, but Terraform still stores them in state. Protect and restrict access to the state file and its backups. While suspended, the provider skips SSL and credential API reads and preserves any known certificate and credentials in state.
+Terraform redacts sensitive attribute values in CLI output, but still stores them in state. Protect and restrict access to state files and their backups. While suspended, the provider skips SSL and credential API reads and preserves any known certificate and credentials in state.
 
 ## pending_updates
 
