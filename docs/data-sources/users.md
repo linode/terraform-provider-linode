@@ -142,4 +142,4 @@ Each Linode user will be stored in the `users` attribute and will export the fol
 
 * `tfa_enforced`
 
-* `verfied_phone_number`
+* `verified_phone_number`
