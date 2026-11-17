@@ -2,6 +2,7 @@ package lkenodepool
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -29,6 +30,17 @@ type NodePoolModel struct {
 	FirewallID     types.Int64               `tfsdk:"firewall_id"`
 	IsolationIPv4  types.Bool                `tfsdk:"isolation_public_ipv4"`
 	IsolationIPv6  types.Bool                `tfsdk:"isolation_public_ipv6"`
+	Networking     *NodePoolNetworkingModel  `tfsdk:"networking"`
+}
+
+type NodePoolNetworkingModel struct {
+	Interfaces []NodePoolInterfaceModel `tfsdk:"interfaces"`
+}
+
+type NodePoolInterfaceModel struct {
+	Type     types.String `tfsdk:"type"`
+	VPCID    types.Int64  `tfsdk:"vpc_id"`
+	SubnetID types.Int64  `tfsdk:"subnet_id"`
 }
 
 type NodePoolAutoscalerModel struct {
@@ -241,12 +253,46 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 		pool.IsolationIPv4 = helper.KeepOrUpdateValue(pool.IsolationIPv4, types.BoolNull(), preserveKnown)
 		pool.IsolationIPv6 = helper.KeepOrUpdateValue(pool.IsolationIPv6, types.BoolNull(), preserveKnown)
 	}
+
+	if !preserveKnown {
+		if p.Networking != nil {
+			ifaces := make([]NodePoolInterfaceModel, len(p.Networking.Interfaces))
+			for i, iface := range p.Networking.Interfaces {
+				ifaces[i] = NodePoolInterfaceModel{
+					Type:     types.StringValue(string(iface.Type)),
+					VPCID:    types.Int64Value(int64(iface.VPCID)),
+					SubnetID: types.Int64Value(int64(iface.SubnetID)),
+				}
+			}
+			pool.Networking = &NodePoolNetworkingModel{Interfaces: ifaces}
+		} else {
+			pool.Networking = nil
+		}
+	}
 }
 
 // validateEnterpriseOnlyAttributes ensures attributes that are only valid for
 // LKE Enterprise clusters are not configured on non-enterprise clusters.
 func (pool *NodePoolModel) validateEnterpriseOnlyAttributes(tier string, diags *diag.Diagnostics) {
 	if tier == string(linodego.LKEVersionEnterprise) {
+		// Validate interface ordering: first must be "vpc", subsequent must not be "vpc".
+		if pool.Networking != nil && len(pool.Networking.Interfaces) > 0 {
+			ifaces := pool.Networking.Interfaces
+			if ifaces[0].Type.ValueString() != "vpc" {
+				diags.AddError(
+					"Invalid networking configuration",
+					"networking.interfaces[0].type must be \"vpc\" — the first interface must reference the cluster VPC subnet.",
+				)
+			}
+			for i := 1; i < len(ifaces); i++ {
+				if ifaces[i].Type.ValueString() == "vpc" {
+					diags.AddError(
+						"Invalid networking configuration",
+						fmt.Sprintf("networking.interfaces[%d].type must not be \"vpc\" — only the first interface may be of type \"vpc\".", i),
+					)
+				}
+			}
+		}
 		return
 	}
 
@@ -256,6 +302,13 @@ func (pool *NodePoolModel) validateEnterpriseOnlyAttributes(tier string, diags *
 		diags.AddError(
 			"Invalid isolation configuration",
 			"isolation is only available for LKE Enterprise clusters.",
+		)
+	}
+
+	if pool.Networking != nil {
+		diags.AddError(
+			"Invalid networking configuration",
+			"networking is only available for LKE Enterprise clusters.",
 		)
 	}
 }
@@ -303,6 +356,18 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 
 	if !pool.DiskEncryption.IsNull() && !pool.DiskEncryption.IsUnknown() {
 		p.DiskEncryption = linodego.Pointer(linodego.InstanceDiskEncryption(pool.DiskEncryption.ValueString()))
+	}
+
+	if pool.Networking != nil {
+		ifaces := make([]linodego.LKENodePoolInterface, len(pool.Networking.Interfaces))
+		for i, iface := range pool.Networking.Interfaces {
+			ifaces[i] = linodego.LKENodePoolInterface{
+				Type:     linodego.LKENodePoolInterfaceType(iface.Type.ValueString()),
+				VPCID:    int(iface.VPCID.ValueInt64()),
+				SubnetID: int(iface.SubnetID.ValueInt64()),
+			}
+		}
+		p.Networking = &linodego.LKENodePoolNetworking{Interfaces: ifaces}
 	}
 
 	isolationIPv4Known := !pool.IsolationIPv4.IsNull() && !pool.IsolationIPv4.IsUnknown()
@@ -507,5 +572,6 @@ func (data *NodePoolModel) CopyFrom(other NodePoolModel, preserveKnown bool) {
 	if !preserveKnown {
 		data.Autoscaler = other.Autoscaler
 		data.Taints = other.Taints
+		data.Networking = other.Networking
 	}
 }

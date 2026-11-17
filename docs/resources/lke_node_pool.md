@@ -21,31 +21,31 @@ Creating a basic LKE Node Pool:
 
 ```terraform
 resource "linode_lke_node_pool" "my-pool" {
-    cluster_id  = 150003
-    type  = "g6-standard-2"
+    cluster_id = 150003
+    type       = "g6-standard-2"
     node_count = 3
 }
 ```
 
-Creating a basic LKE Node with label:
+Creating a basic LKE Node Pool with a label:
 
 ```terraform
 resource "linode_lke_node_pool" "my-pool" {
-    cluster_id  = 150003
-    type  = "g6-standard-2"
+    cluster_id = 150003
+    type       = "g6-standard-2"
     node_count = 3
-    label = "app-pool"
+    label      = "app-pool"
 }
 ```
 
-Creating a basic LKE Node with firewall:
+Creating a basic LKE Node Pool with a firewall:
 
 ```terraform
 resource "linode_lke_node_pool" "my-pool" {
     cluster_id  = 150003
-    type  = "g6-standard-2"
-    firewall_id =  12345
-    node_count = 3
+    type        = "g6-standard-2"
+    firewall_id = 12345
+    node_count  = 3
 }
 ```
 
@@ -53,8 +53,8 @@ Creating an LKE Node Pool with autoscaler:
 
 ```terraform
 resource "linode_lke_node_pool" "my-pool" {
-    cluster_id  = 150003
-    type  = "g6-standard-2"
+    cluster_id = 150003
+    type       = "g6-standard-2"
   
     autoscaler {
       min = 3
@@ -101,6 +101,55 @@ resource "linode_lke_cluster" "my-cluster" {
 }
 ```
 
+Creating an RDMA-enabled pool managed separately from the cluster:
+
+```terraform
+provider "linode" {
+    api_version = "v4beta"
+}
+
+locals {
+    external_pool_tag = "external"
+}
+
+resource "linode_lke_cluster" "rdma" {
+    label              = "rdma-cluster"
+    k8s_version        = "v1.35.9+lke3"
+    region             = "us-mia"
+    tier               = "enterprise"
+    vpc_id             = var.vpc_id
+    subnet_id          = var.vpc_subnet_id
+    external_pool_tags = [local.external_pool_tag]
+}
+
+resource "linode_lke_node_pool" "rdma" {
+    cluster_id = linode_lke_cluster.rdma.id
+    type       = "g3-gpu-rtxpro6000-blackwell-rdma-8"
+    node_count = 1
+    tags       = [local.external_pool_tag]
+
+    networking = {
+        interfaces = [
+            {
+                type      = "vpc"
+                vpc_id    = var.vpc_id
+                subnet_id = var.vpc_subnet_id
+            },
+            {
+                type      = "rdma_vpc"
+                vpc_id    = var.vpc_id
+                subnet_id = var.rdma_subnet_id
+            }
+        ]
+    }
+}
+```
+
+Replace the VPC and subnet variables with IDs for existing resources in the
+cluster's region. The first interface must be the cluster VPC interface; add
+RDMA VPC interfaces after it. RDMA-capable plans and RDMA VPC subnets may not
+be available in every region or account.
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -134,6 +183,22 @@ The following arguments are supported:
 * `isolation_public_ipv4` - (Optional) Whether nodes in this pool should have public IPv4 addresses. This is only available for LKE Enterprise clusters and may not be available to all customers. Changing this value replaces the pool.
 
 * `isolation_public_ipv6` - (Optional) Whether nodes in this pool should have public IPv6 addresses. This is only available for LKE Enterprise clusters and may not be available to all customers. Changing this value replaces the pool.
+
+* [`networking`](#networking) - (Optional, Nested Attribute) Networking configuration for the node pool. Immutable after creation; changing it forces pool replacement. Requires `api_version = "v4beta"` and an Enterprise cluster.
+
+### networking
+
+The following arguments are supported in the `networking` nested attribute:
+
+* `interfaces` - (Required, Nested Attribute List) Ordered VPC interfaces for nodes in the pool. The first interface must have `type = "vpc"` and reference the cluster's VPC subnet. Subsequent interfaces may use `type = "rdma_vpc"`.
+
+Each entry in `interfaces` supports:
+
+* `type` - (Required) Interface type: `vpc` for the first interface; subsequent interfaces may be `rdma_vpc`.
+
+* `vpc_id` - (Required) ID of the VPC for the interface.
+
+* `subnet_id` - (Required) ID of the VPC subnet for the interface.
 
 ### autoscaler
 
