@@ -33,7 +33,7 @@ The `linode_database_mysql_v2` data source exports the following attributes:
 
 * `allow_list` - A list of IP addresses that can access the Managed Database. Each item can be a single IP address or a range in CIDR format. Use `linode_database_access_controls` to manage your allow list separately.
 
-* `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database. This attribute is sensitive.
+* `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database.
 
 * `cluster_size` - The number of Linode Instance nodes deployed to the Managed Database. (default `1`)
 

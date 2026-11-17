@@ -277,7 +277,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the Managed Database.
 
-* `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database. This attribute is sensitive.
+* `ca_cert` - The base64-encoded SSL CA certificate for the Managed Database.
 
 * `created` - When this Managed Database was created.
 
