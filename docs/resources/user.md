@@ -52,6 +52,8 @@ The following arguments are supported:
 
 * `restricted` - (optional) If true, this user will only have explicit permissions granted.
 
+Grant blocks can only be configured when `restricted = true`. When switching a user to unrestricted, remove all grant blocks. When switching back to restricted, the API starts the user with no grants; configure any required grants explicitly.
+
 * [`global_grants`](#global-grants) - (optional, Block) A structure containing the Account-level grants a User has. Referenced with an index (e.g. `global_grants.0.account_access`).
 
 The following arguments are sets of [entity grants](#entity-grants):

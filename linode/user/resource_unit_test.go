@@ -4,11 +4,17 @@ package user
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/hashicorp/go-cty/cty"
+	ctyjson "github.com/hashicorp/go-cty/cty/json"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -76,4 +82,112 @@ func TestExpandGrantsEntityChanges_omittedSetPlansRevocation(t *testing.T) {
 		{ID: 202, Permissions: nil},
 	}
 	assert.ElementsMatch(t, expected, actual)
+}
+
+func userTestRawConfig(t *testing.T, config map[string]any) cty.Value {
+	t.Helper()
+	raw, err := json.Marshal(config)
+	require.NoError(t, err)
+	value, err := ctyjson.Unmarshal(raw, Resource().CoreConfigSchema().ImpliedType())
+	require.NoError(t, err)
+	return value
+}
+
+func TestUnrestrictUserWithOmittedGrant_Update(t *testing.T) {
+	oldData := schema.TestResourceDataRaw(t, resourceSchema, map[string]any{
+		"username": "test-user", "email": "test@example.com", "restricted": true,
+		"domain_grant":  []any{map[string]any{"id": 101, "permissions": "read_write"}},
+		"global_grants": []any{map[string]any{"add_domains": true}},
+	})
+	oldData.SetId("test-user")
+	state := oldData.State()
+	config := map[string]any{"username": "test-user", "email": "test@example.com", "restricted": false}
+	state.RawConfig = userTestRawConfig(t, config)
+	diff, err := Resource().Diff(context.Background(), state, terraform.NewResourceConfigRaw(config), nil)
+	require.NoError(t, err)
+	require.NotNil(t, diff)
+	data, err := schema.InternalMap(resourceSchema).Data(state, diff)
+	require.NoError(t, err)
+
+	var requests []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests = append(requests, r.Method+" "+r.URL.Path)
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path != "/v4/account/users/test-user" {
+			http.Error(w, "unexpected request", http.StatusBadRequest)
+			return
+		}
+		if r.Method == http.MethodPut {
+			var body struct {
+				Restricted bool `json:"restricted"`
+			}
+			assert.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+			assert.False(t, body.Restricted)
+		} else if r.Method != http.MethodGet {
+			http.Error(w, "unexpected method", http.StatusBadRequest)
+			return
+		}
+		_, _ = w.Write([]byte(`{"username":"test-user","email":"test@example.com","restricted":false}`))
+	}))
+	defer server.Close()
+	client, err := linodego.NewClient(server.Client())
+	require.NoError(t, err)
+	client.SetBaseURL(server.URL)
+	client.SetRetryCount(0)
+
+	diags := updateResource(context.Background(), data, &helper.ProviderMeta{Client: client})
+	require.False(t, diags.HasError(), "%v", diags)
+	assert.Equal(t, []string{"PUT /v4/account/users/test-user", "GET /v4/account/users/test-user"}, requests)
+	assert.False(t, data.Get("restricted").(bool))
+	assert.Zero(t, data.Get("domain_grant").(*schema.Set).Len())
+	assert.Empty(t, data.Get("global_grants").([]any))
+
+	newState := data.State()
+	newState.RawConfig = userTestRawConfig(t, config)
+	nextDiff, err := Resource().Diff(context.Background(), newState, terraform.NewResourceConfigRaw(config), nil)
+	require.NoError(t, err)
+	assert.Nil(t, nextDiff)
+}
+
+func TestValidateGrantsForUnrestrictedUsers(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		restricted  bool
+		grant       string
+		value       []any
+		expectError bool
+	}{
+		{
+			name:        "grant on unrestricted user is rejected",
+			restricted:  false,
+			grant:       "domain_grant",
+			value:       []any{map[string]any{"id": 101, "permissions": "read_only"}},
+			expectError: true,
+		},
+		{
+			name:       "grant on restricted user is allowed",
+			restricted: true,
+			grant:      "domain_grant",
+			value:      []any{map[string]any{"id": 101, "permissions": "read_only"}},
+		},
+		{
+			name:       "unrestricted user without grants is allowed",
+			restricted: false,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			config := map[string]any{"username": "test-user", "email": "test@example.com", "restricted": tc.restricted}
+			if tc.grant != "" {
+				config[tc.grant] = tc.value
+			}
+
+			state := &terraform.InstanceState{RawConfig: userTestRawConfig(t, config)}
+			_, err := Resource().Diff(context.Background(), state, terraform.NewResourceConfigRaw(config), nil)
+			if tc.expectError {
+				require.ErrorContains(t, err, "restricted")
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
 }

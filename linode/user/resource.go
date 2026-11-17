@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -26,6 +27,7 @@ func Resource() *schema.Resource {
 		CreateContext: createResource,
 		UpdateContext: updateResource,
 		DeleteContext: deleteResource,
+		CustomizeDiff: validateUserGrantsDiff,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -34,6 +36,10 @@ func Resource() *schema.Resource {
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	tflog.Debug(ctx, "Create linode_user")
+
+	if err := validateUserGrantsConfig(d.GetRawConfig(), false); err != nil {
+		return diag.FromErr(err)
+	}
 
 	client := meta.(*helper.ProviderMeta).Client
 
@@ -99,6 +105,12 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		d.Set("stackscript_grant", flattenGrantsEntities(grants.StackScript))
 		d.Set("volume_grant", flattenGrantsEntities(grants.Volume))
 		d.Set("vpc_grant", flattenGrantsEntities(grants.VPC))
+	} else {
+		for _, field := range resourceLinodeUserGrantFields {
+			if err := d.Set(field, nil); err != nil {
+				return diag.Errorf("failed to clear user grant state (%s): %s", field, err)
+			}
+		}
 	}
 
 	d.Set("username", username)
@@ -113,6 +125,10 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_user")
+
+	if err := validateUserGrantsConfig(d.GetRawConfig(), false); err != nil {
+		return diag.FromErr(err)
+	}
 
 	client := meta.(*helper.ProviderMeta).Client
 
@@ -135,13 +151,61 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	d.SetId(username)
 
-	if d.HasChanges(resourceLinodeUserGrantFields...) {
+	if restricted && d.HasChanges(resourceLinodeUserGrantFields...) {
 		if err := updateUserGrants(ctx, d, meta); err != nil {
 			return diag.Errorf("failed to update user grants (%s): %s", username, err)
 		}
 	}
 
 	return readResource(ctx, d, meta)
+}
+
+func validateUserGrantsDiff(_ context.Context, d *schema.ResourceDiff, _ any) error {
+	if err := validateUserGrantsConfig(d.GetRawConfig(), true); err != nil {
+		return err
+	}
+
+	if d.HasChange("restricted") && (!d.NewValueKnown("restricted") || !d.Get("restricted").(bool)) {
+		global := d.GetRawConfig().GetAttr("global_grants")
+		if global.IsNull() || (global.IsKnown() && global.Length().IsKnown() && global.LengthInt() == 0) {
+			return d.SetNewComputed("global_grants")
+		}
+	}
+	return nil
+}
+
+func validateUserGrantsConfig(config cty.Value, allowUnknown bool) error {
+	if !config.IsKnown() || config.IsNull() {
+		return fmt.Errorf("cannot validate user grants: configuration is unavailable")
+	}
+
+	restricted := config.GetAttr("restricted")
+	if !restricted.IsKnown() {
+		if allowUnknown {
+			return nil
+		}
+		return fmt.Errorf("cannot validate user grants: restricted is unknown")
+	}
+	if !restricted.IsNull() && restricted.True() {
+		return nil
+	}
+
+	for _, field := range resourceLinodeUserGrantFields {
+		grants := config.GetAttr(field)
+		if grants.IsNull() {
+			continue
+		}
+		if !grants.IsKnown() || !grants.Length().IsKnown() {
+			if allowUnknown {
+				continue
+			}
+			return fmt.Errorf("cannot validate user grants: %s is unknown", field)
+		}
+		if grants.LengthInt() > 0 {
+			return fmt.Errorf("%s can only be configured when restricted is true", field)
+		}
+	}
+	return nil
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
