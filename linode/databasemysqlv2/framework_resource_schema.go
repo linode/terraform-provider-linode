@@ -143,7 +143,7 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"engine": schema.StringAttribute{
-			Description: "The Managed Database engine (e.g. mysql).",
+			Description: "The Managed Database engine in engine/version format.",
 			Computed:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),

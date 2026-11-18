@@ -64,7 +64,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			Computed:    true,
 		},
 		"engine": schema.StringAttribute{
-			Description: "The Managed Database engine (e.g. mysql).",
+			Description: "The Managed Database engine in engine/version format.",
 			Computed:    true,
 		},
 		"host_primary": schema.StringAttribute{
