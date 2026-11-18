@@ -23,7 +23,7 @@ func TestAccDataSourceDatabaseValkeyV2_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkValkeyDatabaseDestroy,
+		CheckDestroy:             acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Data(t, tmpl.TemplateData{
@@ -59,7 +59,7 @@ func TestAccDataSourceDatabaseValkeyV2_listing(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkValkeyDatabaseDestroy,
+		CheckDestroy:             acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataListing(t, label, testRegion, testEngine),
@@ -97,7 +97,7 @@ func TestAccDataSourceDatabaseValkeyV2_engineConfig(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkValkeyDatabaseDestroy,
+		CheckDestroy:             acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataEngineConfig(t, config),
@@ -138,7 +138,7 @@ func TestAccDataSourceDatabaseValkeyV2_vpc(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyVPCPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkValkeyDatabaseDestroy,
+		CheckDestroy:             acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataVPC(t, label, testVPCRegion, testEngine, "g7-dedicated-4-2"),

@@ -141,7 +141,7 @@ func TestAccResourceDatabaseAccessControls_Valkey(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkValkeyDatabaseDestroy,
+		CheckDestroy:             acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Valkey(t, databaseLabel, engine.ID, "192.0.2.10/32", testRegion),
@@ -184,27 +184,6 @@ func checkMySQLDatabaseExists(s *terraform.State) error {
 		_, err = client.GetMySQLDatabase(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf("error retrieving state of mysql database %s: %s", rs.Primary.Attributes["label"], err)
-		}
-	}
-
-	return nil
-}
-
-func checkValkeyDatabaseDestroy(s *terraform.State) error {
-	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_database_valkey_v2" {
-			continue
-		}
-
-		id, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("error parsing Valkey database ID %q: %w", rs.Primary.ID, err)
-		}
-
-		_, err = client.GetValkeyDatabase(context.Background(), id)
-		if err == nil || !linodego.IsNotFound(err) {
-			return fmt.Errorf("Valkey database with ID %d still exists or returned an unexpected error: %v", id, err)
 		}
 	}
 

@@ -102,26 +102,6 @@ func sweep(prefix string) error {
 	return nil
 }
 
-func checkValkeyDatabaseDestroy(state *terraform.State) error {
-	client, err := acceptance.GetTestClient()
-	if err != nil {
-		return fmt.Errorf("failed to get client: %w", err)
-	}
-	for _, instance := range state.RootModule().Resources {
-		if instance.Type != "linode_database_valkey_v2" {
-			continue
-		}
-		id, err := strconv.Atoi(instance.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("failed to parse database ID %q: %w", instance.Primary.ID, err)
-		}
-		if _, err := client.GetValkeyDatabase(context.Background(), id); err == nil || !linodego.IsNotFound(err) {
-			return fmt.Errorf("Valkey database %d still exists or returned an unexpected error: %v", id, err)
-		}
-	}
-	return nil
-}
-
 func waitForValkeySnapshot(t *testing.T, label string) {
 	t.Helper()
 
@@ -195,7 +175,7 @@ func TestAccResourceDatabaseValkeyV2_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkValkeyDatabaseDestroy,
+		CheckDestroy:             acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine),
@@ -231,7 +211,7 @@ func TestAccResourceDatabaseValkeyV2_externalDeletion(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkValkeyDatabaseDestroy,
+		CheckDestroy:             acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine),
@@ -276,7 +256,7 @@ func TestAccResourceDatabaseValkeyV2_complex(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkValkeyDatabaseDestroy,
+		CheckDestroy:             acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Complex(t, updates),
@@ -375,7 +355,7 @@ func TestAccResourceDatabaseValkeyV2_resize(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkValkeyDatabaseDestroy,
+		CheckDestroy:             acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Complex(t, initial),
@@ -468,7 +448,7 @@ func TestAccResourceDatabaseValkeyV2_engineVersion(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkValkeyDatabaseDestroy,
+		CheckDestroy:             acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, sourceEngine),
@@ -512,7 +492,7 @@ func TestAccResourceDatabaseValkeyV2_fork(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkValkeyDatabaseDestroy,
+		CheckDestroy:             acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine),
@@ -553,7 +533,7 @@ func TestAccResourceDatabaseValkeyV2_suspension(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkValkeyDatabaseDestroy,
+		CheckDestroy:             acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Suspension(t, data),
@@ -619,7 +599,7 @@ func TestAccResourceDatabaseValkeyV2_engineConfig(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkValkeyDatabaseDestroy,
+		CheckDestroy:             acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.EngineConfig(t, data),
@@ -692,7 +672,7 @@ func TestAccResourceDatabaseValkeyV2_vpc(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { valkeyVPCPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             checkValkeyDatabaseDestroy,
+		CheckDestroy:             acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.VPC0(t, label, testVPCRegion, testEngine, "g7-dedicated-4-2"),
@@ -738,7 +718,7 @@ func TestAccResourceDatabaseValkeyV2_noPendingUpdatesRegression(t *testing.T) {
 				return acceptance.ProtoV6CustomProviderFactories["linode"](overriddenProvider, nil)
 			},
 		},
-		CheckDestroy: checkValkeyDatabaseDestroy,
+		CheckDestroy: acceptance.CheckValkeyDatabaseV2Destroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, testEngine),

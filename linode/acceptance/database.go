@@ -124,3 +124,29 @@ func CheckPostgreSQLDatabaseV2Destroy(s *terraform.State) error {
 
 	return nil
 }
+
+func CheckValkeyDatabaseV2Destroy(s *terraform.State) error {
+	client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_database_valkey_v2" {
+			continue
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("failed to parse %v as int", rs.Primary.ID)
+		}
+
+		if id == 0 {
+			return fmt.Errorf("should not have Linode ID 0")
+		}
+
+		_, err = client.GetValkeyDatabase(context.Background(), id)
+		if err := checkDatabaseDestroyResult(id, err); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
