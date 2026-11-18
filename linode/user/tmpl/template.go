@@ -73,6 +73,14 @@ func GrantsRevocationFull(t testing.TB, username, email, firstDomain, secondDoma
 		})
 }
 
+func GrantsRevocationUnrestrictedUser(t testing.TB, username, email string) string {
+	return acceptance.ExecuteTemplate(t,
+		"user_grants_revocation_unrestricted_user", TemplateData{
+			Username: username,
+			Email:    email,
+		})
+}
+
 func DataBasic(t testing.TB) string {
 	return acceptance.ExecuteTemplate(t,
 		"user_data_basic", nil)

@@ -184,7 +184,7 @@ func TestAccResourceUser_grantsRevocation(t *testing.T) {
 					statecheck.ExpectKnownValue(testUserResName, tfjsonpath.New("domain_grant"),
 						knownvalue.SetExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
-								"permissions": knownvalue.StringExact("read_only"), // secondDomain
+								"permissions": knownvalue.StringExact("read_only"),
 							}),
 						}),
 					),
@@ -202,6 +202,51 @@ func TestAccResourceUser_grantsRevocation(t *testing.T) {
 	})
 }
 
+func TestAccResourceUser_grantsRevocationUnrestrictedUser(t *testing.T) {
+	t.Parallel()
+
+	username := acctest.RandomWithPrefix("tf-test")
+	email := username + "@example.com"
+	firstDomain := acctest.RandomWithPrefix("tf-test") + ".example"
+	secondDomain := acctest.RandomWithPrefix("tf-test") + ".example"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.GrantsRevocation(t, username, email, firstDomain, secondDomain),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testUserResName, tfjsonpath.New("restricted"),
+						knownvalue.Bool(true),
+					),
+					statecheck.ExpectKnownValue(testUserResName, tfjsonpath.New("domain_grant"),
+						knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"permissions": knownvalue.StringExact("read_write"),
+							}),
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"permissions": knownvalue.StringExact("read_only"),
+							}),
+						}),
+					),
+				},
+			},
+			{
+				Config: tmpl.GrantsRevocationUnrestrictedUser(t, username, email),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testUserResName, tfjsonpath.New("restricted"),
+						knownvalue.Bool(false),
+					),
+					statecheck.ExpectKnownValue(testUserResName, tfjsonpath.New("domain_grant"),
+						knownvalue.SetSizeExact(0),
+					),
+				},
+			},
+		},
+	})
+}
 func checkUserDestroy(s *terraform.State) error {
 	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {

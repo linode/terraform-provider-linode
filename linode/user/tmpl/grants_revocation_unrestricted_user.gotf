@@ -1,0 +1,9 @@
+{{ define "user_grants_revocation_unrestricted_user" }}
+
+resource "linode_user" "test" {
+    username   = "{{.Username}}"
+    email      = "{{.Email}}"
+    restricted = false
+}
+
+{{ end }}
