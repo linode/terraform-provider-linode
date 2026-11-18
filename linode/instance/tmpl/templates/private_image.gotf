@@ -26,7 +26,7 @@ resource "linode_instance" "foobar" {
     region = "{{ .Region }}"
     disk {
         label = "boot"
-        size = 2200
+        size = 2800
         filesystem = "ext4"
         image = "${linode_image.foobar.id}"
         root_pass = "{{ .RootPass }}"
