@@ -137,7 +137,7 @@ Common `statecheck` / `knownvalue` helpers:
 | `helper.KeepOrUpdateValue()` | Conditionally preserves known values during refresh |
 | `helper.FrameworkSafeInt64ToInt()` | Safe int64→int conversion with diagnostics |
 | `helper.MapSlice()` | Transforms slices with a mapping function |
-| `acceptance.GetRandomRegionWithCaps()` | Gets random region with required capabilities |
+| `acceptance.NewRegionSelector()` | Selects operational test regions with explicit capability, account-availability, site-type, and custom filters |
 | `acceptance.ExecuteTemplate()` | Renders HCL test templates |
 
 ## Common Workflows

@@ -26,7 +26,16 @@ import (
 var testRegion string
 
 func init() {
-	r, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityVPCs}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(fmt.Errorf("Error getting client: %s", err))
+	}
+	ctx := context.Background()
+	r, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes, linodego.CapabilityVPCs).
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
@@ -164,10 +173,15 @@ func TestAccResourceVPCSubnet_dualStack(t *testing.T) {
 	resName := "linode_vpc_subnet.foobar"
 	subnetLabel := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
-		linodego.CapabilityVPCs,
-		linodego.CapabilityVPCDualStack,
-	}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityVPCs, linodego.CapabilityVPCDualStack).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

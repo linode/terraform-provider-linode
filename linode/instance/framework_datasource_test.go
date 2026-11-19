@@ -21,10 +21,16 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 	t.Parallel()
 
 	// Resolve a region with support for Maintenance Policy
-	region, err := acceptance.GetRandomRegionWithCaps(
-		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityMaintenancePolicy},
-		"core",
-	)
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes, linodego.CapabilityMaintenancePolicy).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		Random()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,10 +111,16 @@ func TestAccDataSourceInstances_withBlockStorageEncryption(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	// Resolve a region with support for Block Storage Encryption
-	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityBlockStorageEncryption},
-		"core",
-	)
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes, linodego.CapabilityBlockStorageEncryption).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		Random()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -142,10 +154,16 @@ func TestAccDataSourceInstances_withPG(t *testing.T) {
 	pgIDs := []string{"foobar"}
 
 	// Resolve a region with support for PGs
-	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup},
-		"core",
-	)
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		Random()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -284,11 +302,16 @@ func TestAccDataSourceInstances_interfaceVPCIPv6(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf-test")
 	rootPass := acctest.RandString(64)
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).WithCapabilities(
 		linodego.CapabilityLinodes,
 		linodego.CapabilityVPCs,
 		linodego.CapabilityVPCDualStack,
-	}, "core")
+	).WithSiteType("core").AvailableForAccount(ctx, linodego.CapabilityLinodes).Random()
 	if err != nil {
 		log.Fatal(err)
 	}
