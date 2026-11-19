@@ -3,8 +3,12 @@
 package user
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
+	"fmt"
+	"os"
+
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -108,12 +112,13 @@ func TestUnrestrictUserWithOmittedGrant_Update(t *testing.T) {
 	require.NotNil(t, diff)
 	data, err := schema.InternalMap(resourceSchema).Data(state, diff)
 	require.NoError(t, err)
-
+	apiVersion := cmp.Or(os.Getenv("LINODE_API_VERSION"), "v4")
+	urlPath := fmt.Sprintf("/%s/account/users/test-user", apiVersion)
 	var requests []string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests = append(requests, r.Method+" "+r.URL.Path)
 		w.Header().Set("Content-Type", "application/json")
-		if r.URL.Path != "/v4/account/users/test-user" {
+		if r.URL.Path != urlPath {
 			http.Error(w, "unexpected request", http.StatusBadRequest)
 			return
 		}
@@ -137,7 +142,7 @@ func TestUnrestrictUserWithOmittedGrant_Update(t *testing.T) {
 
 	diags := updateResource(context.Background(), data, &helper.ProviderMeta{Client: client})
 	require.False(t, diags.HasError(), "%v", diags)
-	assert.Equal(t, []string{"PUT /v4/account/users/test-user", "GET /v4/account/users/test-user"}, requests)
+	assert.Equal(t, []string{"PUT " + urlPath, "GET " + urlPath}, requests)
 	assert.False(t, data.Get("restricted").(bool))
 	assert.Zero(t, data.Get("domain_grant").(*schema.Set).Len())
 	assert.Empty(t, data.Get("global_grants").([]any))
