@@ -1,0 +1,30 @@
+{{ define "nfs_filesystem_access_policy_basic" }}
+
+resource "linode_nfs_space" "foobar" {
+    label = "{{.Label}}-space"
+}
+
+resource "linode_nfs_filesystem" "foobar" {
+    space_id           = linode_nfs_space.foobar.id
+    label              = "{{.Label}}"
+    region             = "{{.Region}}"
+    max_capacity_bytes = {{.MaxCapacityBytes}}
+}
+
+# A filesystem access policy can only be enabled when the space access policy is enabled.
+resource "linode_nfs_space_access_policy" "foobar" {
+    space_id  = linode_nfs_space.foobar.id
+    enabled   = true
+    mtls_mode = "disabled"
+
+    depends_on = [linode_nfs_filesystem.foobar]
+}
+
+resource "linode_nfs_filesystem_access_policy" "foobar" {
+    space_id      = linode_nfs_space_access_policy.foobar.space_id
+    filesystem_id = linode_nfs_filesystem.foobar.id
+    enabled       = {{.Enabled}}
+    squash_policy = "{{.SquashPolicy}}"
+}
+
+{{ end }}
