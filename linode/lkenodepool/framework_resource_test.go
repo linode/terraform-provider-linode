@@ -15,7 +15,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
 	acceptanceTmpl "github.com/linode/terraform-provider-linode/v4/linode/acceptance/tmpl"
@@ -61,7 +64,12 @@ func init() {
 
 		k8sVersion = k8sVersions[len(k8sVersions)-1]
 
-		region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLKE}, "core")
+		ctx := context.Background()
+		region, err := acceptance.NewRegionSelector(ctx, client).
+			WithCapabilities(linodego.CapabilityLKE).
+			WithSiteType("core").
+			AvailableForAccount(ctx, linodego.CapabilityLKE).
+			Random()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -115,9 +123,16 @@ func TestAccResourceNodePool_basic(t *testing.T) {
 	poolTag := acctest.RandomWithPrefix("tf_test_")
 
 	// This test validates disk_encryption, so we need a region that supports both LKE and Disk Encryption
-	diskEncRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]linodego.RegionCapability{linodego.CapabilityLKE, linodego.CapabilityDiskEncryption}, "core",
-	)
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Skipf("No region with LKE + Disk Encryption capabilities: %v", err)
+	}
+	diskEncRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLKE, linodego.CapabilityDiskEncryption).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLKE).
+		Random()
 	if err != nil {
 		t.Skipf("No region with LKE + Disk Encryption capabilities: %v", err)
 	}
@@ -441,7 +456,11 @@ func TestAccResourceNodePool_enterprise_basic(t *testing.T) {
 
 	enterpriseK8sVersion := versions[0].ID
 
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityKubernetesEnterprise}, "core")
+	ctx := context.Background()
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityKubernetesEnterprise).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -513,7 +532,11 @@ func TestAccResourceNodePool_enterprise_withFirewall(t *testing.T) {
 
 	enterpriseK8sVersion := versions[0].ID
 
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityKubernetesEnterprise}, "core")
+	ctx := context.Background()
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityKubernetesEnterprise).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -560,6 +583,75 @@ func TestAccResourceNodePool_enterprise_withFirewall(t *testing.T) {
 	})
 
 	client.DeleteFirewall(context.Background(), firewall.ID)
+}
+
+func TestAccResourceNodePool_enterprise_networking(t *testing.T) {
+	t.Parallel()
+	resName := "linode_lke_node_pool.foobar"
+	clusterLabel := acctest.RandomWithPrefix("tf_test_")
+
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatalf("failed to get client: %s", err)
+	}
+
+	versions, err := client.ListLKETierVersions(context.Background(), "enterprise", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(versions) < 1 {
+		t.Skip("No enterprise k8s versions found for test. Skipping now...")
+	}
+
+	enterpriseK8sVersion := versions[0].ID
+
+	ctx := context.Background()
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityKubernetesEnterprise).
+		WithSiteType("core").
+		Random()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	templateData := tmpl.TemplateData{
+		ClusterLabel: clusterLabel,
+		Region:       region,
+		K8sVersion:   enterpriseK8sVersion,
+		PoolNodeType: "g6-standard-1",
+		Label:        "networking-pool",
+	}
+
+	config := acceptanceTmpl.ProviderNoPoll(t) + tmpl.EnterpriseNetworking(t, &templateData)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkNodePoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("networking").AtMapKey("interfaces").AtSliceIndex(0).AtMapKey("type"),
+						knownvalue.StringExact("vpc")),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("networking").AtMapKey("interfaces").AtSliceIndex(0).AtMapKey("vpc_id"),
+						knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resName,
+						tfjsonpath.New("networking").AtMapKey("interfaces").AtSliceIndex(0).AtMapKey("subnet_id"),
+						knownvalue.NotNull()),
+				},
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
 }
 
 func TestAccResourceNodePool_disableAutoscalingExplicitNodeCount(t *testing.T) {

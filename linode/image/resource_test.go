@@ -55,7 +55,16 @@ func init() {
 		F:    sweep,
 	})
 
-	regions, err := acceptance.GetRegionsWithCaps([]linodego.RegionCapability{linodego.CapabilityObjectStorage, linodego.CapabilityLinodes}, "core")
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	regions, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityObjectStorage, linodego.CapabilityLinodes).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		IDs()
 	if err != nil {
 		log.Fatal(err)
 	}

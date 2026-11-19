@@ -1,0 +1,35 @@
+{{ define "lke_e_nodepool_networking" }}
+
+resource "linode_lke_cluster" "nodepool_test_cluster" {
+  label              = "{{.ClusterLabel}}"
+  region             = "{{ .Region }}"
+  k8s_version        = "{{.K8sVersion}}"
+  tags               = ["nodepool_test_cluster"]
+  external_pool_tags = ["external"]
+  tier               = "enterprise"
+
+  pool {
+    type  = "g6-standard-1"
+    count = 1
+  }
+}
+
+resource "linode_lke_node_pool" "foobar" {
+  cluster_id = linode_lke_cluster.nodepool_test_cluster.id
+  label      = "{{.Label}}"
+  node_count = 1
+  type       = "{{ .PoolNodeType }}"
+  tags       = ["external"]
+
+  networking = {
+    interfaces = [
+      {
+        type      = "vpc"
+        vpc_id    = linode_lke_cluster.nodepool_test_cluster.vpc_id
+        subnet_id = linode_lke_cluster.nodepool_test_cluster.subnet_id
+      }
+    ]
+  }
+}
+
+{{ end }}
