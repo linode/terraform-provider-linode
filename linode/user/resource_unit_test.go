@@ -7,10 +7,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
-
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/go-cty/cty"
