@@ -84,6 +84,17 @@ func (r *Resource) Read(
 
 	token, err := client.ImageShareGroupGetToken(ctx, tokenUUID)
 	if err != nil {
+		if linodego.IsNotFound(err) {
+			resp.Diagnostics.AddWarning(
+				"Image Share Group Token no longer exists.",
+				fmt.Sprintf(
+					"Removing Image Share Group Token %s from state because it no longer exists.",
+					tokenUUID,
+				),
+			)
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Failed to read Image Share Group Token.",
 			err.Error(),
