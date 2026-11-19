@@ -21,6 +21,7 @@ func TestParseUser(t *testing.T) {
 		Email:               "example_user@linode.com",
 		Restricted:          true,
 		TFAEnabled:          true,
+		TFAEnforced:         true,
 		SSHKeys:             []string{"home-pc", "laptop"},
 		PasswordCreated:     &time.Time{},
 		VerifiedPhoneNumber: &phoneNumber,
@@ -36,6 +37,7 @@ func TestParseUser(t *testing.T) {
 	assert.Equal(t, types.StringValue("example_user@linode.com"), dataModel.Email)
 	assert.Equal(t, types.BoolValue(true), dataModel.Restricted)
 	assert.Equal(t, types.BoolValue(true), dataModel.TFAEnabled)
+	assert.Equal(t, types.BoolValue(true), dataModel.TFAEnforced)
 	for _, key := range userData.SSHKeys {
 		assert.Contains(t, dataModel.SSHKeys.String(), key)
 	}

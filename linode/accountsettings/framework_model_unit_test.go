@@ -27,6 +27,7 @@ func TestFlattenAccountSettings(t *testing.T) {
 		ObjectStorage:           &objectStorageValue,
 		InterfacesForNewLinodes: linodego.LinodeDefaultButLegacyConfigAllowed,
 		MaintenancePolicy:       maintenancePolicy,
+		TFAEnforced:             true,
 	}
 
 	// Create a mock AccountSettingsModel instance
@@ -34,6 +35,9 @@ func TestFlattenAccountSettings(t *testing.T) {
 
 	// Call the parseAccountSettings function
 	model.FlattenAccountSettings(mockEmail, mockSettings, false)
+	if model.TFAEnforced != types.BoolValue(true) {
+		t.Errorf("Expected TFAEnforced to be true, but got %s", model.TFAEnforced)
+	}
 
 	// Check if the fields in the model have been populated correctly
 	if model.ID != types.StringValue(mockEmail) {

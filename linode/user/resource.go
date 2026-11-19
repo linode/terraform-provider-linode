@@ -106,6 +106,9 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	d.Set("user_type", user.UserType)
 	d.Set("ssh_keys", user.SSHKeys)
 	d.Set("tfa_enabled", user.TFAEnabled)
+	if err := d.Set("tfa_enforced", user.TFAEnforced); err != nil {
+		return diag.Errorf("failed to set user tfa_enforced: %s", err)
+	}
 	return nil
 }
 

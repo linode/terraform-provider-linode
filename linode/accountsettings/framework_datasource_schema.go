@@ -18,6 +18,10 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "Enables network helper across all users by default for new Linodes and Linode Configs.",
 			Computed:    true,
 		},
+		"tfa_enforced": schema.BoolAttribute{
+			Description: "Whether two-factor authentication is required by default for account users.",
+			Computed:    true,
+		},
 		"managed": schema.BoolAttribute{
 			Description: "Enables monitoring for connectivity, response, and total request time.",
 			Computed:    true,

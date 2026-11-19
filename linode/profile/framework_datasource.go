@@ -45,6 +45,7 @@ func (data *DataSourceModel) parseProfile(ctx context.Context, profile *linodego
 	data.AuthorizedKeys = authorized_keys
 
 	data.TwoFactorAuth = types.BoolValue(profile.TwoFactorAuth)
+	data.TFAEnforced = types.BoolValue(profile.TFAEnforced)
 	data.Restricted = types.BoolValue(profile.Restricted)
 
 	referrals, diags := flattenReferral(ctx, profile.Referrals)
@@ -74,6 +75,7 @@ type DataSourceModel struct {
 	LishAuthMethod     types.String `tfsdk:"lish_auth_method"`
 	AuthorizedKeys     types.List   `tfsdk:"authorized_keys"`
 	TwoFactorAuth      types.Bool   `tfsdk:"two_factor_auth"`
+	TFAEnforced        types.Bool   `tfsdk:"tfa_enforced"`
 	Restricted         types.Bool   `tfsdk:"restricted"`
 	Referrals          types.List   `tfsdk:"referrals"`
 	ID                 types.String `tfsdk:"id"`

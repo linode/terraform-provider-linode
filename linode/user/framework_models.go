@@ -32,6 +32,7 @@ type DataSourceModel struct {
 	ID                  types.String `tfsdk:"id"`
 	PasswordCreated     types.String `tfsdk:"password_created"`
 	TFAEnabled          types.Bool   `tfsdk:"tfa_enabled"`
+	TFAEnforced         types.Bool   `tfsdk:"tfa_enforced"`
 	VerifiedPhoneNumber types.String `tfsdk:"verified_phone_number"`
 }
 
@@ -43,6 +44,7 @@ func (data *DataSourceModel) ParseUser(
 	data.Restricted = types.BoolValue(user.Restricted)
 	data.UserType = types.StringValue(string(user.UserType))
 	data.TFAEnabled = types.BoolValue(user.TFAEnabled)
+	data.TFAEnforced = types.BoolValue(user.TFAEnforced)
 	data.VerifiedPhoneNumber = types.StringPointerValue(user.VerifiedPhoneNumber)
 
 	if user.PasswordCreated != nil {

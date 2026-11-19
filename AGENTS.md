@@ -151,6 +151,9 @@ Common `statecheck` / `knownvalue` helpers:
 6. Add `framework_resource_test.go` and/or `framework_datasource_test.go` with a `tmpl/` directory
 7. Add docs in `docs/resources/<resource>.md`
 
+**Documentation placement:**
+- Keep `README.md` limited to general, repository-wide information. Don't add resource- or test-specific details (for example, how to run or opt in to one resource's tests) unless they are high-value or truly necessary for most contributors. Put such details in the resource docs or in comments next to the code instead.
+
 **Debugging tests:**
 - `TF_LOG_PROVIDER=DEBUG` - Provider logging
 - `TF_LOG_PROVIDER_LINODE_REQUESTS=DEBUG` - API request logging

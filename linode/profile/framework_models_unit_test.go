@@ -22,6 +22,7 @@ func TestParseProfile(t *testing.T) {
 		LishAuthMethod:     linodego.AuthMethodPasswordKeys,
 		AuthorizedKeys:     []string{"ssh-rsa AAAAB3NzaC1yc2E...", "ssh-rsa AAAAB3NzaCNUMBER2..."},
 		TwoFactorAuth:      true,
+		TFAEnforced:        true,
 		Restricted:         false,
 		Referrals: linodego.ProfileReferrals{
 			Total:     10,
@@ -50,6 +51,7 @@ func TestParseProfile(t *testing.T) {
 	assert.Equal(t, types.StringValue("password_keys"), profileModel.LishAuthMethod)
 	assert.Equal(t, types.BoolValue(false), profileModel.IPWhitelistEnabled)
 	assert.Equal(t, types.BoolValue(true), profileModel.TwoFactorAuth)
+	assert.Equal(t, types.BoolValue(true), profileModel.TFAEnforced)
 	assert.Equal(t, types.BoolValue(false), profileModel.Restricted)
 
 	assert.Equal(t, "SECRETREFCODEOMG", profileModel.Referrals.Elements()[0].(types.Object).Attributes()["code"].(types.String).ValueString())
@@ -58,4 +60,15 @@ func TestParseProfile(t *testing.T) {
 	assert.Equal(t, int64(5), profileModel.Referrals.Elements()[0].(types.Object).Attributes()["pending"].(types.Int64).ValueInt64())
 	assert.Equal(t, int64(5), profileModel.Referrals.Elements()[0].(types.Object).Attributes()["completed"].(types.Int64).ValueInt64())
 	assert.Equal(t, "https://example.com/referral", profileModel.Referrals.Elements()[0].(types.Object).Attributes()["url"].(types.String).ValueString())
+}
+
+func TestProfileTFAEnforcedIndependentOfEnabled(t *testing.T) {
+	for _, enforced := range []bool{false, true} {
+		profile := &linodego.Profile{TFAEnforced: enforced, TwoFactorAuth: !enforced}
+		var model DataSourceModel
+		diags := model.parseProfile(context.Background(), profile)
+		assert.False(t, diags.HasError(), "%v", diags)
+		assert.Equal(t, types.BoolValue(enforced), model.TFAEnforced)
+		assert.Equal(t, types.BoolValue(!enforced), model.TwoFactorAuth)
+	}
 }

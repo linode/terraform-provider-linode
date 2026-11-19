@@ -43,6 +43,8 @@ The Linode Profile resource exports the following attributes:
 
 * `two_factor_auth` - If true, logins from untrusted computers will require Two Factor Authentication.
 
+* `tfa_enforced` - Whether the account policy and exemptions require this profile to use two-factor authentication, independently of whether it is enabled.
+
 * `restricted` - If true, the user has restrictions on what can be accessed on the Account.
 
 * `referrals` - (Read-Only Object List) Credit Card information associated with this Account. Referenced with an index (e.g. `referrals.0.code`).

@@ -13,6 +13,7 @@ var filterConfig = frameworkfilter.Config{
 	"user_type":             {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"password_created":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"tfa_enabled":           {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
+	"tfa_enforced":          {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
 	"verified_phone_number": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 

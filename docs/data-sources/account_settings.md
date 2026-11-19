@@ -29,6 +29,8 @@ data "linode_account_settings" "example" {}
 
 * `network_helper` - Enables network helper across all users by default for new Linodes and Linode Configs.
 
+* `tfa_enforced` - Whether two-factor authentication is required by default for account users.
+
 * `object_storage` - A string describing the status of this account’s Object Storage service enrollment.
 
 * `maintenance_policy` - The default maintenance policy for this account.

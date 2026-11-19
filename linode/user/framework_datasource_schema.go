@@ -95,6 +95,10 @@ var UserAttributes = map[string]schema.Attribute{
 		Description: "A boolean value indicating if the User has Two Factor Authentication (TFA) enabled.",
 		Computed:    true,
 	},
+	"tfa_enforced": schema.BoolAttribute{
+		Description: "Whether two-factor authentication is required for this user by the account policy and exemptions.",
+		Computed:    true,
+	},
 	"verified_phone_number": schema.StringAttribute{
 		Description: "The phone number verified for this User Profile with the Phone Number Verify command." +
 			"null if this User Profile has no verified phone number.",
