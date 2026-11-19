@@ -3,6 +3,7 @@
 package nbvpcs_test
 
 import (
+	"context"
 	"log"
 	"testing"
 
@@ -23,7 +24,16 @@ func TestAccDataSource_basic(t *testing.T) {
 
 	label := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityNodeBalancers, linodego.CapabilityVPCs).
+		AvailableForAccount(ctx, linodego.CapabilityNodeBalancers).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

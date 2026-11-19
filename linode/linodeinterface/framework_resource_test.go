@@ -27,10 +27,16 @@ const testInterfaceResName = "linode_interface.test"
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps(
-		[]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityCloudFirewall},
-		"core",
-	)
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLinodes, linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityCloudFirewall).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLinodes).
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -776,13 +782,18 @@ func TestAccLinodeInterface_vpc_empty_ip_objects(t *testing.T) {
 func TestAccLinodeInterface_vpc_with_ipv6(t *testing.T) {
 	t.Parallel()
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).WithCapabilities(
 		linodego.CapabilityLinodes,
 		linodego.CapabilityVlans,
 		linodego.CapabilityVPCs,
 		linodego.CapabilityCloudFirewall,
 		linodego.CapabilityVPCDualStack,
-	}, "core")
+	).WithSiteType("core").AvailableForAccount(ctx, linodego.CapabilityLinodes).Random()
 	if err != nil {
 		log.Fatal(err)
 	}

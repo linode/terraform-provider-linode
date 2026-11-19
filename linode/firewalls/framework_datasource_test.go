@@ -3,6 +3,7 @@
 package firewalls_test
 
 import (
+	"context"
 	"log"
 	"regexp"
 	"testing"
@@ -22,7 +23,15 @@ const testFirewallDataName = "data.linode_firewalls.test"
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityCloudFirewall}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	region, err := acceptance.NewRegionSelector(context.Background(), client).
+		WithCapabilities(linodego.CapabilityLinodes, linodego.CapabilityCloudFirewall).
+		WithSiteType("core").
+		AvailableForAccount(context.Background(), linodego.CapabilityLinodes).
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

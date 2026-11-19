@@ -78,7 +78,12 @@ func init() {
 		k8sVersionPrevious = k8sVersions[len(k8sVersions)-2]
 	}
 
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLKE}, "core")
+	ctx := context.Background()
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLKE).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLKE).
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,7 +101,10 @@ func init() {
 		k8sVersionEnterprise = enterpriseVersions[0].ID
 	}
 
-	enterpriseRegion, err = acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{"Kubernetes Enterprise", "VPCs"}, "core")
+	enterpriseRegion, err = acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities("Kubernetes Enterprise", linodego.CapabilityVPCs).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -333,7 +341,7 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 	t.Parallel()
 
-	provider, providerMap := acceptance.CreateTestProvider()
+	provider, _ := acceptance.CreateTestProvider()
 
 	// We want to ensure that non-updated values are excluded from update requests
 	acceptance.ModifyProviderMeta(provider,
@@ -370,8 +378,12 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		newClusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
-			PreCheck:  func() { acceptance.PreCheck(t) },
-			Providers: providerMap,
+			PreCheck: func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+				"linode": func() (tfprotov6.ProviderServer, error) {
+					return acceptance.ProtoV6CustomProviderFactories["linode"](nil, provider)
+				},
+			},
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
@@ -1295,9 +1307,16 @@ func TestAccResourceLKECluster_tierNoAccess(t *testing.T) {
 func TestAccResourceLKECluster_poolDiskEncryption(t *testing.T) {
 	t.Parallel()
 
-	diskEncryptionRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]linodego.RegionCapability{linodego.CapabilityLKE, linodego.CapabilityDiskEncryption}, "core",
-	)
+	ctx := context.Background()
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Skipf("Skipping test: unable to get API client: %s", err)
+	}
+	diskEncryptionRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityLKE, linodego.CapabilityDiskEncryption).
+		WithSiteType("core").
+		AvailableForAccount(ctx, linodego.CapabilityLKE).
+		Random()
 	if err != nil {
 		t.Skipf("Skipping test: no region with LKE and Disk Encryption capabilities: %s", err)
 	}
