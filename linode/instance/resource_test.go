@@ -962,7 +962,7 @@ func TestAccResourceInstance_privateImage(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 
 					checkInstanceDisks(&instance,
-						testDisk("boot", testDiskSize(2200)),
+						testDisk("boot", testDiskSize(2800)),
 						testDisk("swap", testDiskSize(512)),
 						testDisk("logs", testDiskSize(512)),
 					),

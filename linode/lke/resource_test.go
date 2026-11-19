@@ -341,7 +341,7 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 	t.Parallel()
 
-	provider, providerMap := acceptance.CreateTestProvider()
+	provider, _ := acceptance.CreateTestProvider()
 
 	// We want to ensure that non-updated values are excluded from update requests
 	acceptance.ModifyProviderMeta(provider,
@@ -378,8 +378,12 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		newClusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
-			PreCheck:  func() { acceptance.PreCheck(t) },
-			Providers: providerMap,
+			PreCheck: func() { acceptance.PreCheck(t) },
+			ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+				"linode": func() (tfprotov6.ProviderServer, error) {
+					return acceptance.ProtoV6CustomProviderFactories["linode"](nil, provider)
+				},
+			},
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
