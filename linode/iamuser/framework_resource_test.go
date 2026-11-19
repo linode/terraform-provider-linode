@@ -28,7 +28,15 @@ func init() {
 		F:    volumeSweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityBlockStorage}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	region, err := acceptance.NewRegionSelector(context.Background(), client).
+		WithCapabilities(linodego.CapabilityBlockStorage).
+		AvailableForAccount(context.Background(), linodego.CapabilityBlockStorage).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

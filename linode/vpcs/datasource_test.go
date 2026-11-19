@@ -68,7 +68,15 @@ func TestAccDataSourceVPCs_basic_smoke(t *testing.T) {
 
 	resourceName := "data.linode_vpcs.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	testRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityVPCs).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		t.Error(fmt.Errorf("failed to get region with VPC capability: %w", err))
 	}
@@ -97,10 +105,15 @@ func TestAccDataSourceVPCs_dualStack(t *testing.T) {
 	resourceName := "data.linode_vpcs.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
-		linodego.CapabilityVPCs,
-		linodego.CapabilityVPCDualStack,
-	}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityVPCs, linodego.CapabilityVPCDualStack).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -116,36 +129,12 @@ func TestAccDataSourceVPCs_dualStack(t *testing.T) {
 				PreConfig: preConfigVPCPoll(t, vpcLabel),
 				Config:    tmpl.DataDualStack(t, vpcLabel, targetRegion),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("label"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("description"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("region"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("created"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("updated"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv6"),
-						knownvalue.ListSizeExact(1),
-					),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("label"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("description"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("region"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("created"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("updated"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv6"), knownvalue.ListSizeExact(1)),
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("vpcs").AtSliceIndex(0).AtMapKey("ipv6").AtSliceIndex(0).AtMapKey("range"),
@@ -162,7 +151,15 @@ func TestAccDataSourceVPCs_filterByLabel(t *testing.T) {
 
 	resourceName := "data.linode_vpcs.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityVPCs}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(fmt.Errorf("Error getting client: %s", err))
+	}
+	ctx := context.Background()
+	testRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityVPCs).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
@@ -191,10 +188,15 @@ func TestAccDataSourceVPCs_ipv4(t *testing.T) {
 	resourceName := "data.linode_vpcs.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 
-	targetRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
-		linodego.CapabilityVPCs,
-		linodego.CapabilityVPCCustomIPv4Ranges,
-	}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	targetRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityVPCs, linodego.CapabilityVPCCustomIPv4Ranges).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}
