@@ -1,0 +1,7 @@
+{{ define "nfs_space_basic" }}
+
+resource "linode_nfs_space" "foobar" {
+    label = "{{.Label}}"
+}
+
+{{ end }}
