@@ -7,6 +7,7 @@ description: |-
 # linode\_nfs\_space\_access\_policy
 
 Manages the access policy of a Linode [NFS Space](nfs_space.html.markdown). The access policy controls which VPCs can reach the NFS Space and the optional mTLS configuration, and applies to all filesystems in the NFS Space.
+For more information, see the [Linode APIv4 docs](TBD).
 
 ~> **Beta** This resource is in beta and requires the provider `api_version` to be set to `v4beta`.
 

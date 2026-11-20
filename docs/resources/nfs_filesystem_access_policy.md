@@ -7,6 +7,7 @@ description: |-
 # linode\_nfs\_filesystem\_access\_policy
 
 Manages the access policy of a Linode [NFS Filesystem](nfs_filesystem.html.markdown). The access policy controls which Linodes can mount the filesystem. Linodes must also be permitted by the parent [NFS Space access policy](nfs_space_access_policy.html.markdown).
+For more information, see the [Linode APIv4 docs](TBD).
 
 ~> **Beta** This resource is in beta and requires the provider `api_version` to be set to `v4beta`.
 
