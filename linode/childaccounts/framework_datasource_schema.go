@@ -3,7 +3,6 @@ package childaccounts
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/linode/terraform-provider-linode/v4/linode/account"
-	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
@@ -21,7 +20,7 @@ var filterConfig = frameworkfilter.Config{
 	"country":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"zip":          {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"capabilities": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"active_since": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
+	"active_since": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var dataSourceSchema = schema.Schema{

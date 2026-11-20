@@ -3,20 +3,19 @@ package lkeclusters
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
 var filterConfig = frameworkfilter.Config{
-	"k8s_version": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
-	"label":       {APIFilterable: true, TypeFunc: helper.FilterTypeString},
-	"region":      {APIFilterable: true, TypeFunc: helper.FilterTypeString},
-	"tags":        {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"k8s_version": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"label":       {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"region":      {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"tags":        {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 
-	"created": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
-	"updated": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
-	"status":  {APIFilterable: false, TypeFunc: helper.FilterTypeString},
-	"tier":    {APIFilterable: false, TypeFunc: helper.FilterTypeString},
+	"created": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"updated": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"status":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"tier":    {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDatasourceSchema = schema.Schema{

@@ -3,12 +3,11 @@ package firewalltemplates
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/linode/terraform-provider-linode/v4/linode/firewall"
-	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
 var filterConfig = frameworkfilter.Config{
-	"slug": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
+	"slug": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var templatesAttributes = map[string]schema.Attribute{
