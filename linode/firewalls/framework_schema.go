@@ -4,18 +4,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
 var filterConfig = frameworkfilter.Config{
-	"id":    {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
-	"label": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
-	"tags":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"id":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"label": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"tags":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 
-	"status":  {APIFilterable: false, TypeFunc: helper.FilterTypeString},
-	"created": {APIFilterable: false, TypeFunc: helper.FilterTypeString, AllowOrderOverride: true},
-	"updated": {APIFilterable: false, TypeFunc: helper.FilterTypeString, AllowOrderOverride: true},
+	"status":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"created": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString, AllowOrderOverride: true},
+	"updated": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString, AllowOrderOverride: true},
 }
 
 var firewallDeviceAttributes = map[string]schema.Attribute{
