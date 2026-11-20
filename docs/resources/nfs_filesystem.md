@@ -7,6 +7,7 @@ description: |-
 # linode\_nfs\_filesystem
 
 Manages a Linode NFS Filesystem. An NFS Filesystem is a managed NFS export provisioned under an [NFS Space](nfs_space.html.markdown). Each filesystem is region-specific.
+For more information, see the [Linode APIv4 docs](TBD).
 
 ~> **Beta** This resource is in beta and requires the provider `api_version` to be set to `v4beta`.
 
@@ -24,6 +25,7 @@ resource "linode_nfs_filesystem" "test" {
     label              = "test-filesystem"
     region             = "us-rno"
     max_capacity_bytes = 1099511627776
+    max_file_count     = 1000000
     tags               = ["training", "ml"]
 }
 ```
@@ -38,7 +40,9 @@ The following arguments are supported:
 
 * `region` - (Required) The region where this filesystem is provisioned. Changing this value forces the creation of a new NFS Filesystem.
 
-* `max_capacity_bytes` - (Required) The provisioned capacity of the filesystem, in bytes. Minimum `1073741824` (1 GiB).
+* `max_capacity_bytes` - (Optional) The provisioned capacity of the filesystem, in bytes. If not set, the API default is used. Minimum `1073741824` (1 GiB). This value can only be increased; shrinking is not supported.
+
+* `max_file_count` - (Optional) The maximum number of files and directories allowed in the filesystem. If not set, the API default is used. Removing a previously configured value makes the file count unlimited. This value can only be increased or removed; decreasing it is not supported.
 
 * `protocol_versions` - (Optional) The NFS protocol versions supported by this filesystem. Currently only `nfsv4` is supported. Changing this value forces the creation of a new NFS Filesystem.
 

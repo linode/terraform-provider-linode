@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_nfs\_spaces
 
 Provides information about a list of Linode NFS Spaces that match a set of filters.
+For more information, see the [Linode APIv4 docs](TBD).
 
 ~> **Beta** This data source is in beta and requires the provider `api_version` to be set to `v4beta`.
 

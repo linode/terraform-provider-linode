@@ -9,6 +9,9 @@ resource "linode_nfs_filesystem" "foobar" {
     label              = "{{.Label}}"
     region             = "{{.Region}}"
     max_capacity_bytes = {{.MaxCapacityBytes}}
+    {{- with .MaxFileCount }}
+    max_file_count     = {{ . }}
+    {{- end }}
     tags               = ["test", "nfs"]
 }
 

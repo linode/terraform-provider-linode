@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -57,9 +58,16 @@ func (r *Resource) Create(
 	}
 
 	createOpts := linodego.NFSFilesystemCreateOptions{
-		Label:            data.Label.ValueString(),
-		Region:           data.Region.ValueString(),
-		MaxCapacityBytes: data.MaxCapacityBytes.ValueInt64(),
+		Label:  data.Label.ValueString(),
+		Region: data.Region.ValueString(),
+	}
+
+	if !data.MaxCapacityBytes.IsNull() && !data.MaxCapacityBytes.IsUnknown() {
+		createOpts.MaxCapacityBytes = data.MaxCapacityBytes.ValueInt64Pointer()
+	}
+
+	if !data.MaxFileCount.IsNull() && !data.MaxFileCount.IsUnknown() {
+		createOpts.MaxFileCount = data.MaxFileCount.ValueInt64Pointer()
 	}
 
 	if !data.ProtocolVersions.IsNull() && !data.ProtocolVersions.IsUnknown() {
@@ -100,6 +108,13 @@ func (r *Resource) Create(
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &initialState)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var maxFileCountConfig types.Int64
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("max_file_count"), &maxFileCountConfig)...)
+	resp.Diagnostics.Append(setMaxFileCountConfigured(ctx, resp.Private, maxFileCountConfig)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -209,9 +224,14 @@ func (r *Resource) Update(
 		updateOpts.Label = plan.Label.ValueStringPointer()
 	}
 
-	if !state.MaxCapacityBytes.Equal(plan.MaxCapacityBytes) {
+	if !plan.MaxCapacityBytes.IsUnknown() && !state.MaxCapacityBytes.Equal(plan.MaxCapacityBytes) {
 		shouldUpdate = true
 		updateOpts.MaxCapacityBytes = plan.MaxCapacityBytes.ValueInt64Pointer()
+	}
+
+	if !state.MaxFileCount.Equal(plan.MaxFileCount) {
+		shouldUpdate = true
+		updateOpts.MaxFileCount = new(plan.MaxFileCount.ValueInt64Pointer())
 	}
 
 	if !state.Tags.Equal(plan.Tags) {
@@ -240,6 +260,13 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
+	}
+
+	var maxFileCountConfig types.Int64
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("max_file_count"), &maxFileCountConfig)...)
+	resp.Diagnostics.Append(setMaxFileCountConfigured(ctx, resp.Private, maxFileCountConfig)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	plan.CopyFrom(state.BaseModel, true)

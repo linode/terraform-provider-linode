@@ -12,6 +12,7 @@ var filterConfig = frameworkfilter.Config{
 	"region":             {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"status":             {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"max_capacity_bytes": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"max_file_count":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 }
 
 var frameworkDataSourceSchema = schema.Schema{

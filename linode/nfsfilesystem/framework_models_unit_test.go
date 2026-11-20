@@ -31,6 +31,7 @@ func TestFlattenNFSFilesystem(t *testing.T) {
 		MountTargetIPs:     []string{"[2400:8900::10]:/training-data-10932"},
 		MountTargetFQDN:    &fqdn,
 		MaxCapacityBytes:   1099511627776,
+		MaxFileCount:       5000000,
 		SnapshotUsageBytes: &snapshotUsage,
 		Created:            &created,
 		Updated:            &updated,
@@ -53,6 +54,7 @@ func TestFlattenNFSFilesystem(t *testing.T) {
 	assert.Equal(t, types.StringValue("active"), model.Status)
 	assert.Equal(t, types.StringValue(fqdn), model.MountTargetFQDN)
 	assert.Equal(t, types.Int64Value(1099511627776), model.MaxCapacityBytes)
+	assert.Equal(t, types.Int64Value(5000000), model.MaxFileCount)
 	assert.Equal(t, types.Int64Value(snapshotUsage), model.SnapshotUsageBytes)
 	assert.False(t, model.ProtocolVersions.IsNull())
 	assert.False(t, model.MountTargetIPs.IsNull())
@@ -76,4 +78,14 @@ func TestFlattenNFSFilesystemPreserveKnown(t *testing.T) {
 
 	assert.Equal(t, types.StringValue("11111"), model.ID)
 	assert.Equal(t, types.StringValue("training-data"), model.Label)
+}
+
+func TestFlattenNFSFilesystemUnlimitedFileCount(t *testing.T) {
+	fs := &linodego.NFSFilesystem{ID: 67890}
+
+	var model BaseModel
+	diags := model.Flatten(context.Background(), fs, false)
+	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+
+	assert.True(t, model.MaxFileCount.IsNull())
 }
