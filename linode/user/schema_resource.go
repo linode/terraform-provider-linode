@@ -162,7 +162,6 @@ func resourceLinodeUserGrantsEntitySet() *schema.Schema {
 		Type:        schema.TypeSet,
 		Description: "A set containing all of the user's active grants.",
 		Optional:    true,
-		Computed:    true,
 		Elem:        resourceLinodeUserGrantsEntity(),
 	}
 }
