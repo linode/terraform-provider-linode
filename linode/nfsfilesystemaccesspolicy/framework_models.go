@@ -149,9 +149,11 @@ func (m *ResourceModel) GetUpdateOptions(
 			return opts, false
 		}
 
-		opts.Protocols = linodego.Pointer(helper.MapSlice(protocols, func(p string) linodego.NFSProtocolVersion {
-			return linodego.NFSProtocolVersion(p)
-		}))
+		protocolValues := make([]linodego.NFSProtocolVersion, len(protocols))
+		for i, p := range protocols {
+			protocolValues[i] = linodego.NFSProtocolVersion(p)
+		}
+		opts.Protocols = &protocolValues
 		shouldUpdate = true
 	}
 
