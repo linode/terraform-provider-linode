@@ -11,6 +11,7 @@ type TemplateData struct {
 	Region           string
 	MaxCapacityBytes int64
 	Enabled          bool
+	Inherit          bool
 	SquashPolicy     string
 }
 
@@ -18,7 +19,7 @@ func Basic(
 	t testing.TB,
 	label, region string,
 	maxCapacityBytes int64,
-	enabled bool,
+	enabled, inherit bool,
 	squashPolicy string,
 ) string {
 	return acceptance.ExecuteTemplate(t,
@@ -27,6 +28,7 @@ func Basic(
 			Region:           region,
 			MaxCapacityBytes: maxCapacityBytes,
 			Enabled:          enabled,
+			Inherit:          inherit,
 			SquashPolicy:     squashPolicy,
 		})
 }

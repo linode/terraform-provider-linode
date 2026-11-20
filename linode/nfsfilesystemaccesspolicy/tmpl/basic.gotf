@@ -24,6 +24,7 @@ resource "linode_nfs_filesystem_access_policy" "foobar" {
     space_id      = linode_nfs_space_access_policy.foobar.space_id
     filesystem_id = linode_nfs_filesystem.foobar.id
     enabled       = {{.Enabled}}
+    inherit       = {{.Inherit}}
     squash_policy = "{{.SquashPolicy}}"
 }
 

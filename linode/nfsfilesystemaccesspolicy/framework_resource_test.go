@@ -33,7 +33,7 @@ func TestAccResourceNFSFilesystemAccessPolicy_basic(t *testing.T) {
 			{
 				Config: tmpl.Basic(
 					t, label, testRegion, minCapacityBytes,
-					true, string(linodego.NFSSquashPolicyRootSquash),
+					true, true, string(linodego.NFSSquashPolicyRootSquash),
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName,
@@ -58,11 +58,13 @@ func TestAccResourceNFSFilesystemAccessPolicy_basic(t *testing.T) {
 			{
 				Config: tmpl.Basic(
 					t, label, testRegion, minCapacityBytes,
-					false, string(linodego.NFSSquashPolicyAllSquash),
+					false, false, string(linodego.NFSSquashPolicyAllSquash),
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName,
 						tfjsonpath.New("enabled"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(resourceName,
+						tfjsonpath.New("inherit"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(resourceName,
 						tfjsonpath.New("squash_policy"),
 						knownvalue.StringExact(string(linodego.NFSSquashPolicyAllSquash))),

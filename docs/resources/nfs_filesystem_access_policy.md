@@ -61,7 +61,7 @@ The following arguments are supported:
 
 * `enabled` - (Optional) Whether this access policy is active. When false, no Linodes can mount this filesystem.
 
-* `inherit` - (Optional) Whether this filesystem falls back to the NFS Space access policy when no `linode_ids` are configured. When `false`, access is restricted to `linode_ids` only. Defaults to `true`.
+* `inherit` - (Optional) Whether this filesystem falls back to the NFS Space access policy when no `linode_ids` are configured. When `false`, access is restricted to `linode_ids` only.
 
 * `linode_ids` - (Optional) The IDs of the Linodes permitted to mount this filesystem. Each Linode must belong to a VPC permitted by the NFS Space access policy.
 
