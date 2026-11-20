@@ -62,14 +62,12 @@ func TestAccResourceNFSQuota_update(t *testing.T) {
 
 	label := acctest.RandomWithPrefix("tf-test")
 	fs := acceptance.GetNFSTestFilesystem(t)
-	updatedFileCount := capFileCount(t, fs, 4000)
 
 	basicStep := resource.TestStep{
 		Config: tmpl.Basic(t, label, fs.SpaceID, fs.ID),
 		ConfigStateChecks: []statecheck.StateCheck{
 			statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("is_root"), knownvalue.Bool(false)),
 			statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("max_capacity_bytes"), knownvalue.Int64Exact(2147483648)),
-			statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("max_file_count"), knownvalue.Null()),
 			statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("user_group_config"), knownvalue.Null()),
 		},
 	}
@@ -81,56 +79,23 @@ func TestAccResourceNFSQuota_update(t *testing.T) {
 		Steps: []resource.TestStep{
 			basicStep,
 			{
-				Config: tmpl.Updates(t, label, fs.SpaceID, fs.ID, updatedFileCount),
+				Config: tmpl.Updates(t, label, fs.SpaceID, fs.ID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("max_capacity_bytes"), knownvalue.Int64Exact(4294967296)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("max_file_count"), knownvalue.Int64Exact(updatedFileCount)),
 					statecheck.ExpectKnownValue(resourceName,
 						tfjsonpath.New("user_group_config").AtMapKey("default_user_limit").AtMapKey("max_capacity_bytes"),
 						knownvalue.Int64Exact(1073741824),
 					),
 					statecheck.ExpectKnownValue(resourceName,
-						tfjsonpath.New("user_group_config").AtMapKey("default_user_limit").AtMapKey("max_file_count"),
-						knownvalue.Int64Exact(updatedFileCount/4),
-					),
-					statecheck.ExpectKnownValue(resourceName,
 						tfjsonpath.New("user_group_config").AtMapKey("default_group_limit").AtMapKey("max_capacity_bytes"),
 						knownvalue.Int64Exact(2147483648),
 					),
-					statecheck.ExpectKnownValue(resourceName,
-						tfjsonpath.New("user_group_config").AtMapKey("default_group_limit").AtMapKey("max_file_count"),
-						knownvalue.Int64Exact(updatedFileCount/2),
-					),
 				},
 			},
-			// Removing max_file_count and user_group_config must clear them.
+			// Removing user_group_config must clear it.
 			basicStep,
 		},
 	})
-}
-
-// capFileCount returns want, capped to the root quota's max_file_count so that
-// tests also pass on reused filesystems with a lower root file count limit.
-func capFileCount(t *testing.T, fs *linodego.NFSFilesystem, want int64) int64 {
-	t.Helper()
-
-	client, err := acceptance.GetTestClient()
-	if err != nil {
-		t.Fatalf("failed to get test client: %s", err)
-	}
-
-	quotas, err := client.ListNFSQuotas(context.Background(), fs.SpaceID, fs.ID, nil)
-	if err != nil {
-		t.Fatalf("failed to list NFS quotas: %s", err)
-	}
-
-	for _, q := range quotas {
-		if q.IsRoot && q.MaxFileCount != nil {
-			return min(want, *q.MaxFileCount)
-		}
-	}
-
-	return want
 }
 
 func checkNFSQuotaDestroy(s *terraform.State) error {

@@ -7,7 +7,7 @@ description: |-
 # Data Source: linode\_nfs\_quotas
 
 Provides information about a list of Linode NFS Quotas under an [NFS Filesystem](nfs_filesystem.md) that match a set of filters.
-For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-nfs-quotas).
+For more information, see the [Linode APIv4 docs](TBD). (**Note: v4beta only.**)
 
 ~> **Beta** This data source is in beta and requires the provider `api_version` to be set to `v4beta`.
 

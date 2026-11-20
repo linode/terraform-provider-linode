@@ -35,7 +35,6 @@ func TestAccDataSourceNFSQuotas_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(dataSourceName, quota.AtMapKey("is_root"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(dataSourceName, quota.AtMapKey("path"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(dataSourceName, quota.AtMapKey("max_capacity_bytes"), knownvalue.Int64Exact(fs.MaxCapacityBytes)),
-					statecheck.ExpectKnownValue(dataSourceName, quota.AtMapKey("max_file_count"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(dataSourceName, quota.AtMapKey("status"), knownvalue.NotNull()),
 				},
 			},

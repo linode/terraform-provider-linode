@@ -7,7 +7,9 @@ description: |-
 # linode\_nfs\_quota
 
 Manages a Linode NFS Quota.
-For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-nfs-quota). (**Note: v4beta only.**)
+For more information, see the [Linode APIv4 docs](TBD). (**Note: v4beta only.**)
+
+~> **Beta** This resource is in beta and requires the provider `api_version` to be set to `v4beta`.
 
 ## Example Usage
 

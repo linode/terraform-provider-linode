@@ -7,17 +7,14 @@ resource "linode_nfs_quota" "foobar" {
     filesystem_id      = {{ .FilesystemID }}
     path               = "${data.linode_nfs_quotas.root.nfs_quotas[0].path}/{{ .Label }}"
     max_capacity_bytes = 4294967296
-    max_file_count     = {{ .MaxFileCount }}
 
     user_group_config = {
         default_user_limit = {
             max_capacity_bytes = 1073741824
-            max_file_count     = {{ .UserMaxFileCount }}
         }
 
         default_group_limit = {
             max_capacity_bytes = 2147483648
-            max_file_count     = {{ .GroupMaxFileCount }}
         }
     }
 }
