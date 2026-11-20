@@ -37,7 +37,7 @@ data "linode_vlans" "my-vlans" {
 }
 
 output "vlan_linodes" {
-  value = data.linode_vlans.my-vlans.vlans.0.linodes
+  value = data.linode_vlans.my-vlans.vlans[0].linodes
 }
 ```
 

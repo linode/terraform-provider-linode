@@ -23,9 +23,9 @@ The `linode_database_mysql_config` data source exports the following attributes:
 
 **NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
 
-* [`binlog_retention_period`](#binlog_retention_period) - (Read-Only Object List) The minimum amount of time in seconds to keep binlog entries before deletion. This may be extended for services that require binlog entries for longer than the default for example if using the MySQL Debezium Kafka connector. Referenced with an index (e.g. `binlog_retention_period.0.description`).
+* [`binlog_retention_period`](#binlog_retention_period) - (Read-Only Object List) The minimum amount of time in seconds to keep binlog entries before deletion. This may be extended for services that require binlog entries for longer than the default for example if using the MySQL Debezium Kafka connector. Referenced with an index (e.g. `binlog_retention_period[0].description`).
 
-* [`mysql`](#mysql) - (Read-Only Object List) MySQL configuration settings. Referenced with an index (e.g. `mysql.0.connect_timeout`).
+* [`mysql`](#mysql) - (Read-Only Object List) MySQL configuration settings. Referenced with an index (e.g. `mysql[0].connect_timeout`).
 
 ## binlog_retention_period
 

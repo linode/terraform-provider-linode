@@ -20,7 +20,7 @@ data "linode_instances" "test" {
 
     filter {
         name = "id"
-        values = [linode_lke_cluster.test.pool.0.nodes.0.instance_id]
+        values = [linode_lke_cluster.test.pool[0].nodes[0].instance_id]
     }
 }
 

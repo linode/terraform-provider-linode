@@ -66,13 +66,13 @@ Each Linode Volume type will export the following attributes:
 
 * `label` - The Volume type label is for display purposes only.
 
-* `price` - (Read-Only Object List) Pricing information for this Linode Volume type. Referenced with an index (e.g. `price.0.hourly`).
+* `price` - (Read-Only Object List) Pricing information for this Linode Volume type. Referenced with an index (e.g. `price[0].hourly`).
 
-* `price.0.hourly` -  Cost (in US dollars) per hour.
+* `price[0].hourly` -  Cost (in US dollars) per hour.
 
-* `price.0.monthly` - Cost (in US dollars) per month.
+* `price[0].monthly` - Cost (in US dollars) per month.
 
-* `region_prices` - (Read-Only Object List) Region-specific pricing information for this Linode Volume type. Referenced with an index (e.g. `region_prices.0.hourly`).
+* `region_prices` - (Read-Only Object List) Region-specific pricing information for this Linode Volume type. Referenced with an index (e.g. `region_prices[0].hourly`).
 
 * `region_prices.*.id` - The Region ID for these prices.
 

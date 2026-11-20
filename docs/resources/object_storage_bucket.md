@@ -114,7 +114,7 @@ The following arguments are supported:
 
 * [`lifecycle_rule`](#lifecycle_rule) - (Optional, Block List) Lifecycle rules to be applied to the bucket. (Requires `access_key` and `secret_key`)
 
-* [`cert`](#cert) - (Optional, Block) The bucket's TLS/SSL certificate. Referenced with an index (e.g. `cert.0.certificate`).
+* [`cert`](#cert) - (Optional, Block) The bucket's TLS/SSL certificate. Referenced with an index (e.g. `cert[0].certificate`).
 
 ### cert
 
@@ -136,9 +136,9 @@ The following arguments are supported in the lifecycle_rule specification block:
 
 * `abort_incomplete_multipart_upload_days` - (Optional) Specifies the number of days after initiating a multipart upload when the multipart upload must be completed.
 
-* [`expiration`](#expiration) - (Optional, Block) Specifies a period in the object's expire. Referenced with an index (e.g. `lifecycle_rule.0.expiration.0.date`).
+* [`expiration`](#expiration) - (Optional, Block) Specifies a period in the object's expire. Referenced with an index (e.g. `lifecycle_rule[0].expiration[0].date`).
 
-* [`noncurrent_version_expiration`](#noncurrent_version_expiration) - (Optional, Block) Specifies when non-current object versions expire. Referenced with an index (e.g. `lifecycle_rule.0.noncurrent_version_expiration.0.days`).
+* [`noncurrent_version_expiration`](#noncurrent_version_expiration) - (Optional, Block) Specifies when non-current object versions expire. Referenced with an index (e.g. `lifecycle_rule[0].noncurrent_version_expiration[0].days`).
 
 ### expiration
 

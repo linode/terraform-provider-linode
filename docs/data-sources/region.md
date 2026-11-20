@@ -41,7 +41,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * [`resolvers`] (#resolvers) - (Nested Attribute List) An object representing the IP addresses for this region's DNS resolvers.
 
-* [`placement_group_limits`] (#placement-group-limits) - (Read-Only Object List) An object representing the limits relating to placement groups in this region. Referenced with an index (e.g. `placement_group_limits.0.maximum_pgs_per_customer`).
+* [`placement_group_limits`] (#placement-group-limits) - (Read-Only Object List) An object representing the limits relating to placement groups in this region. Referenced with an index (e.g. `placement_group_limits[0].maximum_pgs_per_customer`).
 
 * [`monitors`] (#monitors) - (Read-Only Object) An object representing the monitor services available in a region. Referenced directly (e.g. `monitors.alerts`).
 

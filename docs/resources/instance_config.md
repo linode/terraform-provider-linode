@@ -35,7 +35,7 @@ resource "linode_instance_config" "my-config" {
 resource "linode_instance_disk" "boot" {
   label = "boot"
   linode_id = linode_instance.my-instance.id
-  size = linode_instance.my-instance.specs.0.disk
+  size = linode_instance.my-instance.specs[0].disk
 
   image = "linode/ubuntu22.04"
   root_pass = "myc00lpass!"
@@ -124,7 +124,7 @@ resource "linode_vpc_subnet" "foobar" {
 resource "linode_instance_disk" "boot" {
   label = "boot"
   linode_id = linode_instance.my-instance.id
-  size = linode_instance.my-instance.specs.0.disk - 512
+  size = linode_instance.my-instance.specs[0].disk - 512
 
   image = "linode/ubuntu22.04"
   root_pass = "myc00lpass!ciuw23asxbviwuc"
@@ -161,7 +161,7 @@ The following arguments are supported:
 
 * `comments` - (Optional) Optional field for arbitrary User comments on this Config.
 
-* [`devices`](#devices) - (Optional, Block) A dictionary of device disks to use as a device map in a Linode’s configuration profile. Referenced with an index (e.g. `devices.0.sda`).
+* [`devices`](#devices) - (Optional, Block) A dictionary of device disks to use as a device map in a Linode’s configuration profile. Referenced with an index (e.g. `devices[0].sda`).
 
 * [`device`](#device-recommended) - (Optional, Block Set) An assignment between a disk and a configuration profile device. This block supersedes the `devices` block. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 
@@ -185,7 +185,7 @@ The following arguments are supported:
 
 The following attributes are available on devices:
 
-* `sda` ... `sdbl` - (Optional, Block) Device slots for attaching disks and volumes (named `sda`-`sdz`, `sdaa`-`sdaz`, `sdba`-`sdbl`). The maximum number of available devices is determined by the instance type's RAM (up to 64 devices). Each slot accepts either a Disk or Volume via `disk_id` or `volume_id`. Referenced with an index (e.g. `sda.0.disk_id`).
+* `sda` ... `sdbl` - (Optional, Block) Device slots for attaching disks and volumes (named `sda`-`sdz`, `sdaa`-`sdaz`, `sdba`-`sdbl`). The maximum number of available devices is determined by the instance type's RAM (up to 64 devices). Each slot accepts either a Disk or Volume via `disk_id` or `volume_id`. Referenced with an index (e.g. `sda[0].disk_id`).
 
   * `volume_id` - (Optional) The Volume ID to map to this `device` slot.
 
@@ -246,9 +246,9 @@ The following arguments are available in an interface:
 
 * `primary` - (Optional) Whether the interface is the primary interface that should have the default route for this Linode. This field is only allowed for interfaces with the `public` or `vpc` purpose.
 
-* [`ipv4`](#ipv4) - (Optional, Block) The IPv4 configuration of the VPC interface. Referenced with an index (e.g. `ipv4.0.vpc`). This field is currently only allowed for interfaces with the `vpc` purpose.
+* [`ipv4`](#ipv4) - (Optional, Block) The IPv4 configuration of the VPC interface. Referenced with an index (e.g. `ipv4[0].vpc`). This field is currently only allowed for interfaces with the `vpc` purpose.
 
-* [`ipv6`](#ipv6) - (Optional, Block) The IPv6 configuration of the VPC interface. Referenced with an index (e.g. `ipv6.0.is_public`). This field is currently only allowed for interfaces with the `vpc` purpose. NOTE: IPv6 VPCs may not yet be available to all users.
+* [`ipv6`](#ipv6) - (Optional, Block) The IPv6 configuration of the VPC interface. Referenced with an index (e.g. `ipv6[0].is_public`). This field is currently only allowed for interfaces with the `vpc` purpose. NOTE: IPv6 VPCs may not yet be available to all users.
 
 The following computed attribute is available in a VPC interface:
 

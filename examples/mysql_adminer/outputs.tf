@@ -7,9 +7,9 @@ output "mysql-user" {
 }
 
 output "mysql-vlan-ipv4" {
-  value = replace(linode_instance.mysql.interface.1.ipam_address, "/24", "")
+  value = replace(linode_instance.mysql.interface[1].ipam_address, "/24", "")
 }
 
 output "adminer-vlan-ipv4" {
-  value = replace(linode_instance.adminer.interface.1.ipam_address, "/24", "")
+  value = replace(linode_instance.adminer.interface[1].ipam_address, "/24", "")
 }

@@ -12,14 +12,14 @@ syntax, so the documentation for every nested field is tagged with the implement
 
 | Tag | Declaration | Reference |
 | --- | --- | --- |
-| **Block** | `field { ... }` | `field.0.subfield` |
-| **Block List** | `field { ... }` (repeated per entry) | `field.0.subfield` |
+| **Block** | `field { ... }` | `field[0].subfield` |
+| **Block List** | `field { ... }` (repeated per entry) | `field[0].subfield` |
 | **Block Set** | `field { ... }` (repeated per entry) | Not indexable, see [Referencing Sets](#referencing-sets) |
 | **Nested Attribute** | `field = { ... }` | `field.subfield` |
 | **Nested Attribute List** | `field = [{ ... }]` | `field[0].subfield` |
 | **Nested Attribute Set** | `field = [{ ... }]` | Not indexable, see [Referencing Sets](#referencing-sets) |
 | **Read-Only Object** | Not user-declarable | `field.subfield` |
-| **Read-Only Object List** | Not user-declarable | `field.0.subfield` |
+| **Read-Only Object List** | Not user-declarable | `field[0].subfield` |
 | **Read-Only Object Set** | Not user-declarable | Not indexable, see [Referencing Sets](#referencing-sets) |
 
 Read-only tags are used for computed fields that can only be referenced, never declared.
@@ -73,7 +73,7 @@ so they must be referenced through the `0` index:
 ```hcl
 # `metadata` is a Block
 output "user_data" {
-  value = linode_instance.example.metadata.0.user_data
+  value = linode_instance.example.metadata[0].user_data
 }
 ```
 

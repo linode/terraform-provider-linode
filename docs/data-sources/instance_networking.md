@@ -29,35 +29,35 @@ In addition to all arguments above, the following attributes are exported:
 
 **NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
 
-* [`ipv4`](#ipv4) - (Read-Only Object List) Information about this Linode’s IPv4 addresses. Referenced with an index (e.g. `ipv4.0.private`).
+* [`ipv4`](#ipv4) - (Read-Only Object List) Information about this Linode’s IPv4 addresses. Referenced with an index (e.g. `ipv4[0].private`).
 
-* [`ipv6`](#ipv6) - (Read-Only Object List) Information about this Linode’s IPv6 addresses. Referenced with an index (e.g. `ipv6.0.global`).
+* [`ipv6`](#ipv6) - (Read-Only Object List) Information about this Linode’s IPv6 addresses. Referenced with an index (e.g. `ipv6[0].global`).
 
 ### IPv4
 
 The following attributes are available for each Linode’s IPv4 addresses:
 
-* [`private`] (#private) - (Read-Only Object List) A list of private IP Address objects belonging to this Linode. Referenced with an index (e.g. `ipv4.0.private.0.address`).
+* [`private`] (#private) - (Read-Only Object List) A list of private IP Address objects belonging to this Linode. Referenced with an index (e.g. `ipv4[0].private[0].address`).
 
-* [`public`] (#public) - (Read-Only Object List) A list of public IP Address objects belonging to this Linode. Referenced with an index (e.g. `ipv4.0.public.0.address`).
+* [`public`] (#public) - (Read-Only Object List) A list of public IP Address objects belonging to this Linode. Referenced with an index (e.g. `ipv4[0].public[0].address`).
 
-* [`reserved`] (#reserved) - (Read-Only Object List) A list of reserved IP Address objects belonging to this Linode. Referenced with an index (e.g. `ipv4.0.reserved.0.address`).
+* [`reserved`] (#reserved) - (Read-Only Object List) A list of reserved IP Address objects belonging to this Linode. Referenced with an index (e.g. `ipv4[0].reserved[0].address`).
 
-* [`shared`] (#shared)- (Read-Only Object List) A list of shared IP Address objects assigned to this Linode. Referenced with an index (e.g. `ipv4.0.shared.0.address`).
+* [`shared`] (#shared)- (Read-Only Object List) A list of shared IP Address objects assigned to this Linode. Referenced with an index (e.g. `ipv4[0].shared[0].address`).
 
-* [`vpc`] (#vpc)- (Read-Only Object List) A list of VPC IP Address objects assigned to this Linode. Referenced with an index (e.g. `ipv4.0.vpc.0.address`).
+* [`vpc`] (#vpc)- (Read-Only Object List) A list of VPC IP Address objects assigned to this Linode. Referenced with an index (e.g. `ipv4[0].vpc[0].address`).
 
 ### IPv6
 
 The following attributes are available for each Linode’s IPv6 addresses:
 
-* [`global`] (#global) - (Read-Only Object List) An object representing an IPv6 pool. Referenced with an index (e.g. `ipv6.0.global.0.prefix`).
+* [`global`] (#global) - (Read-Only Object List) An object representing an IPv6 pool. Referenced with an index (e.g. `ipv6[0].global[0].prefix`).
 
-* [`link_local`] (#link_local) - (Read-Only Object) A link-local IPv6 address object that exists in Linode’s system. Referenced directly (e.g. `ipv6.0.link_local.address`).
+* [`link_local`] (#link_local) - (Read-Only Object) A link-local IPv6 address object that exists in Linode’s system. Referenced directly (e.g. `ipv6[0].link_local.address`).
 
-* [`slaac`] (#slaac) - (Read-Only Object) A SLAAC IPv6 address object that exists in Linode’s system. Referenced directly (e.g. `ipv6.0.slaac.address`).
+* [`slaac`] (#slaac) - (Read-Only Object) A SLAAC IPv6 address object that exists in Linode’s system. Referenced directly (e.g. `ipv6[0].slaac.address`).
 
-* [`vpc`] (#ipv6-vpc) - (Read-Only Object List) A list of VPC IPv6 Address objects assigned to this Linode. Referenced with an index (e.g. `ipv6.0.vpc.0.address`).
+* [`vpc`] (#ipv6-vpc) - (Read-Only Object List) A list of VPC IPv6 Address objects assigned to this Linode. Referenced with an index (e.g. `ipv6[0].vpc[0].address`).
 
 ### Private
 
@@ -65,7 +65,7 @@ A list of private IP Address objects belonging to this Linode.
 
 * `address` - The private IPv4 address.
 
-* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity. Referenced directly (e.g. `ipv4.0.private.0.assigned_entity.id`).
+* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity. Referenced directly (e.g. `ipv4[0].private[0].assigned_entity.id`).
   * `id` - The ID of the entity.
   * `label` - The label of the entity.
   * `type` - The type of the entity.
@@ -93,7 +93,7 @@ A list of private IP Address objects belonging to this Linode.
 
 * `type` - The type of address this is.
 
-* `vpc_nat_1_1` - (Read-Only Object) IPv4 address configured as a 1:1 NAT for this Interface. Referenced directly (e.g. `ipv4.0.private.0.vpc_nat_1_1.address`).
+* `vpc_nat_1_1` - (Read-Only Object) IPv4 address configured as a 1:1 NAT for this Interface. Referenced directly (e.g. `ipv4[0].private[0].vpc_nat_1_1.address`).
   * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
   * `subnet_id` - The `id` of the VPC Subnet for this Interface.
   * `vpc_id` - The `id` of the VPC configured for this Interface.
@@ -126,13 +126,13 @@ A list of public IP Address objects belonging to this Linode.
 
 * `type` - The type of address this is.
 
-* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity. Referenced directly (e.g. `ipv4.0.public.0.assigned_entity.id`).
+* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity. Referenced directly (e.g. `ipv4[0].public[0].assigned_entity.id`).
   * `id` - The ID of the entity.
   * `label` - The label of the entity.
   * `type` - The type of the entity.
   * `url` - The URL of the entity.
 
-* `vpc_nat_1_1` - (Read-Only Object) IPv4 address configured as a 1:1 NAT for this Interface. Referenced directly (e.g. `ipv4.0.public.0.vpc_nat_1_1.address`).
+* `vpc_nat_1_1` - (Read-Only Object) IPv4 address configured as a 1:1 NAT for this Interface. Referenced directly (e.g. `ipv4[0].public[0].vpc_nat_1_1.address`).
   * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
   * `subnet_id` - The `id` of the VPC Subnet for this Interface.
   * `vpc_id` - The `id` of the VPC configured for this Interface.
@@ -143,7 +143,7 @@ A list of reserved IP Address objects belonging to this Linode.
 
 * `address` - The IP address.
 
-* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity. Referenced directly (e.g. `ipv4.0.reserved.0.assigned_entity.id`).
+* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity. Referenced directly (e.g. `ipv4[0].reserved[0].assigned_entity.id`).
   * `id` - The ID of the entity.
   * `label` - The label of the entity.
   * `type` - The type of the entity.
@@ -171,7 +171,7 @@ A list of reserved IP Address objects belonging to this Linode.
 
 * `type` - The type of address this is.
 
-* `vpc_nat_1_1` - (Read-Only Object) IPv4 address configured as a 1:1 NAT for this Interface. Referenced directly (e.g. `ipv4.0.reserved.0.vpc_nat_1_1.address`).
+* `vpc_nat_1_1` - (Read-Only Object) IPv4 address configured as a 1:1 NAT for this Interface. Referenced directly (e.g. `ipv4[0].reserved[0].vpc_nat_1_1.address`).
   * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
   * `subnet_id` - The `id` of the VPC Subnet for this Interface.
   * `vpc_id` - The `id` of the VPC configured for this Interface.
@@ -182,7 +182,7 @@ A list of shared IP Address objects assigned to this Linode.
 
 * `address` - The IP address.
 
-* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity. Referenced directly (e.g. `ipv4.0.shared.0.assigned_entity.id`).
+* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity. Referenced directly (e.g. `ipv4[0].shared[0].assigned_entity.id`).
   * `id` - The ID of the entity.
   * `label` - The label of the entity.
   * `type` - The type of the entity.
@@ -210,7 +210,7 @@ A list of shared IP Address objects assigned to this Linode.
 
 * `type` - The type of address this is.
 
-* `vpc_nat_1_1` - (Read-Only Object) IPv4 address configured as a 1:1 NAT for this Interface. Referenced directly (e.g. `ipv4.0.shared.0.vpc_nat_1_1.address`).
+* `vpc_nat_1_1` - (Read-Only Object) IPv4 address configured as a 1:1 NAT for this Interface. Referenced directly (e.g. `ipv4[0].shared[0].vpc_nat_1_1.address`).
   * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
   * `subnet_id` - The `id` of the VPC Subnet for this Interface.
   * `vpc_id` - The `id` of the VPC configured for this Interface.
@@ -249,7 +249,7 @@ A list of VPC IP Address objects assigned to this Linode.
 
 * `ipv6_is_public` - Whether the VPC IPv6 interface has public reachability.
 
-* `ipv6_addresses` - (Read-Only Object List) A list of IPv6 addresses associated with this VPC interface. Referenced with an index (e.g. `ipv4.0.vpc.0.ipv6_addresses.0.slaac_address`).
+* `ipv6_addresses` - (Read-Only Object List) A list of IPv6 addresses associated with this VPC interface. Referenced with an index (e.g. `ipv4[0].vpc[0].ipv6_addresses[0].slaac_address`).
   * `slaac_address` - The specific address within the prefix that the interface is expected to autoconfigure through SLAAC.
 
 ### Global
@@ -270,7 +270,7 @@ A link-local IPv6 address that exists in Linode’s system.
 
 * `address` - The IPv6 link-local address.
 
-* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity. Referenced directly (e.g. `ipv6.0.link_local.assigned_entity.id`).
+* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity. Referenced directly (e.g. `ipv6[0].link_local.assigned_entity.id`).
   * `id` - The ID of the entity.
   * `label` - The label of the entity.
   * `type` - The type of the entity.
@@ -298,7 +298,7 @@ A link-local IPv6 address that exists in Linode’s system.
 
 * `type` - The type of address this is.
 
-* `vpc_nat_1_1` - (Read-Only Object) IPv4 address configured as a 1:1 NAT for this Interface. Referenced directly (e.g. `ipv6.0.link_local.vpc_nat_1_1.address`).
+* `vpc_nat_1_1` - (Read-Only Object) IPv4 address configured as a 1:1 NAT for this Interface. Referenced directly (e.g. `ipv6[0].link_local.vpc_nat_1_1.address`).
   * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
   * `subnet_id` - The `id` of the VPC Subnet for this Interface.
   * `vpc_id` - The `id` of the VPC configured for this Interface.
@@ -309,7 +309,7 @@ A SLAAC IPv6 address object that exists in Linode’s system.
 
 * `address` - The address.
 
-* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity. Referenced directly (e.g. `ipv6.0.slaac.assigned_entity.id`).
+* `assigned_entity` - (Read-Only Object) The entity this IP address has been assigned to. This is `null` if the address is not assigned to an entity. Referenced directly (e.g. `ipv6[0].slaac.assigned_entity.id`).
   * `id` - The ID of the entity.
   * `label` - The label of the entity.
   * `type` - The type of the entity.
@@ -337,7 +337,7 @@ A SLAAC IPv6 address object that exists in Linode’s system.
 
 * `type` - The type of address this is.
 
-* `vpc_nat_1_1` - (Read-Only Object) IPv4 address configured as a 1:1 NAT for this Interface. Referenced directly (e.g. `ipv6.0.slaac.vpc_nat_1_1.address`).
+* `vpc_nat_1_1` - (Read-Only Object) IPv4 address configured as a 1:1 NAT for this Interface. Referenced directly (e.g. `ipv6[0].slaac.vpc_nat_1_1.address`).
   * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
   * `subnet_id` - The `id` of the VPC Subnet for this Interface.
   * `vpc_id` - The `id` of the VPC configured for this Interface.

@@ -66,13 +66,13 @@ Each LKE type will be stored in the `types` attribute and will export the follow
 
 * `label` - The Kubernetes type label is for display purposes only.
 
-* `price` - (Read-Only Object List) Pricing information for this LKE type. Referenced with an index (e.g. `price.0.hourly`).
+* `price` - (Read-Only Object List) Pricing information for this LKE type. Referenced with an index (e.g. `price[0].hourly`).
 
-* `price.0.hourly` -  Cost (in US dollars) per hour.
+* `price[0].hourly` -  Cost (in US dollars) per hour.
 
-* `price.0.monthly` - Cost (in US dollars) per month.
+* `price[0].monthly` - Cost (in US dollars) per month.
 
-* `region_prices` - (Read-Only Object List) Region-specific pricing information for this LKE type. Referenced with an index (e.g. `region_prices.0.id`).
+* `region_prices` - (Read-Only Object List) Region-specific pricing information for this LKE type. Referenced with an index (e.g. `region_prices[0].id`).
 
 * `region_prices.*.id` - The Region ID for these prices.
 

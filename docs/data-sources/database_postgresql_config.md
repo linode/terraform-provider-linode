@@ -23,15 +23,15 @@ The `linode_database_postgresql_config` data source exports the following attrib
 
 **NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
 
-* [`pg_stat_monitor_enable`](#pg_stat_monitor_enable) - (Read-Only Object List) Enable the pg_stat_monitor extension. Enabling this extension will cause the cluster to be restarted.When this extension is enabled, pg_stat_statements results for utility commands are unreliable. Referenced with an index (e.g. `pg_stat_monitor_enable.0.description`).
+* [`pg_stat_monitor_enable`](#pg_stat_monitor_enable) - (Read-Only Object List) Enable the pg_stat_monitor extension. Enabling this extension will cause the cluster to be restarted.When this extension is enabled, pg_stat_statements results for utility commands are unreliable. Referenced with an index (e.g. `pg_stat_monitor_enable[0].description`).
 
-* [`pglookout`](#pglookout) - (Read-Only Object List) System-wide settings for pglookout. Referenced with an index (e.g. `pglookout.0.max_failover_replication_time_lag`).
+* [`pglookout`](#pglookout) - (Read-Only Object List) System-wide settings for pglookout. Referenced with an index (e.g. `pglookout[0].max_failover_replication_time_lag`).
 
-* [`shared_buffers_percentage`](#shared_buffers_percentage) - (Read-Only Object List) Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value. Referenced with an index (e.g. `shared_buffers_percentage.0.description`).
+* [`shared_buffers_percentage`](#shared_buffers_percentage) - (Read-Only Object List) Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value. Referenced with an index (e.g. `shared_buffers_percentage[0].description`).
 
-* [`work_mem`](#work_mem) - (Read-Only Object List) Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB). Referenced with an index (e.g. `work_mem.0.description`).
+* [`work_mem`](#work_mem) - (Read-Only Object List) Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB). Referenced with an index (e.g. `work_mem[0].description`).
 
-* [`pg`](#pg) - (Read-Only Object List) PostgreSQL configuration settings. Referenced with an index (e.g. `pg.0.autovacuum_analyze_scale_factor`).
+* [`pg`](#pg) - (Read-Only Object List) PostgreSQL configuration settings. Referenced with an index (e.g. `pg[0].autovacuum_analyze_scale_factor`).
 
 ## pg_stat_monitor_enable
 

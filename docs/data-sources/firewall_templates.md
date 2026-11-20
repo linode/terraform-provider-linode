@@ -60,9 +60,9 @@ The following attributes are exported:
 
 * `templates` - A list of firewall templates, where each template includes:
   * `slug` - The slug of the firewall template.
-  * `inbound` - (Read-Only Object List) A list of firewall rules specifying allowed inbound network traffic. Referenced with an index (e.g. `inbound.0.action`).
+  * `inbound` - (Read-Only Object List) A list of firewall rules specifying allowed inbound network traffic. Referenced with an index (e.g. `inbound[0].action`).
   * `inbound_policy` - The default behavior for inbound traffic.
-  * `outbound` - (Read-Only Object List) A list of firewall rules specifying allowed outbound network traffic. Referenced with an index (e.g. `outbound.0.action`).
+  * `outbound` - (Read-Only Object List) A list of firewall rules specifying allowed outbound network traffic. Referenced with an index (e.g. `outbound[0].action`).
   * `outbound_policy` - The default behavior for outbound traffic.
 
 ## Filterable Fields

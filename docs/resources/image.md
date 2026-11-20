@@ -25,7 +25,7 @@ resource "linode_instance" "foo" {
 resource "linode_image" "bar" {
     label = "foo-sda-image"
     description = "Image taken from foo"
-    disk_id = linode_instance.foo.disk.0.id
+    disk_id = linode_instance.foo.disk[0].id
     linode_id = linode_instance.foo.id
     tags = ["image-tag", "test"]
 }
@@ -145,7 +145,7 @@ This resource exports the following attributes:
 
 * `total_size` - The total size of the image in all available regions.
 
-* `replications` - (Read-Only Object List) A list of image replications region and corresponding status. Referenced with an index (e.g. `replications.0.region`).
+* `replications` - (Read-Only Object List) A list of image replications region and corresponding status. Referenced with an index (e.g. `replications[0].region`).
   * `region` - The region of an image replica.
   * `status` - The status of an image replica.
 

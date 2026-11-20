@@ -22,7 +22,7 @@ data "linode_lke_clusters" "specific" {
 }
 
 output "lke_cluster" {
-  value = data.linode_lke_clusters.specific.lke_clusters.0.id
+  value = data.linode_lke_clusters.specific.lke_clusters[0].id
 }
 ```
 

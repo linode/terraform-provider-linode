@@ -70,23 +70,23 @@ Each Linode Instance type will be stored in the `types` attribute and will expor
 
 * `disk` - The Disk size, in MB, of the Linode Type.
 
-* `price` - (Read-Only Object List) The base cost for this Linode Type. Referenced with an index (e.g. `price.0.hourly`).
+* `price` - (Read-Only Object List) The base cost for this Linode Type. Referenced with an index (e.g. `price[0].hourly`).
 
-* `price.0.hourly` -  Cost (in US dollars) per hour.
+* `price[0].hourly` -  Cost (in US dollars) per hour.
 
-* `price.0.monthly` - Cost (in US dollars) per month.
+* `price[0].monthly` - Cost (in US dollars) per month.
 
-* `addons` - (Read-Only Object List) Add-on information for this Linode Type. Referenced with an index (e.g. `addons.0.backups`).
+* `addons` - (Read-Only Object List) Add-on information for this Linode Type. Referenced with an index (e.g. `addons[0].backups`).
 
-* `addons.0.backups` - (Read-Only Object List) Backup add-on pricing for this Linode Type. Referenced with an index (e.g. `addons.0.backups.0.price`).
+* `addons[0].backups` - (Read-Only Object List) Backup add-on pricing for this Linode Type. Referenced with an index (e.g. `addons[0].backups[0].price`).
 
-* `addons.0.backups.0.price` - (Read-Only Object List) Backup add-on costs for this Linode Type. Referenced with an index (e.g. `addons.0.backups.0.price.0.hourly`).
+* `addons[0].backups[0].price` - (Read-Only Object List) Backup add-on costs for this Linode Type. Referenced with an index (e.g. `addons[0].backups[0].price[0].hourly`).
 
-* `addons.0.backups.0.price.0.hourly` - The cost (in US dollars) per hour to add Backups service.
+* `addons[0].backups[0].price[0].hourly` - The cost (in US dollars) per hour to add Backups service.
 
-* `addons.0.backups.0.price.0.monthly` - The cost (in US dollars) per month to add Backups service.
+* `addons[0].backups[0].price[0].monthly` - The cost (in US dollars) per month to add Backups service.
 
-* `region_prices` - (Read-Only Object List) Region-specific pricing for this Linode Type. Referenced with an index (e.g. `region_prices.0.id`).
+* `region_prices` - (Read-Only Object List) Region-specific pricing for this Linode Type. Referenced with an index (e.g. `region_prices[0].id`).
 
 * `region_prices.*.id` - The name of the Linode Region this entry corresponds to.
 

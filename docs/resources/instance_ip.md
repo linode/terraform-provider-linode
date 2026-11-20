@@ -59,7 +59,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `type` - The type of IP address. (`ipv4`, `ipv6`, `ipv6/pool`, `ipv6/range`)
 
-* `vpc_nat_1_1` - (Read-Only Object List) Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet. Referenced with an index (e.g. `vpc_nat_1_1.0.address`).
+* `vpc_nat_1_1` - (Read-Only Object List) Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet. Referenced with an index (e.g. `vpc_nat_1_1[0].address`).
 
   * `address` - The VPC IPv4 address this address is NATted with.
 

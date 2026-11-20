@@ -23,7 +23,7 @@ data "linode_nodebalancer_configs" "filter_nb_configs" {
 }
 
 output "nodebalancer_config_id" {
-  value = data.linode_nodebalancer_configs.filter_nb_configs.nodebalancer_configs.0.id
+  value = data.linode_nodebalancer_configs.filter_nb_configs.nodebalancer_configs[0].id
 }
 ```
 
@@ -97,7 +97,7 @@ Each Linode NodeBalancer Config will be stored in the `nodebalancer_configs` att
 
 * `ssl_fingerprint` - The read-only fingerprint automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.
 
-* [`node_status`](#node_status) - (Read-Only Object List) The status of the attached nodes. Referenced with an index (e.g. `node_status.0.up`).
+* [`node_status`](#node_status) - (Read-Only Object List) The status of the attached nodes. Referenced with an index (e.g. `node_status[0].up`).
 
 ### node_status
 

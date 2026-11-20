@@ -66,13 +66,13 @@ Each Linode Network Transfer Price will export the following attributes:
 
 * `label` - The Network Transfer Price label is for display purposes only.
 
-* `price` - (Read-Only Object List) The base cost for this Network Transfer Price. Referenced with an index (e.g. `price.0.hourly`).
+* `price` - (Read-Only Object List) The base cost for this Network Transfer Price. Referenced with an index (e.g. `price[0].hourly`).
 
-* `price.0.hourly` -  Cost (in US dollars) per hour.
+* `price[0].hourly` -  Cost (in US dollars) per hour.
 
-* `price.0.monthly` - Cost (in US dollars) per month.
+* `price[0].monthly` - Cost (in US dollars) per month.
 
-* `region_prices` - (Read-Only Object List) Region-specific pricing for this Network Transfer Price. Referenced with an index (e.g. `region_prices.0.id`).
+* `region_prices` - (Read-Only Object List) Region-specific pricing for this Network Transfer Price. Referenced with an index (e.g. `region_prices[0].id`).
 
 * `region_prices.*.id` - The Region ID for these prices.
 

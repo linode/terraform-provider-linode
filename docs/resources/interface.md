@@ -168,7 +168,7 @@ resource "linode_instance_config" "my-config" {
 resource "linode_instance_disk" "boot" {
   label     = "boot"
   linode_id = linode_instance.my-instance.id
-  size      = linode_instance.my-instance.specs.0.disk
+  size      = linode_instance.my-instance.specs[0].disk
 
   image     = "linode/debian12"
   root_pass = "this-is-NOT-a-safe-password"

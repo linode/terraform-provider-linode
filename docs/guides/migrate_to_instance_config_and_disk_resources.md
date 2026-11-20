@@ -248,11 +248,11 @@ import {
 
 import {
   to = linode_instance_disk.test_imported_disk
-  id = join(",", [linode_instance.test_instance.id, linode_instance.test_instance.disk.1.id])
+  id = join(",", [linode_instance.test_instance.id, linode_instance.test_instance.disk[1].id])
 }
 
 import {
   to = linode_instance_disk.test_imported_disk_swap
-  id = join(",", [linode_instance.test_instance.id, linode_instance.test_instance.disk.0.id])
+  id = join(",", [linode_instance.test_instance.id, linode_instance.test_instance.disk[0].id])
 }
 ```

@@ -70,7 +70,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `ssl_fingerprint` - The read-only fingerprint automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.
 
-* [`node_status`](#node_status) - (Read-Only Object List) The status of the attached nodes. Referenced with an index (e.g. `node_status.0.down`).
+* [`node_status`](#node_status) - (Read-Only Object List) The status of the attached nodes. Referenced with an index (e.g. `node_status[0].down`).
 
 ### node_status
 

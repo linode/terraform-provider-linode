@@ -65,9 +65,9 @@ In addition to all arguments above, the following attributes are exported:
 
 * `reserved` - Whether this IP address is reserved. Always `true` for this resource.
 
-* `vpc_nat_1_1` - (Read-Only Object List) Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet. Referenced with an index (e.g. `vpc_nat_1_1.0.address`).
+* `vpc_nat_1_1` - (Read-Only Object List) Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet. Referenced with an index (e.g. `vpc_nat_1_1[0].address`).
 
-* `assigned_entity` - (Read-Only Object List) The entity this reserved IP address is currently assigned to, if any. Referenced with an index (e.g. `assigned_entity.0.id`). Contains:
+* `assigned_entity` - (Read-Only Object List) The entity this reserved IP address is currently assigned to, if any. Referenced with an index (e.g. `assigned_entity[0].id`). Contains:
 
   * `id` - The ID of the assigned entity.
 

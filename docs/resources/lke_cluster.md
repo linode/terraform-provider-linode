@@ -287,7 +287,7 @@ The following arguments are supported:
 
 * [`pool`](#pool) - (Required, Block List) The Node Pool specifications for the Kubernetes cluster. At least one Node Pool is required.
 
-* [`control_plane`](#control_plane) - (Optional, Block) Defines settings for the Kubernetes Control Plane. Referenced with an index (e.g. `control_plane.0.high_availability`).
+* [`control_plane`](#control_plane) - (Optional, Block) Defines settings for the Kubernetes Control Plane. Referenced with an index (e.g. `control_plane[0].high_availability`).
 
 * `tags` - (Optional) An array of tags applied to the Kubernetes cluster. Tags are case-insensitive and are for organizational purposes only.
 
@@ -297,11 +297,11 @@ The following arguments are supported:
 
 * `subnet_id` - (Optional) The ID of the VPC subnet to use for the Kubernetes cluster. This subnet must be dual stack (IPv4 and IPv6 should both be enabled). **NOTE: This field may not be available for all users and is only accepted and populated when api_version is set to `v4beta`.**
 
-* `vpc_id` - (Optional) The ID of the VPC to use for the Kubernetes cluster. If `vpc_id` is set without `subnet_id`, the API allocates a workload subnet for the cluster from the `10.0.0.0/8` range of the VPC: a `/13` for the default `native` routing mode, or a `/19` when `networking.0.routing_mode` is `vxlan`. In this case the VPC's IPv4 ranges must include `10.0.0.0/8`, otherwise the cluster creation is rejected. A VPC created without custom [`ipv4`](vpc.md#ipv4) ranges already includes `10.0.0.0/8`. This requirement does not apply when `subnet_id` is set.
+* `vpc_id` - (Optional) The ID of the VPC to use for the Kubernetes cluster. If `vpc_id` is set without `subnet_id`, the API allocates a workload subnet for the cluster from the `10.0.0.0/8` range of the VPC: a `/13` for the default `native` routing mode, or a `/19` when `networking[0].routing_mode` is `vxlan`. In this case the VPC's IPv4 ranges must include `10.0.0.0/8`, otherwise the cluster creation is rejected. A VPC created without custom [`ipv4`](vpc.md#ipv4) ranges already includes `10.0.0.0/8`. This requirement does not apply when `subnet_id` is set.
 
 * `stack_type` - (Optional) The networking stack type of the Kubernetes cluster.
 
-* [`networking`](#networking) - (Optional, Block) The pod network routing mode and network configuration of an LKE Enterprise cluster. Changing any of these values will cause the cluster to be replaced. Referenced with an index (e.g. `networking.0.routing_mode`). **NOTE: This field may not be available to all users and is only accepted and populated when api_version is set to `v4beta`.**
+* [`networking`](#networking) - (Optional, Block) The pod network routing mode and network configuration of an LKE Enterprise cluster. Changing any of these values will cause the cluster to be replaced. Referenced with an index (e.g. `networking[0].routing_mode`). **NOTE: This field may not be available to all users and is only accepted and populated when api_version is set to `v4beta`.**
 
 ### pool
 
@@ -331,7 +331,7 @@ The following arguments are supported in the `pool` specification block:
 
   * `value` - (Required) The Kubernetes taint value.
 
-* [`autoscaler`](#autoscaler) - (Optional, Block) If defined, an autoscaler will be enabled with the given configuration. Referenced with an index (e.g. `autoscaler.0.min`).
+* [`autoscaler`](#autoscaler) - (Optional, Block) If defined, an autoscaler will be enabled with the given configuration. Referenced with an index (e.g. `autoscaler[0].min`).
 
 * `disk_encryption` - (Optional) The disk encryption policy for nodes in this pool. Must be `enabled` or `disabled`. If omitted, the account default encryption policy is applied. Changing this value will cause the pool to be replaced (deleted and recreated).
 
@@ -373,7 +373,7 @@ The following arguments are supported in the `control_plane` specification block
 
 * `audit_logs_enabled` - (Optional) Enables audit logs on the cluster's control plane.
 
-* [`acl`](#acl) - (Optional, Block) Defines the ACL configuration for an LKE cluster's control plane. Referenced with an index (e.g. `acl.0.enabled`).
+* [`acl`](#acl) - (Optional, Block) Defines the ACL configuration for an LKE cluster's control plane. Referenced with an index (e.g. `acl[0].enabled`).
 
 ### acl
 
@@ -417,7 +417,7 @@ In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the Node Pool.
 
-  * [`nodes`](#nodes) - (Read-Only Object List) The nodes in the Node Pool. Referenced with an index (e.g. `nodes.0.id`).
+  * [`nodes`](#nodes) - (Read-Only Object List) The nodes in the Node Pool. Referenced with an index (e.g. `nodes[0].id`).
 
 ### nodes
 
