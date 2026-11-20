@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_nfs\_space
 
 Provides information about a Linode NFS Space.
+For more information, see the [Linode APIv4 docs](TBD).
 
 ~> **Beta** This data source is in beta and requires the provider `api_version` to be set to `v4beta`.
 

@@ -52,7 +52,21 @@ func sweep(prefix string) error {
 	return nil
 }
 
-func TestAccResourceNFSSpace_basic(t *testing.T) {
+func TestSmokeTests_nfsspace(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccResourceNFSSpace_basic_smoke", TestAccResourceNFSSpace_basic_smoke},
+		{"TestAccDataSourceNFSSpace_basic_smoke", TestAccDataSourceNFSSpace_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.test)
+	}
+}
+
+func TestAccResourceNFSSpace_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	label := acctest.RandomWithPrefix("tf-test")
@@ -73,6 +87,12 @@ func TestAccResourceNFSSpace_basic(t *testing.T) {
 						tfjsonpath.New("max_capacity_bytes"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resourceName,
 						tfjsonpath.New("used_capacity_bytes"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName,
+						tfjsonpath.New("created"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName,
+						tfjsonpath.New("updated"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName,
+						tfjsonpath.New("tags"), knownvalue.SetSizeExact(0)),
 				},
 			},
 			{

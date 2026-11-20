@@ -10,23 +10,26 @@ type TemplateData struct {
 	Label            string
 	Region           string
 	MaxCapacityBytes int64
+	MaxFileCount     int64
 }
 
-func Basic(t testing.TB, label, region string, maxCapacityBytes int64) string {
+func Basic(t testing.TB, label, region string, maxCapacityBytes, maxFileCount int64) string {
 	return acceptance.ExecuteTemplate(t,
 		"nfs_filesystem_basic", TemplateData{
 			Label:            label,
 			Region:           region,
 			MaxCapacityBytes: maxCapacityBytes,
+			MaxFileCount:     maxFileCount,
 		})
 }
 
-func Updates(t testing.TB, label, region string, maxCapacityBytes int64) string {
+func Updates(t testing.TB, label, region string, maxCapacityBytes, maxFileCount int64) string {
 	return acceptance.ExecuteTemplate(t,
 		"nfs_filesystem_updates", TemplateData{
 			Label:            label,
 			Region:           region,
 			MaxCapacityBytes: maxCapacityBytes,
+			MaxFileCount:     maxFileCount,
 		})
 }
 

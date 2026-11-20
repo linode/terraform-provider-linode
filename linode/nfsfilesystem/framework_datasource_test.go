@@ -10,13 +10,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v4/linode/nfsfilesystem/tmpl"
 )
 
 const dataSourceName = "data.linode_nfs_filesystem.foobar"
 
-func TestAccDataSourceNFSFilesystem_basic(t *testing.T) {
+func TestAccDataSourceNFSFilesystem_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	label := acctest.RandomWithPrefix("tf-test")
@@ -37,6 +38,18 @@ func TestAccDataSourceNFSFilesystem_basic(t *testing.T) {
 						tfjsonpath.New("max_capacity_bytes"), knownvalue.Int64Exact(minCapacityBytes)),
 					statecheck.ExpectKnownValue(dataSourceName,
 						tfjsonpath.New("space_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataSourceName,
+						tfjsonpath.New("protocol_versions"), knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.StringExact(string(linodego.NFSProtocolVersionV4)),
+						})),
+					statecheck.ExpectKnownValue(dataSourceName,
+						tfjsonpath.New("mount_target_ips"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataSourceName,
+						tfjsonpath.New("created"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataSourceName,
+						tfjsonpath.New("updated"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataSourceName,
+						tfjsonpath.New("tags"), knownvalue.SetSizeExact(0)),
 				},
 			},
 		},

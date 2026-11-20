@@ -25,6 +25,8 @@ const resourceName = "linode_nfs_filesystem.foobar"
 // minCapacityBytes is the minimum provisionable filesystem capacity (1 GiB).
 const minCapacityBytes int64 = 1073741824
 
+const testMaxFileCount int64 = 1000000
+
 func init() {
 	resource.AddTestSweepers("linode_nfs_filesystem", &resource.Sweeper{
 		Name: "linode_nfs_filesystem",
@@ -62,7 +64,21 @@ func sweep(prefix string) error {
 	return nil
 }
 
-func TestAccResourceNFSFilesystem_basic(t *testing.T) {
+func TestSmokeTests_nfsfilesystem(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccResourceNFSFilesystem_basic_smoke", TestAccResourceNFSFilesystem_basic_smoke},
+		{"TestAccDataSourceNFSFilesystem_basic_smoke", TestAccDataSourceNFSFilesystem_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.test)
+	}
+}
+
+func TestAccResourceNFSFilesystem_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	label := acctest.RandomWithPrefix("tf-test")
@@ -74,7 +90,7 @@ func TestAccResourceNFSFilesystem_basic(t *testing.T) {
 		CheckDestroy:             checkNFSFilesystemDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, testRegion, minCapacityBytes),
+				Config: tmpl.Basic(t, label, testRegion, minCapacityBytes, 0),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName,
 						tfjsonpath.New("label"), knownvalue.StringExact(label)),
@@ -85,15 +101,30 @@ func TestAccResourceNFSFilesystem_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName,
 						tfjsonpath.New("max_capacity_bytes"), knownvalue.Int64Exact(minCapacityBytes)),
 					statecheck.ExpectKnownValue(resourceName,
+						tfjsonpath.New("max_file_count"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName,
 						tfjsonpath.New("space_id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resourceName,
 						tfjsonpath.New("mount_target_fqdn"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName,
+						tfjsonpath.New("protocol_versions"), knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.StringExact(string(linodego.NFSProtocolVersionV4)),
+						})),
+					statecheck.ExpectKnownValue(resourceName,
+						tfjsonpath.New("mount_target_ips"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName,
+						tfjsonpath.New("created"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName,
+						tfjsonpath.New("updated"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName,
+						tfjsonpath.New("tags"), knownvalue.SetSizeExact(0)),
 				},
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"stats.collected_at"},
 			},
 		},
 	})
@@ -112,22 +143,40 @@ func TestAccResourceNFSFilesystem_update(t *testing.T) {
 		CheckDestroy:             checkNFSFilesystemDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, testRegion, minCapacityBytes),
+				Config: tmpl.Basic(t, label, testRegion, minCapacityBytes, testMaxFileCount),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName,
 						tfjsonpath.New("label"), knownvalue.StringExact(label)),
+					statecheck.ExpectKnownValue(resourceName,
+						tfjsonpath.New("max_file_count"), knownvalue.Int64Exact(testMaxFileCount)),
 				},
 			},
 			{
-				Config: tmpl.Updates(t, newLabel, testRegion, minCapacityBytes*2),
+				Config: tmpl.Updates(t, newLabel, testRegion, minCapacityBytes*2, testMaxFileCount*2),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName,
 						tfjsonpath.New("label"), knownvalue.StringExact(newLabel)),
 					statecheck.ExpectKnownValue(resourceName,
 						tfjsonpath.New("max_capacity_bytes"), knownvalue.Int64Exact(minCapacityBytes*2)),
 					statecheck.ExpectKnownValue(resourceName,
+						tfjsonpath.New("max_file_count"), knownvalue.Int64Exact(testMaxFileCount*2)),
+					statecheck.ExpectKnownValue(resourceName,
 						tfjsonpath.New("tags"), knownvalue.SetSizeExact(2)),
 				},
+			},
+			{
+				// Removing max_file_count sets it to null (unlimited), which the API treats as an expansion.
+				Config: tmpl.Updates(t, newLabel, testRegion, minCapacityBytes*2, 0),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName,
+						tfjsonpath.New("max_file_count"), knownvalue.Null()),
+				},
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"stats"},
 			},
 		},
 	})

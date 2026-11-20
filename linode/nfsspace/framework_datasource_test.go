@@ -16,7 +16,7 @@ import (
 
 const dataSourceName = "data.linode_nfs_space.foobar"
 
-func TestAccDataSourceNFSSpace_basic(t *testing.T) {
+func TestAccDataSourceNFSSpace_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	label := acctest.RandomWithPrefix("tf-test")
@@ -34,6 +34,14 @@ func TestAccDataSourceNFSSpace_basic(t *testing.T) {
 						tfjsonpath.New("status"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(dataSourceName,
 						tfjsonpath.New("max_capacity_bytes"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataSourceName,
+						tfjsonpath.New("used_capacity_bytes"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataSourceName,
+						tfjsonpath.New("created"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataSourceName,
+						tfjsonpath.New("updated"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataSourceName,
+						tfjsonpath.New("tags"), knownvalue.SetSizeExact(0)),
 				},
 			},
 		},
