@@ -17,6 +17,8 @@ func DataList(t *testing.T, region string) string {
 	})
 }
 
-func DataFilterReserved(t *testing.T) string {
-	return acceptance.ExecuteTemplate(t, "networking_ip_data_filtered", nil)
+func DataFilterReserved(t *testing.T, region string) string {
+	return acceptance.ExecuteTemplate(t, "networking_ip_data_filtered", TemplateData{
+		Region: region,
+	})
 }

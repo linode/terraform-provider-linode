@@ -5,7 +5,7 @@ resource "linode_instance" "foobar" {
     label = "{{.InstLabel}}"
 
     type = "g6-nanode-1"
-    region = "us-east"
+    region = "{{.Region}}"
     booted = false
 }
 

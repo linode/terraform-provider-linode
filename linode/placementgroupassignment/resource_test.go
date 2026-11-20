@@ -3,6 +3,7 @@
 package placementgroupassignment_test
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
@@ -19,7 +20,15 @@ import (
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup}, "core")
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	region, err := acceptance.NewRegionSelector(context.Background(), client).
+		WithCapabilities(linodego.CapabilityLinodes, linodego.CapabilityPlacementGroup).
+		WithSiteType("core").
+		AvailableForAccount(context.Background(), linodego.CapabilityLinodes).
+		Random()
 	if err != nil {
 		log.Fatal(err)
 	}

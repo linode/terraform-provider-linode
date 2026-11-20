@@ -11,6 +11,7 @@ type TemplateData struct {
 	Email      string
 	Restricted bool
 	InstLabel  string
+	Region     string
 }
 
 func Basic(t testing.TB, username, email string, restricted bool) string {
@@ -30,12 +31,13 @@ func Grants(t testing.TB, username, email string) string {
 		})
 }
 
-func GrantsUpdate(t testing.TB, username, email, instance string) string {
+func GrantsUpdate(t testing.TB, username, email, instance, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"user_grants_update", TemplateData{
 			Username:  username,
 			Email:     email,
 			InstLabel: instance,
+			Region:    region,
 		})
 }
 
