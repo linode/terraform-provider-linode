@@ -2,7 +2,9 @@ package nfsquota
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -107,12 +109,22 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"max_capacity_bytes": schema.Int64Attribute{
-			Description: "The maximum capacity in bytes allowed by this quota.",
-			Required:    true,
+			Description: "The maximum capacity in bytes allowed by this quota. " +
+				"At least one of max_capacity_bytes or max_file_count must be specified.",
+			Optional: true,
+			Validators: []validator.Int64{
+				int64validator.AtLeast(1),
+				int64validator.AtLeastOneOf(path.MatchRoot("max_file_count")),
+			},
 		},
 		"max_file_count": schema.Int64Attribute{
-			Description: "The maximum number of files allowed by this quota.",
-			Required:    true,
+			Description: "The maximum number of files allowed by this quota. " +
+				"At least one of max_capacity_bytes or max_file_count must be specified.",
+			Optional: true,
+			Validators: []validator.Int64{
+				int64validator.AtLeast(1),
+				int64validator.AtLeastOneOf(path.MatchRoot("max_capacity_bytes")),
+			},
 		},
 		"is_root": schema.BoolAttribute{
 			Description: "Whether this quota applies to the root of the filesystem.",

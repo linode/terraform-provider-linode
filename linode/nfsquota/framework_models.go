@@ -105,9 +105,10 @@ func (m *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	m.Updated = helper.KeepOrUpdateValue(m.Updated, other.Updated, preserveKnown)
 	m.CollectedAt = helper.KeepOrUpdateValue(m.CollectedAt, other.CollectedAt, preserveKnown)
 
-	if m.UserGroupConfig == nil && other.UserGroupConfig != nil {
-		copied := *other.UserGroupConfig
-		m.UserGroupConfig = &copied
+	// user_group_config is never unknown in a plan, so the planned value
+	// (including null) is always authoritative and must not be overwritten.
+	if !preserveKnown {
+		m.UserGroupConfig = other.UserGroupConfig
 	}
 }
 
@@ -115,8 +116,8 @@ func (m *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 func (m *ResourceModel) ToCreateOptions() linodego.NFSQuotaCreateOptions {
 	opts := linodego.NFSQuotaCreateOptions{
 		Path:             m.Path.ValueString(),
-		MaxCapacityBytes: m.MaxCapacityBytes.ValueInt64(),
-		MaxFileCount:     m.MaxFileCount.ValueInt64(),
+		MaxCapacityBytes: m.MaxCapacityBytes.ValueInt64Pointer(),
+		MaxFileCount:     m.MaxFileCount.ValueInt64Pointer(),
 	}
 
 	if m.UserGroupConfig != nil {
@@ -180,13 +181,15 @@ func flattenUserGroupConfig(config *linodego.NFSUserGroupConfig) *UserGroupConfi
 		DefaultGroupLimit: flattenCapacityLimit(config.DefaultGroupLimit),
 	}
 
-	if config.UserLimits != nil {
+	// The API returns unset lists as [], which are flattened to null to match
+	// configurations that omit them.
+	if len(config.UserLimits) > 0 {
 		result.UserLimits = helper.MapSlice(config.UserLimits, flattenIdentifiedLimit)
 	}
-	if config.GroupLimits != nil {
+	if len(config.GroupLimits) > 0 {
 		result.GroupLimits = helper.MapSlice(config.GroupLimits, flattenIdentifiedLimit)
 	}
-	if config.UserGroupLimits != nil {
+	if len(config.UserGroupLimits) > 0 {
 		result.UserGroupLimits = helper.MapSlice(config.UserGroupLimits, flattenUserGroupCombinedLimit)
 	}
 
@@ -248,6 +251,39 @@ func (m *UserGroupConfigModel) toOptions() *linodego.NFSUserGroupConfigOptions {
 	}
 
 	return opts
+}
+
+// userGroupConfigUpdateOptions builds the user_group_config payload for an
+// update. A nil config is sent as an explicit null, which clears all user and
+// group limits. Lists missing from a non-nil config are sent as empty lists so
+// that the API removes previously configured entries.
+func userGroupConfigUpdateOptions(m *UserGroupConfigModel) **linodego.NFSUserGroupConfigOptions {
+	if m == nil {
+		return linodego.DoublePointerNull[linodego.NFSUserGroupConfigOptions]()
+	}
+
+	opts := m.toOptions()
+
+	if opts.UserLimits == nil {
+		opts.UserLimits = &[]linodego.NFSIdentifiedLimitOptions{}
+	}
+	if opts.GroupLimits == nil {
+		opts.GroupLimits = &[]linodego.NFSIdentifiedLimitOptions{}
+	}
+	if opts.UserGroupLimits == nil {
+		opts.UserGroupLimits = &[]linodego.NFSUserGroupCombinedLimitOptions{}
+	}
+
+	return &opts
+}
+
+// nullableInt64UpdateOption sends a null value as an explicit JSON null, which
+// removes the corresponding limit.
+func nullableInt64UpdateOption(v types.Int64) **int64 {
+	if v.IsNull() {
+		return linodego.DoublePointerNull[int64]()
+	}
+	return linodego.DoublePointer(v.ValueInt64())
 }
 
 func (m *CapacityLimitModel) toOptions() *linodego.NFSCapacityLimitOptions {

@@ -91,16 +91,26 @@ func (r *Resource) Create(
 		return
 	}
 
+	// Persist the quota before waiting so it remains tracked if the wait fails.
+	initialState := data
+	initialState.FlattenQuota(quota, true)
+	initialState.ID = types.StringValue(strconv.Itoa(quota.ID))
+	resp.Diagnostics.Append(resp.State.Set(ctx, &initialState)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	quotaID := quota.ID
 	quota, err = client.WaitForNFSQuotaStatus(
 		ctx,
 		spaceID,
 		filesystemID,
-		quota.ID,
+		quotaID,
 		linodego.NFSQuotaStatusActive,
 	)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Failed to wait for NFS Quota to become active.",
+			fmt.Sprintf("Failed to wait for NFS Quota %d to become active.", quotaID),
 			err.Error(),
 		)
 		return
@@ -188,19 +198,17 @@ func (r *Resource) Update(
 	shouldUpdate := false
 
 	if !state.MaxCapacityBytes.Equal(plan.MaxCapacityBytes) {
-		updateOpts.MaxCapacityBytes = plan.MaxCapacityBytes.ValueInt64Pointer()
+		updateOpts.MaxCapacityBytes = nullableInt64UpdateOption(plan.MaxCapacityBytes)
 		shouldUpdate = true
 	}
 
 	if !state.MaxFileCount.Equal(plan.MaxFileCount) {
-		updateOpts.MaxFileCount = plan.MaxFileCount.ValueInt64Pointer()
+		updateOpts.MaxFileCount = nullableInt64UpdateOption(plan.MaxFileCount)
 		shouldUpdate = true
 	}
 
 	if !userGroupConfigEqual(state.UserGroupConfig, plan.UserGroupConfig) {
-		if plan.UserGroupConfig != nil {
-			updateOpts.UserGroupConfig = plan.UserGroupConfig.toOptions()
-		}
+		updateOpts.UserGroupConfig = userGroupConfigUpdateOptions(plan.UserGroupConfig)
 		shouldUpdate = true
 	}
 

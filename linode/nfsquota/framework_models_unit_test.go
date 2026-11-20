@@ -135,8 +135,8 @@ func TestToCreateOptions(t *testing.T) {
 	opts := model.ToCreateOptions()
 
 	require.Equal(t, "/exports/create", opts.Path)
-	require.Equal(t, int64(2147483648), opts.MaxCapacityBytes)
-	require.Equal(t, int64(2000), opts.MaxFileCount)
+	require.Equal(t, int64(2147483648), *opts.MaxCapacityBytes)
+	require.Equal(t, int64(2000), *opts.MaxFileCount)
 	require.NotNil(t, opts.UserGroupConfig)
 	require.NotNil(t, opts.UserGroupConfig.DefaultUserLimit)
 	require.Equal(t, int64(1073741824), *opts.UserGroupConfig.DefaultUserLimit.MaxCapacityBytes)
@@ -163,4 +163,85 @@ func TestParseQuota(t *testing.T) {
 	require.Equal(t, "/exports/ds", model.Path.ValueString())
 	require.Equal(t, int64(2147483648), model.MaxCapacityBytes.ValueInt64())
 	require.Equal(t, "active", model.Status.ValueString())
+}
+
+func TestCopyFrom_preservesPlannedNullUserGroupConfig(t *testing.T) {
+	state := ResourceModel{
+		UserGroupConfig: &UserGroupConfigModel{
+			DefaultUserLimit: &CapacityLimitModel{
+				MaxCapacityBytes: types.Int64Value(1073741824),
+				MaxFileCount:     types.Int64Value(1000),
+			},
+		},
+	}
+
+	var plan ResourceModel
+	plan.CopyFrom(state, true)
+
+	require.Nil(t, plan.UserGroupConfig)
+}
+
+func TestToCreateOptions_omitsUnsetLimits(t *testing.T) {
+	model := ResourceModel{
+		Path:             types.StringValue("/exports/data"),
+		MaxCapacityBytes: types.Int64Null(),
+		MaxFileCount:     types.Int64Value(2000),
+	}
+
+	opts := model.ToCreateOptions()
+
+	require.Nil(t, opts.MaxCapacityBytes)
+	require.Equal(t, int64(2000), *opts.MaxFileCount)
+}
+
+func TestNullableInt64UpdateOption(t *testing.T) {
+	null := nullableInt64UpdateOption(types.Int64Null())
+	require.NotNil(t, null)
+	require.Nil(t, *null)
+
+	value := nullableInt64UpdateOption(types.Int64Value(42))
+	require.Equal(t, int64(42), **value)
+}
+
+func TestUserGroupConfigUpdateOptions_nilClearsConfig(t *testing.T) {
+	opts := userGroupConfigUpdateOptions(nil)
+
+	require.NotNil(t, opts)
+	require.Nil(t, *opts)
+}
+
+func TestUserGroupConfigUpdateOptions_emptiesOmittedLists(t *testing.T) {
+	opts := *userGroupConfigUpdateOptions(&UserGroupConfigModel{
+		UserLimits: []IdentifiedLimitModel{
+			{
+				IdentifierType: types.StringValue("uid"),
+				Identifier:     types.StringValue("1001"),
+				MaxFileCount:   types.Int64Value(500),
+			},
+		},
+	})
+
+	require.Len(t, *opts.UserLimits, 1)
+	require.Equal(t, "1001", (*opts.UserLimits)[0].Identifier)
+	require.Empty(t, *opts.GroupLimits)
+	require.Empty(t, *opts.UserGroupLimits)
+}
+
+func TestFlattenQuota_emptyListsAreNull(t *testing.T) {
+	quota := &linodego.NFSQuota{
+		Status: linodego.NFSQuotaStatusActive,
+		UserGroupConfig: &linodego.NFSUserGroupConfig{
+			DefaultUserLimit: &linodego.NFSCapacityLimit{MaxFileCount: ptrInt64(1000)},
+			UserLimits:       []linodego.NFSIdentifiedLimit{},
+			GroupLimits:      []linodego.NFSIdentifiedLimit{},
+		},
+	}
+
+	var model ResourceModel
+	model.FlattenQuota(quota, false)
+
+	require.NotNil(t, model.UserGroupConfig)
+	require.Nil(t, model.UserGroupConfig.UserLimits)
+	require.Nil(t, model.UserGroupConfig.GroupLimits)
+	require.Nil(t, model.UserGroupConfig.UserGroupLimits)
 }

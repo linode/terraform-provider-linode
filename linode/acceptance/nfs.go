@@ -109,7 +109,7 @@ func findOrCreateNFSTestFilesystem(region string) (*linodego.NFSFilesystem, erro
 	fs, err := client.CreateNFSFilesystem(ctx, space.ID, linodego.NFSFilesystemCreateOptions{
 		Label:            label,
 		Region:           region,
-		MaxCapacityBytes: NFSTestFilesystemMinCapacityBytes,
+		MaxCapacityBytes: linodego.Pointer(NFSTestFilesystemMinCapacityBytes),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create NFS filesystem in space %d: %w", space.ID, err)

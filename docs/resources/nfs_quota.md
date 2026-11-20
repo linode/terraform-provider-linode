@@ -11,7 +11,7 @@ For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/li
 
 ## Example Usage
 
-Creating a basic NFS Quota:
+Creating a custom quota on a sub-path within a filesystem (the root quota is created automatically with the filesystem; see [Import](#import)):
 
 ```terraform
 resource "linode_nfs_quota" "example" {
@@ -19,7 +19,6 @@ resource "linode_nfs_quota" "example" {
   filesystem_id      = 456
   path               = "/exports/data"
   max_capacity_bytes = 2147483648
-  max_file_count     = 2000
 }
 ```
 
@@ -76,11 +75,13 @@ The following arguments are supported:
 
 * `path` - (Required) The path within the filesystem that this quota applies to. Changing this value forces the creation of a new NFS Quota.
 
-* `max_capacity_bytes` - (Required) The maximum capacity in bytes allowed by this quota.
+* `max_capacity_bytes` - (Optional) The maximum capacity in bytes allowed by this quota. If unset, capacity is not limited. Cannot exceed the root quota's limit.
 
-* `max_file_count` - (Required) The maximum number of files allowed by this quota.
+* `max_file_count` - (Optional) The maximum number of files and directories allowed by this quota. If unset, the file count is not limited.
 
-* [`user_group_config`](#user_group_config) - (Optional) User and group level quota configuration.
+-> **Note:** At least one of `max_capacity_bytes` or `max_file_count` must be specified. Removing one of them from the configuration removes that limit from the quota.
+
+* [`user_group_config`](#user_group_config) - (Optional) User and group level quota configuration. If specified, it must configure at least one limit. Removing it from the configuration clears all user and group limits.
 
 **NOTE:** Nested fields are tagged as either **Block** (declared as `field { ... }`) or **Nested Attribute** (declared as `field = { ... }`). See the [Blocks vs. Nested Attributes](../guides/blocks_vs_nested_attributes.md) guide for details.
 

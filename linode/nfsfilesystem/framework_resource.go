@@ -59,7 +59,7 @@ func (r *Resource) Create(
 	createOpts := linodego.NFSFilesystemCreateOptions{
 		Label:            data.Label.ValueString(),
 		Region:           data.Region.ValueString(),
-		MaxCapacityBytes: data.MaxCapacityBytes.ValueInt64(),
+		MaxCapacityBytes: data.MaxCapacityBytes.ValueInt64Pointer(),
 	}
 
 	if !data.ProtocolVersions.IsNull() && !data.ProtocolVersions.IsUnknown() {
