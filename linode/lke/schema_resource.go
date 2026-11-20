@@ -393,7 +393,6 @@ var resourceSchema = map[string]*schema.Schema{
 								Type:        schema.TypeString,
 								Description: "The unique identifier of the current revision of the control plane ACL.",
 								Computed:    true,
-								Optional:    true,
 							},
 							"addresses": {
 								Type:        schema.TypeList,
