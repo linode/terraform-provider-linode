@@ -45,7 +45,7 @@ The Linode Profile resource exports the following attributes:
 
 * `restricted` - If true, the user has restrictions on what can be accessed on the Account.
 
-* `referrals` - (Read-Only Object List) Credit Card information associated with this Account. Referenced with an index (e.g. `referrals.0.code`).
+* `referrals` - (Read-Only Object List) Credit Card information associated with this Account. Referenced with an index (e.g. `referrals[0].code`).
 
 * `referrals.total` - The number of users who have signed up with the referral code.
 

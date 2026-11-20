@@ -52,7 +52,7 @@ The following arguments are supported:
 
 * `restricted` - (optional) If true, this user will only have explicit permissions granted.
 
-* [`global_grants`](#global-grants) - (optional, Block) A structure containing the Account-level grants a User has. Referenced with an index (e.g. `global_grants.0.account_access`).
+* [`global_grants`](#global-grants) - (optional, Block) A structure containing the Account-level grants a User has. Referenced with an index (e.g. `global_grants[0].account_access`).
 
 The following arguments are sets of [entity grants](#entity-grants):
 

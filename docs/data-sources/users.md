@@ -58,7 +58,7 @@ Each Linode user will be stored in the `users` attribute and will export the fol
 
 * `user_type` - The type of this user.
 
-* [`global_grants`](#global-grants) - (Read-Only Object List) The Account-level grants a User has. Referenced with an index (e.g. `global_grants.0.account_access`).
+* [`global_grants`](#global-grants) - (Read-Only Object List) The Account-level grants a User has. Referenced with an index (e.g. `global_grants[0].account_access`).
 
 * [`database_grant`](#grant) - (Read-Only Object Set) The grants this User has pertaining to Databases on this Account. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 

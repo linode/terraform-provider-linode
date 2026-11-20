@@ -52,7 +52,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `tokens` - (Block List) The returned list of tokens. Referenced by index (e.g. `tokens.0.id`).
+* `tokens` - (Block List) The returned list of tokens. Referenced by index (e.g. `tokens[0].id`).
 
 * `token_uuid` - The UUID of the token.
 

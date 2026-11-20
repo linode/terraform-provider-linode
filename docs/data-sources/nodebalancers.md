@@ -27,7 +27,7 @@ data "linode_nodebalancers" "specific-nodebalancers" {
 }
 
 output "nodebalancer_id" {
-  value = data.linode_nodebalancers.specific-nodebalancers.nodebalancers.0.id
+  value = data.linode_nodebalancers.specific-nodebalancers.nodebalancers[0].id
 }
 ```
 
@@ -89,7 +89,7 @@ Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and wil
 
 * `updated` – When this Linode NodeBalancer was last updated
 
-* [`transfer`](#transfer) - (Read-Only Object List) The network transfer stats for the current month. Referenced with an index (e.g. `transfer.0.in`).
+* [`transfer`](#transfer) - (Read-Only Object List) The network transfer stats for the current month. Referenced with an index (e.g. `transfer[0].in`).
 
 * [`lke_cluster`](#lke_cluster) - (Nested Attribute List) The LKE cluster that manages this NodeBalancer, if any. The list will be empty if this NodeBalancer isn't related to an LKE cluster.
 

@@ -81,23 +81,23 @@ In addition to all the arguments above, the following attributes are exported.
 
 * `vpc_type` - The type of the parent VPC (`regular` or `rdma`).
 
-* `linodes` - (Read-Only Object List) A list of Linodes added to this subnet. Referenced with an index (e.g. `linodes.0.id`).
+* `linodes` - (Read-Only Object List) A list of Linodes added to this subnet. Referenced with an index (e.g. `linodes[0].id`).
   * `id` - ID of the Linode
-  * `interfaces` - (Read-Only Object List) A list of networking interfaces objects. Referenced with an index (e.g. `interfaces.0.id`).
+  * `interfaces` - (Read-Only Object List) A list of networking interfaces objects. Referenced with an index (e.g. `interfaces[0].id`).
     * `id` - ID of the interface.
     * `config_id` - ID of Linode Config that the interface is associated with. `null` for a Linode Interface.
     * `active` - Whether the Interface is actively in use.
 
-* `databases` - (Read-Only Object List) A list of Managed databases assigned to the VPC Subnet. Referenced with an index (e.g. `databases.0.id`).
+* `databases` - (Read-Only Object List) A list of Managed databases assigned to the VPC Subnet. Referenced with an index (e.g. `databases[0].id`).
   * `id` - ID of a managed database assigned to the VPC Subnet.
   * `ipv4_range` - IPv4 range assigned to the database.
-  * `ipv6_ranges` - (Read-Only Object List) A list of IPv6 ranges assigned to the database. Referenced with an index (e.g. `ipv6_ranges.0.range`).
+  * `ipv6_ranges` - (Read-Only Object List) A list of IPv6 ranges assigned to the database. Referenced with an index (e.g. `ipv6_ranges[0].range`).
     * `range` - An IPv6 address range in CIDR notation.
 
-* `nodebalancers` - (Read-Only Object List) A list of NodeBalancers assigned to the VPC Subnet. Referenced with an index (e.g. `nodebalancers.0.id`).
+* `nodebalancers` - (Read-Only Object List) A list of NodeBalancers assigned to the VPC Subnet. Referenced with an index (e.g. `nodebalancers[0].id`).
   * `id` - ID of a NodeBalancer assigned to the VPC Subnet.
   * `ipv4_range` - IPv4 range assigned to the NodeBalancer.
-  * `ipv6_ranges` - (Read-Only Object List) A list of IPv6 ranges assigned to the NodeBalancer. Referenced with an index (e.g. `ipv6_ranges.0.range`).
+  * `ipv6_ranges` - (Read-Only Object List) A list of IPv6 ranges assigned to the NodeBalancer. Referenced with an index (e.g. `ipv6_ranges[0].range`).
     * `range` - An IPv6 address range in CIDR notation.
 
 * `created` - The date and time when the VPC was created.

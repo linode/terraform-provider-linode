@@ -178,33 +178,33 @@ The following arguments are supported:
 
 * `shared_ipv4` - (Optional) A set of IPv4 addresses to be shared with the Instance. These IP addresses can be both private and public, but must be in the same region as the instance.
 
-* `metadata` - (Optional, Block) Various fields related to the Linode Metadata service. Declared as `metadata { ... }` and referenced with an index (e.g. `metadata.0.user_data`).
+* `metadata` - (Optional, Block) Various fields related to the Linode Metadata service. Declared as `metadata { ... }` and referenced with an index (e.g. `metadata[0].user_data`).
 
-* `metadata.0.user_data` - (Optional) The base64-encoded user-defined data exposed to this instance through the Linode Metadata service. Refer to the base64encode(...) function for information on encoding content for this field.
+* `metadata[0].user_data` - (Optional) The base64-encoded user-defined data exposed to this instance through the Linode Metadata service. Refer to the base64encode(...) function for information on encoding content for this field.
 
-* `placement_group` - (Optional, Block) Fields related to the Placement Group this Linode is assigned to. Declared as `placement_group { ... }` and referenced with an index (e.g. `placement_group.0.id`).
+* `placement_group` - (Optional, Block) Fields related to the Placement Group this Linode is assigned to. Declared as `placement_group { ... }` and referenced with an index (e.g. `placement_group[0].id`).
 
-* `placement_group.0.id` - (Optional) The ID of the Placement Group to assign this Linode to.
+* `placement_group[0].id` - (Optional) The ID of the Placement Group to assign this Linode to.
 
 * `placement_group_externally_managed` - (Optional) If true, changes to the Linode's assigned Placement Group will be ignored. This is necessary when using this resource in conjunction with the [linode_placement_group_assignment](placement_group_assignment.md) resource.
 
 * `resize_disk` - (Optional) If true, changes in Linode type will attempt to upsize or downsize implicitly created disks. This must be false if explicit disks are defined. *This is an irreversible action as Linode disks cannot be automatically downsized.*
 
-* `alerts` - (Optional, Block) The alert thresholds for this Linode. Declared as `alerts { ... }` and referenced with an index (e.g. `alerts.0.cpu`).
+* `alerts` - (Optional, Block) The alert thresholds for this Linode. Declared as `alerts { ... }` and referenced with an index (e.g. `alerts[0].cpu`).
 
-* `alerts.0.cpu` - (Optional) (Update-Only) The percentage of CPU usage required to trigger an alert. If the average CPU usage over two hours exceeds this value, we'll send you an alert. If this is set to 0, the alert is disabled.
+* `alerts[0].cpu` - (Optional) (Update-Only) The percentage of CPU usage required to trigger an alert. If the average CPU usage over two hours exceeds this value, we'll send you an alert. If this is set to 0, the alert is disabled.
 
-* `alerts.0.network_in` - (Optional) (Update-Only) The amount of incoming traffic, in Mbit/s, required to trigger an alert. If the average incoming traffic over two hours exceeds this value, we'll send you an alert. If this is set to 0 (zero), the alert is disabled.
+* `alerts[0].network_in` - (Optional) (Update-Only) The amount of incoming traffic, in Mbit/s, required to trigger an alert. If the average incoming traffic over two hours exceeds this value, we'll send you an alert. If this is set to 0 (zero), the alert is disabled.
 
-* `alerts.0.network_out` - (Optional) (Update-Only) The amount of outbound traffic, in Mbit/s, required to trigger an alert. If the average outbound traffic over two hours exceeds this value, we'll send you an alert. If this is set to 0 (zero), the alert is disabled.
+* `alerts[0].network_out` - (Optional) (Update-Only) The amount of outbound traffic, in Mbit/s, required to trigger an alert. If the average outbound traffic over two hours exceeds this value, we'll send you an alert. If this is set to 0 (zero), the alert is disabled.
 
-* `alerts.0.transfer_quota` - (Optional) (Update-Only) The percentage of network transfer that may be used before an alert is triggered. When this value is exceeded, we'll alert you. If this is set to 0 (zero), the alert is disabled.
+* `alerts[0].transfer_quota` - (Optional) (Update-Only) The percentage of network transfer that may be used before an alert is triggered. When this value is exceeded, we'll alert you. If this is set to 0 (zero), the alert is disabled.
 
-* `alerts.0.io` - (Optional) (Update-Only) The amount of disk IO operation per second required to trigger an alert. If the average disk IO over two hours exceeds this value, we'll send you an alert. If set to 0, this alert is disabled.
+* `alerts[0].io` - (Optional) (Update-Only) The amount of disk IO operation per second required to trigger an alert. If the average disk IO over two hours exceeds this value, we'll send you an alert. If set to 0, this alert is disabled.
 
-* `alerts.0.system_alerts` - (Optional) A list of system alerts associated with current instance. (**Note: v4beta only and may not currently be available to all users.**)
+* `alerts[0].system_alerts` - (Optional) A list of system alerts associated with current instance. (**Note: v4beta only and may not currently be available to all users.**)
 
-* `alerts.0.user_alerts` - (Optional) A list of user alerts associated with current instance. (**Note: v4beta only and may not currently be available to all users.**)
+* `alerts[0].user_alerts` - (Optional) A list of user alerts associated with current instance. (**Note: v4beta only and may not currently be available to all users.**)
 
 * `backups_enabled` - (Optional) If this field is set to true, the created Linode will automatically be enrolled in the Linode Backup service. This will incur an additional charge. The cost for the Backup service is dependent on the Type of Linode deployed.
 
@@ -304,7 +304,7 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
   * `label` - (Required) The Config's label for display purposes.  Also used by `boot_config_label`.
 
-  * `helpers` - (Optional, Block) Helpers enabled when booting to this Linode Config. Referenced with an index (e.g. `helpers.0.distro`).
+  * `helpers` - (Optional, Block) Helpers enabled when booting to this Linode Config. Referenced with an index (e.g. `helpers[0].distro`).
 
     * `updatedb_disabled` - (Optional) Disables updatedb cron job to avoid disk thrashing.
 
@@ -314,9 +314,9 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
     * `network` - (Optional) Controls the behavior of the Linode Config's Network Helper setting, used to automatically configure additional IP addresses assigned to this instance.
 
-  * `devices` - (Optional, Block) A list of `disk` or `volume` attachments for this `config`.  If the `boot_config_label` omits a `devices` block, the Linode will not be booted. Referenced with an index (e.g. `devices.0.sda`).
+  * `devices` - (Optional, Block) A list of `disk` or `volume` attachments for this `config`.  If the `boot_config_label` omits a `devices` block, the Linode will not be booted. Referenced with an index (e.g. `devices[0].sda`).
 
-    * `sda` ... `sdbl` - (Optional, Block) Device slots for attaching disks and volumes (named `sda`-`sdz`, `sdaa`-`sdaz`, `sdba`-`sdbl`). The maximum number of available devices is determined by the instance type's RAM (up to 64 devices). Each slot accepts either a Disk or Volume via `disk_label` or `volume_id`. Referenced with an index (e.g. `sda.0.disk_label`).
+    * `sda` ... `sdbl` - (Optional, Block) Device slots for attaching disks and volumes (named `sda`-`sdz`, `sdaa`-`sdaz`, `sdba`-`sdbl`). The maximum number of available devices is determined by the instance type's RAM (up to 64 devices). Each slot accepts either a Disk or Volume via `disk_label` or `volume_id`. Referenced with an index (e.g. `sda[0].disk_label`).
 
       * `disk_label` - (Optional) The `label` of the `disk` to map to this `device` slot.
 
@@ -363,9 +363,9 @@ Each interface exports the following attributes:
 
 * `primary` - (Optional) Whether the interface is the primary interface that should have the default route for this Linode. This field is only allowed for interfaces with the `public` or `vpc` purpose.
 
-* [`ipv4`](#ipv4) - (Optional, Block) The IPv4 configuration of the VPC interface. Referenced with an index (e.g. `ipv4.0.vpc`). This field is currently only allowed for interfaces with the `vpc` purpose.
+* [`ipv4`](#ipv4) - (Optional, Block) The IPv4 configuration of the VPC interface. Referenced with an index (e.g. `ipv4[0].vpc`). This field is currently only allowed for interfaces with the `vpc` purpose.
 
-* [`ipv6`](#ipv6) - (Optional, Block) The IPv6 configuration of the VPC interface. Referenced with an index (e.g. `ipv6.0.is_public`). This field is currently only allowed for interfaces with the `vpc` purpose. NOTE: IPv6 VPCs may not yet be available to all users.
+* [`ipv6`](#ipv6) - (Optional, Block) The IPv6 configuration of the VPC interface. Referenced with an index (e.g. `ipv6[0].is_public`). This field is currently only allowed for interfaces with the `vpc` purpose. NOTE: IPv6 VPCs may not yet be available to all users.
 
 The following computed attribute is available in a VPC interface:
 
@@ -485,31 +485,31 @@ This Linode Instance resource exports the following attributes:
 
 * `locks` - A list of locks applied to this Linode.
 
-* `specs` - (Read-Only Object List) Information about the resources available to this Linode. Referenced with an index (e.g. `specs.0.disk`).
+* `specs` - (Read-Only Object List) Information about the resources available to this Linode. Referenced with an index (e.g. `specs[0].disk`).
 
-* `specs.0.disk` -  The amount of storage space, in GB. this Linode has access to. A typical Linode will divide this space between a primary disk with an image deployed to it, and a swap disk, usually 512 MB. This is the default configuration created when deploying a Linode with an image through POST /linode/instances.
+* `specs[0].disk` -  The amount of storage space, in GB. this Linode has access to. A typical Linode will divide this space between a primary disk with an image deployed to it, and a swap disk, usually 512 MB. This is the default configuration created when deploying a Linode with an image through POST /linode/instances.
 
-* `specs.0.memory` - The amount of RAM, in MB, this Linode has access to. Typically a Linode will choose to boot with all of its available RAM, but this can be configured in a Config profile.
+* `specs[0].memory` - The amount of RAM, in MB, this Linode has access to. Typically a Linode will choose to boot with all of its available RAM, but this can be configured in a Config profile.
 
-* `specs.0.vcpus` - The number of vcpus this Linode has access to. Typically a Linode will choose to boot with all of its available vcpus, but this can be configured in a Config Profile.
+* `specs[0].vcpus` - The number of vcpus this Linode has access to. Typically a Linode will choose to boot with all of its available vcpus, but this can be configured in a Config Profile.
 
-* `specs.0.accelerated_devices` - The number of VPUs this Linode has access to.
+* `specs[0].accelerated_devices` - The number of VPUs this Linode has access to.
 
-* `specs.0.gpus` - The number of GPUs this Linode has access to.
+* `specs[0].gpus` - The number of GPUs this Linode has access to.
 
-* `specs.0.transfer` - The amount of network transfer this Linode is allotted each month.
+* `specs[0].transfer` - The amount of network transfer this Linode is allotted each month.
 
-* `backups` - (Read-Only Object List) Information about this Linode's backups status. Referenced with an index (e.g. `backups.0.enabled`).
+* `backups` - (Read-Only Object List) Information about this Linode's backups status. Referenced with an index (e.g. `backups[0].enabled`).
 
   * `enabled` - If this Linode has the Backup service enabled.
 
-  * `schedule` - (Read-Only Object List) The backup schedule. Referenced with an index (e.g. `backups.0.schedule.0.day`).
+  * `schedule` - (Read-Only Object List) The backup schedule. Referenced with an index (e.g. `backups[0].schedule[0].day`).
 
     * `day` -  The day of the week that your Linode's weekly Backup is taken. If not set manually, a day will be chosen for you. Backups are taken every day, but backups taken on this day are preferred when selecting backups to retain for a longer period.  If not set manually, then when backups are initially enabled, this may come back as "Scheduling" until the day is automatically selected.
 
     * `window` - The window ('W0'-'W22') in which your backups will be taken, in UTC. A backups window is a two-hour span of time in which the backup may occur. For example, 'W10' indicates that your backups should be taken between 10:00 and 12:00. If you do not choose a backup window, one will be selected for you automatically.  If not set manually, when backups are initially enabled this may come back as Scheduling until the window is automatically selected.
 
-* `placement_group` - (Block) Information about the Placement Group this Linode is assigned to. Referenced with an index (e.g. `placement_group.0.id`).
+* `placement_group` - (Block) Information about the Placement Group this Linode is assigned to. Referenced with an index (e.g. `placement_group[0].id`).
 
   * `id` - The ID of the Placement Group.
 

@@ -36,7 +36,7 @@ Creating a bootable Instance Disk with only SSH keys (no root password):
 resource "linode_instance_disk" "boot" {
   label     = "boot"
   linode_id = linode_instance.my-instance.id
-  size      = linode_instance.my-instance.specs.0.disk
+  size      = linode_instance.my-instance.specs[0].disk
 
   image           = "linode/ubuntu22.04"
   authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
@@ -55,7 +55,7 @@ Creating a complex bootable Instance Disk:
 resource "linode_instance_disk" "boot" {
   label = "boot"
   linode_id = linode_instance.my-instance.id
-  size = linode_instance.my-instance.specs.0.disk
+  size = linode_instance.my-instance.specs[0].disk
 
   image = "linode/ubuntu22.04"
   root_pass = "myc00lpass!"

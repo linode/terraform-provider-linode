@@ -66,13 +66,13 @@ Each Reserved IP type will be stored in the `types` attribute and will export th
 
 * `label` - The human-readable label for this Reserved IP type.
 
-* `price` - (Read-Only Object List) Pricing information for this Reserved IP type. Referenced with an index (e.g. `price.0.hourly`).
+* `price` - (Read-Only Object List) Pricing information for this Reserved IP type. Referenced with an index (e.g. `price[0].hourly`).
 
-* `price.0.hourly` - Cost (in US dollars) per hour.
+* `price[0].hourly` - Cost (in US dollars) per hour.
 
-* `price.0.monthly` - Cost (in US dollars) per month.
+* `price[0].monthly` - Cost (in US dollars) per month.
 
-* `region_prices` - (Read-Only Object List) Region-specific pricing information for this Reserved IP type. Referenced with an index (e.g. `region_prices.0.hourly`).
+* `region_prices` - (Read-Only Object List) Region-specific pricing information for this Reserved IP type. Referenced with an index (e.g. `region_prices[0].hourly`).
 
 * `region_prices.*.id` - The ID of the region this price entry applies to.
 

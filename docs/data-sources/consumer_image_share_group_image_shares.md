@@ -56,7 +56,7 @@ The following arguments are supported:
 
 Each Image Share will be stored in the `images_shares` attribute and will export the following attributes:
 
-* `image_shares` - (Block List) The returned list of image shares. Referenced by index (e.g. `image_shares.0.id`).
+* `image_shares` - (Block List) The returned list of image shares. Referenced by index (e.g. `image_shares[0].id`).
 
 * `id` - The unique ID assigned to this Image Share.
 

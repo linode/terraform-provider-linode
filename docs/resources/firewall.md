@@ -126,7 +126,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `fingerprint` - The fingerprint of the current Firewall rules.
 
-* [`devices`](#devices) - (Read-Only Object List) The devices governed by the Firewall. Referenced with an index (e.g. `devices.0.id`).
+* [`devices`](#devices) - (Read-Only Object List) The devices governed by the Firewall. Referenced with an index (e.g. `devices[0].id`).
 
 ### devices
 

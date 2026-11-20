@@ -120,9 +120,9 @@ This resource exports the following attributes:
 
 * `updated` - When this NodeBalancer was last updated.
 
-* [`transfer`](#transfer) - (Read-Only Object List) The network transfer stats for the current month. Referenced with an index (e.g. `transfer.0.in`).
+* [`transfer`](#transfer) - (Read-Only Object List) The network transfer stats for the current month. Referenced with an index (e.g. `transfer[0].in`).
 
-* [`firewalls`](#firewalls) - (Read-Only Object List) A list of Firewalls assigned to this NodeBalancer. Referenced with an index (e.g. `firewalls.0.id`).
+* [`firewalls`](#firewalls) - (Read-Only Object List) A list of Firewalls assigned to this NodeBalancer. Referenced with an index (e.g. `firewalls[0].id`).
 
 * [`vpcs`](#vpcs) - (Nested Attribute List) A list of VPCs to be assigned to this NodeBalancer. NOTE: VPC-attached NodeBalancers may not currently be available to all users and may require the `api_version` provider argument must be set to `v4beta`.
 
@@ -148,11 +148,11 @@ The following attributes are available on firewalls:
 
 * `tags` - The tags applied to the firewall. Tags are case-insensitive and are for organizational purposes only.
 
-* [`inbound`](#inbound-and-outbound) - (Read-Only Object List) A firewall rule that specifies what inbound network traffic is allowed. Referenced with an index (e.g. `firewalls.0.inbound.0.action`).
+* [`inbound`](#inbound-and-outbound) - (Read-Only Object List) A firewall rule that specifies what inbound network traffic is allowed. Referenced with an index (e.g. `firewalls[0].inbound[0].action`).
 
 * `inbound_policy` - The default behavior for inbound traffic. (`ACCEPT`, `DROP`)
 
-* [`outbound`](#inbound-and-outbound) - (Read-Only Object List) A firewall rule that specifies what outbound network traffic is allowed. Referenced with an index (e.g. `firewalls.0.outbound.0.action`).
+* [`outbound`](#inbound-and-outbound) - (Read-Only Object List) A firewall rule that specifies what outbound network traffic is allowed. Referenced with an index (e.g. `firewalls[0].outbound[0].action`).
 
 * `outbound_policy` - The default behavior for outbound traffic. (`ACCEPT`, `DROP`)
 

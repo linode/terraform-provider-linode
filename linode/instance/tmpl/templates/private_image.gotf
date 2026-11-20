@@ -14,7 +14,7 @@ resource "linode_instance" "foobar-orig" {
 
 resource "linode_image" "foobar" {
     linode_id = "${linode_instance.foobar-orig.id}"
-    disk_id = "${linode_instance.foobar-orig.disk.0.id}"
+    disk_id = "${linode_instance.foobar-orig.disk[0].id}"
     label = "{{.Label}}"
     description = "descriptive text"
 }

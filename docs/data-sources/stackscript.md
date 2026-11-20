@@ -55,7 +55,7 @@ This resource exports the following attributes:
 
 * `updated` - The date this StackScript was updated.
 
-* `user_defined_fields` - (Read-Only Object List) This is a list of fields defined with a special syntax inside this StackScript that allow for supplying customized parameters during deployment. Referenced with an index (e.g. `user_defined_fields.0.default`).
+* `user_defined_fields` - (Read-Only Object List) This is a list of fields defined with a special syntax inside this StackScript that allow for supplying customized parameters during deployment. Referenced with an index (e.g. `user_defined_fields[0].default`).
 
   * `label` - A human-readable label for the field that will serve as the input prompt for entering the value during deployment.
 

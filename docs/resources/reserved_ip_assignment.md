@@ -66,7 +66,7 @@ In addition to all arguments above, the following attributes are exported:
 
   * `url` - The URL of the entity.
 
-* `vpc_nat_1_1` - (Read-Only Object List) Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet. Referenced with an index (e.g. `vpc_nat_1_1.0.address`).
+* `vpc_nat_1_1` - (Read-Only Object List) Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet. Referenced with an index (e.g. `vpc_nat_1_1[0].address`).
 
   * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
 

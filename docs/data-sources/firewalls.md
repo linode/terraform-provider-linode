@@ -27,7 +27,7 @@ data "linode_firewalls" "specific" {
 }
 
 output "firewall_id" {
-  value = data.linode_firewalls.specific.firewalls.0.id
+  value = data.linode_firewalls.specific.firewalls[0].id
 }
 ```
 

@@ -22,7 +22,7 @@ data "linode_domains" "specific" {
 }
 
 output "domain" {
-  value = data.linode_domains.specific.domains.0.domain
+  value = data.linode_domains.specific.domains[0].domain
 }
 ```
 

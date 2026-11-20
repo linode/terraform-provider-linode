@@ -230,7 +230,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `isolation_public_ipv6` - Whether nodes in this pool have public IPv6 addresses. This is only available for LKE Enterprise clusters and may not be available to all customers.
 
-* [`nodes`](#nodes) - (Read-Only Object List) The nodes in the Node Pool. Referenced with an index (e.g. `nodes.0.id`).
+* [`nodes`](#nodes) - (Read-Only Object List) The nodes in the Node Pool. Referenced with an index (e.g. `nodes[0].id`).
 
 ### nodes
 

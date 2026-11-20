@@ -27,7 +27,7 @@ data "linode_images" "specific-images" {
 }
 
 output "image_id" {
-  value = data.linode_images.specific-images.images.0.id
+  value = data.linode_images.specific-images.images[0].id
 }
 ```
 

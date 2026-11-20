@@ -57,7 +57,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `region` - The Region where this Linode NodeBalancer is located. NodeBalancers only support backends in the same Region.
 
-* [`transfer`](#transfer) - (Read-Only Object List) The network transfer stats for the current month. Referenced with an index (e.g. `transfer.0.in`).
+* [`transfer`](#transfer) - (Read-Only Object List) The network transfer stats for the current month. Referenced with an index (e.g. `transfer[0].in`).
 
 * `updated` – When this Linode NodeBalancer was last updated
 

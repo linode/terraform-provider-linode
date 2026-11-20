@@ -6,7 +6,7 @@ locals {
   api_token = local.kubeconfig.users[0].user.token
   ca_certificate = base64decode(local.kubeconfig.clusters[0].cluster["certificate-authority-data"])
 
-  loadbalancer_ingress = kubernetes_service.loadbalancer.status.0.load_balancer.0.ingress.0
+  loadbalancer_ingress = kubernetes_service.loadbalancer.status[0].load_balancer[0].ingress[0]
 
   echo_labels = {
     app = "echo-server"

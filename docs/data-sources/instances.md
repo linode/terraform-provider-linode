@@ -27,7 +27,7 @@ data "linode_instances" "my-instances" {
 }
 
 output "instance_id" {
-  value = data.linode_instances.my-instances.instances.0.id
+  value = data.linode_instances.my-instances.instances[0].id
 }
 ```
 
@@ -65,7 +65,7 @@ The following arguments are supported:
 
 Each Linode instance will be stored in the `instances` attribute and will export the following attributes:
 
-* `instances` - (Read-Only Object List) The matched Linode instances. Referenced with an index (e.g. `instances.0.id`).
+* `instances` - (Read-Only Object List) The matched Linode instances. Referenced with an index (e.g. `instances[0].id`).
 
 * `id` - The ID of the Linode instance.
 
@@ -85,21 +85,21 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `locks` - A list of locks applied to this Linode.
 
-* `alerts` - (Read-Only Object List) The alert thresholds for this Linode. Referenced with an index (e.g. `alerts.0.cpu`).
+* `alerts` - (Read-Only Object List) The alert thresholds for this Linode. Referenced with an index (e.g. `alerts[0].cpu`).
 
-* `alerts.0.cpu` - The percentage of CPU usage required to trigger an alert. If the average CPU usage over two hours exceeds this value, we'll send you an alert. If this is set to 0, the alert is disabled.
+* `alerts[0].cpu` - The percentage of CPU usage required to trigger an alert. If the average CPU usage over two hours exceeds this value, we'll send you an alert. If this is set to 0, the alert is disabled.
 
-* `alerts.0.network_in` - The amount of incoming traffic, in Mbit/s, required to trigger an alert. If the average incoming traffic over two hours exceeds this value, we'll send you an alert. If this is set to 0 (zero), the alert is disabled.
+* `alerts[0].network_in` - The amount of incoming traffic, in Mbit/s, required to trigger an alert. If the average incoming traffic over two hours exceeds this value, we'll send you an alert. If this is set to 0 (zero), the alert is disabled.
 
-* `alerts.0.network_out` - The amount of outbound traffic, in Mbit/s, required to trigger an alert. If the average outbound traffic over two hours exceeds this value, we'll send you an alert. If this is set to 0 (zero), the alert is disabled.
+* `alerts[0].network_out` - The amount of outbound traffic, in Mbit/s, required to trigger an alert. If the average outbound traffic over two hours exceeds this value, we'll send you an alert. If this is set to 0 (zero), the alert is disabled.
 
-* `alerts.0.transfer_quota` - The percentage of network transfer that may be used before an alert is triggered. When this value is exceeded, we'll alert you. If this is set to 0 (zero), the alert is disabled.
+* `alerts[0].transfer_quota` - The percentage of network transfer that may be used before an alert is triggered. When this value is exceeded, we'll alert you. If this is set to 0 (zero), the alert is disabled.
 
-* `alerts.0.system_alerts` - A list of system alerts associated with current instance. (**Note: v4beta only and may not currently be available to all users.**)
+* `alerts[0].system_alerts` - A list of system alerts associated with current instance. (**Note: v4beta only and may not currently be available to all users.**)
 
-* `alerts.0.user_alerts` - A list of user alerts associated with current instance. (**Note: v4beta only and may not currently be available to all users.**)
+* `alerts[0].user_alerts` - A list of user alerts associated with current instance. (**Note: v4beta only and may not currently be available to all users.**)
 
-* `alerts.0.io` - The amount of disk IO operation per second required to trigger an alert. If the average disk IO over two hours exceeds this value, we'll send you an alert. If set to 0, this alert is disabled.
+* `alerts[0].io` - The amount of disk IO operation per second required to trigger an alert. If the average disk IO over two hours exceeds this value, we'll send you an alert. If set to 0, this alert is disabled.
 
 * `watchdog_enabled` - The watchdog, named Lassie, is a Shutdown Watchdog that monitors your Linode and will reboot it if it powers off unexpectedly. It works by issuing a boot job when your Linode powers off without a shutdown job being responsible. To prevent a loop, Lassie will give up if there have been more than 5 boot jobs issued within 15 minutes.
 
@@ -127,31 +127,31 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `lke_cluster_id` - If applicable, the ID of the LKE cluster this instance is a part of.
 
-* `specs` - (Read-Only Object List) Information about the resources available to this Linode. Referenced with an index (e.g. `specs.0.disk`).
+* `specs` - (Read-Only Object List) Information about the resources available to this Linode. Referenced with an index (e.g. `specs[0].disk`).
 
-* `specs.0.disk` -  The amount of storage space, in GB. this Linode has access to. A typical Linode will divide this space between a primary disk with an image deployed to it, and a swap disk, usually 512 MB. This is the default configuration created when deploying a Linode with an image through POST /linode/instances.
+* `specs[0].disk` -  The amount of storage space, in GB. this Linode has access to. A typical Linode will divide this space between a primary disk with an image deployed to it, and a swap disk, usually 512 MB. This is the default configuration created when deploying a Linode with an image through POST /linode/instances.
 
-* `specs.0.memory` - The amount of RAM, in MB, this Linode has access to. Typically a Linode will choose to boot with all of its available RAM, but this can be configured in a Config profile.
+* `specs[0].memory` - The amount of RAM, in MB, this Linode has access to. Typically a Linode will choose to boot with all of its available RAM, but this can be configured in a Config profile.
 
-* `specs.0.vcpus` - The number of vcpus this Linode has access to. Typically a Linode will choose to boot with all of its available vcpus, but this can be configured in a Config Profile.
+* `specs[0].vcpus` - The number of vcpus this Linode has access to. Typically a Linode will choose to boot with all of its available vcpus, but this can be configured in a Config Profile.
 
-* `specs.0.accelerated_devices` - The number of VPUs this Linode has access to.
+* `specs[0].accelerated_devices` - The number of VPUs this Linode has access to.
 
-* `specs.0.gpus` - The number of GPUs this Linode has access to.
+* `specs[0].gpus` - The number of GPUs this Linode has access to.
 
-* `specs.0.transfer` - The amount of network transfer this Linode is allotted each month.
+* `specs[0].transfer` - The amount of network transfer this Linode is allotted each month.
 
-* [`disk`](#disks) - (Read-Only Object List) A list of disks associated with the Linode. Referenced with an index (e.g. `disk.0.label`).
+* [`disk`](#disks) - (Read-Only Object List) A list of disks associated with the Linode. Referenced with an index (e.g. `disk[0].label`).
 
-* [`config`](#configs) - (Read-Only Object List) A list of configs associated with the Linode. Referenced with an index (e.g. `config.0.label`).
+* [`config`](#configs) - (Read-Only Object List) A list of configs associated with the Linode. Referenced with an index (e.g. `config[0].label`).
 
-* [`backups`](#backups) - (Read-Only Object List) Information about the Linode's backup status. Referenced with an index (e.g. `backups.0.enabled`).
+* [`backups`](#backups) - (Read-Only Object List) Information about the Linode's backup status. Referenced with an index (e.g. `backups[0].enabled`).
 
-* [`placement_group`](#placement-groups) - (Read-Only Object List) Information about the Linode's Placement Groups. Referenced with an index (e.g. `placement_group.0.id`).
+* [`placement_group`](#placement-groups) - (Read-Only Object List) Information about the Linode's Placement Groups. Referenced with an index (e.g. `placement_group[0].id`).
 
 ### Disks
 
-* `disk` - (Read-Only Object List) A list of disks associated with the Linode. Referenced with an index (e.g. `disk.0.label`).
+* `disk` - (Read-Only Object List) A list of disks associated with the Linode. Referenced with an index (e.g. `disk[0].label`).
 
   * `label` - The disks label, which acts as an identifier in Terraform.  This must be unique within each Linode Instance.
 
@@ -165,7 +165,7 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 Configuration profiles define the VM settings and boot behavior of the Linode Instance.  Multiple configurations profiles can be provided but their `label` values must be unique.
 
-* `config` - (Read-Only Object List) A list of configs associated with the Linode. Referenced with an index (e.g. `config.0.label`).
+* `config` - (Read-Only Object List) A list of configs associated with the Linode. Referenced with an index (e.g. `config[0].label`).
 
   * `id` - The unique ID of this Config.
 
@@ -183,7 +183,7 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
   * `memory_limit` - Defaults to the total RAM of the Linode
 
-  * `helpers` - (Read-Only Object List) Helpers enabled when booting to this Linode Config. Referenced with an index (e.g. `helpers.0.distro`).
+  * `helpers` - (Read-Only Object List) Helpers enabled when booting to this Linode Config. Referenced with an index (e.g. `helpers[0].distro`).
 
     * `updatedb_disabled` -  Disables updatedb cron job to avoid disk thrashing.
 
@@ -195,9 +195,9 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
     * `devtmpfs_automount` - Populates the /dev directory early during boot without udev.
 
-  * `devices` - (Read-Only Object List) A list of `disk` or `volume` attachments for this `config`.  If the `boot_config_label` omits a `devices` block, the Linode will not be booted. Referenced with an index (e.g. `devices.0.sda`).
+  * `devices` - (Read-Only Object List) A list of `disk` or `volume` attachments for this `config`.  If the `boot_config_label` omits a `devices` block, the Linode will not be booted. Referenced with an index (e.g. `devices[0].sda`).
 
-    * `sda` ... `sdbl` - (Read-Only Object List) Device slots for attaching disks and volumes (named `sda`-`sdz`, `sdaa`-`sdaz`, `sdba`-`sdbl`). The maximum number of available devices is determined by the instance type's RAM (up to 64 devices). Each slot accepts either a Disk or Volume via `disk_label` or `volume_id`. Referenced with an index (e.g. `sda.0.disk_label`).
+    * `sda` ... `sdbl` - (Read-Only Object List) Device slots for attaching disks and volumes (named `sda`-`sdz`, `sdaa`-`sdaz`, `sdba`-`sdbl`). The maximum number of available devices is determined by the instance type's RAM (up to 64 devices). Each slot accepts either a Disk or Volume via `disk_label` or `volume_id`. Referenced with an index (e.g. `sda[0].disk_label`).
 
     * `disk_label` -  The `label` of the `disk` to map to this `device` slot.
 
@@ -205,7 +205,7 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
     * `disk_id` - The Disk ID of the associated `disk_label`, if used
 
-  * [`interface`](#interface) - (Read-Only Object List) A list of network interfaces to be assigned to the Linode. Referenced with an index (e.g. `interface.0.purpose`).
+  * [`interface`](#interface) - (Read-Only Object List) A list of network interfaces to be assigned to the Linode. Referenced with an index (e.g. `interface[0].purpose`).
 
 ### Interface
 
@@ -227,9 +227,9 @@ Each interface exports the following attributes:
 
 * `active` - Whether this interface is currently booted and active.
 
-* [`ipv4`](#ipv4) - (Read-Only Object List) The IPv4 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose. Referenced with an index (e.g. `ipv4.0.vpc`).
+* [`ipv4`](#ipv4) - (Read-Only Object List) The IPv4 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose. Referenced with an index (e.g. `ipv4[0].vpc`).
 
-* [`ipv6`](#ipv6) - (Read-Only Object List) The IPv6 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose.  NOTE: IPv6 VPCs may not yet be available to all users. Referenced with an index (e.g. `ipv6.0.is_public`).
+* [`ipv6`](#ipv6) - (Read-Only Object List) The IPv6 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose.  NOTE: IPv6 VPCs may not yet be available to all users. Referenced with an index (e.g. `ipv6[0].is_public`).
 
 * `vpc_id` - The ID of VPC which this interface is attached to.
 
@@ -251,9 +251,9 @@ The following arguments are available in an `ipv6` configuration block of an `in
 
 * `is_public` - If true, connections from the interface to IPv6 addresses outside the VPC, and connections from IPv6 addresses outside the VPC to the interface will be permitted. (Default: `false`)
 
-* [`slaac`](#ipv6slaac) - (Read-Only Object List) An array of SLAAC prefixes to use for this interface. Referenced with an index (e.g. `slaac.0.range`).
+* [`slaac`](#ipv6slaac) - (Read-Only Object List) An array of SLAAC prefixes to use for this interface. Referenced with an index (e.g. `slaac[0].range`).
 
-* [`range`](#ipv6range) - (Read-Only Object List) An array of IPv6 ranges to use for this interface. Referenced with an index (e.g. `range.0.range`).
+* [`range`](#ipv6range) - (Read-Only Object List) An array of IPv6 ranges to use for this interface. Referenced with an index (e.g. `range[0].range`).
 
 #### ipv6.slaac
 
@@ -275,13 +275,13 @@ The following arguments are available in a `range` configuration block of an [`i
 
 ### Backups
 
-* `backups` - (Read-Only Object List) Information about the Linode's backup status. Referenced with an index (e.g. `backups.0.enabled`).
+* `backups` - (Read-Only Object List) Information about the Linode's backup status. Referenced with an index (e.g. `backups[0].enabled`).
 
   * `available` - Whether this Backup is available for restoration.
 
   * `enabled` - If this Linode has the Backup service enabled.
 
-  * `schedule` - (Read-Only Object List) The backup schedule. Referenced with an index (e.g. `schedule.0.day`).
+  * `schedule` - (Read-Only Object List) The backup schedule. Referenced with an index (e.g. `schedule[0].day`).
 
     * `day` -  The day of the week that your Linode's weekly Backup is taken. If not set manually, a day will be chosen for you. Backups are taken every day, but backups taken on this day are preferred when selecting backups to retain for a longer period.  If not set manually, then when backups are initially enabled, this may come back as "Scheduling" until the day is automatically selected.
 
@@ -289,7 +289,7 @@ The following arguments are available in a `range` configuration block of an [`i
 
 ### Placement Groups
 
-* `placement_group` - (Read-Only Object List) Information about the Linode's Placement Groups. Referenced with an index (e.g. `placement_group.0.id`).
+* `placement_group` - (Read-Only Object List) Information about the Linode's Placement Groups. Referenced with an index (e.g. `placement_group[0].id`).
 
   * `id` -  The ID of the Placement Group in the Linode API.
 

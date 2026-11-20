@@ -72,11 +72,11 @@ Each Linode Placement Group will be stored in the `placement_groups` attribute a
 
 * `migrations` - (Nested Attribute) Any Linodes that are being migrated to or from the placement group. Referenced directly (e.g. `migrations.inbound`).
 
-  * `inbound` - (Read-Only Object List) A list of the Linodes the system is migrating into the placement group. Referenced with an index (e.g. `inbound.0.linode_id`).
+  * `inbound` - (Read-Only Object List) A list of the Linodes the system is migrating into the placement group. Referenced with an index (e.g. `inbound[0].linode_id`).
 
     * `linode_id` - The unique identifier for the Linode being migrated into the placement group.
 
-  * `outbound` - (Read-Only Object List) A list of the Linodes the system is migrating out of the placement group. Referenced with an index (e.g. `outbound.0.linode_id`).
+  * `outbound` - (Read-Only Object List) A list of the Linodes the system is migrating out of the placement group. Referenced with an index (e.g. `outbound[0].linode_id`).
 
     * `linode_id` - The unique identifier for the Linode being migrated out of the placement group.
 
