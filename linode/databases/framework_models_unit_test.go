@@ -7,14 +7,18 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseDatabases(t *testing.T) {
 	currentTime := time.Now()
 	currentTimeFWValue := timetypes.NewRFC3339TimePointerValue(&currentTime)
+	restoreTime := currentTime.Add(-time.Hour)
 
 	mockDB1 := linodego.Database{
 		ID:          123,
@@ -35,7 +39,8 @@ func TestParseDatabases(t *testing.T) {
 			Source:      12345,
 			RestoreTime: &currentTime,
 		},
-		OldestRestoreTime: &currentTime,
+		OldestRestoreTime:     &currentTime,
+		AvailableRestoreTimes: []time.Time{restoreTime},
 	}
 
 	mockDB2 := linodego.Database{
@@ -60,12 +65,34 @@ func TestParseDatabases(t *testing.T) {
 		OldestRestoreTime: &currentTime,
 	}
 
-	mockDatabases := []linodego.Database{mockDB1, mockDB2}
+	mockDB3 := linodego.Database{
+		ID:                    789,
+		Status:                linodego.DatabaseStatusActive,
+		Label:                 "example-valkey-empty",
+		Region:                "us-mia",
+		Type:                  "g7-dedicated-4-2",
+		Engine:                "valkey",
+		Version:               "8.1.0",
+		AvailableRestoreTimes: []time.Time{},
+	}
+
+	mockDB4 := linodego.Database{
+		ID:                    987,
+		Status:                linodego.DatabaseStatusActive,
+		Label:                 "example-valkey",
+		Region:                "us-mia",
+		Type:                  "g7-dedicated-4-2",
+		Engine:                "valkey",
+		Version:               "8.1.0",
+		AvailableRestoreTimes: []time.Time{restoreTime, currentTime},
+	}
+
+	mockDatabases := []linodego.Database{mockDB1, mockDB2, mockDB3, mockDB4}
 
 	model := &DatabaseFilterModel{}
 	model.parseDatabases(t.Context(), mockDatabases)
 
-	assert.Len(t, model.Databases, 2)
+	assert.Len(t, model.Databases, 4)
 
 	// Database 1 Assertions
 	assert.Equal(t, types.Int64Value(123), model.Databases[0].ID)
@@ -74,6 +101,7 @@ func TestParseDatabases(t *testing.T) {
 	assert.Equal(t, types.StringValue("rdbms-default"), model.Databases[0].Platform)
 	assert.Equal(t, currentTimeFWValue, model.Databases[0].ForkRestoreTime)
 	assert.Equal(t, currentTimeFWValue, model.Databases[0].OldestRestoreTime)
+	assert.Equal(t, []timetypes.RFC3339{timetypes.NewRFC3339TimeValue(restoreTime)}, model.Databases[0].AvailableRestoreTimes)
 	assert.Equal(t, int64(12345), model.Databases[0].ForkSource.ValueInt64())
 
 	// Database 2 Assertions
@@ -83,5 +111,38 @@ func TestParseDatabases(t *testing.T) {
 	assert.Equal(t, types.StringValue("rdbms-legacy"), model.Databases[1].Platform)
 	assert.Equal(t, currentTimeFWValue, model.Databases[1].ForkRestoreTime)
 	assert.Equal(t, currentTimeFWValue, model.Databases[1].OldestRestoreTime)
+	assert.Nil(t, model.Databases[1].AvailableRestoreTimes)
 	assert.Equal(t, int64(54321), model.Databases[1].ForkSource.ValueInt64())
+
+	assert.Equal(t, types.StringValue("valkey"), model.Databases[2].Engine)
+	assert.NotNil(t, model.Databases[2].AvailableRestoreTimes)
+	assert.Empty(t, model.Databases[2].AvailableRestoreTimes)
+	assert.Equal(t, types.StringValue("valkey"), model.Databases[3].Engine)
+	assert.Equal(t, []timetypes.RFC3339{
+		timetypes.NewRFC3339TimeValue(restoreTime),
+		timetypes.NewRFC3339TimeValue(currentTime),
+	}, model.Databases[3].AvailableRestoreTimes)
+
+	state := tfsdk.State{Schema: frameworkDataSourceSchema}
+	diags := state.Set(t.Context(), model)
+	require.False(t, diags.HasError(), "%v", diags)
+
+	var databases types.List
+	diags = state.GetAttribute(t.Context(), path.Root("databases"), &databases)
+	require.False(t, diags.HasError(), "%v", diags)
+	require.Len(t, databases.Elements(), 4)
+
+	nilTimes := databases.Elements()[1].(types.Object).Attributes()["available_restore_times"].(types.List)
+	assert.True(t, nilTimes.IsNull())
+	emptyTimes := databases.Elements()[2].(types.Object).Attributes()["available_restore_times"].(types.List)
+	assert.False(t, emptyTimes.IsNull())
+	assert.Empty(t, emptyTimes.Elements())
+	restoreTimes := databases.Elements()[3].(types.Object).Attributes()["available_restore_times"].(types.List)
+	var values []timetypes.RFC3339
+	diags = restoreTimes.ElementsAs(t.Context(), &values, false)
+	require.False(t, diags.HasError(), "%v", diags)
+	assert.Equal(t, []timetypes.RFC3339{
+		timetypes.NewRFC3339TimeValue(restoreTime),
+		timetypes.NewRFC3339TimeValue(currentTime),
+	}, values)
 }

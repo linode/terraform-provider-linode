@@ -67,6 +67,17 @@ func updateDBAllowListByEngine(
 			return err
 		}
 
+	case "valkey":
+		tflog.Debug(ctx, "client.UpdateValkeyDatabase(...)", map[string]any{
+			"allow_list": allowList,
+		})
+
+		if _, err := client.UpdateValkeyDatabase(ctx, id, linodego.ValkeyUpdateOptions{
+			AllowList: allowList,
+		}); err != nil {
+			return err
+		}
+
 	default:
 		return fmt.Errorf("invalid database engine: %s", engine)
 	}
@@ -99,6 +110,15 @@ func getDBAllowListByEngine(
 		tflog.Trace(ctx, "client.GetPostgresDatabase(...)")
 
 		db, err := client.GetPostgresDatabase(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+
+		return db.AllowList, nil
+	case "valkey":
+		tflog.Trace(ctx, "client.GetValkeyDatabase(...)")
+
+		db, err := client.GetValkeyDatabase(ctx, id)
 		if err != nil {
 			return nil, err
 		}
