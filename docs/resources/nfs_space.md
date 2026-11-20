@@ -7,6 +7,7 @@ description: |-
 # linode\_nfs\_space
 
 Manages a Linode NFS Space. An NFS Space is the top-level logical isolation boundary for Akamai Cloud NFSaaS resources. NFS Filesystems are provisioned under an NFS Space.
+For more information, see the [Linode APIv4 docs](TBD).
 
 ~> **Beta** This resource is in beta and requires the provider `api_version` to be set to `v4beta`.
 

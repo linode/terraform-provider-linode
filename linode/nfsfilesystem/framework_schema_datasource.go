@@ -27,6 +27,10 @@ var FilesystemAttributes = map[string]schema.Attribute{
 		Description: "The provisioned capacity of the filesystem, in bytes.",
 		Computed:    true,
 	},
+	"max_file_count": schema.Int64Attribute{
+		Description: "The maximum number of files and directories allowed in the filesystem. Null if unlimited.",
+		Computed:    true,
+	},
 	"protocol_versions": schema.ListAttribute{
 		Description: "The NFS protocol versions supported by this filesystem.",
 		Computed:    true,

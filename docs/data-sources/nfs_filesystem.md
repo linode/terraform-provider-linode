@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_nfs\_filesystem
 
 Provides information about a Linode NFS Filesystem.
+For more information, see the [Linode APIv4 docs](TBD).
 
 ~> **Beta** This data source is in beta and requires the provider `api_version` to be set to `v4beta`.
 
@@ -37,6 +38,8 @@ The Linode NFS Filesystem resource exports the following attributes:
 * `region` - The region where this filesystem is provisioned.
 
 * `max_capacity_bytes` - The provisioned capacity of the filesystem, in bytes.
+
+* `max_file_count` - The maximum number of files and directories allowed in the filesystem. Null if unlimited.
 
 * `protocol_versions` - The NFS protocol versions supported by this filesystem.
 

@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_nfs\_filesystems
 
 Provides information about a list of Linode NFS Filesystems under an [NFS Space](nfs_space.html.markdown) that match a set of filters.
+For more information, see the [Linode APIv4 docs](TBD).
 
 ~> **Beta** This data source is in beta and requires the provider `api_version` to be set to `v4beta`.
 
@@ -53,6 +54,8 @@ The following arguments are supported:
 
 * `max_capacity_bytes`
 
+* `max_file_count`
+
 ## Attributes Reference
 
 Each NFS Filesystem will be stored in the `nfs_filesystems` attribute and will export the following attributes:
@@ -66,6 +69,8 @@ Each NFS Filesystem will be stored in the `nfs_filesystems` attribute and will e
 * `region` - The region where this filesystem is provisioned.
 
 * `max_capacity_bytes` - The provisioned capacity of the filesystem, in bytes.
+
+* `max_file_count` - The maximum number of files and directories allowed in the filesystem. Null if unlimited.
 
 * `protocol_versions` - The NFS protocol versions supported by this filesystem.
 

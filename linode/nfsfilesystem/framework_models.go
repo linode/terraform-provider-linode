@@ -38,6 +38,7 @@ type BaseModel struct {
 	MountTargetIPs     types.List        `tfsdk:"mount_target_ips"`
 	MountTargetFQDN    types.String      `tfsdk:"mount_target_fqdn"`
 	MaxCapacityBytes   types.Int64       `tfsdk:"max_capacity_bytes"`
+	MaxFileCount       types.Int64       `tfsdk:"max_file_count"`
 	SnapshotUsageBytes types.Int64       `tfsdk:"snapshot_usage_bytes"`
 	LDAPConfigID       types.String      `tfsdk:"ldap_config_id"`
 	SourceSnapshotID   types.Int64       `tfsdk:"source_snapshot_id"`
@@ -61,6 +62,7 @@ func (m *BaseModel) Flatten(
 	m.Status = helper.KeepOrUpdateString(m.Status, string(fs.Status), preserveKnown)
 	m.MountTargetFQDN = helper.KeepOrUpdateStringPointer(m.MountTargetFQDN, fs.MountTargetFQDN, preserveKnown)
 	m.MaxCapacityBytes = helper.KeepOrUpdateInt64(m.MaxCapacityBytes, fs.MaxCapacityBytes, preserveKnown)
+	m.MaxFileCount = helper.KeepOrUpdateValue(m.MaxFileCount, flattenMaxFileCount(fs.MaxFileCount), preserveKnown)
 	m.SnapshotUsageBytes = helper.KeepOrUpdateInt64Pointer(m.SnapshotUsageBytes, fs.SnapshotUsageBytes, preserveKnown)
 	m.LDAPConfigID = helper.KeepOrUpdateStringPointer(m.LDAPConfigID, fs.LDAPConfigID, preserveKnown)
 	m.SourceSnapshotID = helper.KeepOrUpdateIntPointer(m.SourceSnapshotID, fs.SourceSnapshotID, preserveKnown)
@@ -124,6 +126,7 @@ func (m *BaseModel) CopyFrom(other BaseModel, preserveKnown bool) {
 	m.MountTargetIPs = helper.KeepOrUpdateValue(m.MountTargetIPs, other.MountTargetIPs, preserveKnown)
 	m.MountTargetFQDN = helper.KeepOrUpdateValue(m.MountTargetFQDN, other.MountTargetFQDN, preserveKnown)
 	m.MaxCapacityBytes = helper.KeepOrUpdateValue(m.MaxCapacityBytes, other.MaxCapacityBytes, preserveKnown)
+	m.MaxFileCount = helper.KeepOrUpdateValue(m.MaxFileCount, other.MaxFileCount, preserveKnown)
 	m.SnapshotUsageBytes = helper.KeepOrUpdateValue(m.SnapshotUsageBytes, other.SnapshotUsageBytes, preserveKnown)
 	m.LDAPConfigID = helper.KeepOrUpdateValue(m.LDAPConfigID, other.LDAPConfigID, preserveKnown)
 	m.SourceSnapshotID = helper.KeepOrUpdateValue(m.SourceSnapshotID, other.SourceSnapshotID, preserveKnown)
@@ -131,6 +134,15 @@ func (m *BaseModel) CopyFrom(other BaseModel, preserveKnown bool) {
 	m.Updated = helper.KeepOrUpdateValue(m.Updated, other.Updated, preserveKnown)
 	m.Tags = helper.KeepOrUpdateValue(m.Tags, other.Tags, preserveKnown)
 	m.Stats = helper.KeepOrUpdateValue(m.Stats, other.Stats, preserveKnown)
+}
+
+// flattenMaxFileCount maps an unlimited (null) max_file_count, which the SDK
+// decodes as 0, to a null Terraform value.
+func flattenMaxFileCount(count int64) types.Int64 {
+	if count == 0 {
+		return types.Int64Null()
+	}
+	return types.Int64Value(count)
 }
 
 // ResourceModel represents the Terraform state for the linode_nfs_filesystem resource.

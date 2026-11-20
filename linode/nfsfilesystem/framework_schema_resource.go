@@ -2,12 +2,14 @@ package nfsfilesystem
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -61,7 +63,24 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"max_capacity_bytes": schema.Int64Attribute{
 			Description: "The provisioned capacity of the filesystem, in bytes.",
-			Required:    true,
+			Optional:    true,
+			Computed:    true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
+		},
+		"max_file_count": schema.Int64Attribute{
+			Description: "The maximum number of files and directories allowed in the filesystem. " +
+				"If not set, the API default is used. Removing a previously configured value " +
+				"makes the file count unlimited. Can only be increased or removed.",
+			Optional: true,
+			Computed: true,
+			Validators: []validator.Int64{
+				int64validator.AtLeast(1),
+			},
+			PlanModifiers: []planmodifier.Int64{
+				maxFileCountPlanModifier{},
+			},
 		},
 		"protocol_versions": schema.ListAttribute{
 			Description: "The NFS protocol versions supported by this filesystem. Currently only " +
@@ -92,9 +111,6 @@ var frameworkResourceSchema = schema.Schema{
 		"mount_target_fqdn": schema.StringAttribute{
 			Description: "The full NFS mount string using the DNS-resolvable FQDN.",
 			Computed:    true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
 		},
 		"snapshot_usage_bytes": schema.Int64Attribute{
 			Description: "The total unique snapshot capacity in bytes for this filesystem.",
