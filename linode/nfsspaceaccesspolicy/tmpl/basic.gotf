@@ -1,0 +1,24 @@
+{{ define "nfs_space_access_policy_basic" }}
+
+resource "linode_nfs_space" "foobar" {
+    label = "{{.Label}}"
+}
+
+# The space access policy can only be updated once the space has an active
+# tenant, which is provisioned along with its first filesystem.
+resource "linode_nfs_filesystem" "foobar" {
+    space_id           = linode_nfs_space.foobar.id
+    label              = "{{.Label}}"
+    region             = "{{.Region}}"
+    max_capacity_bytes = {{.MaxCapacityBytes}}
+}
+
+resource "linode_nfs_space_access_policy" "foobar" {
+    space_id  = linode_nfs_space.foobar.id
+    enabled   = {{.Enabled}}
+    mtls_mode = "disabled"
+
+    depends_on = [linode_nfs_filesystem.foobar]
+}
+
+{{ end }}
