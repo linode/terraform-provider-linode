@@ -65,9 +65,9 @@ The `linode_database_mysql_v2` data source exports the following attributes:
 
 * `region` - The region to use for the Managed Database.
 
-* `root_password` - The randomly-generated root password for the Managed Database instance.
+* `root_password` - The randomly-generated root password for the Managed Database instance. This attribute is sensitive.
 
-* `root_username` - The root username for the Managed Database instance.
+* `root_username` - The root username for the Managed Database instance. This attribute is sensitive.
 
 * `ssl_connection` - Whether to require SSL credentials to establish a connection to the Managed Database.
 
@@ -138,6 +138,8 @@ The `linode_database_mysql_v2` data source exports the following attributes:
 * `engine_config_mysql_tmp_table_size` - Limits the size of internal in-memory tables. Also set max_heap_table_size. Default is 16777216 (16M).
 
 * `engine_config_mysql_wait_timeout` - The number of seconds the server waits for activity on a noninteractive connection before closing it.
+
+Terraform redacts sensitive attribute values in CLI output, but still stores them in state. Protect and restrict access to state files and their backups.
 
 ## pending_updates
 

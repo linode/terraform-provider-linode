@@ -91,13 +91,8 @@ func CheckMySQLDatabaseV2Destroy(s *terraform.State) error {
 		}
 
 		_, err = client.GetMySQLDatabase(context.Background(), id)
-
-		if err == nil {
-			return fmt.Errorf("should not find database ID %d existing after delete", id)
-		}
-
-		if apiErr, ok := err.(*linodego.Error); ok && !linodego.IsNotFound(apiErr) {
-			return fmt.Errorf("failed to get database ID %d: %s", id, err)
+		if err := checkDatabaseDestroyResult(id, err); err != nil {
+			return err
 		}
 	}
 
@@ -122,13 +117,8 @@ func CheckPostgreSQLDatabaseV2Destroy(s *terraform.State) error {
 		}
 
 		_, err = client.GetPostgresDatabase(context.Background(), id)
-
-		if err == nil {
-			return fmt.Errorf("should not find database ID %d existing after delete", id)
-		}
-
-		if apiErr, ok := err.(*linodego.Error); ok && !linodego.IsNotFound(apiErr) {
-			return fmt.Errorf("failed to get database ID %d: %s", id, err)
+		if err := checkDatabaseDestroyResult(id, err); err != nil {
+			return err
 		}
 	}
 

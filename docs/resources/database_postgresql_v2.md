@@ -295,9 +295,9 @@ In addition to all arguments above, the following attributes are exported:
 
 * `port` - The access port for this Managed Database.
 
-* `root_password` - The randomly-generated root password for the Managed Database instance.
+* `root_password` - The randomly-generated root password for the Managed Database instance. This attribute is sensitive.
 
-* `root_username` - The root username for the Managed Database instance.
+* `root_username` - The root username for the Managed Database instance. This attribute is sensitive.
 
 * `ssl_connection` - Whether to require SSL credentials to establish a connection to the Managed Database.
 
@@ -308,6 +308,8 @@ In addition to all arguments above, the following attributes are exported:
 * `updated` - When this Managed Database was last updated.
 
 * `version` - The Managed Database engine version. (e.g. `13.2`)
+
+Terraform redacts sensitive attribute values in CLI output, but still stores them in state. Protect and restrict access to state files and their backups.
 
 ## pending_updates
 
