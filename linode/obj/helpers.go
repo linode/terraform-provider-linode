@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"hash/crc32"
 	"io"
+	"net/http"
 	"slices"
 	"strings"
 	"time"
@@ -195,19 +196,49 @@ func (keys ObjectKeys) Ok() bool {
 	return keys.AccessKey != "" && keys.SecretKey != ""
 }
 
-// cleanUpTempKeys deleted the temporarily created object keys.
+// cleanUpTempKeys deletes the temporarily created object keys with retries.
 func cleanUpTempKeys(
 	ctx context.Context,
 	client *linodego.Client,
 	keyId int,
 ) {
+	cleanUpTempKeysWithInterval(ctx, client, keyId, 5, 2*time.Second)
+}
+
+func cleanUpTempKeysWithInterval(
+	ctx context.Context,
+	client *linodego.Client,
+	keyId int,
+	maxRetries int,
+	interval time.Duration,
+) {
 	tflog.Trace(ctx, "Clean up temporary keys: client.DeleteObjectStorageKey(...)", map[string]any{
 		"key_id": keyId,
 	})
 
-	if err := client.DeleteObjectStorageKey(ctx, keyId); err != nil {
-		tflog.Warn(ctx, "Failed to clean up temporary object storage keys", map[string]any{
+	// Use context.WithoutCancel so cleanup completes even if parent context was canceled during teardown
+	cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), time.Duration(maxRetries)*interval+10*time.Second)
+	defer cancel()
+
+	err := helper.WithRetries(cleanupCtx, maxRetries, interval, func() (bool, error) {
+		err := client.DeleteObjectStorageKey(cleanupCtx, keyId)
+		if err == nil {
+			return false, nil
+		}
+		if linodego.ErrHasStatus(err, http.StatusNotFound) {
+			// Key is already deleted, no retry needed
+			return false, nil
+		}
+		if cleanupCtx.Err() != nil {
+			return false, cleanupCtx.Err()
+		}
+		return true, err
+	})
+
+	if err != nil {
+		tflog.Warn(cleanupCtx, "Failed to clean up temporary object storage keys", map[string]any{
 			"details": err,
+			"key_id":  keyId,
 		})
 	}
 }
