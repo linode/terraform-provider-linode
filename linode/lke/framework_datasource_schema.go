@@ -148,6 +148,10 @@ var frameworkDataSourceSchema = schema.Schema{
 									Description: "The default policy. A value of true means a default policy of DENY. A value of false means default policy of ALLOW.",
 									Computed:    true,
 								},
+								"revision_id": schema.StringAttribute{
+									Description: "The unique identifier of the current revision of the control plane ACL.",
+									Computed:    true,
+								},
 								"addresses": schema.ListNestedAttribute{
 									Description: "A list of ip addresses allowed.",
 									Computed:    true,

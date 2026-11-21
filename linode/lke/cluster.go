@@ -630,6 +630,7 @@ func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane,
 
 		flattenedACL := make(map[string]any)
 		flattenedACL["enabled"] = acl.Enabled
+		flattenedACL["revision_id"] = acl.RevisionID
 
 		if acl.Addresses != nil {
 			flattenedAddresses := map[string]any{
@@ -685,6 +686,10 @@ func expandACLOptions(aclOptions map[string]any) (*linodego.LKEClusterControlPla
 	if value, ok := aclOptions["enabled"]; ok {
 		v := value.(bool)
 		result.Enabled = &v
+	}
+
+	if value, ok := aclOptions["revision_id"]; ok {
+		result.RevisionID = value.(string)
 	}
 
 	if value, ok := aclOptions["addresses"]; ok {
