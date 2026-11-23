@@ -64,6 +64,8 @@ The following arguments are supported:
 
 * `regions` - A set of regions where the key will grant access to create buckets.
 
+* `key_class` - (Optional) The storage class this key works with, `E` or `IA` (Infrequent Access). When omitted, the API infers the class from the key's regions. One key holds one class, so every region on the key must support that class: a configuration mixing IA regions with other regions on one key fails at apply. Use a separate key for each class. *Changing `key_class` forces the creation of a new Object Storage Key.*
+
 - - -
 
 * `bucket_access` - (Optional, Block Set) Defines this key as a Limited Access Key. Limited Access Keys restrict this Object Storage key’s access to only the bucket(s) declared in this array and define their bucket-level permissions. Not providing this block will not limit this Object Storage Key. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
@@ -87,6 +89,8 @@ This resource exports the following attributes:
 * `secret_key` - This keypair's secret key.
 
 * `limited` - Whether or not this key is a limited access key.
+
+* `key_class` - The storage class of this key, `E` or `IA`, as set or as inferred by the API.
 
 * `regions_details` - (Read-Only Object Set) A set of objects containing the detailed info of the regions where this key can access. Set elements can't be referenced by index; use a `for` expression or `tolist(...)` to access them.
 

@@ -2,6 +2,7 @@ package objkey
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/linodego/v2"
 )
 
 var RegionDetailType = types.ObjectType{
@@ -68,6 +70,19 @@ var frameworkResourceSchema = schema.Schema{
 				"the key will grant access.",
 			Computed:    true,
 			ElementType: RegionDetailType,
+		},
+		"key_class": schema.StringAttribute{
+			Description: "The storage class this key works with: E or IA. One key holds one class, " +
+				"so its regions must all support it. When omitted, the API infers the class from the regions.",
+			Optional: true,
+			Computed: true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(string(linodego.ObjectStorageKeyClassE), string(linodego.ObjectStorageKeyClassIA)),
+			},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 	},
 	Blocks: map[string]schema.Block{

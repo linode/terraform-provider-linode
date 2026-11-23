@@ -6,7 +6,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
@@ -71,4 +74,59 @@ func TestFlattenObjectStorageKeyPreserveKnown(t *testing.T) {
 
 	assert.True(t, expectedID.Equal(rm.ID))
 	assert.True(t, expectedSecretKey.Equal(rm.SecretKey))
+}
+
+func TestFlattenObjectStorageKeyClass(t *testing.T) {
+	key := linodego.ObjectStorageKey{
+		ID:        123,
+		Label:     "my-key",
+		AccessKey: "KVAKUTGBA4WTR2NSJQ81",
+		SecretKey: "[REDACTED]",
+		KeyClass:  linodego.ObjectStorageKeyClassIA,
+	}
+
+	data := ResourceModel{}
+	var diags diag.Diagnostics
+	data.FlattenObjectStorageKey(context.Background(), &key, false, &diags)
+	assert.False(t, diags.HasError(), "error flattening obj key")
+	assert.Equal(t, types.StringValue("IA"), data.KeyClass)
+
+	rm := ResourceModel{KeyClass: types.StringUnknown()}
+	rm.FlattenObjectStorageKey(context.Background(), &key, true, &diags)
+	assert.False(t, diags.HasError(), "error flattening obj key")
+	assert.Equal(t, types.StringValue("IA"), rm.KeyClass)
+}
+
+func TestGetCreateOptionsKeyClass(t *testing.T) {
+	ctx := context.Background()
+	regions := types.SetValueMust(types.StringType, []attr.Value{types.StringValue("us-iad")})
+
+	opts := ResourceModel{Label: types.StringValue("k"), Regions: regions, KeyClass: types.StringValue("IA")}.
+		GetCreateOptions(ctx)
+	if assert.NotNil(t, opts.KeyClass) {
+		assert.Equal(t, linodego.ObjectStorageKeyClassIA, *opts.KeyClass)
+	}
+
+	opts = ResourceModel{Label: types.StringValue("k"), Regions: regions, KeyClass: types.StringUnknown()}.
+		GetCreateOptions(ctx)
+	assert.Nil(t, opts.KeyClass)
+}
+
+func TestKeyClassSchemaRequiresReplace(t *testing.T) {
+	ctx := context.Background()
+	attribute, ok := frameworkResourceSchema.Attributes["key_class"].(schema.StringAttribute)
+	if !assert.True(t, ok, "key_class is not a string attribute") {
+		return
+	}
+	assert.True(t, attribute.Optional)
+	assert.True(t, attribute.Computed)
+
+	want := stringplanmodifier.RequiresReplace().Description(ctx)
+	found := false
+	for _, m := range attribute.PlanModifiers {
+		if m.Description(ctx) == want {
+			found = true
+		}
+	}
+	assert.True(t, found, "key_class does not force replacement")
 }

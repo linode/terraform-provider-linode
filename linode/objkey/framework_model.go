@@ -33,6 +33,7 @@ type ResourceModel struct {
 	Limited       types.Bool   `tfsdk:"limited"`
 	Regions       types.Set    `tfsdk:"regions"`
 	RegionDetails types.Set    `tfsdk:"regions_details"`
+	KeyClass      types.String `tfsdk:"key_class"`
 
 	BucketAccess []BucketAccessModelEntry `tfsdk:"bucket_access"`
 }
@@ -71,6 +72,11 @@ func (plan ResourceModel) GetCreateOptions(ctx context.Context) (opts linodego.O
 
 	plan.Regions.ElementsAs(ctx, &opts.Regions, false)
 
+	if !plan.KeyClass.IsNull() && !plan.KeyClass.IsUnknown() {
+		keyClass := linodego.ObjectStorageKeyClass(plan.KeyClass.ValueString())
+		opts.KeyClass = &keyClass
+	}
+
 	return opts
 }
 
@@ -102,6 +108,7 @@ func (rm *ResourceModel) FlattenObjectStorageKey(
 	rm.ID = helper.KeepOrUpdateString(rm.ID, strconv.Itoa(key.ID), preserveKnown)
 	rm.AccessKey = helper.KeepOrUpdateString(rm.AccessKey, key.AccessKey, preserveKnown)
 	rm.Limited = helper.KeepOrUpdateBool(rm.Limited, key.Limited, preserveKnown)
+	rm.KeyClass = helper.KeepOrUpdateString(rm.KeyClass, string(key.KeyClass), preserveKnown)
 
 	// We only want to populate this field if a key is returned,
 	// else we should preserve the old value.
@@ -173,6 +180,7 @@ func (rm *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	rm.Limited = helper.KeepOrUpdateValue(rm.Limited, other.Limited, preserveKnown)
 	rm.Regions = helper.KeepOrUpdateValue(rm.Regions, other.Regions, preserveKnown)
 	rm.RegionDetails = helper.KeepOrUpdateValue(rm.RegionDetails, other.RegionDetails, preserveKnown)
+	rm.KeyClass = helper.KeepOrUpdateValue(rm.KeyClass, other.KeyClass, preserveKnown)
 
 	if !preserveKnown {
 		rm.BucketAccess = other.BucketAccess
