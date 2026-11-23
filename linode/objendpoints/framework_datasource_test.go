@@ -36,7 +36,7 @@ func TestAccDataSourceObjectStorageEndpoints_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						dataSourceName,
 						tfjsonpath.New("endpoints").AtSliceIndex(0).AtMapKey("endpoint_type"),
-						knownvalue.StringRegexp(regexp.MustCompile(`^E\d$`)),
+						knownvalue.StringRegexp(regexp.MustCompile(`^(E|IA)\d$`)),
 					),
 				},
 			},
