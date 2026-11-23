@@ -3,6 +3,7 @@ package nfsquota
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -13,6 +14,10 @@ import (
 )
 
 var identifierTypeValidator = stringvalidator.OneOf("uid", "username", "gid", "groupname")
+
+// The API returns unset lists as [], which are flattened to null, so empty
+// lists are rejected to avoid perpetual diffs.
+var nonEmptyListValidators = []validator.List{listvalidator.SizeAtLeast(1)}
 
 func capacityLimitAttributes(description string) schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
@@ -35,6 +40,7 @@ func identifiedLimitAttributes(description string) schema.ListNestedAttribute {
 	return schema.ListNestedAttribute{
 		Description: description,
 		Optional:    true,
+		Validators:  nonEmptyListValidators,
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"identifier_type": schema.StringAttribute{
@@ -54,24 +60,6 @@ func identifiedLimitAttributes(description string) schema.ListNestedAttribute {
 					Description: "The maximum number of files allowed for this identifier.",
 					Optional:    true,
 				},
-			},
-		},
-	}
-}
-
-func identityAttribute(description string) schema.SingleNestedAttribute {
-	return schema.SingleNestedAttribute{
-		Description: description,
-		Required:    true,
-		Attributes: map[string]schema.Attribute{
-			"identifier_type": schema.StringAttribute{
-				Description: "The identifier type. One of: uid, username, gid, groupname.",
-				Required:    true,
-				Validators:  []validator.String{identifierTypeValidator},
-			},
-			"identifier": schema.StringAttribute{
-				Description: "The user or group identifier value.",
-				Required:    true,
 			},
 		},
 	}
@@ -169,24 +157,6 @@ var frameworkResourceSchema = schema.Schema{
 				"default_group_limit": capacityLimitAttributes("The default limit applied to each group."),
 				"user_limits":         identifiedLimitAttributes("Per-user quota limits."),
 				"group_limits":        identifiedLimitAttributes("Per-group quota limits."),
-				"user_group_limits": schema.ListNestedAttribute{
-					Description: "Combined user and group quota limits.",
-					Optional:    true,
-					NestedObject: schema.NestedAttributeObject{
-						Attributes: map[string]schema.Attribute{
-							"user":  identityAttribute("The user portion of the combined limit."),
-							"group": identityAttribute("The group portion of the combined limit."),
-							"max_capacity_bytes": schema.Int64Attribute{
-								Description: "The maximum capacity in bytes allowed for this combined limit.",
-								Optional:    true,
-							},
-							"max_file_count": schema.Int64Attribute{
-								Description: "The maximum number of files allowed for this combined limit.",
-								Optional:    true,
-							},
-						},
-					},
-				},
 			},
 		},
 	},

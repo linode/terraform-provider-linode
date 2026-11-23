@@ -30,11 +30,10 @@ type ResourceModel struct {
 
 // UserGroupConfigModel models user and group quota configuration.
 type UserGroupConfigModel struct {
-	DefaultUserLimit  *CapacityLimitModel           `tfsdk:"default_user_limit"`
-	DefaultGroupLimit *CapacityLimitModel           `tfsdk:"default_group_limit"`
-	UserLimits        []IdentifiedLimitModel        `tfsdk:"user_limits"`
-	GroupLimits       []IdentifiedLimitModel        `tfsdk:"group_limits"`
-	UserGroupLimits   []UserGroupCombinedLimitModel `tfsdk:"user_group_limits"`
+	DefaultUserLimit  *CapacityLimitModel    `tfsdk:"default_user_limit"`
+	DefaultGroupLimit *CapacityLimitModel    `tfsdk:"default_group_limit"`
+	UserLimits        []IdentifiedLimitModel `tfsdk:"user_limits"`
+	GroupLimits       []IdentifiedLimitModel `tfsdk:"group_limits"`
 }
 
 // CapacityLimitModel models capacity and file count limits.
@@ -49,20 +48,6 @@ type IdentifiedLimitModel struct {
 	Identifier       types.String `tfsdk:"identifier"`
 	MaxCapacityBytes types.Int64  `tfsdk:"max_capacity_bytes"`
 	MaxFileCount     types.Int64  `tfsdk:"max_file_count"`
-}
-
-// UserGroupCombinedLimitModel models limits for a combined user and group.
-type UserGroupCombinedLimitModel struct {
-	User             IdentityModel `tfsdk:"user"`
-	Group            IdentityModel `tfsdk:"group"`
-	MaxCapacityBytes types.Int64   `tfsdk:"max_capacity_bytes"`
-	MaxFileCount     types.Int64   `tfsdk:"max_file_count"`
-}
-
-// IdentityModel identifies a user or group.
-type IdentityModel struct {
-	IdentifierType types.String `tfsdk:"identifier_type"`
-	Identifier     types.String `tfsdk:"identifier"`
 }
 
 // FlattenQuota populates the resource model from an API response.
@@ -189,9 +174,6 @@ func flattenUserGroupConfig(config *linodego.NFSUserGroupConfig) *UserGroupConfi
 	if len(config.GroupLimits) > 0 {
 		result.GroupLimits = helper.MapSlice(config.GroupLimits, flattenIdentifiedLimit)
 	}
-	if len(config.UserGroupLimits) > 0 {
-		result.UserGroupLimits = helper.MapSlice(config.UserGroupLimits, flattenUserGroupCombinedLimit)
-	}
 
 	return result
 }
@@ -215,22 +197,6 @@ func flattenIdentifiedLimit(limit linodego.NFSIdentifiedLimit) IdentifiedLimitMo
 	}
 }
 
-func flattenUserGroupCombinedLimit(limit linodego.NFSUserGroupCombinedLimit) UserGroupCombinedLimitModel {
-	return UserGroupCombinedLimitModel{
-		User:             flattenIdentity(limit.User),
-		Group:            flattenIdentity(limit.Group),
-		MaxCapacityBytes: int64PointerValue(limit.MaxCapacityBytes),
-		MaxFileCount:     int64PointerValue(limit.MaxFileCount),
-	}
-}
-
-func flattenIdentity(identity linodego.NFSUserGroupLimitIdentity) IdentityModel {
-	return IdentityModel{
-		IdentifierType: types.StringValue(string(identity.IdentifierType)),
-		Identifier:     types.StringValue(identity.Identifier),
-	}
-}
-
 func (m *UserGroupConfigModel) toOptions() *linodego.NFSUserGroupConfigOptions {
 	opts := &linodego.NFSUserGroupConfigOptions{
 		DefaultUserLimit:  m.DefaultUserLimit.toOptions(),
@@ -244,10 +210,6 @@ func (m *UserGroupConfigModel) toOptions() *linodego.NFSUserGroupConfigOptions {
 	if m.GroupLimits != nil {
 		limits := helper.MapSlice(m.GroupLimits, identifiedLimitToOptions)
 		opts.GroupLimits = &limits
-	}
-	if m.UserGroupLimits != nil {
-		limits := helper.MapSlice(m.UserGroupLimits, userGroupCombinedLimitToOptions)
-		opts.UserGroupLimits = &limits
 	}
 
 	return opts
@@ -269,9 +231,6 @@ func userGroupConfigUpdateOptions(m *UserGroupConfigModel) **linodego.NFSUserGro
 	}
 	if opts.GroupLimits == nil {
 		opts.GroupLimits = &[]linodego.NFSIdentifiedLimitOptions{}
-	}
-	if opts.UserGroupLimits == nil {
-		opts.UserGroupLimits = &[]linodego.NFSUserGroupCombinedLimitOptions{}
 	}
 
 	return &opts
@@ -302,21 +261,5 @@ func identifiedLimitToOptions(m IdentifiedLimitModel) linodego.NFSIdentifiedLimi
 		Identifier:       m.Identifier.ValueString(),
 		MaxCapacityBytes: m.MaxCapacityBytes.ValueInt64Pointer(),
 		MaxFileCount:     m.MaxFileCount.ValueInt64Pointer(),
-	}
-}
-
-func userGroupCombinedLimitToOptions(m UserGroupCombinedLimitModel) linodego.NFSUserGroupCombinedLimitOptions {
-	return linodego.NFSUserGroupCombinedLimitOptions{
-		User:             identityToOptions(m.User),
-		Group:            identityToOptions(m.Group),
-		MaxCapacityBytes: m.MaxCapacityBytes.ValueInt64Pointer(),
-		MaxFileCount:     m.MaxFileCount.ValueInt64Pointer(),
-	}
-}
-
-func identityToOptions(m IdentityModel) linodego.NFSUserGroupLimitIdentity {
-	return linodego.NFSUserGroupLimitIdentity{
-		IdentifierType: linodego.NFSQuotaRuleIdentifierType(m.IdentifierType.ValueString()),
-		Identifier:     m.Identifier.ValueString(),
 	}
 }

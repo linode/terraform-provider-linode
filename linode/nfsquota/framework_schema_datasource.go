@@ -49,23 +49,6 @@ func dsIdentifiedLimitAttributes(description string) schema.ListNestedAttribute 
 	}
 }
 
-func dsIdentityAttribute(description string) schema.SingleNestedAttribute {
-	return schema.SingleNestedAttribute{
-		Description: description,
-		Computed:    true,
-		Attributes: map[string]schema.Attribute{
-			"identifier_type": schema.StringAttribute{
-				Description: "The identifier type. One of: uid, username, gid, groupname.",
-				Computed:    true,
-			},
-			"identifier": schema.StringAttribute{
-				Description: "The user or group identifier value.",
-				Computed:    true,
-			},
-		},
-	}
-}
-
 var DataSourceSchema = schema.Schema{
 	Description: "Provides details about a Linode NFS Quota.",
 	Attributes: map[string]schema.Attribute{
@@ -136,24 +119,6 @@ var DataSourceSchema = schema.Schema{
 				"default_group_limit": dsCapacityLimitAttributes("The default limit applied to each group."),
 				"user_limits":         dsIdentifiedLimitAttributes("Per-user quota limits."),
 				"group_limits":        dsIdentifiedLimitAttributes("Per-group quota limits."),
-				"user_group_limits": schema.ListNestedAttribute{
-					Description: "Combined user and group quota limits.",
-					Computed:    true,
-					NestedObject: schema.NestedAttributeObject{
-						Attributes: map[string]schema.Attribute{
-							"user":  dsIdentityAttribute("The user portion of the combined limit."),
-							"group": dsIdentityAttribute("The group portion of the combined limit."),
-							"max_capacity_bytes": schema.Int64Attribute{
-								Description: "The maximum capacity in bytes allowed for this combined limit.",
-								Computed:    true,
-							},
-							"max_file_count": schema.Int64Attribute{
-								Description: "The maximum number of files allowed for this combined limit.",
-								Computed:    true,
-							},
-						},
-					},
-				},
 			},
 		},
 	},

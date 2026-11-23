@@ -60,20 +60,6 @@ func TestFlattenQuota_userGroupConfig(t *testing.T) {
 					MaxFileCount:     ptrInt64(500),
 				},
 			},
-			UserGroupLimits: []linodego.NFSUserGroupCombinedLimit{
-				{
-					User: linodego.NFSUserGroupLimitIdentity{
-						IdentifierType: linodego.NFSQuotaRuleIdentifierTypeUID,
-						Identifier:     "1001",
-					},
-					Group: linodego.NFSUserGroupLimitIdentity{
-						IdentifierType: linodego.NFSQuotaRuleIdentifierTypeGID,
-						Identifier:     "2001",
-					},
-					MaxCapacityBytes: ptrInt64(268435456),
-					MaxFileCount:     ptrInt64(250),
-				},
-			},
 		},
 	}
 
@@ -88,10 +74,6 @@ func TestFlattenQuota_userGroupConfig(t *testing.T) {
 	require.Len(t, model.UserGroupConfig.UserLimits, 1)
 	require.Equal(t, "uid", model.UserGroupConfig.UserLimits[0].IdentifierType.ValueString())
 	require.Equal(t, "1001", model.UserGroupConfig.UserLimits[0].Identifier.ValueString())
-
-	require.Len(t, model.UserGroupConfig.UserGroupLimits, 1)
-	require.Equal(t, "gid", model.UserGroupConfig.UserGroupLimits[0].Group.IdentifierType.ValueString())
-	require.Equal(t, int64(268435456), model.UserGroupConfig.UserGroupLimits[0].MaxCapacityBytes.ValueInt64())
 }
 
 func TestFlattenQuota_nullPointers(t *testing.T) {
@@ -224,7 +206,7 @@ func TestUserGroupConfigUpdateOptions_emptiesOmittedLists(t *testing.T) {
 	require.Len(t, *opts.UserLimits, 1)
 	require.Equal(t, "1001", (*opts.UserLimits)[0].Identifier)
 	require.Empty(t, *opts.GroupLimits)
-	require.Empty(t, *opts.UserGroupLimits)
+	require.Nil(t, opts.UserGroupLimits)
 }
 
 func TestFlattenQuota_emptyListsAreNull(t *testing.T) {
@@ -243,5 +225,4 @@ func TestFlattenQuota_emptyListsAreNull(t *testing.T) {
 	require.NotNil(t, model.UserGroupConfig)
 	require.Nil(t, model.UserGroupConfig.UserLimits)
 	require.Nil(t, model.UserGroupConfig.GroupLimits)
-	require.Nil(t, model.UserGroupConfig.UserGroupLimits)
 }

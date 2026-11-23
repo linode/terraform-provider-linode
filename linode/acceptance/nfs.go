@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego/v2"
 )
 
@@ -58,6 +59,12 @@ func GetNFSTestRegion(t testing.TB) string {
 // cleaned up manually.
 func GetNFSTestFilesystem(t testing.TB) *linodego.NFSFilesystem {
 	t.Helper()
+
+	// This fixture creates billable resources before resourceTest runs, so
+	// honor the TF_ACC opt-in here as well.
+	if os.Getenv(resource.EnvTfAcc) == "" {
+		t.Skipf("Acceptance tests skipped unless env '%s' set", resource.EnvTfAcc)
+	}
 
 	region := GetNFSTestRegion(t)
 

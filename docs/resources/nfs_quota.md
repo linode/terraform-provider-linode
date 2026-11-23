@@ -48,21 +48,6 @@ resource "linode_nfs_quota" "example" {
         max_file_count     = 500
       }
     ]
-
-    user_group_limits = [
-      {
-        user = {
-          identifier_type = "uid"
-          identifier      = "1001"
-        }
-        group = {
-          identifier_type = "gid"
-          identifier      = "2001"
-        }
-        max_capacity_bytes = 268435456
-        max_file_count     = 250
-      }
-    ]
   }
 }
 ```
@@ -95,11 +80,9 @@ The following arguments are supported in the `user_group_config` **Nested Attrib
 
 * [`default_group_limit`](#capacity-limit) - (Optional) The default limit applied to each group.
 
-* [`user_limits`](#identified-limit) - (Optional) A list of per-user quota limits.
+* [`user_limits`](#identified-limit) - (Optional) A list of per-user quota limits. If set, it must contain at least one entry.
 
-* [`group_limits`](#identified-limit) - (Optional) A list of per-group quota limits.
-
-* [`user_group_limits`](#user_group_limits) - (Optional) A list of combined user and group quota limits.
+* [`group_limits`](#identified-limit) - (Optional) A list of per-group quota limits. If set, it must contain at least one entry.
 
 ### capacity-limit
 
@@ -120,26 +103,6 @@ Each entry in `user_limits` and `group_limits` supports the following arguments:
 * `max_capacity_bytes` - (Optional) The maximum capacity in bytes allowed for this identifier.
 
 * `max_file_count` - (Optional) The maximum number of files allowed for this identifier.
-
-### user_group_limits
-
-Each entry in `user_group_limits` supports the following arguments:
-
-* [`user`](#identity) - (Required) The user portion of the combined limit.
-
-* [`group`](#identity) - (Required) The group portion of the combined limit.
-
-* `max_capacity_bytes` - (Optional) The maximum capacity in bytes allowed for this combined limit.
-
-* `max_file_count` - (Optional) The maximum number of files allowed for this combined limit.
-
-### identity
-
-The `user` and `group` **Nested Attributes** support the following arguments:
-
-* `identifier_type` - (Required) The identifier type. One of: `uid`, `username`, `gid`, `groupname`.
-
-* `identifier` - (Required) The user or group identifier value.
 
 ## Attributes Reference
 

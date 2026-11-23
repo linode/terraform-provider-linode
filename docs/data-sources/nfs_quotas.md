@@ -107,8 +107,6 @@ The `user_group_config` **Nested Attribute** exports the following attributes:
 
 * `group_limits` - A list of per-group quota limits. See [identified limit](#identified-limit) for details.
 
-* `user_group_limits` - A list of combined user and group quota limits. See [user group limits](#user_group_limits) for details.
-
 ### capacity-limit
 
 * `max_capacity_bytes` - The maximum capacity in bytes allowed by this limit.
@@ -124,22 +122,6 @@ The `user_group_config` **Nested Attribute** exports the following attributes:
 * `max_capacity_bytes` - The maximum capacity in bytes allowed for this identifier.
 
 * `max_file_count` - The maximum number of files allowed for this identifier.
-
-### user_group_limits
-
-* `user` - The user portion of the combined limit. See [identity](#identity) for details.
-
-* `group` - The group portion of the combined limit. See [identity](#identity) for details.
-
-* `max_capacity_bytes` - The maximum capacity in bytes allowed for this combined limit.
-
-* `max_file_count` - The maximum number of files allowed for this combined limit.
-
-### identity
-
-* `identifier_type` - The identifier type. One of: `uid`, `username`, `gid`, `groupname`.
-
-* `identifier` - The user or group identifier value.
 
 ## Filter
 
