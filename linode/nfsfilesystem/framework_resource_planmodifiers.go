@@ -3,10 +3,32 @@ package nfsfilesystem
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+// ModifyPlan marks API-generated attributes unknown whenever an update is planned.
+// The framework only does this when the proposed state differs from prior state,
+// which misses changes introduced by attribute plan modifiers (e.g. removing
+// max_file_count), leaving stale values like stats in the plan.
+func (r *Resource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() || req.Plan.Raw.Equal(req.State.Raw) {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("stats"), types.ObjectUnknown(statsObjectType.AttrTypes))...)
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("updated"), timetypes.NewRFC3339Unknown())...)
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("mount_target_fqdn"), types.StringUnknown())...)
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("snapshot_usage_bytes"), types.Int64Unknown())...)
+}
 
 // maxFileCountConfiguredKey is the private state key recording that the user has
 // explicitly configured max_file_count.
