@@ -92,6 +92,16 @@ func TestFlattenNFSFilesystemAccessPolicyPreserveKnown(t *testing.T) {
 	assert.Equal(t, types.StringValue("all_squash"), model.SquashPolicy)
 }
 
+func TestIsUnconfigured(t *testing.T) {
+	created := time.Date(2026, time.May, 1, 14, 0, 0, 0, time.UTC)
+
+	assert.True(t, isUnconfigured(&linodego.NFSFilesystemAccessPolicy{}))
+	assert.False(t, isUnconfigured(&linodego.NFSFilesystemAccessPolicy{
+		Status: linodego.NFSAccessPolicyStatusActive,
+	}))
+	assert.False(t, isUnconfigured(&linodego.NFSFilesystemAccessPolicy{Created: &created}))
+}
+
 func TestNFSFilesystemAccessPolicyGetUpdateOptions(t *testing.T) {
 	ctx := context.Background()
 

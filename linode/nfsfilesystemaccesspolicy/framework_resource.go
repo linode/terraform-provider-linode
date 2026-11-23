@@ -123,6 +123,19 @@ func (r *Resource) Read(
 		return
 	}
 
+	if isUnconfigured(policy) {
+		resp.Diagnostics.AddWarning(
+			"NFS Filesystem Access Policy Not Configured",
+			fmt.Sprintf(
+				"Removing the access policy of NFS Filesystem %d (NFS Space %d) from state "+
+					"because it has not been configured",
+				filesystemID, spaceID,
+			),
+		)
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
 	state.Flatten(ctx, spaceID, filesystemID, policy, false, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
@@ -155,9 +168,9 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
-// Delete removes the access policy from the Terraform state only. An NFS
-// Filesystem always has exactly one access policy, so it cannot be deleted
-// through the API.
+// Delete removes the access policy from the Terraform state only. Once
+// configured, an NFS Filesystem access policy cannot be deleted or reverted to
+// the unconfigured state through the API.
 func (r *Resource) Delete(
 	ctx context.Context,
 	req resource.DeleteRequest,
@@ -172,7 +185,9 @@ func (r *Resource) Delete(
 }
 
 // apply sends the planned access policy fields to the API and flattens the
-// settled policy into plan. When state is nil, all known planned fields are sent.
+// settled policy into plan. When state is nil (create), all known planned fields
+// are sent and the update is always performed, because an NFS Filesystem has no
+// access policy until it is first updated.
 func (r *Resource) apply(
 	ctx context.Context,
 	plan *ResourceModel,
@@ -204,7 +219,7 @@ func (r *Resource) apply(
 		return
 	}
 
-	if shouldUpdate {
+	if shouldUpdate || state == nil {
 		tflog.Debug(ctx, "client.UpdateNFSFilesystemAccessPolicy(...)", map[string]any{
 			"options": opts,
 		})
@@ -240,6 +255,13 @@ func (r *Resource) apply(
 	}
 
 	plan.Flatten(ctx, spaceID, filesystemID, policy, true, diags)
+}
+
+// isUnconfigured reports whether the API returned an empty access policy, which
+// means the filesystem's access policy has never been configured and the
+// filesystem follows the NFS Space access policy.
+func isUnconfigured(policy *linodego.NFSFilesystemAccessPolicy) bool {
+	return policy.Status == "" && policy.Created == nil
 }
 
 func getIDs(m ResourceModel, diags *diag.Diagnostics) (spaceID, filesystemID int) {

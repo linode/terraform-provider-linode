@@ -13,7 +13,7 @@ For more information, see the [Linode APIv4 docs](TBD).
 
 -> **Note:** A filesystem access policy can only be enabled while the parent NFS Space access policy is enabled. Reference the `linode_nfs_space_access_policy` resource (as in the example below) so that it is applied first.
 
--> **Note:** Every NFS Filesystem always has exactly one access policy. Destroying this resource only removes it from the Terraform state; the access policy remains configured on the NFS Filesystem.
+-> **Note:** An NFS Filesystem has no access policy until one is first configured; until then, the filesystem follows the NFS Space access policy. Creating this resource always configures the access policy, using the API defaults for any omitted arguments. Once configured, the access policy cannot be deleted or reverted to the unconfigured state: destroying this resource only removes it from the Terraform state, and the access policy remains configured on the NFS Filesystem. Importing a filesystem whose access policy has never been configured fails.
 
 ## Example Usage
 
