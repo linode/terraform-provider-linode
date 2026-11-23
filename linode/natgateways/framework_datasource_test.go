@@ -3,12 +3,15 @@
 package natgateways_test
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/acceptance"
@@ -20,6 +23,7 @@ const (
 	natGatewaysByID    = "data.linode_natgateways.by_id"
 	natGatewayFirst    = "linode_natgateway.first"
 	natGatewaySecond   = "linode_natgateway.second"
+	natGatewaysOrdered = "data.linode_natgateways.ordered"
 )
 
 func TestAccDataSourceNATGateways_basic(t *testing.T) {
@@ -77,6 +81,23 @@ func TestAccDataSourceNATGateways_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(natGatewaysByLabel, "natgateways.0.id", natGatewayFirst, "id"),
 					resource.TestCheckResourceAttrPair(natGatewaysByID, "natgateways.0.id", natGatewaySecond, "id"),
+
+					resource.TestCheckResourceAttr(natGatewaysOrdered, "natgateways.#", "2"),
+					func(s *terraform.State) error {
+						attrs := s.RootModule().Resources[natGatewaysOrdered].Primary.Attributes
+						first, err := strconv.Atoi(attrs["natgateways.0.id"])
+						if err != nil {
+							return err
+						}
+						second, err := strconv.Atoi(attrs["natgateways.1.id"])
+						if err != nil {
+							return err
+						}
+						if first <= second {
+							return fmt.Errorf("expected IDs in descending order, got %d then %d", first, second)
+						}
+						return nil
+					},
 				),
 			},
 		},

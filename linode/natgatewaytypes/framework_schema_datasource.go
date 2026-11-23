@@ -6,10 +6,9 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
-// TODO: Replace with API filterable fields once they are available
 var filterConfig = frameworkfilter.Config{
-	"id":    {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"label": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"id":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"label": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDatasourceSchema = schema.Schema{
@@ -24,21 +23,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The returned list of NAT Gateway types.",
 			Computed:    true,
 			NestedObject: schema.NestedAttributeObject{
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Description: "The unique ID assigned to this NAT Gateway type.",
-						Computed:    true,
-					},
-					"label": schema.StringAttribute{
-						Description: "The NAT Gateway type's label.",
-						Computed:    true,
-					},
-					"price": schema.ListAttribute{
-						Description: "Cost in US dollars, broken down into hourly and monthly charges.",
-						Computed:    true,
-						ElementType: helper.PriceObjectType,
-					},
-				},
+				Attributes: helper.GetPricingTypeAttributes("NAT Gateway Type"),
 			},
 		},
 	},

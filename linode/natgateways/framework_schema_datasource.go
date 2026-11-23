@@ -6,11 +6,10 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
-// TODO: Replace with API filterable fields once they are available
 var filterConfig = frameworkfilter.Config{
-	"id":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
-	"label":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"region": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"id":     {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"label":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"region": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var natGatewayVPCSubnetAttributes = map[string]schema.Attribute{

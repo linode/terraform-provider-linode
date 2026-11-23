@@ -7,5 +7,17 @@ data "linode_natgateway_types" "foobar" {
     }
 }
 
+data "linode_natgateway_types" "by_label" {
+    filter {
+        name = "label"
+        values = ["NAT Gateway"]
+    }
+}
+
+data "linode_natgateway_types" "ordered" {
+    order_by = "label"
+    order = "asc"
+}
+
 {{ end }}
 

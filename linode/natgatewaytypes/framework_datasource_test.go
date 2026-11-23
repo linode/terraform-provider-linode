@@ -17,6 +17,8 @@ func TestAccDataSourceNATGatewayTypes_basic(t *testing.T) {
 	t.Parallel()
 
 	dataSourceName := "data.linode_natgateway_types.foobar"
+	byLabelName := "data.linode_natgateway_types.by_label"
+	orderedName := "data.linode_natgateway_types.ordered"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -48,6 +50,26 @@ func TestAccDataSourceNATGatewayTypes_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						dataSourceName,
 						tfjsonpath.New("types").AtSliceIndex(0).AtMapKey("price").AtSliceIndex(0).AtMapKey("monthly"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						tfjsonpath.New("types").AtSliceIndex(0).AtMapKey("region_prices"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						dataSourceName,
+						tfjsonpath.New("types").AtSliceIndex(0).AtMapKey("transfer"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						byLabelName,
+						tfjsonpath.New("types").AtSliceIndex(0).AtMapKey("label"),
+						knownvalue.StringExact("NAT Gateway"),
+					),
+					statecheck.ExpectKnownValue(
+						orderedName,
+						tfjsonpath.New("types").AtSliceIndex(0).AtMapKey("id"),
 						knownvalue.NotNull(),
 					),
 				},

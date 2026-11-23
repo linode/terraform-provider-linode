@@ -41,6 +41,15 @@ output "type_ids" {
 }
 ```
 
+Get all Linode NAT Gateway types ordered by label:
+
+```hcl
+data "linode_natgateway_types" "ordered" {
+  order_by = "label"
+  order    = "asc"
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -76,6 +85,16 @@ Each Linode NAT Gateway type will export the following attributes:
 * `price.0.hourly` - Cost (in US dollars) per hour.
 
 * `price.0.monthly` - Cost (in US dollars) per month.
+
+* `region_prices` - (Read-Only Object List) Region-specific pricing information for this NAT Gateway type. Referenced with an index (e.g. `region_prices.0.hourly`).
+
+* `region_prices.*.id` - The Region ID for these prices.
+
+* `region_prices.*.hourly` - Cost per hour for this region, in US dollars.
+
+* `region_prices.*.monthly` - Cost per month for this region, in US dollars.
+
+* `transfer` - The monthly outbound transfer amount, in MB.
 
 ## Filterable Fields
 

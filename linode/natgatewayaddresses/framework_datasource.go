@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego/v2"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper"
@@ -55,7 +56,8 @@ func (d *DataSource) Read(
 		func(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
 			return listNATGatewayAddresses(ctx, client, filter, natGatewayID)
 		},
-		data.Order, data.OrderBy)
+		// No fields are API-filterable, so ordering is not supported.
+		types.StringNull(), types.StringNull())
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return

@@ -13,8 +13,6 @@ type NATGatewayAddressesModel struct {
 	ID           types.String                     `tfsdk:"id"`
 	NATGatewayID types.Int64                      `tfsdk:"natgateway_id"`
 	Filters      frameworkfilter.FiltersModelType `tfsdk:"filter"`
-	Order        types.String                     `tfsdk:"order"`
-	OrderBy      types.String                     `tfsdk:"order_by"`
 	Addresses    []NATGatewayAddressItemModel     `tfsdk:"addresses"`
 }
 
