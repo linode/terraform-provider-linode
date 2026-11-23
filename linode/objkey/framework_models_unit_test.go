@@ -97,6 +97,21 @@ func TestFlattenObjectStorageKeyClass(t *testing.T) {
 	assert.Equal(t, types.StringValue("IA"), rm.KeyClass)
 }
 
+func TestFlattenObjectStorageKeyClassOmitted(t *testing.T) {
+	key := linodego.ObjectStorageKey{ID: 123, Label: "my-key", SecretKey: "[REDACTED]"}
+	var diags diag.Diagnostics
+
+	rm := ResourceModel{KeyClass: types.StringValue("E")}
+	rm.FlattenObjectStorageKey(context.Background(), &key, false, &diags)
+	assert.False(t, diags.HasError(), "error flattening obj key")
+	assert.Equal(t, types.StringValue("E"), rm.KeyClass)
+
+	rm = ResourceModel{KeyClass: types.StringUnknown()}
+	rm.FlattenObjectStorageKey(context.Background(), &key, true, &diags)
+	assert.False(t, diags.HasError(), "error flattening obj key")
+	assert.Equal(t, types.StringNull(), rm.KeyClass)
+}
+
 func TestGetCreateOptionsKeyClass(t *testing.T) {
 	ctx := context.Background()
 	regions := types.SetValueMust(types.StringType, []attr.Value{types.StringValue("us-iad")})

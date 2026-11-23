@@ -85,3 +85,5 @@ Each Linode Object Storage endpoint type will export the following attributes:
 * `country`
 
 * `region_label`
+
+* `supported_key_classes`

@@ -73,7 +73,8 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"key_class": schema.StringAttribute{
 			Description: "The storage class this key works with: E or IA. One key holds one class, " +
-				"so its regions must all support it. When omitted, the API infers the class from the regions.",
+				"so its regions must all support it. When omitted, the API infers the class from the key's regions " +
+				"and buckets. Without Infrequent Access API access, the API ignores this field.",
 			Optional: true,
 			Computed: true,
 			Validators: []validator.String{

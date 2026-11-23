@@ -108,7 +108,12 @@ func (rm *ResourceModel) FlattenObjectStorageKey(
 	rm.ID = helper.KeepOrUpdateString(rm.ID, strconv.Itoa(key.ID), preserveKnown)
 	rm.AccessKey = helper.KeepOrUpdateString(rm.AccessKey, key.AccessKey, preserveKnown)
 	rm.Limited = helper.KeepOrUpdateBool(rm.Limited, key.Limited, preserveKnown)
-	rm.KeyClass = helper.KeepOrUpdateString(rm.KeyClass, string(key.KeyClass), preserveKnown)
+	// The API omits key_class without IA access; writing "" would replace a key whose config sets it.
+	if key.KeyClass != "" {
+		rm.KeyClass = helper.KeepOrUpdateString(rm.KeyClass, string(key.KeyClass), preserveKnown)
+	} else if rm.KeyClass.IsUnknown() {
+		rm.KeyClass = types.StringNull()
+	}
 
 	// We only want to populate this field if a key is returned,
 	// else we should preserve the old value.

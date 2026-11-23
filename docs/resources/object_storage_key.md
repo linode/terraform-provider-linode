@@ -64,7 +64,7 @@ The following arguments are supported:
 
 * `regions` - A set of regions where the key will grant access to create buckets.
 
-* `key_class` - (Optional) The storage class this key works with, `E` or `IA` (Infrequent Access). When omitted, the API infers the class from the key's regions. One key holds one class, so every region on the key must support that class: a configuration mixing IA regions with other regions on one key fails at apply. Use a separate key for each class. *Changing `key_class` forces the creation of a new Object Storage Key.*
+* `key_class` - (Optional) The storage class this key works with, `E` or `IA` (Infrequent Access). When omitted, the API infers the class from the key's regions and buckets. Without Infrequent Access API access, the API ignores `key_class`. One key holds one class, so every region on the key must support that class: a configuration mixing IA regions with other regions on one key fails at apply. Use a separate key for each class. *Changing `key_class` forces the creation of a new Object Storage Key.*
 
 - - -
 

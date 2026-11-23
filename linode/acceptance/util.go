@@ -633,12 +633,12 @@ func GetEndpointCluster(e linodego.ObjectStorageEndpoint) (string, error) {
 	return strings.Split(endpointURL, ".")[0], nil
 }
 
-var ErrNoObjectStorageEndpoint = errors.New("failed to get an object storage endpoint")
+var errNoObjectStorageEndpoint = errors.New("failed to get an object storage endpoint")
 
 // GetRandomObjectStorageEndpoint returns a random E1 endpoint with a non-nil S3Endpoint.
 func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
 	// E2 and E3 endpoints reject API calls that pass only `cluster`, which some tests still do.
-	return GetRandomObjectStorageEndpointOfType(linodego.ObjectStorageEndpointE1)
+	return getRandomObjectStorageEndpointOfType(linodego.ObjectStorageEndpointE1)
 }
 
 // GetRandomObjectStorageEndpointOrSkip skips t when the account lists no endpoint of endpointType.
@@ -648,8 +648,8 @@ func GetRandomObjectStorageEndpointOrSkip(
 ) linodego.ObjectStorageEndpoint {
 	t.Helper()
 
-	endpoint, err := GetRandomObjectStorageEndpointOfType(endpointType)
-	if errors.Is(err, ErrNoObjectStorageEndpoint) {
+	endpoint, err := getRandomObjectStorageEndpointOfType(endpointType)
+	if errors.Is(err, errNoObjectStorageEndpoint) {
 		t.Skipf("skipping: the account lists no %s object storage endpoint", endpointType)
 	}
 	if err != nil {
@@ -659,9 +659,9 @@ func GetRandomObjectStorageEndpointOrSkip(
 	return *endpoint
 }
 
-// GetRandomObjectStorageEndpointOfType returns ErrNoObjectStorageEndpoint when no endpoint
+// getRandomObjectStorageEndpointOfType returns errNoObjectStorageEndpoint when no endpoint
 // of endpointType has a non-nil S3Endpoint.
-func GetRandomObjectStorageEndpointOfType(
+func getRandomObjectStorageEndpointOfType(
 	endpointType linodego.ObjectStorageEndpointType,
 ) (*linodego.ObjectStorageEndpoint, error) {
 	client, err := GetTestClient()
@@ -686,7 +686,7 @@ func GetRandomObjectStorageEndpointOfType(
 		}
 	}
 
-	return nil, ErrNoObjectStorageEndpoint
+	return nil, errNoObjectStorageEndpoint
 }
 
 // accountAvailabilityCaps are capabilities that must be verified both at the region level and at the account availability level.

@@ -7,11 +7,12 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"endpoint_type": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"region":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"s3_endpoint":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"country":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"region_label":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"endpoint_type":         {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"region":                {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"s3_endpoint":           {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"country":               {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"region_label":          {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"supported_key_classes": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDatasourceSchema = schema.Schema{

@@ -15,6 +15,13 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/objendpoints/tmpl"
 )
 
+func stringExactOrNull(s string) knownvalue.Check {
+	if s == "" {
+		return knownvalue.Null()
+	}
+	return knownvalue.StringExact(s)
+}
+
 func TestAccDataSourceObjectStorageEndpoints_basic(t *testing.T) {
 	t.Parallel()
 
@@ -49,6 +56,10 @@ func TestAccDataSourceObjectStorageEndpoints_ia(t *testing.T) {
 
 	dataSourceName := "data.linode_object_storage_endpoints.test"
 	endpoint := acceptance.GetRandomObjectStorageEndpointOrSkip(t, linodego.ObjectStorageEndpointIA0)
+	// The API leaves out the IA fields while the account's IA API flag is off.
+	if len(endpoint.SupportedKeyClasses) == 0 {
+		t.Skip("skipping: the IA0 endpoint lists no supported_key_classes")
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -69,8 +80,8 @@ func TestAccDataSourceObjectStorageEndpoints_ia(t *testing.T) {
 								"supported_key_classes": knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.StringExact(string(linodego.ObjectStorageKeyClassIA)),
 								}),
-								"country":      knownvalue.StringExact(endpoint.Country),
-								"region_label": knownvalue.StringExact(endpoint.RegionLabel),
+								"country":      stringExactOrNull(endpoint.Country),
+								"region_label": stringExactOrNull(endpoint.RegionLabel),
 							}),
 						}),
 					),

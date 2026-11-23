@@ -25,13 +25,6 @@ type ObjectStorageEndpointModel struct {
 	RegionLabel         types.String   `tfsdk:"region_label"`
 }
 
-func stringOrNull(s string) types.String {
-	if s == "" {
-		return types.StringNull()
-	}
-	return types.StringValue(s)
-}
-
 func (data *ObjectStorageEndpointModel) parseObjectStorageEndpoint(
 	endpoint linodego.ObjectStorageEndpoint,
 ) {
@@ -40,8 +33,8 @@ func (data *ObjectStorageEndpointModel) parseObjectStorageEndpoint(
 	data.S3Endpoint = types.StringPointerValue(endpoint.S3Endpoint)
 	data.SupportedKeyClasses = helper.StringSliceToFramework(
 		helper.StringAliasSliceToStringSlice(endpoint.SupportedKeyClasses))
-	data.Country = stringOrNull(endpoint.Country)
-	data.RegionLabel = stringOrNull(endpoint.RegionLabel)
+	data.Country = helper.StringOrNull(endpoint.Country)
+	data.RegionLabel = helper.StringOrNull(endpoint.RegionLabel)
 }
 
 func (model *ObjectStorageEndpointFilterModel) parseObjectStorageEndpoints(
