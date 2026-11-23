@@ -11,9 +11,11 @@ import (
 
 // DataSourceModel describes a single NAT Gateway type in the `types` list.
 type DataSourceModel struct {
-	ID    types.String `tfsdk:"id"`
-	Label types.String `tfsdk:"label"`
-	Price types.List   `tfsdk:"price"`
+	ID           types.String `tfsdk:"id"`
+	Label        types.String `tfsdk:"label"`
+	Price        types.List   `tfsdk:"price"`
+	RegionPrices types.List   `tfsdk:"region_prices"`
+	Transfer     types.Int64  `tfsdk:"transfer"`
 }
 
 // NATGatewayTypeFilterModel describes the Terraform data source model to match the
@@ -50,7 +52,38 @@ func (data *DataSourceModel) parseNATGatewayType(natGatewayType *linodego.NATGat
 	}
 	data.Price = *price
 
+	regionPrices, diags := flattenRegionPrices(natGatewayType.RegionPrices)
+	if diags.HasError() {
+		return diags
+	}
+	data.RegionPrices = *regionPrices
+
+	data.Transfer = types.Int64Value(int64(natGatewayType.Transfer))
+
 	return nil
+}
+
+func flattenRegionPrices(prices []linodego.NATGatewayTypeRegionPrice) (*types.List, diag.Diagnostics) {
+	result := make([]attr.Value, len(prices))
+	for i, price := range prices {
+		obj, diags := types.ObjectValue(helper.RegionPriceObjectType.AttrTypes, map[string]attr.Value{
+			"id":      types.StringValue(price.ID),
+			"hourly":  types.Float64Value(price.Hourly),
+			"monthly": types.Float64Value(price.Monthly),
+		})
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		result[i] = obj
+	}
+
+	list, diags := types.ListValue(helper.RegionPriceObjectType, result)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return &list, nil
 }
 
 func flattenPrice(hourly, monthly float64) (*types.List, diag.Diagnostics) {

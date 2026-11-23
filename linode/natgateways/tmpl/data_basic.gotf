@@ -32,5 +32,23 @@ data "linode_natgateways" "by_id" {
     }
 }
 
+data "linode_natgateways" "ordered" {
+    depends_on = [linode_natgateway.first, linode_natgateway.second]
+
+    order_by = "id"
+    order = "desc"
+
+    filter {
+        name = "region"
+        values = ["{{ .Region }}"]
+    }
+
+    filter {
+        name = "label"
+        values = ["{{ .Label }}"]
+        match_by = "substring"
+    }
+}
+
 {{ end }}
 

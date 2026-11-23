@@ -5,7 +5,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
-// TODO: Replace with API filterable fields once they are available
 var filterConfig = frameworkfilter.Config{
 	"address": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"in_use":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
@@ -21,8 +20,6 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The ID of the NAT Gateway whose addresses are listed.",
 			Required:    true,
 		},
-		"order":    filterConfig.OrderSchema(),
-		"order_by": filterConfig.OrderBySchema(),
 		"addresses": schema.ListNestedAttribute{
 			Description: "The returned list of addresses assigned to the NAT Gateway.",
 			Computed:    true,
