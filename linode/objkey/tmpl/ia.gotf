@@ -1,0 +1,11 @@
+{{ define "object_key_ia" }}
+
+resource "linode_object_storage_key" "foobar" {
+    label = "{{ .Label }}"
+    regions = [ "{{ .Region }}" ]
+    {{ if .KeyClass }}
+    key_class = "{{ .KeyClass }}"
+    {{ end }}
+}
+
+{{ end }}

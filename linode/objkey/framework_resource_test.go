@@ -204,6 +204,80 @@ func TestAccResourceObjectKey_update(t *testing.T) {
 	})
 }
 
+func TestAccResourceObjectKey_iaExplicitClass(t *testing.T) {
+	t.Parallel()
+
+	endpoint := acceptance.GetRandomObjectStorageEndpointOrSkip(t, linodego.ObjectStorageEndpointIA0)
+	testObjectKeyIA(t, endpoint.Region, string(linodego.ObjectStorageKeyClassIA))
+}
+
+func TestAccResourceObjectKey_iaInferredClass(t *testing.T) {
+	t.Parallel()
+
+	endpoint := acceptance.GetRandomObjectStorageEndpointOrSkip(t, linodego.ObjectStorageEndpointIA0)
+	testObjectKeyIA(t, endpoint.Region, "")
+}
+
+// testObjectKeyIA creates a key in an IA0 region, with keyClass left out of the config when empty.
+func testObjectKeyIA(t *testing.T, region, keyClass string) {
+	t.Helper()
+
+	resName := "linode_object_storage_key.foobar"
+	objectStorageKeyLabel := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkObjectKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.IA(t, objectStorageKeyLabel, region, keyClass),
+				Check: resource.ComposeTestCheckFunc(
+					checkObjectKeyExists,
+					checkObjectKeySecretAccessible,
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(objectStorageKeyLabel),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("key_class"),
+						knownvalue.StringExact(string(linodego.ObjectStorageKeyClassIA)),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("limited"),
+						knownvalue.Bool(false),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("regions"),
+						knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(region)}),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("regions_details"),
+						knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"id":            knownvalue.StringExact(region),
+								"endpoint_type": knownvalue.StringExact(string(linodego.ObjectStorageEndpointIA0)),
+							}),
+						}),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("access_key"),
+						knownvalue.NotNull(),
+					),
+				},
+			},
+		},
+	})
+}
+
 func findObjectKeyResource(s *terraform.State) []*terraform.ResourceState {
 	keys := []*terraform.ResourceState{}
 	for _, res := range s.RootModule().Resources {

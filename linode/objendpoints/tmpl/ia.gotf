@@ -1,0 +1,14 @@
+{{ define "objendpoints_data_ia" }}
+
+data "linode_object_storage_endpoints" "test" {
+    filter {
+        name = "endpoint_type"
+        values = ["IA0"]
+    }
+    filter {
+        name = "region"
+        values = ["{{ .Region }}"]
+    }
+}
+
+{{ end }}
