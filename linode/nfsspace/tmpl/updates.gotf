@@ -1,0 +1,9 @@
+{{ define "nfs_space_updates" }}
+
+resource "linode_nfs_space" "foobar" {
+    label       = "{{.Label}}"
+    description = "{{.Description}}"
+    tags        = ["test", "nfs"]
+}
+
+{{ end }}
