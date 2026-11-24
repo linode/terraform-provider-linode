@@ -25,7 +25,7 @@ func TestFlattenNFSFilesystem(t *testing.T) {
 		ID:                 67890,
 		SpaceID:            12345,
 		Label:              "training-data",
-		Region:             "us-rno",
+		Region:             "us-rno-1",
 		ProtocolVersions:   []linodego.NFSProtocolVersion{linodego.NFSProtocolVersionV4},
 		Status:             linodego.NFSFilesystemStatusActive,
 		MountTargetIPs:     []string{"[2400:8900::10]:/training-data-10932"},
@@ -50,7 +50,7 @@ func TestFlattenNFSFilesystem(t *testing.T) {
 	assert.Equal(t, types.StringValue("67890"), model.ID)
 	assert.Equal(t, types.Int64Value(12345), model.SpaceID)
 	assert.Equal(t, types.StringValue("training-data"), model.Label)
-	assert.Equal(t, types.StringValue("us-rno"), model.Region)
+	assert.Equal(t, types.StringValue("us-rno-1"), model.Region)
 	assert.Equal(t, types.StringValue("active"), model.Status)
 	assert.Equal(t, types.StringValue(fqdn), model.MountTargetFQDN)
 	assert.Equal(t, types.Int64Value(1099511627776), model.MaxCapacityBytes)

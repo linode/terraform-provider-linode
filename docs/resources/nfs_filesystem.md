@@ -23,7 +23,7 @@ resource "linode_nfs_space" "test" {
 resource "linode_nfs_filesystem" "test" {
     space_id           = linode_nfs_space.test.id
     label              = "test-filesystem"
-    region             = "us-rno"
+    region             = "us-rno-1"
     max_capacity_bytes = 1099511627776
     max_file_count     = 1000000
     tags               = ["training", "ml"]
