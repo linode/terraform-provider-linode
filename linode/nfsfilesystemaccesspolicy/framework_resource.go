@@ -257,13 +257,6 @@ func (r *Resource) apply(
 	plan.Flatten(ctx, spaceID, filesystemID, policy, true, diags)
 }
 
-// isUnconfigured reports whether the API returned an empty access policy, which
-// means the filesystem's access policy has never been configured and the
-// filesystem follows the NFS Space access policy.
-func isUnconfigured(policy *linodego.NFSFilesystemAccessPolicy) bool {
-	return policy.Status == "" && policy.Created == nil
-}
-
 func getIDs(m ResourceModel, diags *diag.Diagnostics) (spaceID, filesystemID int) {
 	spaceID = helper.FrameworkSafeInt64ToInt(m.SpaceID.ValueInt64(), diags)
 	filesystemID = helper.FrameworkSafeInt64ToInt(m.FilesystemID.ValueInt64(), diags)

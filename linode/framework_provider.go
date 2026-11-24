@@ -410,6 +410,8 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nfsspaces.NewDataSource,
 		nfsfilesystem.NewDataSource,
 		nfsfilesystems.NewDataSource,
+		nfsspaceaccesspolicy.NewDataSource,
+		nfsfilesystemaccesspolicy.NewDataSource,
 		monitoralertdefinitions.NewDataSource,
 		monitoralertdefinitionentities.NewDataSource,
 		lkenodepool.NewDataSource,

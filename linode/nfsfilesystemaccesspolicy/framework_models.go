@@ -100,6 +100,53 @@ func (m *ResourceModel) Flatten(
 	m.LinodeACL = helper.KeepOrUpdateValue(m.LinodeACL, aclList, preserveKnown)
 }
 
+// DataSourceModel represents the linode_nfs_filesystem_access_policy data source.
+type DataSourceModel struct {
+	ResourceModel
+	Configured types.Bool `tfsdk:"configured"`
+}
+
+// Flatten populates the data source model. An unconfigured policy, which the API
+// returns as an empty object, is reported with configured = false and null
+// policy attributes rather than the API's zero values, since enabled = false
+// would otherwise wrongly suggest that the filesystem admits nobody.
+func (m *DataSourceModel) Flatten(
+	ctx context.Context,
+	spaceID, filesystemID int,
+	policy *linodego.NFSFilesystemAccessPolicy,
+	diags *diag.Diagnostics,
+) {
+	if !isUnconfigured(policy) {
+		m.Configured = types.BoolValue(true)
+		m.ResourceModel.Flatten(ctx, spaceID, filesystemID, policy, false, diags)
+		return
+	}
+
+	m.Configured = types.BoolValue(false)
+	m.ResourceModel = ResourceModel{
+		ID:           types.StringValue(fmt.Sprintf("%d,%d", spaceID, filesystemID)),
+		SpaceID:      types.Int64Value(int64(spaceID)),
+		FilesystemID: types.Int64Value(int64(filesystemID)),
+		Label:        types.StringNull(),
+		Enabled:      types.BoolNull(),
+		Inherit:      types.BoolNull(),
+		LinodeIDs:    types.SetNull(types.Int64Type),
+		SquashPolicy: types.StringNull(),
+		Protocols:    types.SetNull(types.StringType),
+		LinodeACL:    types.ListNull(linodeACLObjectType),
+		Status:       types.StringNull(),
+		Created:      timetypes.NewRFC3339Null(),
+		Updated:      timetypes.NewRFC3339Null(),
+	}
+}
+
+// isUnconfigured reports whether the API returned an empty access policy, which
+// means the filesystem's access policy has never been configured and the
+// filesystem follows the NFS Space access policy.
+func isUnconfigured(policy *linodego.NFSFilesystemAccessPolicy) bool {
+	return policy.Status == "" && policy.Created == nil
+}
+
 // GetUpdateOptions builds the access policy update options from the planned
 // values that differ from the prior state. When state is nil, every known,
 // non-null planned value is included.

@@ -102,6 +102,50 @@ func TestIsUnconfigured(t *testing.T) {
 	assert.False(t, isUnconfigured(&linodego.NFSFilesystemAccessPolicy{Created: &created}))
 }
 
+func TestFlattenNFSFilesystemAccessPolicyDataSource(t *testing.T) {
+	ctx := context.Background()
+	created := time.Date(2026, time.May, 1, 14, 0, 0, 0, time.UTC)
+
+	t.Run("unconfigured", func(t *testing.T) {
+		var model DataSourceModel
+		var diags diag.Diagnostics
+		model.Flatten(ctx, 12345, 67890, &linodego.NFSFilesystemAccessPolicy{}, &diags)
+		require.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+
+		assert.Equal(t, types.BoolValue(false), model.Configured)
+		assert.Equal(t, types.StringValue("12345,67890"), model.ID)
+		assert.Equal(t, types.Int64Value(12345), model.SpaceID)
+		assert.Equal(t, types.Int64Value(67890), model.FilesystemID)
+		assert.True(t, model.Label.IsNull())
+		assert.True(t, model.Enabled.IsNull())
+		assert.True(t, model.Inherit.IsNull())
+		assert.True(t, model.SquashPolicy.IsNull())
+		assert.True(t, model.LinodeIDs.IsNull())
+		assert.True(t, model.Protocols.IsNull())
+		assert.True(t, model.LinodeACL.IsNull())
+		assert.True(t, model.Status.IsNull())
+		assert.True(t, model.Created.IsNull())
+		assert.True(t, model.Updated.IsNull())
+	})
+
+	t.Run("configured", func(t *testing.T) {
+		var model DataSourceModel
+		var diags diag.Diagnostics
+		model.Flatten(ctx, 12345, 67890, &linodego.NFSFilesystemAccessPolicy{
+			Label:   "training-data",
+			Enabled: false,
+			Status:  linodego.NFSAccessPolicyStatusActive,
+			Created: &created,
+		}, &diags)
+		require.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+
+		assert.Equal(t, types.BoolValue(true), model.Configured)
+		assert.Equal(t, types.StringValue("training-data"), model.Label)
+		assert.Equal(t, types.BoolValue(false), model.Enabled)
+		assert.Equal(t, types.StringValue("active"), model.Status)
+	})
+}
+
 func TestNFSFilesystemAccessPolicyGetUpdateOptions(t *testing.T) {
 	ctx := context.Background()
 
