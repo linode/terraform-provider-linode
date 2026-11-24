@@ -110,7 +110,7 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:      true,
 			Computed:      true,
 			Default:       booldefault.StaticBool(false),
-			Description:   "Whether the Managed Valkey Database is suspended.",
+			Description:   "Whether the Managed Valkey Database is suspended. All service data is lost if no backups are available, including when persistence is disabled.",
 			PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 		},
 		"updates": databaseshared.ResourceAttributeUpdates,

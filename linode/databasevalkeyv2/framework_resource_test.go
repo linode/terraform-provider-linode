@@ -42,17 +42,21 @@ func init() {
 		log.Fatal(err)
 	}
 
-	region, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{linodego.CapabilityDBAAS}, "core")
+	ctx := context.Background()
+	region, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityDBAAS).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		valkeyAvailabilityError = err
 		return
 	}
 	testRegion = region
 
-	vpcRegion, err := acceptance.GetRandomRegionWithCaps([]linodego.RegionCapability{
-		linodego.CapabilityDBAAS,
-		linodego.CapabilityVPCs,
-	}, "core")
+	vpcRegion, err := acceptance.NewRegionSelector(ctx, client).
+		WithCapabilities(linodego.CapabilityDBAAS, linodego.CapabilityVPCs).
+		WithSiteType("core").
+		Random()
 	if err != nil {
 		valkeyVPCAvailabilityError = err
 	} else {

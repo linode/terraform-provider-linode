@@ -52,7 +52,7 @@ The following arguments are supported:
 
 * `fork_restore_time` - (Optional) An RFC3339 snapshot timestamp from the source database's `available_restore_times`. Requires `fork_source`. If omitted, the API uses its latest snapshot. Changing this value replaces the resource. This is a discrete snapshot restore, not arbitrary point-in-time recovery.
 
-* `suspended` - (Optional) Whether the database should be suspended. Defaults to `false`. Resuming a suspended database can take time; configure the update timeout as needed.
+* `suspended` - (Optional) Whether the database should be suspended. Defaults to `false`. **Warning:** Suspending a Valkey database loses all service data if no backups are available, including when persistence is disabled. Resuming a suspended database can take time; configure the update timeout as needed.
 
 * [`updates`](#updates) - (Optional, Nested Attribute) Automated patch maintenance settings, configured as `updates = { ... }`.
 
