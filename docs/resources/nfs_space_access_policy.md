@@ -55,7 +55,7 @@ The following arguments are supported:
 
 * `enabled` - (Optional) Whether this access policy is active.
 
-* [`vpcs`](#vpcs) - (Optional, Nested Attribute Set) The VPCs (and optionally specific subnets) permitted to access this NFS Space.
+* [`vpcs`](#vpcs) - (Optional, Nested Attribute Set) The VPCs (and optionally specific subnets) permitted to access this NFS Space. Set `vpcs = []` to remove all VPCs; omitting the argument leaves the current allowlist unchanged.
 
 * `mtls_ca_cert` - (Optional) The PEM-encoded CA certificate used to validate mTLS client certificates.
 

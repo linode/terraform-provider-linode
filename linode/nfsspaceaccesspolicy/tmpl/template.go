@@ -11,6 +11,19 @@ type TemplateData struct {
 	Region           string
 	MaxCapacityBytes int64
 	Enabled          bool
+	VPCMode          string
+}
+
+// VPC renders a space access policy with an allowlist controlled by vpcMode:
+// "vpc" (whole VPC), "subnet" (specific subnet) or "empty" (vpcs = []).
+func VPC(t testing.TB, label, region string, maxCapacityBytes int64, vpcMode string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nfs_space_access_policy_vpc", TemplateData{
+			Label:            label,
+			Region:           region,
+			MaxCapacityBytes: maxCapacityBytes,
+			VPCMode:          vpcMode,
+		})
 }
 
 func Basic(t testing.TB, label, region string, maxCapacityBytes int64, enabled bool) string {

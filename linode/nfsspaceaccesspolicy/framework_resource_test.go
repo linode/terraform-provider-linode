@@ -65,3 +65,56 @@ func TestAccResourceNFSSpaceAccessPolicy_basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccResourceNFSSpaceAccessPolicy_vpcs(t *testing.T) {
+	t.Parallel()
+
+	label := acctest.RandomWithPrefix("tf-test")
+	testRegion := acceptance.GetNFSTestRegion(t)
+
+	vpcs := tfjsonpath.New("vpcs")
+	vpcACL := tfjsonpath.New("vpc_acl")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPC(t, label, testRegion, minCapacityBytes, "vpc"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, vpcs, knownvalue.SetSizeExact(1)),
+					statecheck.ExpectKnownValue(resourceName, vpcACL, knownvalue.ListSizeExact(1)),
+					statecheck.ExpectKnownValue(resourceName,
+						vpcACL.AtSliceIndex(0).AtMapKey("range"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName,
+						vpcACL.AtSliceIndex(0).AtMapKey("subnets"), knownvalue.ListSizeExact(0)),
+				},
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: tmpl.VPC(t, label, testRegion, minCapacityBytes, "subnet"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, vpcs, knownvalue.SetSizeExact(1)),
+					statecheck.ExpectKnownValue(resourceName,
+						vpcACL.AtSliceIndex(0).AtMapKey("subnets"), knownvalue.ListSizeExact(1)),
+				},
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: tmpl.VPC(t, label, testRegion, minCapacityBytes, "empty"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, vpcs, knownvalue.SetSizeExact(0)),
+					statecheck.ExpectKnownValue(resourceName, vpcACL, knownvalue.ListSizeExact(0)),
+				},
+			},
+		},
+	})
+}

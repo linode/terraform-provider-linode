@@ -134,6 +134,33 @@ func TestNFSSpaceAccessPolicyGetUpdateOptions(t *testing.T) {
 		assert.Nil(t, opts.MTLSMode)
 		require.NotNil(t, opts.VPCs)
 	})
+
+	t.Run("create with mtls ca cert", func(t *testing.T) {
+		withCert := plan
+		withCert.MTLSCACert = types.StringValue("cert-a")
+		var diags diag.Diagnostics
+		opts, shouldUpdate := withCert.GetUpdateOptions(ctx, nil, &diags)
+		require.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+
+		assert.True(t, shouldUpdate)
+		assert.Equal(t, linodego.Pointer("cert-a"), opts.MTLSCACert)
+	})
+
+	t.Run("mtls ca cert rotation only", func(t *testing.T) {
+		state := plan
+		state.MTLSCACert = types.StringValue("cert-a")
+		rotated := plan
+		rotated.MTLSCACert = types.StringValue("cert-b")
+		var diags diag.Diagnostics
+		opts, shouldUpdate := rotated.GetUpdateOptions(ctx, &state, &diags)
+		require.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+
+		assert.True(t, shouldUpdate)
+		assert.Equal(t, linodego.Pointer("cert-b"), opts.MTLSCACert)
+		assert.Nil(t, opts.Enabled)
+		assert.Nil(t, opts.MTLSMode)
+		assert.Nil(t, opts.VPCs)
+	})
 }
 
 func TestFlattenNFSSpaceAccessPolicyPreserveKnown(t *testing.T) {
