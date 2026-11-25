@@ -1,0 +1,30 @@
+{{ define "nfs_filesystem_access_policy_data_unconfigured" }}
+
+resource "linode_nfs_space" "foobar" {
+    label = "{{.Label}}-space"
+}
+
+resource "linode_nfs_filesystem" "foobar" {
+    space_id           = linode_nfs_space.foobar.id
+    label              = "{{.Label}}"
+    region             = "{{.Region}}"
+    max_capacity_bytes = {{.MaxCapacityBytes}}
+}
+
+data "linode_nfs_filesystem_access_policy" "foobar" {
+    space_id      = linode_nfs_filesystem.foobar.space_id
+    filesystem_id = linode_nfs_filesystem.foobar.id
+}
+
+{{ end }}
+
+{{ define "nfs_filesystem_access_policy_data_configured" }}
+
+{{ template "nfs_filesystem_access_policy_basic" . }}
+
+data "linode_nfs_filesystem_access_policy" "foobar" {
+    space_id      = linode_nfs_filesystem_access_policy.foobar.space_id
+    filesystem_id = linode_nfs_filesystem_access_policy.foobar.filesystem_id
+}
+
+{{ end }}

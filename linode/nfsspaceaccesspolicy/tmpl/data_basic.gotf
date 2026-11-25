@@ -1,0 +1,9 @@
+{{ define "nfs_space_access_policy_data_basic" }}
+
+{{ template "nfs_space_access_policy_basic" . }}
+
+data "linode_nfs_space_access_policy" "foobar" {
+    space_id = linode_nfs_space_access_policy.foobar.space_id
+}
+
+{{ end }}

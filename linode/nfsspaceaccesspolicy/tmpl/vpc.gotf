@@ -1,0 +1,62 @@
+{{ define "nfs_space_access_policy_vpc" }}
+
+resource "linode_nfs_space" "foobar" {
+    label = "{{.Label}}"
+}
+
+resource "linode_nfs_filesystem" "foobar" {
+    space_id           = linode_nfs_space.foobar.id
+    label              = "{{.Label}}"
+    region             = "{{.Region}}"
+    max_capacity_bytes = {{.MaxCapacityBytes}}
+}
+
+resource "linode_vpc" "foobar" {
+    label  = "{{.Label}}"
+    region = "{{.Region}}"
+
+    ipv6 = [
+        {
+            range = "auto"
+        }
+    ]
+}
+
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = linode_vpc.foobar.id
+    label  = "{{.Label}}"
+    ipv4   = "10.0.4.0/24"
+
+    ipv6 = [
+        {
+            range = "auto"
+        }
+    ]
+}
+
+resource "linode_nfs_space_access_policy" "foobar" {
+    space_id  = linode_nfs_space.foobar.id
+    enabled   = true
+    mtls_mode = "disabled"
+
+{{- if eq .VPCMode "vpc" }}
+    vpcs = [
+        {
+            id = linode_vpc.foobar.id
+        }
+    ]
+{{- else if eq .VPCMode "subnet" }}
+    vpcs = [
+        {
+            id      = linode_vpc.foobar.id
+            subnets = [linode_vpc_subnet.foobar.id]
+        }
+    ]
+{{- else }}
+    vpcs = []
+{{- end }}
+
+    depends_on = [linode_nfs_filesystem.foobar]
+}
+
+{{ end }}
