@@ -60,8 +60,9 @@ type LKEControlPlane struct {
 }
 
 type LKEControlPlaneACL struct {
-	Enabled   types.Bool                    `tfsdk:"enabled"`
-	Addresses []LKEControlPlaneACLAddresses `tfsdk:"addresses"`
+	Enabled    types.Bool                    `tfsdk:"enabled"`
+	RevisionID types.String                  `tfsdk:"revision_id"`
+	Addresses  []LKEControlPlaneACLAddresses `tfsdk:"addresses"`
 }
 
 type LKEControlPlaneACLAddresses struct {
@@ -268,6 +269,7 @@ func parseControlPlane(
 		}
 
 		cpACL.Enabled = types.BoolValue(acl.Enabled)
+		cpACL.RevisionID = types.StringValue(acl.RevisionID)
 		cp.ACL = []LKEControlPlaneACL{cpACL}
 	} else {
 		cp.ACL = []LKEControlPlaneACL{}

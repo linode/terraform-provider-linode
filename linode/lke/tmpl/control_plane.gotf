@@ -11,6 +11,9 @@ resource "linode_lke_cluster" "test" {
         high_availability = {{ .HighAvailability }}
         acl {
             enabled = {{ .ACLEnabled }}
+            {{ if .RevisionID }}
+            revision_id = "{{ .RevisionID }}"
+            {{ end }}
             addresses {
                 ipv4 = ["{{.IPv4}}"]
                 ipv6 = ["{{.IPv6}}"]

@@ -3,6 +3,7 @@
 package lke
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -58,4 +59,17 @@ func TestParseNetworking(t *testing.T) {
 		assert.Equal(t, types.Int64Value(112), result[0].NodeCIDRMaskSizeIPv6)
 		assert.Equal(t, types.StringValue("fd12:3456:789a:10ad::/112"), result[0].ServiceClusterIPRangeIPv6)
 	})
+}
+
+func TestParseControlPlaneACLRevisionID(t *testing.T) {
+	cp, diags := parseControlPlane(
+		context.Background(),
+		linodego.LKEClusterControlPlane{},
+		&linodego.LKEClusterControlPlaneACLResponse{
+			ACL: linodego.LKEClusterControlPlaneACL{Enabled: true, RevisionID: "rev-3"},
+		},
+	)
+	assert.False(t, diags.HasError())
+	assert.Len(t, cp.ACL, 1)
+	assert.Equal(t, types.StringValue("rev-3"), cp.ACL[0].RevisionID)
 }

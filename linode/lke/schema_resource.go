@@ -389,6 +389,11 @@ var resourceSchema = map[string]*schema.Schema{
 								Computed:    true,
 								Optional:    true,
 							},
+							"revision_id": {
+								Type:        schema.TypeString,
+								Description: "The unique identifier of the current revision of the control plane ACL.",
+								Computed:    true,
+							},
 							"addresses": {
 								Type:        schema.TypeList,
 								Description: "A list of ip addresses to allow.",

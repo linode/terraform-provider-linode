@@ -271,3 +271,37 @@ func TestFlattenLKEClusterNetworking(t *testing.T) {
 		})
 	}
 }
+
+func TestFlattenLKEClusterControlPlaneACLRevisionID(t *testing.T) {
+	aclResp := &linodego.LKEClusterControlPlaneACLResponse{
+		ACL: linodego.LKEClusterControlPlaneACL{
+			Enabled:    true,
+			RevisionID: "rev-1",
+			Addresses:  &linodego.LKEClusterControlPlaneACLAddresses{IPv4: []string{"10.0.0.1/32"}},
+		},
+	}
+
+	flattened := flattenLKEClusterControlPlane(linodego.LKEClusterControlPlane{}, aclResp)
+
+	acl := flattened["acl"].([]map[string]any)
+	require.Len(t, acl, 1)
+	assert.Equal(t, "rev-1", acl[0]["revision_id"])
+}
+
+func TestExpandACLOptionsRevisionID(t *testing.T) {
+	opts, diags := expandACLOptions(map[string]any{
+		"enabled":     true,
+		"revision_id": "rev-2",
+		"addresses":   []any{},
+	})
+	require.False(t, diags.HasError())
+	assert.Equal(t, "rev-2", opts.RevisionID)
+
+	opts, diags = expandACLOptions(map[string]any{
+		"enabled":     true,
+		"revision_id": "",
+		"addresses":   []any{},
+	})
+	require.False(t, diags.HasError())
+	assert.Empty(t, opts.RevisionID)
+}
