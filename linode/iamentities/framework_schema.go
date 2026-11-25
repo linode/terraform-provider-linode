@@ -2,14 +2,13 @@ package iamentities
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
 var filterConfig = frameworkfilter.Config{
-	"id":    {APIFilterable: false, TypeFunc: helper.FilterTypeInt},
-	"label": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
-	"type":  {APIFilterable: false, TypeFunc: helper.FilterTypeString},
+	"id":    {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"label": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"type":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkSchema = schema.Schema{

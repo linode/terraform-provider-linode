@@ -3,12 +3,11 @@ package sshkeys
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
 var filterConfig = frameworkfilter.Config{
-	"created": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
+	"created": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"id":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 	"label":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"ssh_key": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},

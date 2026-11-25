@@ -3,7 +3,6 @@ package vlan
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
@@ -11,7 +10,7 @@ var filterConfig = frameworkfilter.Config{
 	"label":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"region": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 
-	"linodes": {APIFilterable: false, TypeFunc: helper.FilterTypeInt},
+	"linodes": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 }
 
 var vlanAttributes = map[string]schema.Attribute{

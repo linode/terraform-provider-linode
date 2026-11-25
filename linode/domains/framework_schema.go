@@ -3,24 +3,23 @@ package domains
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/linode/terraform-provider-linode/v4/linode/domain"
-	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
 var filterConfig = frameworkfilter.Config{
-	"tags":   {APIFilterable: true, TypeFunc: helper.FilterTypeString},
-	"domain": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"tags":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"domain": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 
-	"type":        {APIFilterable: false, TypeFunc: helper.FilterTypeString},
-	"status":      {APIFilterable: false, TypeFunc: helper.FilterTypeString},
-	"description": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
-	"master_ips":  {APIFilterable: false, TypeFunc: helper.FilterTypeString},
-	"axfr_ips":    {APIFilterable: false, TypeFunc: helper.FilterTypeString},
-	"ttl_sec":     {APIFilterable: false, TypeFunc: helper.FilterTypeInt},
-	"retry_sec":   {APIFilterable: false, TypeFunc: helper.FilterTypeInt},
-	"expire_sec":  {APIFilterable: false, TypeFunc: helper.FilterTypeInt},
-	"refresh_sec": {APIFilterable: false, TypeFunc: helper.FilterTypeInt},
-	"soa_email":   {APIFilterable: false, TypeFunc: helper.FilterTypeString},
+	"type":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"status":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"description": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"master_ips":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"axfr_ips":    {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"ttl_sec":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"retry_sec":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"expire_sec":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"refresh_sec": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"soa_email":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDatasourceSchema = schema.Schema{

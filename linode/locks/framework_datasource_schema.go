@@ -2,13 +2,12 @@ package locks
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
 var filterConfig = frameworkfilter.Config{
-	"id":        {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
-	"lock_type": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"id":        {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"lock_type": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var lockAttributes = map[string]schema.Attribute{
