@@ -91,6 +91,17 @@ func (r *Resource) Read(
 
 	member, err := client.ImageShareGroupGetMember(ctx, shareGroupID, tokenUUID)
 	if err != nil {
+		if linodego.IsNotFound(err) {
+			resp.Diagnostics.AddWarning(
+				"Image Share Group Member no longer exists.",
+				fmt.Sprintf(
+					"Removing member %s of Image Share Group %d from state because it no longer exists.",
+					tokenUUID, shareGroupID,
+				),
+			)
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Failed to read Image Share Group Member.",
 			err.Error(),
