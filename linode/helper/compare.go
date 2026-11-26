@@ -113,14 +113,23 @@ func CompareSlices(ignoreNil, unordered bool, a, b []any) bool {
 	}
 
 	if unordered {
-		less := func(i, j int) bool {
-			return fmt.Sprintf("%v", a[i]) < fmt.Sprintf("%v", a[j])
+		if len(a) != len(b) {
+			return false
 		}
-		sort.Slice(a, less)
-		sort.Slice(b, less)
+
+		a = sortedByString(a)
+		b = sortedByString(b)
 	}
 
 	return reflect.DeepEqual(a, b)
+}
+
+func sortedByString(s []any) []any {
+	sorted := slices.Clone(s)
+	sort.SliceStable(sorted, func(i, j int) bool {
+		return fmt.Sprintf("%v", sorted[i]) < fmt.Sprintf("%v", sorted[j])
+	})
+	return sorted
 }
 
 func FrameworkValuesShallowEqual[T attr.Value](a, b T) bool {
