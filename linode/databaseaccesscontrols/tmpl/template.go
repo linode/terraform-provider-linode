@@ -32,3 +32,13 @@ func PostgreSQL(t testing.TB, label, engine, ip, region string) string {
 			Region:    region,
 		})
 }
+
+func Valkey(t testing.TB, label, engine, ip, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"database_access_controls_valkey", TemplateData{
+			Engine:    engine,
+			Label:     label,
+			AllowedIP: ip,
+			Region:    region,
+		})
+}
