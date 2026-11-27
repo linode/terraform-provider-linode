@@ -633,8 +633,37 @@ func GetEndpointCluster(e linodego.ObjectStorageEndpoint) (string, error) {
 	return strings.Split(endpointURL, ".")[0], nil
 }
 
-// Get an Object Storage services endpoint with non-nil S3Endpoint
+var errNoObjectStorageEndpoint = errors.New("failed to get an object storage endpoint")
+
+// GetRandomObjectStorageEndpoint returns a random E1 endpoint with a non-nil S3Endpoint.
 func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
+	// E2 and E3 endpoints reject API calls that pass only `cluster`, which some tests still do.
+	return getRandomObjectStorageEndpointOfType(linodego.ObjectStorageEndpointE1)
+}
+
+// GetRandomObjectStorageEndpointOrSkip skips t when the account lists no endpoint of endpointType.
+func GetRandomObjectStorageEndpointOrSkip(
+	t testing.TB,
+	endpointType linodego.ObjectStorageEndpointType,
+) linodego.ObjectStorageEndpoint {
+	t.Helper()
+
+	endpoint, err := getRandomObjectStorageEndpointOfType(endpointType)
+	if errors.Is(err, errNoObjectStorageEndpoint) {
+		t.Skipf("skipping: the account lists no %s object storage endpoint", endpointType)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return *endpoint
+}
+
+// getRandomObjectStorageEndpointOfType returns errNoObjectStorageEndpoint when no endpoint
+// of endpointType has a non-nil S3Endpoint.
+func getRandomObjectStorageEndpointOfType(
+	endpointType linodego.ObjectStorageEndpointType,
+) (*linodego.ObjectStorageEndpoint, error) {
 	client, err := GetTestClient()
 	if err != nil {
 		return nil, err
@@ -651,20 +680,13 @@ func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
 	})
 
 	for i, e := range endpoints {
-		// Linode Object Storage clusters with E2 and E3 (Object Storage gen2) endpoints
-		// doesn't support API call with only `cluster` rather than `region`.
-		// Only selecting E1 (Object Storage gen1) here to make sure tests always pass.
-		//
-		// TODO:
-		// Remove this condition when E1 is deprecated in the future
-		// or test cases with `cluster` are removed.
-		if e.S3Endpoint != nil && e.EndpointType == linodego.ObjectStorageEndpointE1 {
+		if e.S3Endpoint != nil && e.EndpointType == endpointType {
 			result := endpoints[i]
 			return &result, nil
 		}
 	}
 
-	return nil, errors.New("failed to get an object storage endpoint")
+	return nil, errNoObjectStorageEndpoint
 }
 
 // accountAvailabilityCaps are capabilities that must be verified both at the region level and at the account availability level.

@@ -68,6 +68,12 @@ Each Linode Object Storage endpoint type will export the following attributes:
 
 * `s3_endpoint` -  Your s3 endpoint URL, based on the `endpoint_type` and `region`. Output as null if you haven't assigned an endpoint for your user in this region with the specific endpoint type.
 
+* `supported_key_classes` - The key classes (`E`, `IA`) that can be created in this endpoint's region. Output as null if the account has no access to Infrequent Access.
+
+* `country` - The country of the endpoint's region. Output as null if the account has no access to Infrequent Access.
+
+* `region_label` - The display label of the endpoint's region. Output as null if the account has no access to Infrequent Access.
+
 ## Filterable Fields
 
 * `endpoint_type`
@@ -75,3 +81,9 @@ Each Linode Object Storage endpoint type will export the following attributes:
 * `region`
 
 * `s3_endpoint`
+
+* `country`
+
+* `region_label`
+
+* `supported_key_classes`

@@ -29,6 +29,14 @@ func GetStringPtrWithDefault(val *string, def string) types.String {
 	return types.StringValue(def)
 }
 
+// StringOrNull returns a null types.String for "", else a types.StringValue.
+func StringOrNull(s string) types.String {
+	if s == "" {
+		return types.StringNull()
+	}
+	return types.StringValue(s)
+}
+
 // StringSliceToFramework converts the given string slice
 // into a framework-compatible slice of types.String.
 func StringSliceToFramework(val []string) []types.String {

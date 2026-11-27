@@ -3,6 +3,7 @@ package objendpoints
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego/v2"
+	"github.com/linode/terraform-provider-linode/v4/linode/helper"
 	"github.com/linode/terraform-provider-linode/v4/linode/helper/frameworkfilter"
 )
 
@@ -18,6 +19,10 @@ type ObjectStorageEndpointModel struct {
 	EndpointType types.String `tfsdk:"endpoint_type"`
 	Region       types.String `tfsdk:"region"`
 	S3Endpoint   types.String `tfsdk:"s3_endpoint"`
+
+	SupportedKeyClasses []types.String `tfsdk:"supported_key_classes"`
+	Country             types.String   `tfsdk:"country"`
+	RegionLabel         types.String   `tfsdk:"region_label"`
 }
 
 func (data *ObjectStorageEndpointModel) parseObjectStorageEndpoint(
@@ -26,6 +31,10 @@ func (data *ObjectStorageEndpointModel) parseObjectStorageEndpoint(
 	data.EndpointType = types.StringValue(string(endpoint.EndpointType))
 	data.Region = types.StringValue(endpoint.Region)
 	data.S3Endpoint = types.StringPointerValue(endpoint.S3Endpoint)
+	data.SupportedKeyClasses = helper.StringSliceToFramework(
+		helper.StringAliasSliceToStringSlice(endpoint.SupportedKeyClasses))
+	data.Country = helper.StringOrNull(endpoint.Country)
+	data.RegionLabel = helper.StringOrNull(endpoint.RegionLabel)
 }
 
 func (model *ObjectStorageEndpointFilterModel) parseObjectStorageEndpoints(

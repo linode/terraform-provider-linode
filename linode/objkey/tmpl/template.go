@@ -7,9 +7,10 @@ import (
 )
 
 type TemplateData struct {
-	Label   string
-	Region  string
-	Regions []string
+	Label    string
+	Region   string
+	Regions  []string
+	KeyClass string
 }
 
 func Basic(t testing.TB, label string) string {
@@ -30,4 +31,9 @@ func Limited(t testing.TB, label, region string) string {
 func AllRegions(t testing.TB, label string, regions []string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_key_all_regions", TemplateData{Label: label, Regions: regions})
+}
+
+func IA(t testing.TB, label, region, keyClass string) string {
+	return acceptance.ExecuteTemplate(t,
+		"object_key_ia", TemplateData{Label: label, Region: region, KeyClass: keyClass})
 }

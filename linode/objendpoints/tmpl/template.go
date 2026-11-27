@@ -8,6 +8,7 @@ import (
 
 type TemplateData struct {
 	EndpointType string
+	Region       string
 }
 
 func DataBasic(t testing.TB) string {
@@ -20,6 +21,14 @@ func DataFilter(t testing.TB, endpointType string) string {
 	return acceptance.ExecuteTemplate(
 		t, "objendpoints_data_filter", TemplateData{
 			EndpointType: endpointType,
+		},
+	)
+}
+
+func DataIA(t testing.TB, region string) string {
+	return acceptance.ExecuteTemplate(
+		t, "objendpoints_data_ia", TemplateData{
+			Region: region,
 		},
 	)
 }
